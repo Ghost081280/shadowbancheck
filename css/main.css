@@ -1860,6 +1860,35 @@ li {
     margin-top: var(--space-xl);
 }
 
+.btn-share {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: var(--space-md) var(--space-xl);
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    border: 2px solid var(--border);
+    background: var(--card);
+    color: var(--text);
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 1rem;
+    transition: all var(--transition-base);
+}
+
+.btn-share:hover {
+    border-color: var(--primary);
+    background: rgba(99, 102, 241, 0.1);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+.btn-share .share-icon {
+    font-size: 1.25rem;
+    font-weight: 700;
+}
+
+/* Old social media colored buttons (keeping for compatibility) */
 .share-btn {
     display: inline-flex;
     align-items: center;

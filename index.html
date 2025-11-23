@@ -228,7 +228,7 @@
     </section>
 
     <script>
-        // Animate the demo chat
+        // Animate the demo chat ONLY when scrolled into view
         document.addEventListener('DOMContentLoaded', function() {
             const demoMessages = document.getElementById('demo-chat-messages');
             if (!demoMessages) return;
@@ -241,12 +241,23 @@
                 },
                 {
                     type: 'ai',
-                    text: '<strong>Absolutely!</strong> I can run live checks on your accounts right now.<br><br>With <strong>Shadow AI Pro ($9.99/mo)</strong>, I can verify your visibility across all 26 platforms, check username/email status, and create a personalized recovery plan.<br><br>You get 100 questions per day, real-time verification, and 24/7 support. Want to start your free trial?',
+                    text: '<strong>Absolutely!</strong> I can run live checks on your accounts right now.<br><br>With <strong>Shadow AI Pro</strong>, I can verify your visibility across all 26 platforms, check username/email status, and create a personalized recovery plan.<br><br>You get 100 questions per day, real-time verification, and 24/7 support.',
+                    delay: 2500
+                },
+                {
+                    type: 'user',
+                    text: 'Sounds great! Where do I get started?',
+                    delay: 3000
+                },
+                {
+                    type: 'ai',
+                    text: 'Perfect! <strong>Shadow AI Pro is only $9.99/mo</strong> and you can start with a <strong>7-day free trial</strong> (credit card required, cancel anytime).<br><br>You can add it to any monitoring plan or use it standalone. <a href="#pricing" style="color: var(--primary); text-decoration: underline;">See pricing options here →</a>',
                     delay: 2500
                 }
             ];
 
             let currentMessage = 0;
+            let animationStarted = false;
 
             function showNextMessage() {
                 if (currentMessage >= messages.length) return;
@@ -261,6 +272,9 @@
                         typing.innerHTML = '<span class="typing-dots"><span>.</span><span>.</span><span>.</span></span>';
                         demoMessages.appendChild(typing);
 
+                        // Scroll to bottom
+                        demoMessages.scrollTop = demoMessages.scrollHeight;
+
                         // Remove typing and show message after delay
                         setTimeout(() => {
                             typing.remove();
@@ -269,6 +283,9 @@
                             msgDiv.innerHTML = msg.text;
                             msgDiv.style.animation = 'slideIn 0.5s ease';
                             demoMessages.appendChild(msgDiv);
+                            
+                            // Scroll to bottom
+                            demoMessages.scrollTop = demoMessages.scrollHeight;
                             
                             currentMessage++;
                             showNextMessage();
@@ -281,14 +298,30 @@
                         msgDiv.style.animation = 'slideIn 0.5s ease';
                         demoMessages.appendChild(msgDiv);
                         
+                        // Scroll to bottom
+                        demoMessages.scrollTop = demoMessages.scrollHeight;
+                        
                         currentMessage++;
                         showNextMessage();
                     }
                 }, msg.delay);
             }
 
-            // Start the animation
-            showNextMessage();
+            // Use Intersection Observer to start animation when scrolled into view
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting && !animationStarted) {
+                        animationStarted = true;
+                        showNextMessage();
+                    }
+                });
+            }, { threshold: 0.3 });
+
+            // Observe the demo chat container
+            const demoChat = document.querySelector('.demo-chat');
+            if (demoChat) {
+                observer.observe(demoChat);
+            }
         });
     </script>
 
@@ -461,8 +494,8 @@
     <!-- Pricing -->
     <section id="pricing" class="pricing">
         <div class="container">
-            <h2 class="section-title">Simple, Affordable Pricing</h2>
-            <p class="section-desc">Start small, scale as you grow</p>
+            <h2 class="section-title" style="text-align: center;">Simple, Affordable Pricing</h2>
+            <p class="section-desc" style="text-align: center;">All plans include ALL features. Pay based on how many accounts you monitor—not which platforms.</p>
 
             <div class="pricing-grid">
                 <div class="price-card">
@@ -471,14 +504,18 @@
                         <span class="amount">$4.99</span>
                         <span class="period">/month</span>
                     </div>
+                    <div class="price-subtitle">Monitor 5 Accounts</div>
                     <ul>
-                        <li>✓ 5 platforms monitored</li>
-                        <li>✓ Weekly checks</li>
-                        <li>✓ Email alerts</li>
+                        <li>✓ Any 5 platforms/accounts</li>
+                        <li>✓ Daily automated checks</li>
+                        <li>✓ Text + Email alerts</li>
+                        <li>✓ Instant shadowban detection</li>
+                        <li>✓ Recovery recommendations</li>
                         <li>✓ Historical tracking</li>
-                        <li>✓ 3 free AI questions/day</li>
+                        <li>✓ <strong>3 free AI questions/day</strong></li>
                     </ul>
-                    <a href="#" class="btn-price">Get Starter</a>
+                    <a href="#" class="btn-price">Start 7-Day Trial</a>
+                    <p class="trial-note">Credit card required • Cancel anytime</p>
                 </div>
 
                 <div class="price-card featured">
@@ -488,30 +525,72 @@
                         <span class="amount">$9.99</span>
                         <span class="period">/month</span>
                     </div>
+                    <div class="price-subtitle">Monitor 15 Accounts</div>
                     <ul>
-                        <li>✓ 15 platforms monitored</li>
-                        <li>✓ Daily checks</li>
+                        <li>✓ Any 15 platforms/accounts</li>
+                        <li>✓ Checks every 6 hours</li>
                         <li>✓ Text + Email alerts</li>
-                        <li>✓ Full historical tracking</li>
+                        <li>✓ Instant shadowban detection</li>
+                        <li>✓ Recovery recommendations</li>
+                        <li>✓ Historical tracking</li>
                         <li>✓ Priority support</li>
+                        <li>✓ <strong>10 AI questions/day</strong></li>
                     </ul>
-                    <a href="#" class="btn-price primary">Get Pro</a>
+                    <a href="#" class="btn-price primary">Start 7-Day Trial</a>
+                    <p class="trial-note">Credit card required • Cancel anytime</p>
                 </div>
 
                 <div class="price-card">
-                    <h3>Complete</h3>
+                    <h3>Premium</h3>
                     <div class="price">
                         <span class="amount">$14.99</span>
                         <span class="period">/month</span>
                     </div>
+                    <div class="price-subtitle">Monitor 50 Accounts</div>
                     <ul>
-                        <li>✓ All 26 platforms</li>
-                        <li>✓ Real-time monitoring</li>
-                        <li>✓ Instant alerts</li>
+                        <li>✓ Any 50 platforms/accounts</li>
+                        <li>✓ Checks every hour</li>
+                        <li>✓ Text + Email alerts</li>
+                        <li>✓ Instant shadowban detection</li>
+                        <li>✓ Recovery recommendations</li>
+                        <li>✓ Historical tracking</li>
                         <li>✓ API access</li>
-                        <li>✓ White-label reports</li>
+                        <li>✓ <strong>25 AI questions/day</strong></li>
                     </ul>
-                    <a href="#" class="btn-price">Get Complete</a>
+                    <a href="#" class="btn-price">Start 7-Day Trial</a>
+                    <p class="trial-note">Credit card required • Cancel anytime</p>
+                </div>
+            </div>
+
+            <div class="pricing-addon">
+                <div class="addon-card">
+                    <div class="addon-header">
+                        <span class="addon-icon">🤖</span>
+                        <div>
+                            <h3>Want Unlimited AI Questions?</h3>
+                            <p>Add Shadow AI Pro to any plan or use it standalone</p>
+                        </div>
+                    </div>
+                    <div class="addon-pricing">
+                        <div class="addon-option">
+                            <strong>As an Add-On:</strong>
+                            <span class="addon-price">+$9.99/mo</span>
+                            <p>Add to any monitoring plan above</p>
+                        </div>
+                        <div class="addon-divider">OR</div>
+                        <div class="addon-option">
+                            <strong>Standalone:</strong>
+                            <span class="addon-price">$9.99/mo</span>
+                            <p>Just the AI chatbot (no monitoring)</p>
+                        </div>
+                    </div>
+                    <div class="addon-features">
+                        <span>✓ 100 questions/day</span>
+                        <span>✓ Priority support</span>
+                        <span>✓ Advanced analysis</span>
+                        <span>✓ Custom strategies</span>
+                    </div>
+                    <a href="#shadow-ai-pro" class="btn-addon">Learn More About Shadow AI Pro</a>
                 </div>
             </div>
         </div>
@@ -656,39 +735,140 @@
             <h2 class="section-title">Frequently Asked Questions</h2>
             <p class="section-desc">Everything you need to know about shadow ban detection</p>
             
-            <div class="faq-grid">
-                <div class="faq-item">
-                    <h3 class="faq-q">🎯 How do probability scores work?</h3>
-                    <p class="faq-a">When platforms don't clearly state if you're shadow banned, our AI searches multiple online sources (platform data, third-party tools, user reports, engagement patterns) and analyzes 10+ factors to give you a confidence percentage. For example: "78% probability of shadow ban based on 12 factors." This helps you make informed decisions even when platforms are secretive.</p>
+            <div class="faq-accordion">
+                <div class="faq-item-accordion">
+                    <button class="faq-question">
+                        🎯 How do probability scores work?
+                        <span class="faq-toggle">+</span>
+                    </button>
+                    <div class="faq-answer">
+                        <p>When platforms don't clearly state if you're shadow banned, our AI searches multiple online sources (platform data, third-party tools, user reports, engagement patterns) and analyzes 10+ factors to give you a confidence percentage. For example: "78% probability of shadow ban based on 12 factors." This helps you make informed decisions even when platforms are secretive.</p>
+                    </div>
                 </div>
                 
-                <div class="faq-item">
-                    <h3 class="faq-q">⚡ How long does it take?</h3>
-                    <p class="faq-a">Most checks complete in 60 seconds or less. Shadow AI Pro users get instant results through our AI chatbot. Free users can use our manual checkers which also provide quick results.</p>
+                <div class="faq-item-accordion">
+                    <button class="faq-question">
+                        ⚡ How long does it take?
+                        <span class="faq-toggle">+</span>
+                    </button>
+                    <div class="faq-answer">
+                        <p>Most checks complete in 60 seconds or less. Shadow AI Pro users get instant results through our AI chatbot. Free users can use the post URL checker which provides quick probability scores.</p>
+                    </div>
                 </div>
                 
-                <div class="faq-item">
-                    <h3 class="faq-q">🔒 Is my data safe?</h3>
-                    <p class="faq-a">Absolutely! We only store your email and account info. We don't save your platform usernames or passwords. All checks are done in real-time, SSL encrypted, and results are not permanently stored.</p>
+                <div class="faq-item-accordion">
+                    <button class="faq-question">
+                        🔒 Is my data safe?
+                        <span class="faq-toggle">+</span>
+                    </button>
+                    <div class="faq-answer">
+                        <p>Absolutely! We only store your email and account info for monitoring. We never save your platform passwords. All checks are done in real-time, SSL encrypted, and we don't permanently store your post content or sensitive data.</p>
+                    </div>
                 </div>
                 
-                <div class="faq-item">
-                    <h3 class="faq-q">💰 Can I cancel anytime?</h3>
-                    <p class="faq-a">Yes! All plans are month-to-month with no contracts. Cancel anytime with one click, no questions asked. Shadow AI Pro includes a 7-day free trial with no credit card required.</p>
+                <div class="faq-item-accordion">
+                    <button class="faq-question">
+                        💰 Can I cancel anytime?
+                        <span class="faq-toggle">+</span>
+                    </button>
+                    <div class="faq-answer">
+                        <p>Yes! All plans are month-to-month with no contracts. Cancel anytime with one click, no questions asked. Your 7-day free trial requires a credit card, but you won't be charged if you cancel before the trial ends.</p>
+                    </div>
                 </div>
                 
-                <div class="faq-item">
-                    <h3 class="faq-q">🤖 What is Shadow AI Pro?</h3>
-                    <p class="faq-a">Shadow AI Pro is our AI-powered chatbot that gives you instant answers, probability scores based on multiple data points, and personalized recovery strategies. Get 100 questions per day for $9.99/mo with a 7-day free trial. It's perfect for frequent checkers who need AI-powered insights.</p>
+                <div class="faq-item-accordion">
+                    <button class="faq-question">
+                        🤖 What is Shadow AI Pro?
+                        <span class="faq-toggle">+</span>
+                    </button>
+                    <div class="faq-answer">
+                        <p>Shadow AI Pro is our AI-powered chatbot that gives you instant answers, probability scores based on multiple data points, and personalized recovery strategies. Get 100 questions per day for $9.99/mo. You can add it to any monitoring plan or use it standalone. Perfect for frequent checkers who need AI-powered insights.</p>
+                    </div>
                 </div>
                 
-                <div class="faq-item">
-                    <h3 class="faq-q">📊 Which platforms do you check?</h3>
-                    <p class="faq-a">We currently check 26 platforms including Twitter/X, Instagram, TikTok, Facebook, Reddit, LinkedIn, YouTube, Snapchat, Pinterest, Telegram, and more. We're constantly adding new platforms based on user requests. <a href="#platforms">See the full list</a></p>
+                <div class="faq-item-accordion">
+                    <button class="faq-question">
+                        📊 Which platforms do you check?
+                        <span class="faq-toggle">+</span>
+                    </button>
+                    <div class="faq-answer">
+                        <p>We currently check 26 platforms including Twitter/X, Instagram, TikTok, Facebook, Reddit, LinkedIn, YouTube, Snapchat, Pinterest, Telegram, and more. We're constantly adding new platforms based on user requests. <a href="#platforms">See the full list</a></p>
+                    </div>
+                </div>
+                
+                <div class="faq-item-accordion">
+                    <button class="faq-question">
+                        💳 Why do you need my credit card for the trial?
+                        <span class="faq-toggle">+</span>
+                    </button>
+                    <div class="faq-answer">
+                        <p>We require a credit card for the 7-day free trial to prevent abuse and ensure serious users. You won't be charged during the trial period. If you love the service, your subscription automatically continues at $9.99/mo after 7 days. Cancel anytime before the trial ends to avoid charges.</p>
+                    </div>
+                </div>
+                
+                <div class="faq-item-accordion">
+                    <button class="faq-question">
+                        📈 How do monitoring plans work?
+                        <span class="faq-toggle">+</span>
+                    </button>
+                    <div class="faq-answer">
+                        <p>All monitoring plans include ALL features (alerts, recovery tips, historical tracking). You pay based on how many accounts you want to monitor, not which platforms. Starter monitors 5 accounts daily, Pro monitors 15 accounts every 6 hours, and Premium monitors 50 accounts hourly. Switch platforms anytime!</p>
+                    </div>
+                </div>
+                
+                <div class="faq-item-accordion">
+                    <button class="faq-question">
+                        🔄 Can I switch plans later?
+                        <span class="faq-toggle">+</span>
+                    </button>
+                    <div class="faq-answer">
+                        <p>Yes! Upgrade or downgrade anytime. Changes take effect immediately, and we'll prorate your billing. Need more accounts? Upgrade to Pro or Premium. Need fewer? Downgrade to save money. No penalties, no hassle.</p>
+                    </div>
+                </div>
+                
+                <div class="faq-item-accordion">
+                    <button class="faq-question">
+                        🎓 What if I'm not shadow banned?
+                        <span class="faq-toggle">+</span>
+                    </button>
+                    <div class="faq-answer">
+                        <p>Great news! Our monitoring will keep watching your accounts to alert you if anything changes. Many users stay subscribed for peace of mind and proactive monitoring. We'll notify you immediately if we detect any issues, so you can act fast and protect your reach.</p>
+                    </div>
                 </div>
             </div>
         </div>
     </section>
+
+    <script>
+        // FAQ Accordion functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const faqItems = document.querySelectorAll('.faq-item-accordion');
+            
+            faqItems.forEach(item => {
+                const question = item.querySelector('.faq-question');
+                const answer = item.querySelector('.faq-answer');
+                const toggle = item.querySelector('.faq-toggle');
+                
+                question.addEventListener('click', () => {
+                    const isOpen = item.classList.contains('active');
+                    
+                    // Close all items
+                    faqItems.forEach(i => {
+                        i.classList.remove('active');
+                        i.querySelector('.faq-answer').style.maxHeight = null;
+                        i.querySelector('.faq-toggle').textContent = '+';
+                    });
+                    
+                    // Open clicked item if it was closed
+                    if (!isOpen) {
+                        item.classList.add('active');
+                        answer.style.maxHeight = answer.scrollHeight + 'px';
+                        toggle.textContent = '−';
+                    }
+                });
+            });
+        });
+    </script>
 
     <!-- Contact / Suggest Platform -->
     <section class="contact-section">
@@ -714,6 +894,31 @@
                                 <strong>Email Us Directly</strong>
                                 <p>Send platform suggestions or questions to our team</p>
                                 <a href="/cdn-cgi/l/email-protection#a9dadcd9d9c6dbdde9dac1c8cdc6decbc8c7cac1cccac287c0c6" class="btn-method"><span class="__cf_email__" data-cfemail="54272124243b262014273c35303b2336353a373c31373f7a3d3b">[email&#160;protected]</span></a>
+                            </div>
+                        </div>
+                        
+                        <div class="contact-method">
+                            <span class="method-icon">👤</span>
+                            <div>
+                                <strong>Connect with the Founder</strong>
+                                <p>Reach out directly to Andrew on social media</p>
+                                <div class="social-links">
+                                    <a href="https://x.com/Ghost081280" target="_blank" rel="noopener" class="social-link" title="Twitter/X">
+                                        <svg viewBox="0 0 24 24" fill="currentColor" width="24" height="24">
+                                            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                                        </svg>
+                                    </a>
+                                    <a href="https://www.linkedin.com/in/andrewcouch" target="_blank" rel="noopener" class="social-link" title="LinkedIn">
+                                        <svg viewBox="0 0 24 24" fill="currentColor" width="24" height="24">
+                                            <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                                        </svg>
+                                    </a>
+                                    <a href="https://github.com/Ghost081280" target="_blank" rel="noopener" class="social-link" title="GitHub">
+                                        <svg viewBox="0 0 24 24" fill="currentColor" width="24" height="24">
+                                            <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                                        </svg>
+                                    </a>
+                                </div>
                             </div>
                         </div>
                     </div>

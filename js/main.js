@@ -1,5 +1,57 @@
 // Main JavaScript for ShadowBanCheck.io Landing Page
 
+// Auto-detect IP address on page load
+document.addEventListener('DOMContentLoaded', () => {
+    detectIPAddress();
+});
+
+// Detect user's IP address
+async function detectIPAddress() {
+    const ipElement = document.getElementById('detected-ip');
+    if (!ipElement) return;
+    
+    try {
+        const response = await fetch('https://api.ipify.org?format=json');
+        const data = await response.json();
+        ipElement.textContent = data.ip;
+    } catch (error) {
+        ipElement.textContent = 'Unable to detect';
+        console.error('IP detection failed:', error);
+    }
+}
+
+// Full Spectrum Scan button
+const spectrumScanBtn = document.querySelector('.btn-spectrum-scan');
+if (spectrumScanBtn) {
+    spectrumScanBtn.addEventListener('click', () => {
+        const input = document.getElementById('spectrum-input');
+        const ip = document.getElementById('detected-ip').textContent;
+        
+        if (!input.value.trim()) {
+            alert('Please enter at least one username, email, phone number, or domain to scan.');
+            input.focus();
+            return;
+        }
+        
+        // Parse input
+        const userInput = input.value.trim();
+        
+        // Store data and redirect to payment/scan page
+        localStorage.setItem('spectrumScanData', JSON.stringify({
+            input: userInput,
+            ip: ip,
+            timestamp: new Date().toISOString()
+        }));
+        
+        // For now, show coming soon alert
+        // Later this will go to Stripe payment → scan results
+        alert('Full Spectrum Scan - $97\n\nThis feature launches next week!\n\nYou entered: ' + userInput + '\nYour IP: ' + ip + '\n\nWe\'ll scan all 36 platforms and email you a comprehensive PDF report.\n\nSign up for early access at launch!');
+        
+        // TODO: Redirect to payment page
+        // window.location.href = 'spectrum-scan-payment.html';
+    });
+}
+
 // Smooth scrolling for navigation links
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener('click', function (e) {

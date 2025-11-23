@@ -1,23 +1,26 @@
-/* Shadow AI Chat Component Styles */
+/* =============================================================================
+   SHADOW AI CHATBOT COMPONENT
+   Standalone component that uses main.css variables
+   ============================================================================= */
 
 /* Floating Button */
 .copilot-btn {
     position: fixed;
-    bottom: 2rem;
-    right: 2rem;
-    background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+    bottom: var(--space-xl);
+    right: var(--space-xl);
+    background: linear-gradient(135deg, var(--primary) 0%, #a855f7 100%);
     color: white;
     border: none;
-    border-radius: 2rem;
-    padding: 1rem 1.5rem;
+    border-radius: var(--radius-full);
+    padding: var(--space-md) var(--space-lg);
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: var(--space-sm);
     font-size: 1rem;
     font-weight: 600;
     cursor: pointer;
     box-shadow: 0 4px 16px rgba(99, 102, 241, 0.4);
-    transition: all 0.3s;
+    transition: all var(--transition-base);
     z-index: 999;
 }
 
@@ -37,20 +40,20 @@
 /* Chat Window */
 .copilot-chat {
     position: fixed;
-    bottom: 2rem;
-    right: 2rem;
+    bottom: var(--space-xl);
+    right: var(--space-xl);
     width: 400px;
     max-width: calc(100vw - 2rem);
     height: 600px;
     max-height: calc(100vh - 4rem);
-    background-color: var(--card-bg, #1a1a2e);
-    border: 1px solid var(--border-color, #2a2a3e);
-    border-radius: 1rem;
+    background-color: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
     display: flex;
     flex-direction: column;
     z-index: 1000;
-    transition: all 0.3s ease;
+    transition: all var(--transition-base);
 }
 
 .copilot-chat.hidden {
@@ -59,10 +62,10 @@
 
 /* Chat Header */
 .copilot-header {
-    background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+    background: linear-gradient(135deg, var(--primary) 0%, #a855f7 100%);
     color: white;
-    padding: 1rem 1.5rem;
-    border-radius: 1rem 1rem 0 0;
+    padding: var(--space-md) var(--space-lg);
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -71,7 +74,7 @@
 .copilot-title {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: var(--space-sm);
     font-weight: 600;
     font-size: 1.125rem;
 }
@@ -88,7 +91,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: background 0.3s;
+    transition: background var(--transition-base);
 }
 
 .copilot-close:hover {
@@ -99,10 +102,10 @@
 .copilot-messages {
     flex: 1;
     overflow-y: auto;
-    padding: 1.5rem;
+    padding: var(--space-lg);
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+    gap: var(--space-md);
 }
 
 /* Custom Scrollbar */
@@ -111,24 +114,24 @@
 }
 
 .copilot-messages::-webkit-scrollbar-track {
-    background: var(--bg-tertiary, #16213e);
+    background: var(--bg-tertiary);
     border-radius: 4px;
 }
 
 .copilot-messages::-webkit-scrollbar-thumb {
-    background: var(--primary-color, #6366f1);
+    background: var(--primary);
     border-radius: 4px;
 }
 
 .copilot-messages::-webkit-scrollbar-thumb:hover {
-    background: var(--primary-dark, #4f46e5);
+    background: var(--primary-dark);
 }
 
 /* Message Bubbles */
 .copilot-message {
     display: flex;
-    margin-bottom: 0.5rem;
-    animation: messageSlideIn 0.3s ease;
+    margin-bottom: var(--space-sm);
+    animation: messageSlideIn var(--transition-base);
 }
 
 @keyframes messageSlideIn {
@@ -152,27 +155,27 @@
 
 .message-content {
     max-width: 85%;
-    padding: 0.75rem 1rem;
-    border-radius: 1rem;
+    padding: var(--space-md);
+    border-radius: var(--radius-lg);
     line-height: 1.6;
     font-size: 0.9rem;
 }
 
 .copilot-message.user .message-content {
-    background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+    background: linear-gradient(135deg, var(--primary) 0%, #a855f7 100%);
     color: white;
-    border-bottom-right-radius: 0.25rem;
+    border-bottom-right-radius: var(--space-xs);
 }
 
 .copilot-message.assistant .message-content {
-    background-color: var(--bg-tertiary, #16213e);
-    color: var(--text-primary, #e0e0e0);
-    border-bottom-left-radius: 0.25rem;
+    background-color: var(--bg-tertiary);
+    color: var(--text);
+    border-bottom-left-radius: var(--space-xs);
 }
 
 /* Message Content Formatting */
 .message-content strong {
-    color: var(--primary-color, #a855f7);
+    color: #a855f7;
     font-weight: 700;
 }
 
@@ -181,12 +184,12 @@
 }
 
 .message-content ul {
-    margin: 0.5rem 0;
+    margin: var(--space-sm) 0;
     padding-left: 1.25rem;
 }
 
 .message-content li {
-    margin: 0.25rem 0;
+    margin: var(--space-xs) 0;
 }
 
 .message-content li.check {
@@ -199,7 +202,7 @@
 }
 
 .message-content a {
-    color: var(--primary-color, #a855f7);
+    color: #a855f7;
     text-decoration: underline;
 }
 
@@ -210,13 +213,13 @@
 /* Typing Indicator */
 .typing-indicator .message-content {
     display: flex;
-    gap: 0.25rem;
-    padding: 0.75rem 1rem;
+    gap: var(--space-xs);
+    padding: var(--space-md);
 }
 
 .typing-dots {
     display: flex;
-    gap: 0.25rem;
+    gap: var(--space-xs);
     align-items: center;
 }
 
@@ -224,7 +227,7 @@
     width: 8px;
     height: 8px;
     border-radius: 50%;
-    background-color: var(--primary-color, #6366f1);
+    background-color: var(--primary);
     animation: typingPulse 1.4s infinite;
 }
 
@@ -249,45 +252,45 @@
 
 /* Input Area */
 .copilot-input {
-    padding: 1rem;
-    border-top: 1px solid var(--border-color, #2a2a3e);
+    padding: var(--space-md);
+    border-top: 1px solid var(--border);
     display: flex;
-    gap: 0.5rem;
-    background-color: var(--bg-tertiary, #16213e);
-    border-radius: 0 0 1rem 1rem;
+    gap: var(--space-sm);
+    background-color: var(--bg-tertiary);
+    border-radius: 0 0 var(--radius-lg) var(--radius-lg);
 }
 
 .copilot-input input {
     flex: 1;
-    background-color: var(--card-bg, #1a1a2e);
-    border: 2px solid var(--border-color, #2a2a3e);
-    border-radius: 0.5rem;
-    color: var(--text-primary, #e0e0e0);
-    padding: 0.75rem 1rem;
+    background-color: var(--card);
+    border: 2px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    padding: var(--space-md);
     font-size: 0.9rem;
     font-family: inherit;
-    transition: border-color 0.3s;
+    transition: border-color var(--transition-base);
 }
 
 .copilot-input input:focus {
     outline: none;
-    border-color: var(--primary-color, #6366f1);
+    border-color: var(--primary);
 }
 
 .copilot-input input::placeholder {
-    color: var(--text-muted, #6b7280);
+    color: var(--text-muted);
 }
 
 .copilot-input button {
-    background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+    background: linear-gradient(135deg, var(--primary) 0%, #a855f7 100%);
     color: white;
     border: none;
-    border-radius: 0.5rem;
-    padding: 0.75rem 1.5rem;
+    border-radius: var(--radius-sm);
+    padding: var(--space-md) var(--space-lg);
     font-size: 0.9rem;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.3s;
+    transition: all var(--transition-base);
     white-space: nowrap;
 }
 
@@ -303,9 +306,9 @@
 /* Mobile Responsive */
 @media (max-width: 768px) {
     .copilot-btn {
-        bottom: 1rem;
-        right: 1rem;
-        padding: 0.75rem 1.25rem;
+        bottom: var(--space-md);
+        right: var(--space-md);
+        padding: var(--space-md) 1.25rem;
         font-size: 0.9rem;
     }
 

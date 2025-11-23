@@ -708,7 +708,114 @@ li {
 
 .spotlight-tag {
     display: inline-block;
-    background: rgba(99, 102, 241
+    background: rgba(99, 102, 241, 0.2);
+    color: var(--primary);
+    padding: var(--space-sm) var(--space-md);
+    border-radius: var(--radius-full);
+    font-size: 0.875rem;
+    font-weight: 600;
+    margin-bottom: var(--space-md);
+}
+
+.spotlight-content h2 {
+    font-size: 2.5rem;
+    margin-bottom: var(--space-md);
+}
+
+.lead {
+    font-size: 1.125rem;
+    color: var(--text-muted);
+    margin-bottom: var(--space-xl);
+}
+
+.features-list {
+    display: grid;
+    gap: var(--space-lg);
+    margin-bottom: var(--space-xl);
+}
+
+.feature-item {
+    display: flex;
+    gap: var(--space-md);
+}
+
+.feature-icon {
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+.feature-item strong {
+    display: block;
+    margin-bottom: var(--space-xs);
+    color: var(--text);
+}
+
+.feature-item p {
+    color: var(--text-muted);
+    font-size: 0.875rem;
+    margin: 0;
+}
+
+.spotlight-cta {
+    display: flex;
+    gap: var(--space-md);
+    flex-wrap: wrap;
+}
+
+/* Demo Chat */
+.spotlight-demo {
+    display: flex;
+    justify-content: center;
+}
+
+.demo-chat {
+    background: var(--input);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    width: 100%;
+    max-width: 400px;
+}
+
+.demo-header {
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: white;
+    padding: var(--space-md);
+    display: flex;
+    gap: var(--space-sm);
+    align-items: center;
+    font-weight: 600;
+}
+
+.demo-messages {
+    padding: var(--space-lg);
+    display: grid;
+    gap: var(--space-md);
+    min-height: 200px;
+}
+
+.demo-msg {
+    padding: var(--space-md);
+    border-radius: var(--radius-md);
+    max-width: 85%;
+}
+
+.demo-msg.user {
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: white;
+    margin-left: auto;
+    border-bottom-right-radius: var(--space-xs);
+}
+
+.demo-msg.ai {
+    background: var(--card);
+    color: var(--text-secondary);
+    border-bottom-left-radius: var(--space-xs);
+}
+
+/* =============================================================================
+   SECTIONS
+   ============================================================================= */
 .section {
     padding: var(--space-3xl) 0;
 }
@@ -1092,6 +1199,19 @@ li {
    RESPONSIVE DESIGN - LANDING PAGE
    ============================================================================= */
 @media (max-width: 768px) {
+    .spotlight-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .spotlight-demo {
+        order: -1;
+        margin-bottom: var(--space-xl);
+    }
+
+    .spotlight-content h2 {
+        font-size: 2rem;
+    }
+
     .platform-grid {
         grid-template-columns: 1fr;
     }

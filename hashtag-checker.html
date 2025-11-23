@@ -6,6 +6,7 @@
     <title>Hashtag Safety Checker - Check Banned Hashtags</title>
     <meta name="description" content="Check if your hashtags are banned on Instagram, TikTok, or Twitter. Free hashtag checker finds banned and restricted hashtags before you post.">
     <link rel="stylesheet" href="./css/hashtag-checker.css">
+    <link rel="stylesheet" href="./css/shadow-ai.css">
 </head>
 <body>
     <!-- Header -->
@@ -142,40 +143,31 @@
         </div>
     </main>
 
-    <!-- Claude Co-Pilot -->
-    <button id="claude-copilot-btn" class="copilot-btn">
+    <!-- Shadow AI Button -->
+    <button id="shadow-ai-btn" class="copilot-btn">
         <span class="copilot-emoji">🤖</span>
-        <span class="copilot-text">Ask Claude</span>
+        <span class="copilot-text">Shadow AI</span>
     </button>
 
-    <div id="claude-copilot" class="copilot-chat hidden">
+    <!-- Shadow AI Chat -->
+    <div id="shadow-ai-chat" class="copilot-chat hidden">
         <div class="copilot-header">
             <div class="copilot-title">
                 <span class="copilot-emoji">🤖</span>
-                <span>Hashtag Helper</span>
+                <span>Shadow AI</span>
             </div>
-            <button id="copilot-close" class="copilot-close">&times;</button>
+            <button id="shadow-ai-close" class="copilot-close">&times;</button>
         </div>
-        <div id="copilot-messages" class="copilot-messages">
-            <div class="copilot-message assistant">
-                <div class="message-content">
-                    <p>👋 Hi! I can help you with hashtag strategy!</p>
-                    <p>Ask me about:</p>
-                    <ul>
-                        <li>Why certain hashtags are banned</li>
-                        <li>Alternative hashtags to use</li>
-                        <li>Best practices for each platform</li>
-                        <li>How to build a hashtag strategy</li>
-                    </ul>
-                </div>
-            </div>
+        <div id="shadow-ai-messages" class="copilot-messages">
+            <!-- Messages populated by shadow-ai.js -->
         </div>
         <div class="copilot-input">
-            <input type="text" id="copilot-input-field" placeholder="Ask about hashtags...">
-            <button id="copilot-send">Send</button>
+            <input type="text" id="shadow-ai-input" placeholder="Ask about hashtags...">
+            <button id="shadow-ai-send">Send</button>
         </div>
     </div>
 
+    <script src="./js/shadow-ai.js"></script>
     <script src="./js/hashtag-checker.js"></script>
 </body>
 </html>

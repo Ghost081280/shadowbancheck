@@ -29,19 +29,19 @@ class ShadowAI {
         this.input.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') this.sendMessage();
         });
-
-        // Show welcome message when opened
-        this.chat.addEventListener('transitionend', () => {
-            if (this.chatOpen && this.messageHistory.length === 0) {
-                setTimeout(() => this.showWelcomeMessage(), 500);
-            }
-        });
     }
 
     openChat() {
+        if (this.chatOpen) return; // Already open
+        
         this.chatOpen = true;
         this.chat.classList.remove('hidden');
         this.input.focus();
+        
+        // Show welcome message only if no messages yet
+        if (this.messageHistory.length === 0) {
+            setTimeout(() => this.showWelcomeMessage(), 500);
+        }
     }
 
     closeChat() {
@@ -52,12 +52,13 @@ class ShadowAI {
     async showWelcomeMessage() {
         await this.typeMessage(
             `👋 Hi! I'm Shadow AI, your personal shadow ban detective.\n\n` +
-            `I can help you:\n` +
-            `• Check if you're shadow banned on any platform\n` +
-            `• Verify username & email visibility\n` +
-            `• Create personalized recovery plans\n` +
-            `• Answer questions about platform restrictions\n\n` +
-            `You have **${this.freeQuestionsToday - this.freeQuestionsUsed} free questions** today. Want unlimited access? Ask me about Shadow AI Pro!\n\n` +
+            `I use AI to search platforms and analyze multiple online factors to give you:\n` +
+            `• Real-time verification across 26 platforms\n` +
+            `• Probability scores when platforms aren't transparent\n` +
+            `• Personalized recovery strategies\n` +
+            `• Instant answers in 60 seconds or less\n\n` +
+            `You have **${this.freeQuestionsToday - this.freeQuestionsUsed} free questions** today.\n\n` +
+            `Want 100 questions/day + full AI analysis? **Shadow AI Pro is only $9.99/mo** with a 7-day free trial!\n\n` +
             `What would you like to check?`,
             'ai'
         );
@@ -108,11 +109,12 @@ class ShadowAI {
                 `I'd love to help you check that! 🔍\n\n` +
                 `With **Shadow AI Pro ($9.99/mo)**, I can:\n` +
                 `• Run live checks on your accounts right now\n` +
-                `• Check all 26 platforms we support\n` +
-                `• Give you a detailed recovery plan\n` +
-                `• Monitor your accounts 24/7\n\n` +
-                `**Free users:** I can give general advice, but I can't run live checks.\n\n` +
-                `Want to upgrade and get instant answers? It's only $9.99/mo with a 7-day free trial!`,
+                `• Search platforms + analyze online factors\n` +
+                `• Give you a **probability score** based on multiple data points\n` +
+                `• Create a personalized recovery plan\n` +
+                `• Check all 26 platforms we support\n\n` +
+                `**Free users:** I can give general advice, but I can't run live checks or provide probability scores.\n\n` +
+                `Want instant answers with AI analysis? Only $9.99/mo with a 7-day free trial!`,
                 'ai'
             );
             return;
@@ -128,12 +130,12 @@ class ShadowAI {
                 `• Give basic recovery tips\n\n` +
                 `**Shadow AI Pro ($9.99/mo):**\n` +
                 `• 100 questions per day (not 3!)\n` +
-                `• Live platform checks (real-time!)\n` +
+                `• Live platform checks + web analysis\n` +
+                `• **Probability scores** when platforms hide info\n` +
                 `• Personalized recovery strategies\n` +
                 `• Username & email verification\n` +
-                `• Full chat history\n` +
-                `• 24/7 availability\n\n` +
-                `Most users upgrade within minutes because they need real-time checks. Want to try it free for 7 days?`,
+                `• Results in 60 seconds or less\n\n` +
+                `Most users upgrade immediately because they need real answers with confidence scores, not guesses. Want to try it free for 7 days?`,
                 'ai'
             );
             return;
@@ -158,13 +160,13 @@ class ShadowAI {
             `Here's what you get for $9.99/month:\n\n` +
             `✓ **100 AI questions per day** (not just 3!)\n` +
             `✓ **Live platform checks** - verify accounts in real-time\n` +
-            `✓ **Personalized recovery strategies** - custom plans for your situation\n` +
+            `✓ **Probability scores** - AI analyzes multiple factors to give you confidence percentages\n` +
             `✓ **All 26 platforms** - Twitter, Instagram, TikTok, and more\n` +
-            `✓ **Full chat history** - review past conversations\n` +
-            `✓ **24/7 availability** - I never sleep!\n\n` +
+            `✓ **Results in 60 seconds** - instant answers, no waiting\n` +
+            `✓ **Personalized recovery plans** - custom strategies for your situation\n\n` +
             `**7-Day Free Trial** - No credit card required\n\n` +
-            `Most influencers, politicians, and sellers upgrade immediately because they need real answers, not guesses.\n\n` +
-            `Ready to protect your reach? [Start Free Trial →](#shadow-ai-pro)`,
+            `When platforms aren't transparent about bans, our AI searches multiple online sources and gives you a probability score so you know what's really happening.\n\n` +
+            `Ready to get real answers? [Start Free Trial →](#shadow-ai-pro)`,
             'ai'
         );
     }

@@ -1,246 +1,211 @@
-// Main JavaScript for ShadowBanCheck.io Landing Page
+// Main JavaScript for ShadowBanCheck.io
 
 // Auto-detect IP address on page load
 document.addEventListener('DOMContentLoaded', () => {
     detectIPAddress();
+    initializePlatformSelector();
+    initializeFullScanForm();
 });
 
 // Detect user's IP address
 async function detectIPAddress() {
     const ipElement = document.getElementById('detected-ip');
+    const ipInput = document.getElementById('ip-input');
+    
     if (!ipElement) return;
     
     try {
         const response = await fetch('https://api.ipify.org?format=json');
         const data = await response.json();
         ipElement.textContent = data.ip;
+        if (ipInput) {
+            ipInput.value = data.ip;
+        }
     } catch (error) {
         ipElement.textContent = 'Unable to detect';
         console.error('IP detection failed:', error);
     }
 }
 
-// Full Spectrum Scan button
-const spectrumScanBtn = document.querySelector('.btn-spectrum-scan');
-if (spectrumScanBtn) {
-    spectrumScanBtn.addEventListener('click', () => {
-        const input = document.getElementById('spectrum-input');
-        const ip = document.getElementById('detected-ip').textContent;
+// Platform Selector Logic
+function initializePlatformSelector() {
+    const checkboxes = document.querySelectorAll('.platform-checkbox input[type="checkbox"]');
+    const selectAllBtn = document.getElementById('select-all-btn');
+    const clearAllBtn = document.getElementById('clear-all-btn');
+    const selectedCountEl = document.getElementById('selected-count');
+    const startScanBtn = document.getElementById('start-scan-btn');
+
+    if (!checkboxes.length) return;
+
+    // Update count and button
+    function updateSelection() {
+        const checkedCount = document.querySelectorAll('.platform-checkbox input[type="checkbox"]:checked').length;
         
-        if (!input.value.trim()) {
-            alert('Please enter at least one username, email, phone number, or domain to scan.');
-            input.focus();
+        if (selectedCountEl) {
+            selectedCountEl.textContent = checkedCount;
+        }
+
+        if (startScanBtn) {
+            if (checkedCount > 0) {
+                startScanBtn.disabled = false;
+                
+                // Update pricing
+                let price, label;
+                if (checkedCount <= 5) {
+                    price = '$19';
+                    label = `Scan ${checkedCount} platform${checkedCount > 1 ? 's' : ''} - Quick Check`;
+                } else if (checkedCount <= 10) {
+                    price = '$39';
+                    label = `Scan ${checkedCount} platforms - Standard`;
+                } else if (checkedCount <= 20) {
+                    price = '$67';
+                    label = `Scan ${checkedCount} platforms - Deep Scan`;
+                } else {
+                    price = '$97';
+                    label = `Scan All ${checkedCount} Platforms - Full Spectrum`;
+                }
+                
+                startScanBtn.innerHTML = `
+                    <span class="btn-text">${label}</span>
+                    <span class="btn-price">${price}</span>
+                `;
+            } else {
+                startScanBtn.disabled = true;
+                startScanBtn.innerHTML = '<span class="btn-text">Select platforms to start</span>';
+            }
+        }
+    }
+
+    // Select All
+    if (selectAllBtn) {
+        selectAllBtn.addEventListener('click', () => {
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = true;
+            });
+            updateSelection();
+        });
+    }
+
+    // Clear All
+    if (clearAllBtn) {
+        clearAllBtn.addEventListener('click', () => {
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = false;
+            });
+            updateSelection();
+        });
+    }
+
+    // Listen to all checkbox changes
+    checkboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', updateSelection);
+    });
+
+    // Initial update
+    updateSelection();
+}
+
+// Full Scan Form Logic
+function initializeFullScanForm() {
+    const startScanBtn = document.getElementById('start-scan-btn');
+    
+    if (!startScanBtn) return;
+
+    startScanBtn.addEventListener('click', () => {
+        // Get all input values
+        const usernames = document.getElementById('usernames-input')?.value.trim() || '';
+        const emails = document.getElementById('emails-input')?.value.trim() || '';
+        const phones = document.getElementById('phones-input')?.value.trim() || '';
+        const domains = document.getElementById('domains-input')?.value.trim() || '';
+        const ip = document.getElementById('ip-input')?.value.trim() || '';
+
+        // Get selected platforms
+        const selectedPlatforms = Array.from(
+            document.querySelectorAll('.platform-checkbox input[type="checkbox"]:checked')
+        ).map(cb => cb.value);
+
+        // Validate inputs
+        if (!usernames && !emails && !phones && !domains && !ip) {
+            alert('Please enter at least one piece of information to scan (username, email, phone, domain, or IP).');
+            document.getElementById('usernames-input').focus();
             return;
         }
-        
-        // Parse input
-        const userInput = input.value.trim();
-        
-        // Store data and redirect to payment/scan page
-        localStorage.setItem('spectrumScanData', JSON.stringify({
-            input: userInput,
+
+        if (selectedPlatforms.length === 0) {
+            alert('Please select at least one platform to scan.');
+            return;
+        }
+
+        // Calculate price
+        let price;
+        const count = selectedPlatforms.length;
+        if (count <= 5) price = 19;
+        else if (count <= 10) price = 39;
+        else if (count <= 20) price = 67;
+        else price = 97;
+
+        // Store scan data
+        const scanData = {
+            usernames: usernames.split(',').map(s => s.trim()).filter(s => s),
+            emails: emails.split(',').map(s => s.trim()).filter(s => s),
+            phones: phones.split(',').map(s => s.trim()).filter(s => s),
+            domains: domains.split(',').map(s => s.trim()).filter(s => s),
             ip: ip,
+            platforms: selectedPlatforms,
+            price: price,
             timestamp: new Date().toISOString()
-        }));
-        
-        // For now, show coming soon alert
-        // Later this will go to Stripe payment → scan results
-        alert('Full Spectrum Scan - $97\n\nThis feature launches next week!\n\nYou entered: ' + userInput + '\nYour IP: ' + ip + '\n\nWe\'ll scan all 36 platforms and email you a comprehensive PDF report.\n\nSign up for early access at launch!');
-        
+        };
+
+        localStorage.setItem('fullScanData', JSON.stringify(scanData));
+
+        // For now, show alert (will redirect to payment page)
+        alert(
+            `Full Spectrum Scan - $${price}\n\n` +
+            `Platforms: ${count}\n` +
+            `Usernames: ${scanData.usernames.length}\n` +
+            `Emails: ${scanData.emails.length}\n` +
+            `Phones: ${scanData.phones.length}\n` +
+            `Domains: ${scanData.domains.length}\n\n` +
+            `This will launch next week! We'll scan all selected platforms and email you a comprehensive PDF report.\n\n` +
+            `Sign up for early access!`
+        );
+
         // TODO: Redirect to payment page
-        // window.location.href = 'spectrum-scan-payment.html';
+        // window.location.href = 'full-scan-payment.html';
     });
 }
 
-// Smooth scrolling for navigation links
+// Add IP functionality
+const addIpBtn = document.getElementById('add-ip-btn');
+if (addIpBtn) {
+    addIpBtn.addEventListener('click', () => {
+        const ip = prompt('Enter an IP address to check:');
+        if (ip && /^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/.test(ip)) {
+            const ipInput = document.getElementById('ip-input');
+            const currentIp = ipInput.value;
+            ipInput.value = currentIp + ', ' + ip;
+            ipInput.disabled = false;
+        } else if (ip) {
+            alert('Invalid IP address format. Please use format: 123.456.789.012');
+        }
+    });
+}
+
+// Smooth scrolling for anchor links
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener('click', function (e) {
+        const href = this.getAttribute('href');
+        if (href === '#') return;
+        
         e.preventDefault();
-        const target = document.querySelector(this.getAttribute('href'));
+        const target = document.querySelector(href);
+        
         if (target) {
             target.scrollIntoView({
                 behavior: 'smooth',
                 block: 'start'
             });
         }
-    });
-});
-
-// Claude Co-Pilot functionality
-const copilotBtn = document.getElementById('claude-copilot-btn');
-const copilotChat = document.getElementById('claude-copilot');
-const copilotClose = document.getElementById('copilot-close');
-const copilotInput = document.getElementById('copilot-input-field');
-const copilotSend = document.getElementById('copilot-send');
-const copilotMessages = document.getElementById('copilot-messages');
-
-// Toggle copilot chat
-copilotBtn.addEventListener('click', () => {
-    copilotChat.classList.remove('hidden');
-    copilotBtn.style.display = 'none';
-    copilotInput.focus();
-});
-
-copilotClose.addEventListener('click', () => {
-    copilotChat.classList.add('hidden');
-    copilotBtn.style.display = 'flex';
-});
-
-// Send message function
-async function sendMessage() {
-    const message = copilotInput.value.trim();
-    if (!message) return;
-
-    // Add user message to chat
-    addMessage(message, 'user');
-    copilotInput.value = '';
-
-    // Show typing indicator
-    const typingId = addTypingIndicator();
-
-    // Get AI response
-    try {
-        const response = await getCopilotResponse(message);
-        removeTypingIndicator(typingId);
-        addMessage(response, 'assistant');
-    } catch (error) {
-        removeTypingIndicator(typingId);
-        addMessage('Sorry, I encountered an error. Please try again.', 'assistant');
-    }
-
-    // Scroll to bottom
-    copilotMessages.scrollTop = copilotMessages.scrollHeight;
-}
-
-// Send message on button click
-copilotSend.addEventListener('click', sendMessage);
-
-// Send message on Enter key
-copilotInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
-        sendMessage();
-    }
-});
-
-// Add message to chat
-function addMessage(content, type) {
-    const messageDiv = document.createElement('div');
-    messageDiv.className = `copilot-message ${type}`;
-    
-    const contentDiv = document.createElement('div');
-    contentDiv.className = 'message-content';
-    
-    // Convert markdown-like formatting to HTML
-    const formattedContent = formatMessage(content);
-    contentDiv.innerHTML = formattedContent;
-    
-    messageDiv.appendChild(contentDiv);
-    copilotMessages.appendChild(messageDiv);
-    
-    copilotMessages.scrollTop = copilotMessages.scrollHeight;
-}
-
-// Format message with basic markdown support
-function formatMessage(text) {
-    // Convert newlines to <br>
-    text = text.replace(/\n/g, '<br>');
-    
-    // Convert **bold**
-    text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-    
-    // Convert bullet points
-    text = text.replace(/^- (.+)$/gm, '<li>$1</li>');
-    text = text.replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>');
-    
-    return text;
-}
-
-// Add typing indicator
-function addTypingIndicator() {
-    const typingDiv = document.createElement('div');
-    typingDiv.className = 'copilot-message assistant typing-indicator';
-    typingDiv.id = 'typing-' + Date.now();
-    
-    const contentDiv = document.createElement('div');
-    contentDiv.className = 'message-content';
-    contentDiv.innerHTML = '<span>•</span> <span>•</span> <span>•</span>';
-    
-    typingDiv.appendChild(contentDiv);
-    copilotMessages.appendChild(typingDiv);
-    copilotMessages.scrollTop = copilotMessages.scrollHeight;
-    
-    return typingDiv.id;
-}
-
-// Remove typing indicator
-function removeTypingIndicator(id) {
-    const indicator = document.getElementById(id);
-    if (indicator) {
-        indicator.remove();
-    }
-}
-
-// Get copilot response (integrates with Claude API)
-async function getCopilotResponse(message) {
-    // This will be connected to the Claude API
-    // For now, return intelligent responses based on keywords
-    
-    const lowerMessage = message.toLowerCase();
-    
-    // Shadow ban explanations
-    if (lowerMessage.includes('shadow ban') || lowerMessage.includes('shadowban')) {
-        return `A shadow ban is when a platform restricts your content's visibility without notifying you. Your account appears normal to you, but others can't see your posts, or they're hidden from searches and feeds.\n\n**Common types:**\n- Search ban (posts don't appear in searches)\n- Reply ban (replies hidden from others)\n- Engagement suppression (lower reach)\n\nWhat platform are you concerned about?`;
-    }
-    
-    // Twitter specific
-    if (lowerMessage.includes('twitter') || lowerMessage.includes('x.com')) {
-        return `**Twitter/X Shadow Bans:**\n\nThere are several types:\n- **Search Ban**: Tweets don't appear in searches\n- **Ghost Ban**: Replies hidden from non-followers\n- **Reply Deboosting**: Replies behind "Show more" button\n\nOur tool checks all of these! Try our Twitter checker to see your current status.`;
-    }
-    
-    // Reddit specific
-    if (lowerMessage.includes('reddit')) {
-        return `**Reddit Shadow Bans:**\n\nReddit has two types:\n- **Site-wide**: Your profile/posts are invisible to everyone\n- **Subreddit**: Hidden only in specific subreddits\n\nUse our Reddit checker to verify your status. It's usually quick to detect!`;
-    }
-    
-    // Email specific
-    if (lowerMessage.includes('email') || lowerMessage.includes('deliverability')) {
-        return `**Email Deliverability Issues:**\n\nYour emails might be going to spam if:\n- Domain is on a blacklist\n- Poor sender reputation\n- Missing SPF/DKIM records\n- High spam complaint rate\n\nOur email checker tests all of these factors and gives you specific fixes!`;
-    }
-    
-    // Recovery help
-    if (lowerMessage.includes('fix') || lowerMessage.includes('recover') || lowerMessage.includes('remove')) {
-        return `**Shadow Ban Recovery:**\n\n1. **Stop violating policies** - Review platform guidelines\n2. **Reduce activity** - Slow down posting/engaging for 48-72hrs\n3. **Remove automation** - Stop using third-party posting tools\n4. **Delete violations** - Remove content that might have triggered it\n5. **Appeal** - Contact platform support if it persists\n\nRecovery usually takes 48-72 hours. Want platform-specific advice?`;
-    }
-    
-    // Pricing questions
-    if (lowerMessage.includes('price') || lowerMessage.includes('cost') || lowerMessage.includes('free')) {
-        return `**Pricing:**\n- **Free**: 3 checks/month, basic reports\n- **Pro ($19.99/mo)**: Unlimited checks, all platforms, alerts\n- **Business ($49.99/mo)**: Team features, API access\n\nStart with free checks to see if it's helpful!`;
-    }
-    
-    // How it works
-    if (lowerMessage.includes('how') && (lowerMessage.includes('work') || lowerMessage.includes('check'))) {
-        return `**How Shadow Ban Checking Works:**\n\n1. You provide your username/email/phone\n2. We test visibility across multiple signals:\n   - Search result appearance\n   - Profile suggestions\n   - Content reachability\n   - Engagement patterns\n3. You get a detailed report with:\n   - Current status (✅ or ⚠️)\n   - Specific issues found\n   - Recovery recommendations\n\nTakes about 30 seconds per check!`;
-    }
-    
-    // Platforms
-    if (lowerMessage.includes('platform') || lowerMessage.includes('support')) {
-        return `**Supported Platforms:**\n\n**Live Now:**\n✅ Twitter/X\n✅ Reddit\n✅ Email\n\n**Coming Soon:**\n🔜 Instagram\n🔜 TikTok\n🔜 LinkedIn\n🔜 Phone Numbers\n🔜 Domain Reputation\n\nWant updates when new platforms launch?`;
-    }
-    
-    // Default helpful response
-    return `I can help you with:\n- Understanding shadow bans\n- Platform-specific restrictions\n- Recovery strategies\n- Using our checker tools\n- Pricing and features\n\nWhat would you like to know more about?`;
-}
-
-// Analytics tracking (placeholder for future implementation)
-function trackEvent(category, action, label) {
-    // Will integrate with analytics service
-    console.log('Event:', category, action, label);
-}
-
-// Track CTA clicks
-document.querySelectorAll('.btn-hero, .btn-primary, .btn-pricing').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-        trackEvent('CTA', 'click', e.target.textContent);
     });
 });
 
@@ -259,13 +224,23 @@ const observer = new IntersectionObserver((entries) => {
     });
 }, observerOptions);
 
-// Observe all platform cards and pricing cards
-document.querySelectorAll('.platform-card, .pricing-card, .step').forEach(el => {
+// Observe all platform cards, pricing cards, and steps
+document.querySelectorAll('.platform-card, .pricing-card, .step, .quick-option').forEach(el => {
     el.style.opacity = '0';
     el.style.transform = 'translateY(20px)';
     el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
     observer.observe(el);
 });
 
-// Mobile menu toggle (if we add hamburger menu later)
-// Placeholder for future mobile navigation
+// Track events (placeholder for analytics)
+function trackEvent(category, action, label) {
+    console.log('Event:', category, action, label);
+    // TODO: Integrate with Google Analytics or other tracking
+}
+
+// Track CTA clicks
+document.querySelectorAll('.btn-hero, .btn-primary, .btn-pricing, .btn-scan').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+        trackEvent('CTA', 'click', e.target.textContent || 'Button');
+    });
+});

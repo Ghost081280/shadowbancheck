@@ -513,7 +513,6 @@
                     <div class="price-subtitle">Monitor Up To 5 Accounts</div>
                     <ul>
                         <li>✓ Any 5 platforms/accounts</li>
-                        <li>✓ Choose your check frequency</li>
                         <li>✓ Text + Email alerts</li>
                         <li>✓ Instant shadowban detection</li>
                         <li>✓ Recovery recommendations</li>
@@ -533,7 +532,6 @@
                     <div class="price-subtitle">Monitor Up To 15 Accounts</div>
                     <ul>
                         <li>✓ Any 15 platforms/accounts</li>
-                        <li>✓ Choose your check frequency</li>
                         <li>✓ Text + Email alerts</li>
                         <li>✓ Instant shadowban detection</li>
                         <li>✓ Recovery recommendations</li>
@@ -554,7 +552,6 @@
                     <div class="price-subtitle">Monitor Up To 50 Accounts</div>
                     <ul>
                         <li>✓ Any 50 platforms/accounts</li>
-                        <li>✓ Choose your check frequency</li>
                         <li>✓ Text + Email alerts</li>
                         <li>✓ Instant shadowban detection</li>
                         <li>✓ Recovery recommendations</li>
@@ -572,9 +569,14 @@
                 <div class="extra-card extra-frequency">
                     <div class="extra-icon">🔄</div>
                     <div class="extra-content">
-                        <h4>Choose Your Check Frequency</h4>
-                        <p>Pick how often we check: <strong>Daily</strong>, <strong>Every 6 Hours</strong>, or <strong>Hourly</strong></p>
-                        <span class="extra-note">💡 More checks = higher monthly fee. Adjust anytime in your dashboard.</span>
+                        <h4>Select Your Check Frequency</h4>
+                        <p>After choosing your package above, select how often we monitor:</p>
+                        <p style="font-size: 0.8125rem; margin-top: 0.5rem; line-height: 1.6;">
+                            <strong>• Daily Checks</strong> (lowest cost)<br>
+                            <strong>• Every 6 Hours</strong> (moderate cost)<br>
+                            <strong>• Hourly Checks</strong> (highest cost)
+                        </p>
+                        <span class="extra-note">💡 More frequent checks = faster detection + higher monthly fee. Change anytime in your dashboard.</span>
                     </div>
                 </div>
 
@@ -596,7 +598,7 @@
                     <div class="enterprise-badge-small">🏢 Enterprise</div>
                     <div class="extra-icon">🏢</div>
                     <div class="extra-content">
-                        <h4>Monitor 100+ Accounts?</h4>
+                        <h4>Monitor Multiple Accounts?</h4>
                         <p>Custom pricing for agencies. Bulk features, team dashboards, dedicated support.</p>
                         <button class="btn-extra" onclick="alert('Contact form coming soon! Email us at support@shadowbancheck.io')">Contact Sales</button>
                         <span class="dashboard-badge">Dashboard Coming Soon</span>
@@ -903,7 +905,7 @@
                             <div>
                                 <strong>Email Us Directly</strong>
                                 <p>Send platform suggestions or questions to our team</p>
-                                <a href="/cdn-cgi/l/email-protection#a9dadcd9d9c6dbdde9dac1c8cdc6decbc8c7cac1cccac287c0c6" class="btn-method"><span class="__cf_email__" data-cfemail="54272124243b262014273c35303b2336353a373c31373f7a3d3b">[email&#160;protected]</span></a>
+                                <a href="mailto:andrew@ghost081280.com?subject=ShadowBanCheck.io Inquiry&body=Hi Andrew,%0D%0A%0D%0AI have a question about ShadowBanCheck.io:%0D%0A%0D%0A" class="btn-method">Launch Email</a>
                             </div>
                         </div>
                         
@@ -936,7 +938,7 @@
 
                 <div class="contact-form-container">
                     <h3>Send Us a Message</h3>
-                    <form class="contact-form" action="https://formspree.io/f/YOUR_FORM_ID" method="POST">
+                    <form class="contact-form" action="https://formspree.io/f/xrbgrqop" method="POST">
                         <div class="form-group">
                             <label for="contact-name">Name</label>
                             <input type="text" id="contact-name" name="name" placeholder="Your name" required>
@@ -1006,6 +1008,11 @@
             </div>
             <div class="footer-bottom">
                 <p>&copy; 2025 ShadowBanCheck.io. All rights reserved.</p>
+                <div class="footer-legal">
+                    <a href="#" onclick="alert('Terms of Service coming soon!'); return false;">Terms</a>
+                    <a href="#" onclick="alert('Privacy Policy coming soon!'); return false;">Privacy</a>
+                    <a href="#" onclick="showCookiePolicy(); return false;">Cookie Policy</a>
+                </div>
             </div>
         </div>
     </footer>
@@ -1039,7 +1046,54 @@
         </div>
     </div>
 
+    <!-- Cookie Policy Popup -->
+    <div id="cookie-popup" class="cookie-popup hidden">
+        <div class="cookie-content">
+            <div class="cookie-icon">🍪</div>
+            <div class="cookie-text">
+                <h3>We Use Cookies</h3>
+                <p>We use cookies to enhance your experience, analyze site traffic, and remember your preferences. By continuing to use ShadowBanCheck.io, you agree to our use of cookies.</p>
+            </div>
+            <div class="cookie-actions">
+                <button id="cookie-accept" class="btn-cookie-accept">Accept</button>
+                <button id="cookie-dismiss" class="btn-cookie-dismiss">Dismiss</button>
+            </div>
+        </div>
+    </div>
+
     <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script src="js/main.js"></script>
     <script src="js/shadow-ai.js"></script>
+    
+    <!-- Cookie Popup Script -->
+    <script>
+        // Show cookie popup only once on first visit
+        (function() {
+            const cookieAccepted = localStorage.getItem('shadowban_cookies_accepted');
+            
+            if (!cookieAccepted) {
+                // Show popup after 1 second
+                setTimeout(() => {
+                    document.getElementById('cookie-popup').classList.remove('hidden');
+                }, 1000);
+            }
+            
+            // Accept button
+            document.getElementById('cookie-accept').addEventListener('click', () => {
+                localStorage.setItem('shadowban_cookies_accepted', 'true');
+                document.getElementById('cookie-popup').classList.add('hidden');
+            });
+            
+            // Dismiss button
+            document.getElementById('cookie-dismiss').addEventListener('click', () => {
+                localStorage.setItem('shadowban_cookies_accepted', 'dismissed');
+                document.getElementById('cookie-popup').classList.add('hidden');
+            });
+        })();
+        
+        // Function to show cookie policy manually
+        function showCookiePolicy() {
+            alert('Cookie Policy\n\nWe use cookies to:\n• Remember your preferences\n• Analyze site traffic and usage\n• Improve your experience\n• Track free AI questions (3 per day)\n\nBy using ShadowBanCheck.io, you consent to our use of cookies. You can disable cookies in your browser settings, but some features may not work properly.\n\nFor more information, contact us at andrew@ghost081280.com');
+        }
+    </script>
 </body>
 </html>

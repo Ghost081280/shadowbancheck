@@ -98,152 +98,150 @@ checkBtn.addEventListener('click', async () => {
     }
     
     if (checksRemaining <= 0) {
-        alert('You\'ve used all your free checks for today! Upgrade to Creator for unlimited checks.');
+        alert('You\'ve used all your free checks for today. Upgrade to Creator plan!');
         window.location.href = 'index.html#pricing';
         return;
     }
     
-    // Show loading state
-    checkBtn.disabled = true;
-    checkBtn.querySelector('.btn-text').textContent = 'Checking...';
+    // Analyze hashtags
+    currentResults = hashtags.map(tag => analyzeHashtag(tag));
     
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    // Check hashtags
-    const results = checkHashtags(hashtags);
-    currentResults = results;
-    
-    // Update checks remaining
+    // Decrement checks
     checksRemaining--;
     updateChecksRemaining();
     
     // Display results
-    displayResults(results);
-    
-    // Reset button
-    checkBtn.disabled = false;
-    checkBtn.querySelector('.btn-text').textContent = 'Check Hashtags';
+    displayResults();
     
     // Scroll to results
     resultsSection.scrollIntoView({ behavior: 'smooth' });
 });
 
-// Check hashtags against database
-function checkHashtags(hashtags) {
-    return hashtags.map(tag => {
-        const platforms = {
-            instagram: checkPlatform(tag, 'instagram'),
-            tiktok: checkPlatform(tag, 'tiktok'),
-            twitter: checkPlatform(tag, 'twitter')
-        };
-        
-        // Determine overall status
-        let status = 'safe';
-        if (Object.values(platforms).some(p => p === 'banned')) {
-            status = 'banned';
-        } else if (Object.values(platforms).some(p => p === 'restricted')) {
-            status = 'restricted';
-        }
-        
-        return {
-            tag: tag,
-            status: status,
-            platforms: platforms
-        };
-    });
+function analyzeHashtag(tag) {
+    const result = {
+        tag: tag,
+        status: 'safe',
+        platforms: {
+            instagram: 'safe',
+            tiktok: 'safe',
+            twitter: 'safe'
+        },
+        message: 'This hashtag is safe to use'
+    };
+    
+    // Check if banned on each platform
+    if (BANNED_HASHTAGS.instagram.includes(tag)) {
+        result.platforms.instagram = 'banned';
+        result.status = 'banned';
+    } else if (RESTRICTED_HASHTAGS.instagram.includes(tag)) {
+        result.platforms.instagram = 'restricted';
+        result.status = result.status === 'banned' ? 'banned' : 'restricted';
+    }
+    
+    if (BANNED_HASHTAGS.tiktok.includes(tag)) {
+        result.platforms.tiktok = 'banned';
+        result.status = 'banned';
+    } else if (RESTRICTED_HASHTAGS.tiktok.includes(tag)) {
+        result.platforms.tiktok = 'restricted';
+        result.status = result.status === 'banned' ? 'banned' : 'restricted';
+    }
+    
+    if (BANNED_HASHTAGS.twitter.includes(tag)) {
+        result.platforms.twitter = 'banned';
+        result.status = 'banned';
+    } else if (RESTRICTED_HASHTAGS.twitter.includes(tag)) {
+        result.platforms.twitter = 'restricted';
+        result.status = result.status === 'banned' ? 'banned' : 'restricted';
+    }
+    
+    // Update message based on status
+    if (result.status === 'banned') {
+        const bannedPlatforms = [];
+        if (result.platforms.instagram === 'banned') bannedPlatforms.push('Instagram');
+        if (result.platforms.tiktok === 'banned') bannedPlatforms.push('TikTok');
+        if (result.platforms.twitter === 'banned') bannedPlatforms.push('Twitter');
+        result.message = `Banned on ${bannedPlatforms.join(', ')}`;
+    } else if (result.status === 'restricted') {
+        const restrictedPlatforms = [];
+        if (result.platforms.instagram === 'restricted') restrictedPlatforms.push('Instagram');
+        if (result.platforms.tiktok === 'restricted') restrictedPlatforms.push('TikTok');
+        if (result.platforms.twitter === 'restricted') restrictedPlatforms.push('Twitter');
+        result.message = `Restricted on ${restrictedPlatforms.join(', ')}`;
+    }
+    
+    return result;
 }
 
-function checkPlatform(tag, platform) {
-    if (BANNED_HASHTAGS[platform] && BANNED_HASHTAGS[platform].includes(tag)) {
-        return 'banned';
-    }
-    if (RESTRICTED_HASHTAGS[platform] && RESTRICTED_HASHTAGS[platform].includes(tag)) {
-        return 'restricted';
-    }
-    return 'safe';
-}
-
-// Display results
-function displayResults(results) {
+function displayResults() {
     // Show results section
     resultsSection.classList.remove('hidden');
     
-    // Update summary
-    const safeCount = results.filter(r => r.status === 'safe').length;
-    const bannedCount = results.filter(r => r.status === 'banned').length;
-    const restrictedCount = results.filter(r => r.status === 'restricted').length;
+    // Calculate counts
+    const safeCount = currentResults.filter(r => r.status === 'safe').length;
+    const bannedCount = currentResults.filter(r => r.status === 'banned').length;
+    const restrictedCount = currentResults.filter(r => r.status === 'restricted').length;
     
+    // Update summary
     safeCountEl.textContent = safeCount;
     bannedCountEl.textContent = bannedCount;
     restrictedCountEl.textContent = restrictedCount;
     
-    // Display individual results
+    // Clear and populate results list
     resultsList.innerHTML = '';
-    results.forEach(result => {
-        const resultEl = createResultElement(result);
-        resultsList.appendChild(resultEl);
+    
+    currentResults.forEach(result => {
+        const resultItem = createResultItem(result);
+        resultsList.appendChild(resultItem);
     });
 }
 
-function createResultElement(result) {
-    const div = document.createElement('div');
-    div.className = `result-item ${result.status}`;
+function createResultItem(result) {
+    const item = document.createElement('div');
+    item.className = `result-item ${result.status}`;
     
-    const statusIcons = {
-        safe: '✅',
-        banned: '❌',
-        restricted: '⚠️'
-    };
+    const icon = result.status === 'safe' ? '✅' : 
+                 result.status === 'banned' ? '🚫' : '⚠️';
     
-    const statusText = {
-        safe: 'Safe to use',
-        banned: 'Banned on one or more platforms',
-        restricted: 'Restricted - may limit reach'
-    };
-    
-    const platformHTML = `
-        <div class="result-platforms">
-            <span class="platform-status ${result.platforms.instagram}">
-                📸 ${result.platforms.instagram === 'safe' ? '✓' : result.platforms.instagram === 'banned' ? '✗' : '⚠'}
-            </span>
-            <span class="platform-status ${result.platforms.tiktok}">
-                🎵 ${result.platforms.tiktok === 'safe' ? '✓' : result.platforms.tiktok === 'banned' ? '✗' : '⚠'}
-            </span>
-            <span class="platform-status ${result.platforms.twitter}">
-                🐦 ${result.platforms.twitter === 'safe' ? '✓' : result.platforms.twitter === 'banned' ? '✗' : '⚠'}
-            </span>
-        </div>
-    `;
-    
-    div.innerHTML = `
+    item.innerHTML = `
         <div class="result-left">
-            <span class="result-icon">${statusIcons[result.status]}</span>
+            <div class="result-icon">${icon}</div>
             <div class="result-info">
                 <div class="result-hashtag">#${result.tag}</div>
-                <div class="result-status">${statusText[result.status]}</div>
-                ${platformHTML}
+                <div class="result-status">${result.message}</div>
+                <div class="result-platforms">
+                    <span class="platform-status ${result.platforms.instagram}">
+                        📸 ${result.platforms.instagram}
+                    </span>
+                    <span class="platform-status ${result.platforms.tiktok}">
+                        🎵 ${result.platforms.tiktok}
+                    </span>
+                    <span class="platform-status ${result.platforms.twitter}">
+                        🐦 ${result.platforms.twitter}
+                    </span>
+                </div>
             </div>
         </div>
         <div class="result-right">
-            <button class="alternatives-btn ${result.status === 'safe' ? 'pro-only' : ''}" 
-                    ${result.status === 'safe' ? 'disabled' : ''}>
-                ${result.status === 'safe' ? 'No alternatives needed' : 'Get Alternatives (Pro)'}
+            <button class="alternatives-btn pro-only" disabled>
+                Alternatives (Pro)
             </button>
         </div>
     `;
     
-    return div;
+    return item;
 }
 
-// Update checks remaining display
 function updateChecksRemaining() {
-    checksRemainingDisplay.textContent = `${checksRemaining} free checks left today`;
+    checksRemainingDisplay.textContent = `${checksRemaining} free check${checksRemaining !== 1 ? 's' : ''} left today`;
+    
+    // Store in localStorage
     localStorage.setItem('hashtagChecksRemaining', checksRemaining);
     localStorage.setItem('hashtagLastCheckDate', new Date().toDateString());
+    
+    // Disable check button if no checks remaining
+    updateHashtagCount();
 }
 
-// Load checks remaining from localStorage
 function loadChecksRemaining() {
     const lastCheckDate = localStorage.getItem('hashtagLastCheckDate');
     const today = new Date().toDateString();
@@ -329,115 +327,6 @@ function generateExportText() {
     
     text += '\n--\nGenerated by ShadowBanCheck.io';
     return text;
-}
-
-// Claude Co-Pilot (reuse from other pages)
-const copilotBtn = document.getElementById('claude-copilot-btn');
-const copilotChat = document.getElementById('claude-copilot');
-const copilotClose = document.getElementById('copilot-close');
-const copilotInput = document.getElementById('copilot-input-field');
-const copilotSend = document.getElementById('copilot-send');
-const copilotMessages = document.getElementById('copilot-messages');
-
-copilotBtn?.addEventListener('click', () => {
-    copilotChat.classList.remove('hidden');
-    copilotBtn.style.display = 'none';
-    copilotInput.focus();
-});
-
-copilotClose?.addEventListener('click', () => {
-    copilotChat.classList.add('hidden');
-    copilotBtn.style.display = 'flex';
-});
-
-async function sendMessage() {
-    const message = copilotInput.value.trim();
-    if (!message) return;
-    
-    addMessage(message, 'user');
-    copilotInput.value = '';
-    
-    const typingId = addTypingIndicator();
-    
-    try {
-        const response = await getCopilotResponse(message);
-        removeTypingIndicator(typingId);
-        addMessage(response, 'assistant');
-    } catch (error) {
-        removeTypingIndicator(typingId);
-        addMessage('Sorry, I encountered an error.', 'assistant');
-    }
-    
-    copilotMessages.scrollTop = copilotMessages.scrollHeight;
-}
-
-copilotSend?.addEventListener('click', sendMessage);
-copilotInput?.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') sendMessage();
-});
-
-function addMessage(content, type) {
-    const messageDiv = document.createElement('div');
-    messageDiv.className = `copilot-message ${type}`;
-    
-    const contentDiv = document.createElement('div');
-    contentDiv.className = 'message-content';
-    contentDiv.innerHTML = formatMessage(content);
-    
-    messageDiv.appendChild(contentDiv);
-    copilotMessages.appendChild(messageDiv);
-    copilotMessages.scrollTop = copilotMessages.scrollHeight;
-}
-
-function formatMessage(text) {
-    text = text.replace(/\n/g, '<br>');
-    text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-    return text;
-}
-
-function addTypingIndicator() {
-    const typingDiv = document.createElement('div');
-    typingDiv.className = 'copilot-message assistant';
-    typingDiv.id = 'typing-' + Date.now();
-    
-    const contentDiv = document.createElement('div');
-    contentDiv.className = 'message-content';
-    contentDiv.textContent = '...';
-    
-    typingDiv.appendChild(contentDiv);
-    copilotMessages.appendChild(typingDiv);
-    
-    return typingDiv.id;
-}
-
-function removeTypingIndicator(id) {
-    document.getElementById(id)?.remove();
-}
-
-async function getCopilotResponse(message) {
-    const lowerMessage = message.toLowerCase();
-    
-    if (lowerMessage.includes('why') && lowerMessage.includes('banned')) {
-        return `**Why Hashtags Get Banned:**\n\n- **Spam abuse**: Overused by bots and spammers\n- **Inappropriate content**: Associated with adult/harmful content\n- **Community violations**: Used to spread misinformation\n- **Temporary bans**: Some hashtags are banned then unbanned\n\nHashtags like #sexy, #ass, #porn are permanently banned on Instagram. Others like #fitfam were temporarily banned but are now safe.`;
-    }
-    
-    if (lowerMessage.includes('alternative') || lowerMessage.includes('instead')) {
-        return `**Finding Alternative Hashtags:**\n\n1. Use niche variations (e.g., #fitnessjourney instead of #fitfam)\n2. Mix popular + specific (e.g., #weightlifting + #strengthtraining)\n3. Research competitors' hashtags\n4. Use platform-specific trending tags\n\n**Pro tip**: Upgrade to Creator plan to get AI-powered alternative suggestions for every banned hashtag!`;
-    }
-    
-    if (lowerMessage.includes('instagram') || lowerMessage.includes('ig')) {
-        return `**Instagram Hashtag Strategy:**\n\n- Use 5-10 hashtags per post (not 30)\n- Mix popularity levels (1 big + 4 medium + 5 niche)\n- Avoid ALL trending hashtags\n- Research your niche specifically\n- Check hashtags BEFORE posting\n\nInstagram has the strictest bans - thousands of hashtags are blocked!`;
-    }
-    
-    if (lowerMessage.includes('tiktok')) {
-        return `**TikTok Hashtag Strategy:**\n\n- Use 3-5 relevant hashtags\n- Avoid overused viral tags (#fyp, #foryou)\n- Focus on niche-specific tags\n- Use trending sounds + niche hashtags\n- Mix branded + generic tags\n\nTikTok cares more about video content than hashtags, but banned tags still hurt!`;
-    }
-    
-    if (lowerMessage.includes('how many')) {
-        return `**Optimal Hashtag Count:**\n\n- **Instagram**: 5-10 hashtags (quality > quantity)\n- **TikTok**: 3-5 hashtags\n- **Twitter**: 1-2 hashtags max\n\nUsing too many hashtags looks spammy. Focus on relevance!`;
-    }
-    
-    return `I can help you with:\n- Why hashtags get banned\n- Platform-specific strategies\n- How to find alternatives\n- Best practices for engagement\n\nWhat would you like to know?`;
 }
 
 // Initialize

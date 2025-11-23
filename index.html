@@ -137,31 +137,79 @@
                             <span>🤖</span>
                             <span>Shadow AI Pro</span>
                         </div>
-                        <div class="demo-messages">
-                            <div class="demo-msg user">Can you help me check if I'm shadow banned?</div>
-                            <div class="demo-msg ai typing-animation">
-                                <span class="typing-dots"><span>.</span><span>.</span><span>.</span></span>
-                            </div>
-                            <div class="demo-msg ai" style="display: none;" id="demo-response">
-                                <strong>Absolutely!</strong> I can run live checks on your accounts right now.<br><br>
-                                With <strong>Shadow AI Pro ($9.99/mo)</strong>, I can verify your visibility across all 26 platforms, check username/email status, and create a personalized recovery plan.<br><br>
-                                You get 100 questions per day, real-time verification, and 24/7 support. Want to start your free trial?
-                            </div>
+                        <div class="demo-messages" id="demo-chat-messages">
+                            <!-- Messages will appear here with animation -->
                         </div>
-                        <script>
-                            // Animate demo response
-                            setTimeout(() => {
-                                document.querySelector('.demo-msg.typing-animation').style.display = 'none';
-                                const response = document.getElementById('demo-response');
-                                response.style.display = 'block';
-                                response.style.animation = 'slideIn 0.5s ease';
-                            }, 2000);
-                        </script>
                     </div>
                 </div>
             </div>
         </div>
     </section>
+
+    <script>
+        // Animate the demo chat
+        document.addEventListener('DOMContentLoaded', function() {
+            const demoMessages = document.getElementById('demo-chat-messages');
+            if (!demoMessages) return;
+
+            const messages = [
+                {
+                    type: 'user',
+                    text: 'Can you help me check if I\'m shadow banned?',
+                    delay: 500
+                },
+                {
+                    type: 'ai',
+                    text: '<strong>Absolutely!</strong> I can run live checks on your accounts right now.<br><br>With <strong>Shadow AI Pro ($9.99/mo)</strong>, I can verify your visibility across all 26 platforms, check username/email status, and create a personalized recovery plan.<br><br>You get 100 questions per day, real-time verification, and 24/7 support. Want to start your free trial?',
+                    delay: 2500
+                }
+            ];
+
+            let currentMessage = 0;
+
+            function showNextMessage() {
+                if (currentMessage >= messages.length) return;
+
+                const msg = messages[currentMessage];
+                
+                setTimeout(() => {
+                    // Show typing indicator first for AI messages
+                    if (msg.type === 'ai') {
+                        const typing = document.createElement('div');
+                        typing.className = 'demo-msg ai typing-animation';
+                        typing.innerHTML = '<span class="typing-dots"><span>.</span><span>.</span><span>.</span></span>';
+                        demoMessages.appendChild(typing);
+
+                        // Remove typing and show message after delay
+                        setTimeout(() => {
+                            typing.remove();
+                            const msgDiv = document.createElement('div');
+                            msgDiv.className = `demo-msg ${msg.type}`;
+                            msgDiv.innerHTML = msg.text;
+                            msgDiv.style.animation = 'slideIn 0.5s ease';
+                            demoMessages.appendChild(msgDiv);
+                            
+                            currentMessage++;
+                            showNextMessage();
+                        }, 1500);
+                    } else {
+                        // Show user message immediately
+                        const msgDiv = document.createElement('div');
+                        msgDiv.className = `demo-msg ${msg.type}`;
+                        msgDiv.innerHTML = msg.text;
+                        msgDiv.style.animation = 'slideIn 0.5s ease';
+                        demoMessages.appendChild(msgDiv);
+                        
+                        currentMessage++;
+                        showNextMessage();
+                    }
+                }, msg.delay);
+            }
+
+            // Start the animation
+            showNextMessage();
+        });
+    </script>
 
     <!-- Platforms -->
     <section id="platforms" class="platforms">

@@ -2609,3 +2609,292 @@ li {
         padding: var(--space-xl);
     }
 }
+
+/* =============================================================================
+   PRICING ADDON SECTION
+   ============================================================================= */
+.price-subtitle {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    margin-bottom: var(--space-lg);
+    font-weight: 500;
+}
+
+.trial-note {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-top: var(--space-sm);
+    text-align: center;
+}
+
+.pricing-addon {
+    margin-top: var(--space-3xl);
+}
+
+.addon-card {
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(168, 85, 247, 0.1));
+    border: 2px solid var(--primary);
+    border-radius: var(--radius-xl);
+    padding: var(--space-2xl);
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.addon-header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-lg);
+    margin-bottom: var(--space-xl);
+}
+
+.addon-icon {
+    font-size: 3rem;
+    flex-shrink: 0;
+}
+
+.addon-header h3 {
+    font-size: 1.75rem;
+    margin: 0 0 0.5rem 0;
+    color: var(--text);
+}
+
+.addon-header p {
+    font-size: 1rem;
+    color: var(--text-muted);
+    margin: 0;
+}
+
+.addon-pricing {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    gap: var(--space-xl);
+    margin-bottom: var(--space-xl);
+    padding: var(--space-xl);
+    background: var(--card);
+    border-radius: var(--radius-lg);
+}
+
+.addon-option {
+    text-align: center;
+}
+
+.addon-option strong {
+    display: block;
+    font-size: 1.125rem;
+    margin-bottom: var(--space-sm);
+    color: var(--text);
+}
+
+.addon-price {
+    display: block;
+    font-size: 2rem;
+    font-weight: 900;
+    color: var(--primary);
+    margin-bottom: var(--space-sm);
+}
+
+.addon-option p {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    margin: 0;
+}
+
+.addon-divider {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-muted);
+}
+
+.addon-features {
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+    gap: var(--space-md);
+    margin-bottom: var(--space-xl);
+    font-size: 0.9375rem;
+    color: var(--text-muted);
+}
+
+.btn-addon {
+    display: block;
+    width: 100%;
+    max-width: 400px;
+    margin: 0 auto;
+    padding: var(--space-md) var(--space-xl);
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: white;
+    text-align: center;
+    border-radius: var(--radius-md);
+    font-weight: 700;
+    transition: all var(--transition-base);
+    text-decoration: none;
+}
+
+.btn-addon:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(99, 102, 241, 0.3);
+}
+
+@media (max-width: 768px) {
+    .addon-header {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .addon-pricing {
+        flex-direction: column;
+        gap: var(--space-lg);
+    }
+    
+    .addon-divider {
+        transform: rotate(90deg);
+    }
+    
+    .addon-features {
+        flex-direction: column;
+        text-align: center;
+    }
+}
+
+/* Demo chat scrolling */
+.demo-messages {
+    overflow-y: auto;
+    scroll-behavior: smooth;
+}
+
+/* =============================================================================
+   CENTER ALL SECTION TITLES & DESCRIPTIONS
+   ============================================================================= */
+.section-title {
+    text-align: center;
+}
+
+.section-desc {
+    text-align: center;
+}
+
+/* =============================================================================
+   FAQ ACCORDION STYLE
+   ============================================================================= */
+.faq-accordion {
+    max-width: 900px;
+    margin: 0 auto;
+    margin-top: var(--space-2xl);
+}
+
+.faq-item-accordion {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--space-md);
+    overflow: hidden;
+    transition: all var(--transition-base);
+}
+
+.faq-item-accordion:hover {
+    border-color: var(--primary);
+}
+
+.faq-item-accordion.active {
+    border-color: var(--primary);
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+}
+
+.faq-question {
+    width: 100%;
+    text-align: left;
+    padding: var(--space-lg) var(--space-xl);
+    background: none;
+    border: none;
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--text);
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: inherit;
+    transition: all var(--transition-base);
+}
+
+.faq-question:hover {
+    color: var(--primary);
+}
+
+.faq-toggle {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--primary);
+    flex-shrink: 0;
+    margin-left: var(--space-md);
+    transition: transform var(--transition-base);
+}
+
+.faq-item-accordion.active .faq-toggle {
+    transform: rotate(45deg);
+}
+
+.faq-answer {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+}
+
+.faq-answer p {
+    padding: 0 var(--space-xl) var(--space-lg) var(--space-xl);
+    color: var(--text-muted);
+    line-height: 1.6;
+    margin: 0;
+}
+
+.faq-answer a {
+    color: var(--primary);
+    text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+    .faq-question {
+        font-size: 1rem;
+        padding: var(--space-md) var(--space-lg);
+    }
+    
+    .faq-answer p {
+        padding: 0 var(--space-lg) var(--space-md) var(--space-lg);
+        font-size: 0.9375rem;
+    }
+}
+
+/* =============================================================================
+   SOCIAL LINKS IN CONTACT
+   ============================================================================= */
+.social-links {
+    display: flex;
+    gap: var(--space-md);
+    margin-top: var(--space-md);
+}
+
+.social-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    background: var(--card);
+    border: 2px solid var(--border);
+    border-radius: var(--radius-md);
+    color: var(--text);
+    transition: all var(--transition-base);
+}
+
+.social-link:hover {
+    border-color: var(--primary);
+    background: var(--primary);
+    color: white;
+    transform: translateY(-2px);
+}
+
+.social-link svg {
+    width: 20px;
+    height: 20px;
+}

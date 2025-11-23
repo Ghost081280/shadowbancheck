@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Check Results - ShadowBanCheck.io</title>
     <link rel="stylesheet" href="css/results.css">
+    <link rel="stylesheet" href="css/shadow-ai.css">
 </head>
 <body>
     <!-- Header -->
@@ -73,40 +74,31 @@
         </div>
     </main>
 
-    <!-- Claude Co-Pilot -->
-    <button id="claude-copilot-btn" class="copilot-btn">
+    <!-- Shadow AI Button -->
+    <button id="shadow-ai-btn" class="copilot-btn">
         <span class="copilot-emoji">🤖</span>
-        <span class="copilot-text">Ask Claude</span>
+        <span class="copilot-text">Shadow AI</span>
     </button>
 
-    <div id="claude-copilot" class="copilot-chat hidden">
+    <!-- Shadow AI Chat -->
+    <div id="shadow-ai-chat" class="copilot-chat hidden">
         <div class="copilot-header">
             <div class="copilot-title">
                 <span class="copilot-emoji">🤖</span>
-                <span>Results Co-Pilot</span>
+                <span>Shadow AI</span>
             </div>
-            <button id="copilot-close" class="copilot-close">&times;</button>
+            <button id="shadow-ai-close" class="copilot-close">&times;</button>
         </div>
-        <div id="copilot-messages" class="copilot-messages">
-            <div class="copilot-message assistant">
-                <div class="message-content">
-                    <p>👋 I can help you understand your results!</p>
-                    <p>Ask me about:</p>
-                    <ul>
-                        <li>What specific checks mean</li>
-                        <li>How to fix issues</li>
-                        <li>Why you might be shadow banned</li>
-                        <li>Recovery strategies</li>
-                    </ul>
-                </div>
-            </div>
+        <div id="shadow-ai-messages" class="copilot-messages">
+            <!-- Messages populated by shadow-ai.js -->
         </div>
         <div class="copilot-input">
-            <input type="text" id="copilot-input-field" placeholder="Ask about your results...">
-            <button id="copilot-send">Send</button>
+            <input type="text" id="shadow-ai-input" placeholder="Ask about your results...">
+            <button id="shadow-ai-send">Send</button>
         </div>
     </div>
 
+    <script src="js/shadow-ai.js"></script>
     <script src="js/results.js"></script>
 </body>
 </html>

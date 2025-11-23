@@ -37,15 +37,15 @@
     font-family: inherit;
 }
 
-/* Chat Window */
+/* Chat Window - Opens ABOVE the button */
 .copilot-chat {
     position: fixed;
-    bottom: var(--space-xl);
+    bottom: 100px;
     right: var(--space-xl);
     width: 400px;
     max-width: calc(100vw - 2rem);
     height: 600px;
-    max-height: calc(100vh - 8rem);
+    max-height: calc(100vh - 180px);
     background-color: var(--card);
     border: 1px solid var(--border);
     border-radius: var(--radius-lg);
@@ -379,12 +379,21 @@
     margin-bottom: var(--space-sm);
     border-radius: var(--radius-md);
     max-width: 85%;
+    min-width: 200px;
     animation: slideIn 0.3s ease;
     word-wrap: break-word;
     overflow-wrap: break-word;
-    word-break: break-word;
-    hyphens: auto;
     line-height: 1.6;
+    white-space: normal;
+    display: block;
+}
+
+.copilot-message.ai {
+    background: var(--card);
+    border: 1px solid var(--border);
+    color: var(--text);
+    width: fit-content;
+    max-width: 85%;
 }
 
 @keyframes slideIn {
@@ -403,16 +412,12 @@
     color: white;
     margin-left: auto;
     margin-right: 0;
-}
-
-.copilot-message.ai {
-    background: var(--card);
-    border: 1px solid var(--border);
-    color: var(--text);
+    width: fit-content;
 }
 
 .copilot-message.ai.typing {
     padding: var(--space-sm) var(--space-md);
+    width: auto;
 }
 
 .copilot-message strong {

@@ -32,8 +32,53 @@
     <section class="hero">
         <div class="container">
             <div class="hero-badge">🔍 Find Out If You're Shadow Banned in 60 Seconds</div>
-            <h1 class="hero-title">Are You Shadow Banned?</h1>
-            <p class="hero-subtitle">Your content deserves to be seen. We verify your reach across 26 platforms, use AI to analyze multiple factors, and give you a probability score of what's really happening.</p>
+            <h1 class="hero-title">Is Your Post Shadow Banned?</h1>
+            <p class="hero-subtitle">Paste any social media post URL below. Our AI analyzes engagement, visibility, and 10+ factors to give you a probability score of what's really happening.</p>
+            
+            <!-- POST URL CHECKER - Primary Feature -->
+            <div class="post-checker-hero">
+                <div class="post-checker-card">
+                    <div class="checker-header">
+                        <span class="checker-icon">🔗</span>
+                        <div>
+                            <h3>Instant Post Analysis</h3>
+                            <p>Works with Twitter, Instagram, TikTok, Reddit, YouTube</p>
+                        </div>
+                    </div>
+                    <div class="checker-form">
+                        <input 
+                            type="url" 
+                            id="post-url-input"
+                            placeholder="https://twitter.com/username/status/123456789..."
+                            class="post-url-input"
+                        >
+                        <button class="btn-analyze" id="analyze-post-btn">
+                            <span class="btn-text">Analyze Post Now</span>
+                            <span class="btn-icon">🔍</span>
+                        </button>
+                    </div>
+                    <div class="checker-features">
+                        <span>✓ Probability score in 60 seconds</span>
+                        <span>✓ First check FREE</span>
+                        <span>✓ AI-powered analysis</span>
+                    </div>
+                </div>
+                
+                <!-- Results Area (Hidden Initially) -->
+                <div class="post-results" id="post-results" style="display: none;">
+                    <div class="result-header">
+                        <span class="result-icon">📊</span>
+                        <h3>Analysis Complete</h3>
+                    </div>
+                    <div class="result-content">
+                        <!-- Results will be inserted here -->
+                    </div>
+                </div>
+            </div>
+
+            <div class="hero-divider">
+                <span>Or check by username / hashtag</span>
+            </div>
             
             <!-- Three Options -->
             <div class="hero-options">

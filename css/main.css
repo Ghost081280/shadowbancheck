@@ -1489,15 +1489,13 @@ li {
     color: var(--text-muted);
 }
 
-.ai-pro-grid {
+.ai-pro-simple-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: var(--space-3xl);
-    margin-bottom: var(--space-xl);
 }
 
-.ai-pro-benefits h3,
-.ai-pro-pricing h3 {
+.ai-pro-benefits h3 {
     font-size: 1.5rem;
     margin-bottom: var(--space-lg);
 }
@@ -1530,6 +1528,187 @@ li {
     color: var(--text-muted);
     font-size: 0.9375rem;
     margin: 0;
+}
+
+/* Featured Plan */
+.featured-plan {
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(168, 85, 247, 0.1));
+    border: 3px solid var(--primary);
+    border-radius: var(--radius-lg);
+    padding: var(--space-2xl);
+    position: relative;
+    box-shadow: 0 8px 24px rgba(99, 102, 241, 0.2);
+}
+
+.plan-badge-large {
+    position: absolute;
+    top: -15px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: white;
+    padding: 0.5rem 1.5rem;
+    border-radius: var(--radius-full);
+    font-size: 0.875rem;
+    font-weight: 700;
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+}
+
+.featured-plan h3 {
+    font-size: 1.75rem;
+    margin-bottom: var(--space-md);
+    text-align: center;
+}
+
+.featured-price {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 0.25rem;
+    margin-bottom: var(--space-sm);
+}
+
+.featured-price .currency {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--primary);
+}
+
+.featured-price .amount {
+    font-size: 3.5rem;
+    font-weight: 900;
+    color: var(--primary);
+    line-height: 1;
+}
+
+.featured-price .period {
+    font-size: 1.25rem;
+    color: var(--text-muted);
+}
+
+.featured-tagline {
+    text-align: center;
+    color: var(--text-muted);
+    margin-bottom: var(--space-xl);
+    font-style: italic;
+}
+
+.featured-features {
+    list-style: none;
+    padding: 0;
+    margin-bottom: var(--space-xl);
+}
+
+.featured-features li {
+    padding: var(--space-md) 0;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+}
+
+.featured-features li:last-child {
+    border-bottom: none;
+}
+
+.featured-features .check {
+    color: var(--success);
+    font-weight: 700;
+    font-size: 1.25rem;
+}
+
+.btn-featured {
+    display: block;
+    width: 100%;
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: white;
+    text-align: center;
+    padding: var(--space-lg) var(--space-xl);
+    border-radius: var(--radius-md);
+    font-weight: 700;
+    font-size: 1.125rem;
+    text-decoration: none;
+    transition: all var(--transition-base);
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+.btn-featured:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(99, 102, 241, 0.5);
+}
+
+.trial-note {
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.875rem;
+    margin-top: var(--space-md);
+}
+
+/* Upgrade Info */
+.upgrade-info {
+    margin-top: var(--space-2xl);
+    padding: var(--space-lg);
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+}
+
+.upgrade-info h4 {
+    font-size: 1.125rem;
+    margin-bottom: var(--space-sm);
+}
+
+.upgrade-info > p {
+    color: var(--text-muted);
+    margin-bottom: var(--space-md);
+}
+
+.upgrade-tiers {
+    display: grid;
+    gap: var(--space-md);
+    margin-bottom: var(--space-md);
+}
+
+.upgrade-tiers .tier {
+    padding: var(--space-md);
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.upgrade-tiers .tier strong {
+    color: var(--text);
+    font-size: 1rem;
+}
+
+.upgrade-tiers .tier span {
+    color: var(--text-muted);
+    font-size: 0.875rem;
+}
+
+.upgrade-note {
+    background: rgba(99, 102, 241, 0.1);
+    padding: var(--space-md);
+    border-radius: var(--radius-sm);
+    border-left: 3px solid var(--primary);
+    font-size: 0.875rem;
+    margin: 0;
+}
+
+/* Old styles kept for compatibility but not used */
+.ai-pro-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-3xl);
+    margin-bottom: var(--space-xl);
+}
+
+.ai-pro-pricing h3 {
+    font-size: 1.5rem;
+    margin-bottom: var(--space-lg);
 }
 
 .ai-plan {
@@ -1873,8 +2052,16 @@ li {
         grid-template-columns: 1fr;
     }
 
+    .ai-pro-simple-grid {
+        grid-template-columns: 1fr;
+    }
+
     .ai-pro-header h2 {
         font-size: 2rem;
+    }
+
+    .featured-price .amount {
+        font-size: 2.5rem;
     }
 
     .share-buttons {

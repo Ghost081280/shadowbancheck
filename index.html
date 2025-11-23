@@ -138,16 +138,25 @@
                             <span>Shadow AI Pro</span>
                         </div>
                         <div class="demo-messages">
-                            <div class="demo-msg user">Am I shadow banned on Twitter?</div>
+                            <div class="demo-msg user">Can you help me check if I'm shadow banned?</div>
                             <div class="demo-msg ai typing-animation">
                                 <span class="typing-dots"><span>.</span><span>.</span><span>.</span></span>
                             </div>
-                            <div class="demo-msg ai">
-                                <strong>Good news!</strong> Your account shows no signs of shadow banning. Your tweets appear in search and replies are visible.
-                                <br><br>
-                                Want me to check other platforms?
+                            <div class="demo-msg ai" style="display: none;" id="demo-response">
+                                <strong>Absolutely!</strong> I can run live checks on your accounts right now.<br><br>
+                                With <strong>Shadow AI Pro ($9.99/mo)</strong>, I can verify your visibility across all 26 platforms, check username/email status, and create a personalized recovery plan.<br><br>
+                                You get 100 questions per day, real-time verification, and 24/7 support. Want to start your free trial?
                             </div>
                         </div>
+                        <script>
+                            // Animate demo response
+                            setTimeout(() => {
+                                document.querySelector('.demo-msg.typing-animation').style.display = 'none';
+                                const response = document.getElementById('demo-response');
+                                response.style.display = 'block';
+                                response.style.animation = 'slideIn 0.5s ease';
+                            }, 2000);
+                        </script>
                     </div>
                 </div>
             </div>

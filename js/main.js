@@ -551,3 +551,128 @@ document.querySelectorAll('.btn-large, .btn-pricing, .btn-price, .btn-plan').for
         trackEvent('CTA', 'click', e.target.textContent || 'Button');
     });
 });
+
+// ============================================================================
+// POST URL CHECKER
+// ============================================================================
+function initPostChecker() {
+    const input = document.getElementById('post-url-input');
+    const btn = document.getElementById('analyze-post-btn');
+    const resultsDiv = document.getElementById('post-results');
+    
+    if (!input || !btn || !resultsDiv) return;
+    
+    btn.addEventListener('click', async () => {
+        const url = input.value.trim();
+        
+        if (!url) {
+            alert('Please enter a post URL');
+            return;
+        }
+        
+        // Validate URL
+        if (!isValidSocialURL(url)) {
+            alert('Please enter a valid social media post URL (Twitter, Instagram, TikTok, Reddit, or YouTube)');
+            return;
+        }
+        
+        // Show loading state
+        btn.disabled = true;
+        btn.innerHTML = '<span class="btn-text">Analyzing...</span><span class="btn-icon">⏳</span>';
+        
+        // Simulate analysis (replace with real API call later)
+        setTimeout(() => {
+            showResults(url);
+            btn.disabled = false;
+            btn.innerHTML = '<span class="btn-text">Analyze Post Now</span><span class="btn-icon">🔍</span>';
+        }, 2000);
+    });
+    
+    // Allow Enter key
+    input.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            btn.click();
+        }
+    });
+}
+
+function isValidSocialURL(url) {
+    const patterns = [
+        /twitter\.com\/.*\/status\//,
+        /x\.com\/.*\/status\//,
+        /instagram\.com\/p\//,
+        /instagram\.com\/reel\//,
+        /tiktok\.com\/.*\/video\//,
+        /reddit\.com\/r\/.*\/comments\//,
+        /youtube\.com\/watch\?v=/,
+        /youtu\.be\//
+    ];
+    
+    return patterns.some(pattern => pattern.test(url));
+}
+
+function showResults(url) {
+    const resultsDiv = document.getElementById('post-results');
+    const platform = detectPlatform(url);
+    
+    // Demo results (replace with real API data later)
+    const demoResults = {
+        probability: Math.floor(Math.random() * 30) + 60, // 60-90%
+        factors: [
+            'Engagement rate 75% below account average',
+            'Post not appearing in platform search results',
+            'Limited visibility in follower feeds',
+            'Replies hidden from non-followers',
+            'Content flagged by automated filters'
+        ],
+        verdict: Math.random() > 0.5 ? 'Likely Shadow Banned' : 'Possibly Restricted'
+    };
+    
+    resultsDiv.innerHTML = `
+        <div class="result-header">
+            <span class="result-icon">📊</span>
+            <h3>Analysis Complete - ${platform}</h3>
+        </div>
+        <div class="result-content">
+            <div class="result-score">
+                <div class="score-number">${demoResults.probability}%</div>
+                <div class="score-label">Probability of Shadow Ban</div>
+                <div class="score-verdict">${demoResults.verdict}</div>
+            </div>
+            
+            <div class="result-factors">
+                <h4>🔍 Factors Analyzed:</h4>
+                <ul>
+                    ${demoResults.factors.slice(0, 3).map(factor => `<li>${factor}</li>`).join('')}
+                </ul>
+            </div>
+            
+            <div class="result-cta">
+                <h4>🤖 Want Deeper Analysis?</h4>
+                <p>Shadow AI Pro gives you detailed recovery strategies, historical tracking, and unlimited checks for just $9.99/mo</p>
+                <a href="#shadow-ai-pro" class="btn">Get Shadow AI Pro - 7 Day Free Trial</a>
+            </div>
+        </div>
+    `;
+    
+    resultsDiv.style.display = 'block';
+    
+    // Smooth scroll to results
+    setTimeout(() => {
+        resultsDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }, 100);
+}
+
+function detectPlatform(url) {
+    if (url.includes('twitter.com') || url.includes('x.com')) return 'Twitter/X';
+    if (url.includes('instagram.com')) return 'Instagram';
+    if (url.includes('tiktok.com')) return 'TikTok';
+    if (url.includes('reddit.com')) return 'Reddit';
+    if (url.includes('youtube.com') || url.includes('youtu.be')) return 'YouTube';
+    return 'Social Media';
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', () => {
+    initPostChecker();
+});

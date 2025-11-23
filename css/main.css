@@ -807,6 +807,9 @@ li {
     display: grid;
     gap: var(--space-md);
     min-height: 200px;
+    max-height: 400px;
+    overflow-y: auto;
+    overflow-x: hidden;
 }
 
 .demo-msg {
@@ -2897,4 +2900,339 @@ li {
 .social-link svg {
     width: 20px;
     height: 20px;
+}
+
+/* =============================================================================
+   PRICING - NEW COMPACT SECTIONS
+   ============================================================================= */
+.card-label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+    margin-bottom: var(--space-sm);
+    font-weight: 600;
+}
+
+/* Frequency Explainer */
+.frequency-explainer {
+    margin-top: var(--space-3xl);
+    padding: var(--space-2xl);
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.explainer-content h3 {
+    text-align: center;
+    margin-bottom: var(--space-lg);
+    font-size: 1.5rem;
+}
+
+.explainer-content > p {
+    text-align: center;
+    color: var(--text-muted);
+    margin-bottom: var(--space-xl);
+}
+
+.frequency-options {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--space-lg);
+    margin-bottom: var(--space-lg);
+}
+
+.freq-option {
+    text-align: center;
+    padding: var(--space-lg);
+    background: var(--bg);
+    border: 2px solid var(--border);
+    border-radius: var(--radius-md);
+    transition: all var(--transition-base);
+}
+
+.freq-option:hover {
+    border-color: var(--primary);
+}
+
+.freq-option strong {
+    display: block;
+    font-size: 1.125rem;
+    margin-bottom: var(--space-sm);
+    color: var(--primary);
+}
+
+.freq-option span {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+}
+
+.explainer-note {
+    text-align: center;
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    font-style: italic;
+    margin: 0;
+}
+
+/* Compact AI Addon */
+.ai-addon-compact {
+    margin-top: var(--space-2xl);
+    padding: var(--space-xl);
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(168, 85, 247, 0.1));
+    border: 2px solid var(--primary);
+    border-radius: var(--radius-lg);
+}
+
+.addon-content {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xl);
+    flex-wrap: wrap;
+}
+
+.addon-content .addon-icon {
+    font-size: 3rem;
+    flex-shrink: 0;
+}
+
+.addon-text {
+    flex: 1;
+    min-width: 250px;
+}
+
+.addon-text h3 {
+    font-size: 1.25rem;
+    margin: 0 0 0.25rem 0;
+    text-align: center;
+}
+
+.addon-text p {
+    font-size: 0.9375rem;
+    color: var(--text-muted);
+    margin: 0;
+    text-align: center;
+}
+
+.addon-actions {
+    display: flex;
+    gap: var(--space-md);
+    flex-wrap: wrap;
+}
+
+.btn-addon-sm,
+.btn-addon-sm-ghost {
+    padding: var(--space-sm) var(--space-lg);
+    border-radius: var(--radius-md);
+    font-size: 0.875rem;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all var(--transition-base);
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.btn-addon-sm {
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: white;
+    border: none;
+    display: inline-block;
+}
+
+.btn-addon-sm:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+.btn-addon-sm-ghost {
+    background: transparent;
+    color: var(--text);
+    border: 2px solid var(--border);
+}
+
+.btn-addon-sm-ghost:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+}
+
+/* Enterprise CTA */
+.enterprise-cta {
+    margin-top: var(--space-2xl);
+    padding: var(--space-2xl);
+    background: var(--card);
+    border: 2px solid var(--border);
+    border-radius: var(--radius-xl);
+    text-align: center;
+}
+
+.enterprise-badge {
+    display: inline-block;
+    padding: var(--space-sm) var(--space-lg);
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: white;
+    border-radius: var(--radius-full);
+    font-size: 0.875rem;
+    font-weight: 700;
+    margin-bottom: var(--space-lg);
+}
+
+.enterprise-content h3 {
+    font-size: 1.75rem;
+    margin: 0 0 var(--space-md) 0;
+}
+
+.enterprise-content p {
+    color: var(--text-muted);
+    margin-bottom: var(--space-xl);
+    font-size: 1rem;
+}
+
+.btn-enterprise {
+    padding: var(--space-md) var(--space-2xl);
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: white;
+    border: none;
+    border-radius: var(--radius-md);
+    font-size: 1rem;
+    font-weight: 700;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all var(--transition-base);
+}
+
+.btn-enterprise:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(99, 102, 241, 0.3);
+}
+
+.coming-soon-badge {
+    display: inline-block;
+    margin-top: var(--space-md);
+    padding: var(--space-xs) var(--space-md);
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .addon-content {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .addon-actions {
+        width: 100%;
+        flex-direction: column;
+    }
+    
+    .btn-addon-sm,
+    .btn-addon-sm-ghost {
+        width: 100%;
+    }
+    
+    .frequency-options {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* =============================================================================
+   FAQ - 3 COLUMN LAYOUT ON DESKTOP
+   ============================================================================= */
+@media (min-width: 1024px) {
+    .faq-accordion {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--space-md);
+        max-width: 1200px;
+    }
+}
+
+/* =============================================================================
+   HOW IT WORKS SECTION
+   ============================================================================= */
+.how-it-works {
+    padding: var(--space-3xl) 0;
+    background: var(--bg-secondary);
+}
+
+.how-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: var(--space-2xl);
+    margin-top: var(--space-2xl);
+}
+
+.how-item {
+    text-align: center;
+    padding: var(--space-2xl);
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    transition: all var(--transition-base);
+}
+
+.how-item:hover {
+    border-color: var(--primary);
+    transform: translateY(-4px);
+    box-shadow: 0 8px 16px rgba(99, 102, 241, 0.2);
+}
+
+.how-icon {
+    font-size: 3rem;
+    margin-bottom: var(--space-lg);
+}
+
+.how-item h3 {
+    font-size: 1.25rem;
+    margin-bottom: var(--space-md);
+    color: var(--text);
+}
+
+.how-item p {
+    color: var(--text-muted);
+    line-height: 1.6;
+    font-size: 0.9375rem;
+}
+
+/* =============================================================================
+   LOGIN BUTTON IN HEADER
+   ============================================================================= */
+.btn-login {
+    padding: var(--space-sm) var(--space-lg);
+    background: transparent;
+    border: 2px solid var(--border);
+    border-radius: var(--radius-md);
+    color: var(--text);
+    font-weight: 600;
+    transition: all var(--transition-base);
+    text-decoration: none;
+}
+
+.btn-login:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+    background: rgba(99, 102, 241, 0.1);
+}
+
+/* =============================================================================
+   FOOTER - COMING SOON BADGE
+   ============================================================================= */
+.coming-soon-tiny {
+    display: inline-block;
+    margin-left: var(--space-xs);
+    padding: 2px 6px;
+    background: var(--primary);
+    color: white;
+    font-size: 0.625rem;
+    border-radius: var(--radius-sm);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
 }

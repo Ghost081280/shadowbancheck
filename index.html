@@ -23,6 +23,7 @@
             <nav class="nav">
                 <a href="#platforms">Platforms</a>
                 <a href="#pricing">Pricing</a>
+                <a href="#" class="btn-login" onclick="alert('Login/Dashboard coming soon! After purchase, you\'ll access your dashboard here.')">Login</a>
                 <a href="#shadow-ai-pro" class="btn-nav">Get Shadow AI Pro</a>
             </nav>
         </div>
@@ -103,6 +104,34 @@
                     <p>AI investigation + monitoring</p>
                     <span class="option-tag pro">From $9.99/mo</span>
                 </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works -->
+    <section class="how-it-works">
+        <div class="container">
+            <h2 class="section-title">How It Works</h2>
+            <p class="section-desc">We use advanced technology to give you accurate shadow ban detection</p>
+            
+            <div class="how-grid">
+                <div class="how-item">
+                    <div class="how-icon">🤖</div>
+                    <h3>AI-Powered Analysis</h3>
+                    <p>Our AI scans the web, searches multiple online sources (platform data, third-party tools, user reports), and analyzes 10+ engagement factors to detect shadow bans even when platforms won't tell you.</p>
+                </div>
+                
+                <div class="how-item">
+                    <div class="how-icon">🔌</div>
+                    <h3>Platform APIs</h3>
+                    <p>APIs (Application Programming Interfaces) let us talk directly to social platforms to check your account status, visibility, and reach in real-time. Think of it as a direct line to verify what's happening with your account.</p>
+                </div>
+                
+                <div class="how-item">
+                    <div class="how-icon">📊</div>
+                    <h3>Real-Time Monitoring</h3>
+                    <p>We continuously check your accounts at your chosen frequency (daily, every 6 hours, or hourly) and alert you instantly via text or email if we detect any issues—so you can act fast.</p>
+                </div>
             </div>
         </div>
     </section>
@@ -494,20 +523,21 @@
     <!-- Pricing -->
     <section id="pricing" class="pricing">
         <div class="container">
-            <h2 class="section-title" style="text-align: center;">Simple, Affordable Pricing</h2>
-            <p class="section-desc" style="text-align: center;">All plans include ALL features. Pay based on how many accounts you monitor—not which platforms.</p>
+            <h2 class="section-title">Simple, Transparent Pricing</h2>
+            <p class="section-desc">Pay for what you need. All plans include all features.</p>
 
             <div class="pricing-grid">
                 <div class="price-card">
+                    <div class="card-label">For Individuals</div>
                     <h3>Starter</h3>
                     <div class="price">
                         <span class="amount">$4.99</span>
                         <span class="period">/month</span>
                     </div>
-                    <div class="price-subtitle">Monitor 5 Accounts</div>
+                    <div class="price-subtitle">Monitor Up To 5 Accounts</div>
                     <ul>
                         <li>✓ Any 5 platforms/accounts</li>
-                        <li>✓ Daily automated checks</li>
+                        <li>✓ Choose your check frequency</li>
                         <li>✓ Text + Email alerts</li>
                         <li>✓ Instant shadowban detection</li>
                         <li>✓ Recovery recommendations</li>
@@ -519,21 +549,20 @@
                 </div>
 
                 <div class="price-card featured">
-                    <div class="card-badge">Best Value</div>
+                    <div class="card-badge">Most Popular</div>
                     <h3>Pro</h3>
                     <div class="price">
                         <span class="amount">$9.99</span>
                         <span class="period">/month</span>
                     </div>
-                    <div class="price-subtitle">Monitor 15 Accounts</div>
+                    <div class="price-subtitle">Monitor Up To 15 Accounts</div>
                     <ul>
                         <li>✓ Any 15 platforms/accounts</li>
-                        <li>✓ Checks every 6 hours</li>
+                        <li>✓ Choose your check frequency</li>
                         <li>✓ Text + Email alerts</li>
                         <li>✓ Instant shadowban detection</li>
                         <li>✓ Recovery recommendations</li>
                         <li>✓ Historical tracking</li>
-                        <li>✓ Priority support</li>
                         <li>✓ <strong>10 AI questions/day</strong></li>
                     </ul>
                     <a href="#" class="btn-price primary">Start 7-Day Trial</a>
@@ -541,20 +570,20 @@
                 </div>
 
                 <div class="price-card">
+                    <div class="card-label">For Power Users</div>
                     <h3>Premium</h3>
                     <div class="price">
                         <span class="amount">$14.99</span>
                         <span class="period">/month</span>
                     </div>
-                    <div class="price-subtitle">Monitor 50 Accounts</div>
+                    <div class="price-subtitle">Monitor Up To 50 Accounts</div>
                     <ul>
                         <li>✓ Any 50 platforms/accounts</li>
-                        <li>✓ Checks every hour</li>
+                        <li>✓ Choose your check frequency</li>
                         <li>✓ Text + Email alerts</li>
                         <li>✓ Instant shadowban detection</li>
                         <li>✓ Recovery recommendations</li>
                         <li>✓ Historical tracking</li>
-                        <li>✓ API access</li>
                         <li>✓ <strong>25 AI questions/day</strong></li>
                     </ul>
                     <a href="#" class="btn-price">Start 7-Day Trial</a>
@@ -562,35 +591,52 @@
                 </div>
             </div>
 
-            <div class="pricing-addon">
-                <div class="addon-card">
-                    <div class="addon-header">
-                        <span class="addon-icon">🤖</span>
-                        <div>
-                            <h3>Want Unlimited AI Questions?</h3>
-                            <p>Add Shadow AI Pro to any plan or use it standalone</p>
+            <!-- Check Frequency Explainer -->
+            <div class="frequency-explainer">
+                <div class="explainer-content">
+                    <h3>🔄 How Check Frequency Works</h3>
+                    <p>You choose how often we check your accounts:</p>
+                    <div class="frequency-options">
+                        <div class="freq-option">
+                            <strong>Daily Checks</strong>
+                            <span>Once per day • Included</span>
+                        </div>
+                        <div class="freq-option">
+                            <strong>Every 6 Hours</strong>
+                            <span>4x per day • Included</span>
+                        </div>
+                        <div class="freq-option">
+                            <strong>Hourly Checks</strong>
+                            <span>24x per day • Included</span>
                         </div>
                     </div>
-                    <div class="addon-pricing">
-                        <div class="addon-option">
-                            <strong>As an Add-On:</strong>
-                            <span class="addon-price">+$9.99/mo</span>
-                            <p>Add to any monitoring plan above</p>
-                        </div>
-                        <div class="addon-divider">OR</div>
-                        <div class="addon-option">
-                            <strong>Standalone:</strong>
-                            <span class="addon-price">$9.99/mo</span>
-                            <p>Just the AI chatbot (no monitoring)</p>
-                        </div>
+                    <p class="explainer-note">More frequent checks = faster detection. Choose what works for you!</p>
+                </div>
+            </div>
+
+            <!-- AI Pro Add-On (Compact) -->
+            <div class="ai-addon-compact">
+                <div class="addon-content">
+                    <span class="addon-icon">🤖</span>
+                    <div class="addon-text">
+                        <h3>Want More AI Questions?</h3>
+                        <p>Add Shadow AI Pro to any plan or use it standalone</p>
                     </div>
-                    <div class="addon-features">
-                        <span>✓ 100 questions/day</span>
-                        <span>✓ Priority support</span>
-                        <span>✓ Advanced analysis</span>
-                        <span>✓ Custom strategies</span>
+                    <div class="addon-actions">
+                        <a href="#shadow-ai-pro" class="btn-addon-sm">Learn More ($9.99/mo for 100/day)</a>
+                        <button class="btn-addon-sm-ghost" onclick="alert('Contact us for enterprise pricing with unlimited questions!')">Contact for Unlimited</button>
                     </div>
-                    <a href="#shadow-ai-pro" class="btn-addon">Learn More About Shadow AI Pro</a>
+                </div>
+            </div>
+
+            <!-- Enterprise CTA -->
+            <div class="enterprise-cta">
+                <div class="enterprise-content">
+                    <div class="enterprise-badge">🏢 Enterprise & Agencies</div>
+                    <h3>Need to Monitor 100+ Accounts?</h3>
+                    <p>Custom pricing for agencies managing multiple clients. Bulk uploading, team dashboards, and dedicated support.</p>
+                    <button class="btn-enterprise" onclick="alert('Contact form coming soon! Email us at support@shadowbancheck.io')">Contact Sales</button>
+                    <span class="coming-soon-badge">Team Dashboard Coming Soon</span>
                 </div>
             </div>
         </div>
@@ -985,6 +1031,13 @@
                     <h4>Tools</h4>
                     <a href="checker.html">Shadow Ban Checker</a>
                     <a href="hashtag-checker.html">Hashtag Checker</a>
+                </div>
+                <div class="footer-col">
+                    <h4>Developers</h4>
+                    <a href="#" onclick="alert('API documentation coming soon for developers!'); return false;">
+                        API Access <span class="coming-soon-tiny">Coming Soon</span>
+                    </a>
+                    <a href="https://github.com/Ghost081280" target="_blank">GitHub</a>
                 </div>
                 <div class="footer-col">
                     <h4>Support</h4>

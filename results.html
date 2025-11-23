@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Check Results - ShadowBanCheck.io</title>
+    <link rel="stylesheet" href="css/results.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="logo">
+                <a href="index.html">
+                    <span class="logo-emoji">🔍</span>
+                    <span class="logo-text">ShadowBanCheck.io</span>
+                </a>
+            </div>
+            <nav class="nav">
+                <a href="checker.html">New Check</a>
+                <a href="index.html#pricing">Upgrade</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main">
+        <div class="container">
+            <!-- Results Header -->
+            <div id="results-header" class="results-header">
+                <!-- Populated by JavaScript -->
+            </div>
+
+            <!-- Overall Status -->
+            <div id="overall-status" class="overall-status">
+                <!-- Populated by JavaScript -->
+            </div>
+
+            <!-- Detailed Checks -->
+            <div id="detailed-checks" class="detailed-checks">
+                <h2>Detailed Analysis</h2>
+                <div id="checks-grid" class="checks-grid">
+                    <!-- Populated by JavaScript -->
+                </div>
+            </div>
+
+            <!-- Account Details -->
+            <div id="account-details" class="account-details">
+                <!-- Populated by JavaScript -->
+            </div>
+
+            <!-- Recommendations -->
+            <div id="recommendations" class="recommendations">
+                <h2>💡 Recommendations</h2>
+                <div id="recommendations-content" class="recommendations-content">
+                    <!-- Populated by JavaScript -->
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="actions">
+                <a href="checker.html" class="btn-secondary">Run Another Check</a>
+                <button id="share-results" class="btn-primary">Share Results</button>
+                <button id="download-report" class="btn-secondary">Download Report</button>
+            </div>
+
+            <!-- Upgrade CTA -->
+            <div class="upgrade-cta">
+                <h3>Want More?</h3>
+                <p>Upgrade to Pro for unlimited checks, historical tracking, and automated monitoring</p>
+                <a href="index.html#pricing" class="btn-hero">Upgrade to Pro</a>
+            </div>
+        </div>
+    </main>
+
+    <!-- Claude Co-Pilot -->
+    <button id="claude-copilot-btn" class="copilot-btn">
+        <span class="copilot-emoji">🤖</span>
+        <span class="copilot-text">Ask Claude</span>
+    </button>
+
+    <div id="claude-copilot" class="copilot-chat hidden">
+        <div class="copilot-header">
+            <div class="copilot-title">
+                <span class="copilot-emoji">🤖</span>
+                <span>Results Co-Pilot</span>
+            </div>
+            <button id="copilot-close" class="copilot-close">&times;</button>
+        </div>
+        <div id="copilot-messages" class="copilot-messages">
+            <div class="copilot-message assistant">
+                <div class="message-content">
+                    <p>👋 I can help you understand your results!</p>
+                    <p>Ask me about:</p>
+                    <ul>
+                        <li>What specific checks mean</li>
+                        <li>How to fix issues</li>
+                        <li>Why you might be shadow banned</li>
+                        <li>Recovery strategies</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="copilot-input">
+            <input type="text" id="copilot-input-field" placeholder="Ask about your results...">
+            <button id="copilot-send">Send</button>
+        </div>
+    </div>
+
+    <script src="js/results.js"></script>
+</body>
+</html>

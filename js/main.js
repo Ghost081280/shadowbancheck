@@ -76,39 +76,55 @@ function initTryAIButton() {
 // SOCIAL SHARE
 // ============================================================================
 function initSocialShare() {
-    const shareURL = 'https://shadowbancheck.io';
-    const shareText = 'Just checked if I\'m shadow banned with ShadowBanCheck.io 🔍';
+    const shareURL = encodeURIComponent('https://shadowbancheck.io');
+    const shareText = encodeURIComponent('Just checked if I\'m shadow banned with ShadowBanCheck.io 🔍');
     
     // Twitter/X
     const twitterBtn = document.getElementById('share-twitter');
     if (twitterBtn) {
-        twitterBtn.href = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareURL)}`;
-        twitterBtn.target = '_blank';
-        twitterBtn.rel = 'noopener noreferrer';
+        twitterBtn.addEventListener('click', () => {
+            window.open(
+                `https://twitter.com/intent/tweet?text=${shareText}&url=${shareURL}`,
+                '_blank',
+                'width=600,height=400'
+            );
+        });
     }
     
     // Facebook
     const facebookBtn = document.getElementById('share-facebook');
     if (facebookBtn) {
-        facebookBtn.href = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareURL)}`;
-        facebookBtn.target = '_blank';
-        facebookBtn.rel = 'noopener noreferrer';
+        facebookBtn.addEventListener('click', () => {
+            window.open(
+                `https://www.facebook.com/sharer/sharer.php?u=${shareURL}`,
+                '_blank',
+                'width=600,height=400'
+            );
+        });
     }
     
     // Telegram
     const telegramBtn = document.getElementById('share-telegram');
     if (telegramBtn) {
-        telegramBtn.href = `https://t.me/share/url?url=${encodeURIComponent(shareURL)}&text=${encodeURIComponent(shareText)}`;
-        telegramBtn.target = '_blank';
-        telegramBtn.rel = 'noopener noreferrer';
+        telegramBtn.addEventListener('click', () => {
+            window.open(
+                `https://t.me/share/url?url=${shareURL}&text=${shareText}`,
+                '_blank',
+                'width=600,height=400'
+            );
+        });
     }
     
     // LinkedIn
     const linkedinBtn = document.getElementById('share-linkedin');
     if (linkedinBtn) {
-        linkedinBtn.href = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareURL)}`;
-        linkedinBtn.target = '_blank';
-        linkedinBtn.rel = 'noopener noreferrer';
+        linkedinBtn.addEventListener('click', () => {
+            window.open(
+                `https://www.linkedin.com/sharing/share-offsite/?url=${shareURL}`,
+                '_blank',
+                'width=600,height=400'
+            );
+        });
     }
 }
 

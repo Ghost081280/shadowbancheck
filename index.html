@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ShadowBanCheck.io - Are You Shadow Banned?</title>
-    <meta name="description" content="Check if you're shadow banned across 26 platforms. Test Twitter, Instagram, TikTok, Reddit, Email, Phone, Domain reputation & more. Free checks available.">
+    <meta name="description" content="Check if you're shadow banned. Free tools + AI-powered investigations across 26 platforms.">
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/shadow-ai.css">
 </head>
@@ -20,629 +20,265 @@
             </div>
             <nav class="nav">
                 <a href="#platforms">Platforms</a>
-                <a href="#how-it-works">How It Works</a>
                 <a href="#pricing">Pricing</a>
-                <a href="checker.html" class="btn-primary">Check Now</a>
+                <a href="#" class="btn-nav">Get Shadow AI Pro</a>
             </nav>
         </div>
     </header>
 
-    <!-- Hero Section -->
+    <!-- Hero -->
     <section class="hero">
         <div class="container">
-            <div class="hero-badge-large">🚀 Check 26 Platforms in 60 Seconds</div>
-            <h1 class="hero-title-main">Are You Shadow Banned?</h1>
-            <p class="hero-subtitle-main">Enter your digital identities. We'll scan everything.</p>
+            <div class="hero-badge">🚀 AI-Powered Shadow Ban Detection</div>
+            <h1 class="hero-title">Are You Shadow Banned?</h1>
+            <p class="hero-subtitle">Free tools, AI investigations, and real-time monitoring for your digital presence</p>
             
-            <!-- Quick Start Options -->
-            <div class="quick-options">
-                <a href="hashtag-checker.html" class="quick-option">
-                    <span class="quick-icon">🚫</span>
-                    <div class="quick-content">
-                        <strong>Check Hashtags</strong>
-                        <p>Free - 5 per day</p>
-                    </div>
+            <!-- Three Options -->
+            <div class="hero-options">
+                <a href="checker.html" class="option-card">
+                    <div class="option-icon">🔍</div>
+                    <h3>Quick Check</h3>
+                    <p>Single platform check</p>
+                    <span class="option-tag free">Free - 3/day</span>
                 </a>
-                <a href="checker.html" class="quick-option">
-                    <span class="quick-icon">🔍</span>
-                    <div class="quick-content">
-                        <strong>Single Platform</strong>
-                        <p>Free - Twitter, Reddit, Email</p>
-                    </div>
+
+                <a href="hashtag-checker.html" class="option-card">
+                    <div class="option-icon">🚫</div>
+                    <h3>Hashtag Checker</h3>
+                    <p>Verify banned hashtags</p>
+                    <span class="option-tag free">Free - 5/day</span>
                 </a>
-                <a href="#full-scan" class="quick-option featured">
-                    <span class="quick-icon">⚡</span>
-                    <div class="quick-content">
-                        <strong>Full Spectrum Scan</strong>
-                        <p>$97 - All 26 platforms</p>
-                    </div>
+
+                <a href="#pricing" class="option-card featured">
+                    <div class="featured-badge">Most Popular</div>
+                    <div class="option-icon">🤖</div>
+                    <h3>Shadow AI Pro</h3>
+                    <p>AI + live checks</p>
+                    <span class="option-tag pro">$9.99/mo</span>
                 </a>
             </div>
+        </div>
+    </section>
 
-            <!-- Full Spectrum Scan Section -->
-            <div id="full-scan" class="full-scan-section">
-                <h2>🌐 Full Spectrum Scan</h2>
-                <p>Enter your information once. We'll check everything across all 26 platforms.</p>
-                
-                <div class="scan-input-container">
-                    <!-- Identity Inputs -->
-                    <div class="identity-inputs">
-                        <div class="input-group">
-                            <label>👤 Usernames / Handles</label>
-                            <input type="text" id="usernames-input" placeholder="@username1, @username2..." />
-                            <span class="input-hint">Add multiple usernames separated by commas</span>
-                        </div>
-
-                        <div class="input-group">
-                            <label>📧 Email Addresses</label>
-                            <input type="text" id="emails-input" placeholder="email@domain.com, another@domain.com..." />
-                            <span class="input-hint">Check deliverability & blacklists</span>
-                        </div>
-
-                        <div class="input-group">
-                            <label>📱 Phone Numbers</label>
-                            <input type="text" id="phones-input" placeholder="+1-555-555-5555, +1-555-555-6666..." />
-                            <span class="input-hint">Check spam databases & carrier blocking</span>
-                        </div>
-
-                        <div class="input-group">
-                            <label>🌐 Domains / Websites</label>
-                            <input type="text" id="domains-input" placeholder="yoursite.com, yourbrand.com..." />
-                            <span class="input-hint">Check reputation & blacklists</span>
-                        </div>
-
-                        <div class="input-group">
-                            <label>🖥️ IP Addresses</label>
-                            <input type="text" id="ip-input" placeholder="Auto-detected..." disabled />
-                            <span class="input-hint">Your IP: <span id="detected-ip" class="detected-value">Detecting...</span> <button id="add-ip-btn" class="btn-text-link">Add another IP</button></span>
-                        </div>
-                    </div>
-
-                    <!-- Platform Selector -->
-                    <div class="platform-selector">
-                        <h3>Select Platforms to Scan</h3>
-                        <p>Choose which platforms you use (or scan all 26)</p>
-                        
-                        <div class="selector-actions">
-                            <button id="select-all-btn" class="btn-selector">Select All (26)</button>
-                            <button id="clear-all-btn" class="btn-selector">Clear All</button>
-                            <span class="platforms-selected"><strong id="selected-count">0</strong> platforms selected</span>
-                        </div>
-
-                        <div class="platform-checkboxes">
-                            <!-- Social Media -->
-                            <div class="platform-group">
-                                <h4>📱 Social Media</h4>
-                                <label class="platform-checkbox live">
-                                    <input type="checkbox" value="twitter" />
-                                    <span>🐦 Twitter / X</span>
-                                    <span class="badge live">Live</span>
-                                </label>
-                                <label class="platform-checkbox">
-                                    <input type="checkbox" value="instagram" />
-                                    <span>📸 Instagram</span>
-                                    <span class="badge soon">Soon</span>
-                                </label>
-                                <label class="platform-checkbox">
-                                    <input type="checkbox" value="tiktok" />
-                                    <span>🎵 TikTok</span>
-                                    <span class="badge soon">Soon</span>
-                                </label>
-                                <label class="platform-checkbox">
-                                    <input type="checkbox" value="facebook" />
-                                    <span>📘 Facebook</span>
-                                    <span class="badge soon">Soon</span>
-                                </label>
-                                <label class="platform-checkbox">
-                                    <input type="checkbox" value="linkedin" />
-                                    <span>💼 LinkedIn</span>
-                                    <span class="badge soon">Soon</span>
-                                </label>
-                                <label class="platform-checkbox">
-                                    <input type="checkbox" value="threads" />
-                                    <span>🧵 Threads</span>
-                                    <span class="badge soon">Soon</span>
-                                </label>
-                                <label class="platform-checkbox">
-                                    <input type="checkbox" value="bluesky" />
-                                    <span>🦋 Bluesky</span>
-                                    <span class="badge soon">Soon</span>
-                                </label>
-                                <label class="platform-checkbox live">
-                                    <input type="checkbox" value="reddit" />
-                                    <span>🤖 Reddit</span>
-                                    <span class="badge live">Live</span>
-                                </label>
-                                <label class="platform-checkbox">
-                                    <input type="checkbox" value="youtube" />
-                                    <span>📹 YouTube</span>
-                                    <span class="badge soon">Soon</span>
-                                </label>
-                                <label class="platform-checkbox">
-                                    <input type="checkbox" value="pinterest" />
-                                    <span>📌 Pinterest</span>
-                                    <span class="badge soon">Soon</span>
-                                </label>
+    <!-- Shadow AI Spotlight -->
+    <section class="spotlight">
+        <div class="container">
+            <div class="spotlight-grid">
+                <div class="spotlight-content">
+                    <div class="spotlight-tag">🤖 Powered by Claude AI</div>
+                    <h2>Your AI Shadow Ban Detective</h2>
+                    <p class="lead">Get instant answers, live platform checks, and personalized recovery advice through a simple chat interface.</p>
+                    
+                    <div class="features-list">
+                        <div class="feature-item">
+                            <span class="feature-icon">✨</span>
+                            <div>
+                                <strong>Unlimited Questions</strong>
+                                <p>Ask anything about shadow bans</p>
                             </div>
-
-                            <!-- Streaming & Gaming -->
-                            <div class="platform-group">
-                                <h4>🎮 Streaming & Gaming</h4>
-                                <label class="platform-checkbox">
-                                    <input type="checkbox" value="discord" />
-                                    <span>🎮 Discord</span>
-                                    <span class="badge soon">Soon</span>
-                                </label>
-                                <label class="platform-checkbox">
-                                    <input type="checkbox" value="twitch" />
-                                    <span>🟣 Twitch</span>
-                                    <span class="badge soon">Soon</span>
-                                </label>
-                                <label class="platform-checkbox">
-                                    <input type="checkbox" value="kick" />
-                                    <span>🎬 Kick</span>
-                                    <span class="badge soon">Soon</span>
-                                </label>
-                                <label class="platform-checkbox">
-                                    <input type="checkbox" value="snapchat" />
-                                    <span>👻 Snapchat</span>
-                                    <span class="badge soon">Soon</span>
-                                </label>
+                        </div>
+                        <div class="feature-item">
+                            <span class="feature-icon">🔍</span>
+                            <div>
+                                <strong>Live Platform Checks</strong>
+                                <p>Real-time username & email lookups</p>
                             </div>
-
-                            <!-- Political & Alternative -->
-                            <div class="platform-group">
-                                <h4>🗣️ Political & Alternative</h4>
-                                <label class="platform-checkbox">
-                                    <input type="checkbox" value="truthsocial" />
-                                    <span>🇺🇸 Truth Social</span>
-                                    <span class="badge soon">Soon</span>
-                                </label>
-                                <label class="platform-checkbox">
-                                    <input type="checkbox" value="rumble" />
-                                    <span>📹 Rumble</span>
-                                    <span class="badge soon">Soon</span>
-                                </label>
-                                <label class="platform-checkbox">
-                                    <input type="checkbox" value="telegram" />
-                                    <span>✈️ Telegram</span>
-                                    <span class="badge soon">Soon</span>
-                                </label>
-                            </div>
-
-                            <!-- E-Commerce -->
-                            <div class="platform-group">
-                                <h4>🛍️ E-Commerce</h4>
-                                <label class="platform-checkbox">
-                                    <input type="checkbox" value="etsy" />
-                                    <span>🛍️ Etsy</span>
-                                    <span class="badge soon">Soon</span>
-                                </label>
-                                <label class="platform-checkbox">
-                                    <input type="checkbox" value="amazon" />
-                                    <span>📦 Amazon</span>
-                                    <span class="badge soon">Soon</span>
-                                </label>
-                                <label class="platform-checkbox">
-                                    <input type="checkbox" value="ebay" />
-                                    <span>🏷️ eBay</span>
-                                    <span class="badge soon">Soon</span>
-                                </label>
-                            </div>
-
-                            <!-- Local Business -->
-                            <div class="platform-group">
-                                <h4>📍 Local Business</h4>
-                                <label class="platform-checkbox">
-                                    <input type="checkbox" value="googlemybusiness" />
-                                    <span>🗺️ Google My Business</span>
-                                    <span class="badge soon">Soon</span>
-                                </label>
-                            </div>
-
-                            <!-- Infrastructure -->
-                            <div class="platform-group">
-                                <h4>🌐 Infrastructure</h4>
-                                <label class="platform-checkbox live">
-                                    <input type="checkbox" value="email" />
-                                    <span>📧 Email Deliverability</span>
-                                    <span class="badge live">Live</span>
-                                </label>
-                                <label class="platform-checkbox">
-                                    <input type="checkbox" value="phone" />
-                                    <span>📱 Phone Number</span>
-                                    <span class="badge soon">Soon</span>
-                                </label>
-                                <label class="platform-checkbox">
-                                    <input type="checkbox" value="domain" />
-                                    <span>🌐 Domain Reputation</span>
-                                    <span class="badge soon">Soon</span>
-                                </label>
-                                <label class="platform-checkbox">
-                                    <input type="checkbox" value="ip" />
-                                    <span>🖥️ IP Address</span>
-                                    <span class="badge soon">Soon</span>
-                                </label>
-                                <label class="platform-checkbox">
-                                    <input type="checkbox" value="website" />
-                                    <span>🔗 Website Status</span>
-                                    <span class="badge soon">Soon</span>
-                                </label>
+                        </div>
+                        <div class="feature-item">
+                            <span class="feature-icon">📊</span>
+                            <div>
+                                <strong>Smart Recommendations</strong>
+                                <p>Personalized recovery strategies</p>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Pricing Calculator -->
-                    <div class="pricing-calculator">
-                        <h3>Scan Pricing</h3>
-                        <div class="price-tiers">
-                            <div class="price-tier">
-                                <strong>Quick Check</strong>
-                                <span>1-5 platforms</span>
-                                <span class="price">$19</span>
-                            </div>
-                            <div class="price-tier">
-                                <strong>Standard Scan</strong>
-                                <span>6-10 platforms</span>
-                                <span class="price">$39</span>
-                            </div>
-                            <div class="price-tier">
-                                <strong>Deep Scan</strong>
-                                <span>11-20 platforms</span>
-                                <span class="price">$67</span>
-                            </div>
-                            <div class="price-tier featured">
-                                <strong>Full Spectrum</strong>
-                                <span>All 26 platforms</span>
-                                <span class="price">$97</span>
-                            </div>
-                        </div>
-
-                        <button id="start-scan-btn" class="btn-scan" disabled>
-                            <span class="btn-text">Select platforms to start</span>
-                        </button>
-
-                        <div class="scan-benefits">
-                            <span>✓ Instant results</span>
-                            <span>✓ Downloadable PDF report</span>
-                            <span>✓ No subscription required</span>
-                        </div>
-
-                        <div class="monthly-option">
-                            <p>Or get <strong>unlimited checks</strong> with monthly monitoring:</p>
-                            <a href="#pricing" class="btn-text-link">View Monthly Plans →</a>
-                        </div>
+                    <div class="spotlight-cta">
+                        <a href="#pricing" class="btn-large">Get Shadow AI Pro - $9.99/mo</a>
+                        <button id="try-ai-btn" class="btn-ghost">Try Free (3 questions/day)</button>
                     </div>
                 </div>
-            </div>
 
-            <!-- Stats -->
-            <div class="hero-stats">
-                <div class="stat">
-                    <span class="stat-emoji">🌐</span>
-                    <span class="stat-number">26</span>
-                    <span class="stat-label">Platforms Checked</span>
-                </div>
-                <div class="stat">
-                    <span class="stat-emoji">⚡</span>
-                    <span class="stat-number">&lt;60s</span>
-                    <span class="stat-label">Scan Completes</span>
-                </div>
-                <div class="stat">
-                    <span class="stat-emoji">✅</span>
-                    <span class="stat-number">99.7%</span>
-                    <span class="stat-label">Accuracy Rate</span>
+                <div class="spotlight-demo">
+                    <div class="demo-chat">
+                        <div class="demo-header">
+                            <span>🤖</span>
+                            <span>Shadow AI Pro</span>
+                        </div>
+                        <div class="demo-messages">
+                            <div class="demo-msg user">Am I shadow banned on Twitter?</div>
+                            <div class="demo-msg ai">
+                                <strong>Good news!</strong> Your account shows no signs of shadow banning. Your tweets appear in search and replies are visible.
+                                <br><br>
+                                Want me to check other platforms?
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Platforms Section -->
+    <!-- Platforms -->
     <section id="platforms" class="platforms">
         <div class="container">
-            <h2 class="section-title">26 Platforms. One Complete Answer.</h2>
-            <p class="section-subtitle">We check every platform that matters for your digital presence</p>
+            <h2 class="section-title">We Check 26 Platforms</h2>
+            <p class="section-desc">Comprehensive coverage across social media, streaming, and infrastructure</p>
 
-            <!-- Social Media (10) -->
-            <div class="platform-category">
-                <h3 class="category-title">📱 Social Media (10 platforms)</h3>
-                <div class="platform-grid">
-                    <div class="platform-card active">
-                        <div class="platform-header">
-                            <span class="platform-emoji">🐦</span>
-                            <span class="platform-badge live">Live</span>
-                        </div>
-                        <h3>Twitter / X</h3>
-                        <p>Search bans, ghost bans, reply suppression</p>
-                    </div>
-
-                    <div class="platform-card">
-                        <div class="platform-header">
-                            <span class="platform-emoji">📸</span>
-                            <span class="platform-badge soon">Soon</span>
-                        </div>
-                        <h3>Instagram</h3>
-                        <p>Hashtag bans, story suppression, reach</p>
-                    </div>
-
-                    <div class="platform-card">
-                        <div class="platform-header">
-                            <span class="platform-emoji">🎵</span>
-                            <span class="platform-badge soon">Soon</span>
-                        </div>
-                        <h3>TikTok</h3>
-                        <p>FYP suppression, search visibility</p>
-                    </div>
-
-                    <div class="platform-card">
-                        <div class="platform-header">
-                            <span class="platform-emoji">📘</span>
-                            <span class="platform-badge soon">Soon</span>
-                        </div>
-                        <h3>Facebook</h3>
-                        <p>Post reach, page suppression</p>
-                    </div>
-
-                    <div class="platform-card">
-                        <div class="platform-header">
-                            <span class="platform-emoji">💼</span>
-                            <span class="platform-badge soon">Soon</span>
-                        </div>
-                        <h3>LinkedIn</h3>
-                        <p>Post reach, search visibility</p>
-                    </div>
-
-                    <div class="platform-card">
-                        <div class="platform-header">
-                            <span class="platform-emoji">🧵</span>
-                            <span class="platform-badge soon">Soon</span>
-                        </div>
-                        <h3>Threads</h3>
-                        <p>Meta's Twitter alternative</p>
-                    </div>
-
-                    <div class="platform-card">
-                        <div class="platform-header">
-                            <span class="platform-emoji">🦋</span>
-                            <span class="platform-badge soon">Soon</span>
-                        </div>
-                        <h3>Bluesky</h3>
-                        <p>Decentralized platform checks</p>
-                    </div>
-
-                    <div class="platform-card active">
-                        <div class="platform-header">
-                            <span class="platform-emoji">🤖</span>
-                            <span class="platform-badge live">Live</span>
-                        </div>
-                        <h3>Reddit</h3>
-                        <p>Site-wide and subreddit bans</p>
-                    </div>
-
-                    <div class="platform-card">
-                        <div class="platform-header">
-                            <span class="platform-emoji">📹</span>
-                            <span class="platform-badge soon">Soon</span>
-                        </div>
-                        <h3>YouTube</h3>
-                        <p>Comment bans, video suppression</p>
-                    </div>
-
-                    <div class="platform-card">
-                        <div class="platform-header">
-                            <span class="platform-emoji">📌</span>
-                            <span class="platform-badge soon">Soon</span>
-                        </div>
-                        <h3>Pinterest</h3>
-                        <p>Pin suppression, search visibility</p>
-                    </div>
+            <div class="platform-grid">
+                <div class="platform-item live">
+                    <span>🐦</span>
+                    <span>Twitter / X</span>
+                    <span class="badge live">Live</span>
                 </div>
-            </div>
-
-            <!-- Streaming & Gaming (4) -->
-            <div class="platform-category">
-                <h3 class="category-title">🎮 Streaming & Gaming (4 platforms)</h3>
-                <div class="platform-grid">
-                    <div class="platform-card">
-                        <div class="platform-header">
-                            <span class="platform-emoji">🎮</span>
-                            <span class="platform-badge soon">Soon</span>
-                        </div>
-                        <h3>Discord</h3>
-                        <p>Server bans, message filtering</p>
-                    </div>
-
-                    <div class="platform-card">
-                        <div class="platform-header">
-                            <span class="platform-emoji">🟣</span>
-                            <span class="platform-badge soon">Soon</span>
-                        </div>
-                        <h3>Twitch</h3>
-                        <p>Chat shadowbans, viewer suppression</p>
-                    </div>
-
-                    <div class="platform-card">
-                        <div class="platform-header">
-                            <span class="platform-emoji">🎬</span>
-                            <span class="platform-badge soon">Soon</span>
-                        </div>
-                        <h3>Kick</h3>
-                        <p>Stream suppression, restrictions</p>
-                    </div>
-
-                    <div class="platform-card">
-                        <div class="platform-header">
-                            <span class="platform-emoji">👻</span>
-                            <span class="platform-badge soon">Soon</span>
-                        </div>
-                        <h3>Snapchat</h3>
-                        <p>Story reach, discover visibility</p>
-                    </div>
+                <div class="platform-item">
+                    <span>📸</span>
+                    <span>Instagram</span>
+                    <span class="badge soon">Soon</span>
                 </div>
-            </div>
-
-            <!-- Political & Alternative (3) -->
-            <div class="platform-category">
-                <h3 class="category-title">🗣️ Political & Alternative (3 platforms)</h3>
-                <div class="platform-grid">
-                    <div class="platform-card">
-                        <div class="platform-header">
-                            <span class="platform-emoji">🇺🇸</span>
-                            <span class="platform-badge soon">Soon</span>
-                        </div>
-                        <h3>Truth Social</h3>
-                        <p>Content moderation, restrictions</p>
-                    </div>
-
-                    <div class="platform-card">
-                        <div class="platform-header">
-                            <span class="platform-emoji">📹</span>
-                            <span class="platform-badge soon">Soon</span>
-                        </div>
-                        <h3>Rumble</h3>
-                        <p>Video suppression, monetization</p>
-                    </div>
-
-                    <div class="platform-card">
-                        <div class="platform-header">
-                            <span class="platform-emoji">✈️</span>
-                            <span class="platform-badge soon">Soon</span>
-                        </div>
-                        <h3>Telegram</h3>
-                        <p>Channel restrictions, filtering</p>
-                    </div>
+                <div class="platform-item">
+                    <span>🎵</span>
+                    <span>TikTok</span>
+                    <span class="badge soon">Soon</span>
                 </div>
-            </div>
-
-            <!-- E-Commerce (3) -->
-            <div class="platform-category">
-                <h3 class="category-title">🛍️ E-Commerce (3 platforms)</h3>
-                <div class="platform-grid">
-                    <div class="platform-card">
-                        <div class="platform-header">
-                            <span class="platform-emoji">🛍️</span>
-                            <span class="platform-badge soon">Soon</span>
-                        </div>
-                        <h3>Etsy</h3>
-                        <p>Listing suppression, visibility</p>
-                    </div>
-
-                    <div class="platform-card">
-                        <div class="platform-header">
-                            <span class="platform-emoji">📦</span>
-                            <span class="platform-badge soon">Soon</span>
-                        </div>
-                        <h3>Amazon</h3>
-                        <p>Product listing bans, reviews</p>
-                    </div>
-
-                    <div class="platform-card">
-                        <div class="platform-header">
-                            <span class="platform-emoji">🏷️</span>
-                            <span class="platform-badge soon">Soon</span>
-                        </div>
-                        <h3>eBay</h3>
-                        <p>Listing visibility, seller status</p>
-                    </div>
+                <div class="platform-item">
+                    <span>📘</span>
+                    <span>Facebook</span>
+                    <span class="badge soon">Soon</span>
                 </div>
-            </div>
-
-            <!-- Local Business (1) -->
-            <div class="platform-category">
-                <h3 class="category-title">📍 Local Business (1 platform)</h3>
-                <div class="platform-grid">
-                    <div class="platform-card">
-                        <div class="platform-header">
-                            <span class="platform-emoji">🗺️</span>
-                            <span class="platform-badge soon">Soon</span>
-                        </div>
-                        <h3>Google My Business</h3>
-                        <p>Listing visibility, review status</p>
-                    </div>
+                <div class="platform-item live">
+                    <span>🤖</span>
+                    <span>Reddit</span>
+                    <span class="badge live">Live</span>
                 </div>
-            </div>
-
-            <!-- Infrastructure (5) -->
-            <div class="platform-category">
-                <h3 class="category-title">🌐 Infrastructure (5 platforms)</h3>
-                <div class="platform-grid">
-                    <div class="platform-card active">
-                        <div class="platform-header">
-                            <span class="platform-emoji">📧</span>
-                            <span class="platform-badge live">Live</span>
-                        </div>
-                        <h3>Email Deliverability</h3>
-                        <p>Blacklists, SPF/DKIM/DMARC, reputation</p>
-                    </div>
-
-                    <div class="platform-card">
-                        <div class="platform-header">
-                            <span class="platform-emoji">📱</span>
-                            <span class="platform-badge soon">Soon</span>
-                        </div>
-                        <h3>Phone Number</h3>
-                        <p>Spam databases, carrier blocking</p>
-                    </div>
-
-                    <div class="platform-card">
-                        <div class="platform-header">
-                            <span class="platform-emoji">🌐</span>
-                            <span class="platform-badge soon">Soon</span>
-                        </div>
-                        <h3>Domain Reputation</h3>
-                        <p>Blacklist monitoring, DNS health</p>
-                    </div>
-
-                    <div class="platform-card">
-                        <div class="platform-header">
-                            <span class="platform-emoji">🖥️</span>
-                            <span class="platform-badge soon">Soon</span>
-                        </div>
-                        <h3>IP Address</h3>
-                        <p>Blacklists, proxy detection, reputation</p>
-                    </div>
-
-                    <div class="platform-card">
-                        <div class="platform-header">
-                            <span class="platform-emoji">🔗</span>
-                            <span class="platform-badge soon">Soon</span>
-                        </div>
-                        <h3>Website Status</h3>
-                        <p>Uptime, SSL, indexing, performance</p>
-                    </div>
+                <div class="platform-item">
+                    <span>💼</span>
+                    <span>LinkedIn</span>
+                    <span class="badge soon">Soon</span>
+                </div>
+                <div class="platform-item">
+                    <span>🧵</span>
+                    <span>Threads</span>
+                    <span class="badge soon">Soon</span>
+                </div>
+                <div class="platform-item">
+                    <span>🦋</span>
+                    <span>Bluesky</span>
+                    <span class="badge soon">Soon</span>
+                </div>
+                <div class="platform-item">
+                    <span>📺</span>
+                    <span>YouTube</span>
+                    <span class="badge soon">Soon</span>
+                </div>
+                <div class="platform-item">
+                    <span>📌</span>
+                    <span>Pinterest</span>
+                    <span class="badge soon">Soon</span>
+                </div>
+                <div class="platform-item">
+                    <span>🎮</span>
+                    <span>Discord</span>
+                    <span class="badge soon">Soon</span>
+                </div>
+                <div class="platform-item">
+                    <span>🟣</span>
+                    <span>Twitch</span>
+                    <span class="badge soon">Soon</span>
+                </div>
+                <div class="platform-item">
+                    <span>⚡</span>
+                    <span>Kick</span>
+                    <span class="badge soon">Soon</span>
+                </div>
+                <div class="platform-item">
+                    <span>👻</span>
+                    <span>Snapchat</span>
+                    <span class="badge soon">Soon</span>
+                </div>
+                <div class="platform-item">
+                    <span>🇺🇸</span>
+                    <span>Truth Social</span>
+                    <span class="badge soon">Soon</span>
+                </div>
+                <div class="platform-item">
+                    <span>📹</span>
+                    <span>Rumble</span>
+                    <span class="badge soon">Soon</span>
+                </div>
+                <div class="platform-item">
+                    <span>✈️</span>
+                    <span>Telegram</span>
+                    <span class="badge soon">Soon</span>
+                </div>
+                <div class="platform-item">
+                    <span>🛍️</span>
+                    <span>Etsy</span>
+                    <span class="badge soon">Soon</span>
+                </div>
+                <div class="platform-item">
+                    <span>📦</span>
+                    <span>Amazon</span>
+                    <span class="badge soon">Soon</span>
+                </div>
+                <div class="platform-item">
+                    <span>🏷️</span>
+                    <span>eBay</span>
+                    <span class="badge soon">Soon</span>
+                </div>
+                <div class="platform-item live">
+                    <span>📧</span>
+                    <span>Email</span>
+                    <span class="badge live">Live</span>
+                </div>
+                <div class="platform-item">
+                    <span>📱</span>
+                    <span>Phone</span>
+                    <span class="badge soon">Soon</span>
+                </div>
+                <div class="platform-item">
+                    <span>🌐</span>
+                    <span>Domain</span>
+                    <span class="badge soon">Soon</span>
+                </div>
+                <div class="platform-item">
+                    <span>🖥️</span>
+                    <span>IP Address</span>
+                    <span class="badge soon">Soon</span>
+                </div>
+                <div class="platform-item">
+                    <span>📍</span>
+                    <span>Google Business</span>
+                    <span class="badge soon">Soon</span>
+                </div>
+                <div class="platform-item">
+                    <span>🔗</span>
+                    <span>Website</span>
+                    <span class="badge soon">Soon</span>
                 </div>
             </div>
         </div>
     </section>
 
     <!-- How It Works -->
-    <section id="how-it-works" class="how-it-works">
+    <section class="how-it-works">
         <div class="container">
             <h2 class="section-title">How It Works</h2>
             <div class="steps">
                 <div class="step">
-                    <div class="step-number">1</div>
-                    <div class="step-emoji">📝</div>
-                    <h3>Enter Your Info</h3>
-                    <p>Add usernames, emails, phones, domains, IPs</p>
+                    <div class="step-num">1</div>
+                    <h3>Choose Your Tool</h3>
+                    <p>Free checks, hashtag verification, or AI chat</p>
                 </div>
                 <div class="step">
-                    <div class="step-number">2</div>
-                    <div class="step-emoji">☑️</div>
-                    <h3>Select Platforms</h3>
-                    <p>Choose which platforms you want to check</p>
+                    <div class="step-num">2</div>
+                    <h3>Get Instant Results</h3>
+                    <p>Detailed analysis within seconds</p>
                 </div>
                 <div class="step">
-                    <div class="step-number">3</div>
-                    <div class="step-emoji">🔍</div>
-                    <h3>We Scan Everything</h3>
-                    <p>Our system checks visibility across all signals</p>
-                </div>
-                <div class="step">
-                    <div class="step-number">4</div>
-                    <div class="step-emoji">📊</div>
-                    <h3>Get Your Report</h3>
-                    <p>Detailed results with recovery recommendations</p>
+                    <div class="step-num">3</div>
+                    <h3>Take Action</h3>
+                    <p>Follow recovery guide or upgrade</p>
                 </div>
             </div>
         </div>
@@ -651,174 +287,86 @@
     <!-- Pricing -->
     <section id="pricing" class="pricing">
         <div class="container">
-            <h2 class="section-title">Simple, Transparent Pricing</h2>
-            <p class="section-subtitle">Choose one-time scans or monthly monitoring</p>
+            <h2 class="section-title">Simple Pricing</h2>
+            <p class="section-desc">Choose the plan that fits your needs</p>
 
-            <!-- One-Time Scans -->
-            <h3 class="pricing-category">One-Time Scans</h3>
             <div class="pricing-grid">
-                <div class="pricing-card">
-                    <h3>Quick Check</h3>
+                <div class="price-card featured">
+                    <div class="card-badge">Most Popular</div>
+                    <h3>Shadow AI Pro</h3>
                     <div class="price">
-                        <span class="price-amount">$19</span>
-                        <span class="price-period">one-time</span>
+                        <span class="amount">$9.99</span>
+                        <span class="period">/month</span>
                     </div>
-                    <ul class="pricing-features">
-                        <li>✓ 1-5 platforms</li>
-                        <li>✓ Instant results</li>
-                        <li>✓ Downloadable report</li>
-                        <li>✓ Recovery recommendations</li>
-                        <li>✗ Monitoring</li>
-                        <li>✗ Alerts</li>
+                    <ul>
+                        <li>✓ Unlimited AI questions</li>
+                        <li>✓ Live platform checks</li>
+                        <li>✓ Real-time lookups</li>
+                        <li>✓ Domain/IP verification</li>
+                        <li>✓ Recovery strategies</li>
                     </ul>
-                    <a href="#full-scan" class="btn-pricing">Start Scan</a>
+                    <a href="#" class="btn-price primary">Get Shadow AI Pro</a>
                 </div>
 
-                <div class="pricing-card">
-                    <h3>Standard Scan</h3>
-                    <div class="price">
-                        <span class="price-amount">$39</span>
-                        <span class="price-period">one-time</span>
-                    </div>
-                    <ul class="pricing-features">
-                        <li>✓ 6-10 platforms</li>
-                        <li>✓ Instant results</li>
-                        <li>✓ Downloadable report</li>
-                        <li>✓ Recovery recommendations</li>
-                        <li>✗ Monitoring</li>
-                        <li>✗ Alerts</li>
-                    </ul>
-                    <a href="#full-scan" class="btn-pricing">Start Scan</a>
-                </div>
-
-                <div class="pricing-card">
-                    <h3>Deep Scan</h3>
-                    <div class="price">
-                        <span class="price-amount">$67</span>
-                        <span class="price-period">one-time</span>
-                    </div>
-                    <ul class="pricing-features">
-                        <li>✓ 11-20 platforms</li>
-                        <li>✓ Instant results</li>
-                        <li>✓ Downloadable report</li>
-                        <li>✓ Recovery recommendations</li>
-                        <li>✗ Monitoring</li>
-                        <li>✗ Alerts</li>
-                    </ul>
-                    <a href="#full-scan" class="btn-pricing">Start Scan</a>
-                </div>
-
-                <div class="pricing-card featured">
-                    <div class="popular-badge">Best Value</div>
-                    <h3>Full Spectrum</h3>
-                    <div class="price">
-                        <span class="price-amount">$97</span>
-                        <span class="price-period">one-time</span>
-                    </div>
-                    <ul class="pricing-features">
-                        <li>✓ All 26 platforms</li>
-                        <li>✓ Instant results</li>
-                        <li>✓ Downloadable report</li>
-                        <li>✓ Recovery recommendations</li>
-                        <li>✓ Save for monitoring</li>
-                        <li>✗ Ongoing alerts</li>
-                    </ul>
-                    <a href="#full-scan" class="btn-pricing primary">Start Full Scan</a>
-                </div>
-            </div>
-
-            <!-- Monthly Monitoring -->
-            <h3 class="pricing-category">Monthly Monitoring</h3>
-            <div class="pricing-grid">
-                <div class="pricing-card">
+                <div class="price-card">
                     <h3>Starter</h3>
                     <div class="price">
-                        <span class="price-amount">$9.99</span>
-                        <span class="price-period">/month</span>
+                        <span class="amount">$9.99</span>
+                        <span class="period">/month</span>
                     </div>
-                    <ul class="pricing-features">
-                        <li>✓ Up to 5 platforms</li>
+                    <ul>
+                        <li>✓ 5 platforms monitored</li>
                         <li>✓ Weekly checks</li>
                         <li>✓ Email alerts</li>
                         <li>✓ Historical tracking</li>
-                        <li>✓ Shadow AI (Free version)</li>
-                        <li>✗ Real-time monitoring</li>
+                        <li>✓ Shadow AI Free (3/day)</li>
                     </ul>
-                    <a href="#" class="btn-pricing">Get Starter</a>
+                    <a href="#" class="btn-price">Get Starter</a>
                 </div>
 
-                <div class="pricing-card featured">
-                    <div class="popular-badge">Most Popular</div>
+                <div class="price-card">
                     <h3>Pro</h3>
                     <div class="price">
-                        <span class="price-amount">$19.99</span>
-                        <span class="price-period">/month</span>
+                        <span class="amount">$19.99</span>
+                        <span class="period">/month</span>
                     </div>
-                    <ul class="pricing-features">
-                        <li>✓ Up to 15 platforms</li>
+                    <ul>
+                        <li>✓ 15 platforms monitored</li>
                         <li>✓ Daily checks</li>
                         <li>✓ Text + Email alerts</li>
-                        <li>✓ Historical tracking</li>
                         <li>✓ Shadow AI Pro included ⭐</li>
-                        <li>✓ Real-time lookups</li>
+                        <li>✓ Priority support</li>
                     </ul>
-                    <a href="#" class="btn-pricing primary">Get Pro</a>
+                    <a href="#" class="btn-price">Get Pro</a>
                 </div>
 
-                <div class="pricing-card">
+                <div class="price-card">
                     <h3>Complete</h3>
                     <div class="price">
-                        <span class="price-amount">$29.99</span>
-                        <span class="price-period">/month</span>
+                        <span class="amount">$29.99</span>
+                        <span class="period">/month</span>
                     </div>
-                    <ul class="pricing-features">
+                    <ul>
                         <li>✓ All 26 platforms</li>
                         <li>✓ Real-time monitoring</li>
-                        <li>✓ Instant alerts (text/email)</li>
-                        <li>✓ Historical tracking</li>
+                        <li>✓ Instant alerts</li>
                         <li>✓ Shadow AI Pro included ⭐</li>
                         <li>✓ API access</li>
                     </ul>
-                    <a href="#" class="btn-pricing">Get Complete</a>
-                </div>
-            </div>
-
-            <!-- Shadow AI Add-On -->
-            <div class="addon-section">
-                <h3>🤖 Shadow AI Pro (Standalone)</h3>
-                <div class="addon-card">
-                    <div class="addon-content">
-                        <h4>Real-Time AI Investigations</h4>
-                        <p>Add Shadow AI Pro to any plan - or get it standalone if you don't need monitoring.</p>
-                        <ul>
-                            <li>✓ Live domain/IP/email verification</li>
-                            <li>✓ Real-time blacklist checking</li>
-                            <li>✓ Web searches for your status</li>
-                            <li>✓ DNS record validation</li>
-                            <li>✓ 100 questions per hour</li>
-                        </ul>
-                    </div>
-                    <div class="addon-pricing">
-                        <div class="price">
-                            <span class="price-amount">$9.99</span>
-                            <span class="price-period">/month</span>
-                        </div>
-                        <a href="#" class="btn-pricing">Add Shadow AI Pro</a>
-                        <p class="addon-note">Included FREE with Pro & Complete plans</p>
-                    </div>
+                    <a href="#" class="btn-price">Get Complete</a>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- CTA Section -->
+    <!-- CTA -->
     <section class="cta">
         <div class="container">
             <h2>Ready to Know Your Real Reach?</h2>
-            <p>Join thousands checking their visibility across all platforms</p>
-            <div class="cta-buttons">
-                <a href="#full-scan" class="btn-hero">Start Full Spectrum Scan</a>
-                <a href="checker.html" class="btn-secondary-cta">Try Free Checker</a>
+            <p>Join thousands checking their visibility</p>
+            <div class="cta-btns">
+                <a href="#pricing" class="btn-large">Get Shadow AI Pro</a>
+                <a href="checker.html" class="btn-ghost-light">Try Free Tools</a>
             </div>
         </div>
     </section>
@@ -826,53 +374,42 @@
     <!-- Footer -->
     <footer class="footer">
         <div class="container">
-            <div class="footer-content">
+            <div class="footer-grid">
                 <div class="footer-brand">
-                    <span class="logo-emoji">🔍</span>
-                    <span class="logo-text">ShadowBanCheck.io</span>
-                    <p>Know Your Real Reach Across 26 Platforms</p>
+                    <div class="logo">
+                        <span class="logo-emoji">🔍</span>
+                        <span>ShadowBanCheck.io</span>
+                    </div>
+                    <p>Know your real reach</p>
                 </div>
-                <div class="footer-links">
-                    <div class="footer-column">
-                        <h4>Product</h4>
-                        <a href="#platforms">Platforms</a>
-                        <a href="#how-it-works">How It Works</a>
-                        <a href="#pricing">Pricing</a>
-                        <a href="hashtag-checker.html">Hashtag Checker</a>
-                    </div>
-                    <div class="footer-column">
-                        <h4>Tools</h4>
-                        <a href="checker.html">Shadow Ban Checker</a>
-                        <a href="hashtag-checker.html">Hashtag Checker</a>
-                        <a href="#full-scan">Full Spectrum Scan</a>
-                    </div>
-                    <div class="footer-column">
-                        <h4>Support</h4>
-                        <a href="#">Help Center</a>
-                        <a href="#">Contact</a>
-                        <a href="#">Status</a>
-                    </div>
-                    <div class="footer-column">
-                        <h4>Legal</h4>
-                        <a href="#">Privacy</a>
-                        <a href="#">Terms</a>
-                        <a href="#">Disclaimer</a>
-                    </div>
+                <div class="footer-col">
+                    <h4>Product</h4>
+                    <a href="#platforms">Platforms</a>
+                    <a href="#pricing">Pricing</a>
+                </div>
+                <div class="footer-col">
+                    <h4>Tools</h4>
+                    <a href="checker.html">Shadow Ban Checker</a>
+                    <a href="hashtag-checker.html">Hashtag Checker</a>
+                </div>
+                <div class="footer-col">
+                    <h4>Support</h4>
+                    <a href="#">Help</a>
+                    <a href="#">Contact</a>
                 </div>
             </div>
             <div class="footer-bottom">
-                <p>&copy; 2024 ShadowBanCheck.io. All rights reserved.</p>
+                <p>&copy; 2024 ShadowBanCheck.io</p>
             </div>
         </div>
     </footer>
 
-    <!-- Shadow AI Button -->
+    <!-- Shadow AI -->
     <button id="shadow-ai-btn" class="copilot-btn">
         <span class="copilot-emoji">🤖</span>
-        <span class="copilot-text">Shadow AI</span>
+        <span>Shadow AI</span>
     </button>
 
-    <!-- Shadow AI Chat -->
     <div id="shadow-ai-chat" class="copilot-chat hidden">
         <div class="copilot-header">
             <div class="copilot-title">
@@ -881,9 +418,7 @@
             </div>
             <button id="shadow-ai-close" class="copilot-close">&times;</button>
         </div>
-        <div id="shadow-ai-messages" class="copilot-messages">
-            <!-- Messages populated by shadow-ai.js -->
-        </div>
+        <div id="shadow-ai-messages" class="copilot-messages"></div>
         <div class="copilot-input">
             <input type="text" id="shadow-ai-input" placeholder="Ask about shadow bans...">
             <button id="shadow-ai-send">Send</button>

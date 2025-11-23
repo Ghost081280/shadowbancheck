@@ -102,10 +102,13 @@
 .copilot-messages {
     flex: 1;
     overflow-y: auto;
+    overflow-x: hidden;
     padding: var(--space-lg);
     display: flex;
     flex-direction: column;
     gap: var(--space-md);
+    width: 100%;
+    box-sizing: border-box;
 }
 
 /* Custom Scrollbar */
@@ -360,6 +363,11 @@
     border-radius: var(--radius-md);
     max-width: 85%;
     animation: slideIn 0.3s ease;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    word-break: break-word;
+    hyphens: auto;
+    line-height: 1.6;
 }
 
 @keyframes slideIn {

@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hashtag Safety Checker - Check Banned Hashtags</title>
+    <meta name="description" content="Check if your hashtags are banned on Instagram, TikTok, or Twitter. Free hashtag checker finds banned and restricted hashtags before you post.">
+    <link rel="stylesheet" href="./css/hashtag-checker.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="logo">
+                <a href="index.html">
+                    <span class="logo-emoji">🔍</span>
+                    <span class="logo-text">ShadowBanCheck.io</span>
+                </a>
+            </div>
+            <nav class="nav">
+                <a href="index.html">Home</a>
+                <a href="checker.html">Shadow Ban Check</a>
+                <a href="index.html#pricing">Pricing</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main">
+        <div class="container">
+            <!-- Header -->
+            <div class="checker-header">
+                <h1>🚫 Hashtag Safety Checker</h1>
+                <p>Check if your hashtags are banned or restricted before you post</p>
+                <div class="platform-badges">
+                    <span class="platform-badge">📸 Instagram</span>
+                    <span class="platform-badge">🎵 TikTok</span>
+                    <span class="platform-badge">🐦 Twitter</span>
+                </div>
+            </div>
+
+            <!-- Input Section -->
+            <div class="input-section">
+                <div class="input-card">
+                    <h2>Enter Your Hashtags</h2>
+                    <p class="input-help">Type or paste hashtags separated by spaces, commas, or on separate lines</p>
+                    
+                    <textarea 
+                        id="hashtag-input" 
+                        placeholder="#fitness #motivation #gains #workout #fitfam"
+                        rows="6"
+                    ></textarea>
+                    
+                    <div class="input-meta">
+                        <span id="hashtag-count">0 hashtags</span>
+                        <span id="checks-remaining-display">5 free checks left today</span>
+                    </div>
+                    
+                    <button id="check-hashtags-btn" class="btn-check">
+                        <span class="btn-text">Check Hashtags</span>
+                        <span class="btn-icon">→</span>
+                    </button>
+                    
+                    <div class="quick-actions">
+                        <button id="clear-btn" class="btn-text-link">Clear all</button>
+                        <button id="example-btn" class="btn-text-link">Try example</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results Section -->
+            <div id="results-section" class="results-section hidden">
+                <div class="results-header">
+                    <h2>Results</h2>
+                    <div class="results-summary">
+                        <div class="summary-stat safe">
+                            <span class="stat-number" id="safe-count">0</span>
+                            <span class="stat-label">Safe</span>
+                        </div>
+                        <div class="summary-stat banned">
+                            <span class="stat-number" id="banned-count">0</span>
+                            <span class="stat-label">Banned</span>
+                        </div>
+                        <div class="summary-stat warning">
+                            <span class="stat-number" id="restricted-count">0</span>
+                            <span class="stat-label">Restricted</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="results-list" class="results-list">
+                    <!-- Populated by JavaScript -->
+                </div>
+
+                <div class="results-actions">
+                    <button id="copy-safe-btn" class="btn-secondary">Copy Safe Hashtags</button>
+                    <button id="export-btn" class="btn-secondary">Export Results</button>
+                </div>
+            </div>
+
+            <!-- Upgrade CTA -->
+            <div class="upgrade-banner">
+                <div class="banner-content">
+                    <h3>🚀 Upgrade to Creator Plan</h3>
+                    <p>Get unlimited checks, bulk checker (30 at once), alternative suggestions, and email alerts</p>
+                    <a href="index.html#pricing" class="btn-upgrade">Upgrade for $9.99/mo →</a>
+                </div>
+            </div>
+
+            <!-- Info Section -->
+            <div class="info-section">
+                <div class="info-card">
+                    <h3>❓ Why Hashtags Get Banned</h3>
+                    <ul>
+                        <li><strong>Spam abuse:</strong> Hashtags overused by spammers</li>
+                        <li><strong>Inappropriate content:</strong> Associated with adult or harmful content</li>
+                        <li><strong>Community violations:</strong> Used to spread misinformation</li>
+                        <li><strong>Temporary restrictions:</strong> Hashtags can be banned temporarily then unbanned</li>
+                    </ul>
+                </div>
+
+                <div class="info-card">
+                    <h3>💡 Best Practices</h3>
+                    <ul>
+                        <li>Always check hashtags before posting</li>
+                        <li>Mix popular and niche hashtags (5-10 per post)</li>
+                        <li>Avoid using ALL popular hashtags</li>
+                        <li>Research hashtags specific to your niche</li>
+                        <li>Check regularly - ban status changes often</li>
+                    </ul>
+                </div>
+
+                <div class="info-card">
+                    <h3>🎯 Platform Differences</h3>
+                    <ul>
+                        <li><strong>Instagram:</strong> Most strict, bans thousands of hashtags</li>
+                        <li><strong>TikTok:</strong> Focuses on trending content restrictions</li>
+                        <li><strong>Twitter:</strong> Fewer bans, more algorithmic suppression</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Claude Co-Pilot -->
+    <button id="claude-copilot-btn" class="copilot-btn">
+        <span class="copilot-emoji">🤖</span>
+        <span class="copilot-text">Ask Claude</span>
+    </button>
+
+    <div id="claude-copilot" class="copilot-chat hidden">
+        <div class="copilot-header">
+            <div class="copilot-title">
+                <span class="copilot-emoji">🤖</span>
+                <span>Hashtag Helper</span>
+            </div>
+            <button id="copilot-close" class="copilot-close">&times;</button>
+        </div>
+        <div id="copilot-messages" class="copilot-messages">
+            <div class="copilot-message assistant">
+                <div class="message-content">
+                    <p>👋 Hi! I can help you with hashtag strategy!</p>
+                    <p>Ask me about:</p>
+                    <ul>
+                        <li>Why certain hashtags are banned</li>
+                        <li>Alternative hashtags to use</li>
+                        <li>Best practices for each platform</li>
+                        <li>How to build a hashtag strategy</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="copilot-input">
+            <input type="text" id="copilot-input-field" placeholder="Ask about hashtags...">
+            <button id="copilot-send">Send</button>
+        </div>
+    </div>
+
+    <script src="./js/hashtag-checker.js"></script>
+</body>
+</html>

@@ -1,304 +1,289 @@
 // Results Page JavaScript
 
-// Load results from localStorage
 let checkResults = null;
 
+// Load and display results
 function loadResults() {
-    const storedResults = localStorage.getItem('checkResults');
+    // Get results from localStorage
+    const resultsData = localStorage.getItem('checkResults');
     
-    if (!storedResults) {
+    if (!resultsData) {
         // No results found, redirect to checker
         window.location.href = 'checker.html';
         return;
     }
     
     try {
-        checkResults = JSON.parse(storedResults);
+        checkResults = JSON.parse(resultsData);
         displayResults();
     } catch (error) {
-        console.error('Error parsing results:', error);
+        console.error('Failed to parse results:', error);
         window.location.href = 'checker.html';
     }
 }
 
 function displayResults() {
-    if (!checkResults) return;
-    
+    // Display header
     displayHeader();
+    
+    // Display overall status
     displayOverallStatus();
+    
+    // Display detailed checks
     displayDetailedChecks();
+    
+    // Display account details
     displayAccountDetails();
+    
+    // Display recommendations
     displayRecommendations();
 }
 
 function displayHeader() {
-    const headerDiv = document.getElementById('results-header');
-    const platformEmojis = {
-        twitter: '🐦',
-        reddit: '🤖',
-        email: '📧',
-        instagram: '📸',
-        tiktok: '🎵',
-        linkedin: '💼'
-    };
+    const headerEl = document.getElementById('results-header');
+    const platformEmoji = getPlatformEmoji(checkResults.platform);
+    const platformName = getPlatformName(checkResults.platform);
     
-    const platformNames = {
-        twitter: 'Twitter / X',
-        reddit: 'Reddit',
-        email: 'Email',
-        instagram: 'Instagram',
-        tiktok: 'TikTok',
-        linkedin: 'LinkedIn'
-    };
-    
-    const date = new Date(checkResults.timestamp);
-    const timeStr = date.toLocaleString();
-    
-    headerDiv.innerHTML = `
+    headerEl.innerHTML = `
         <div class="platform-badge-large">
-            <span>${platformEmojis[checkResults.platform]}</span>
-            <span>${platformNames[checkResults.platform]}</span>
+            <span>${platformEmoji}</span>
+            <span>${platformName}</span>
         </div>
-        <h1>Shadow Ban Check: ${checkResults.identifier}</h1>
-        <p class="results-meta">Checked on ${timeStr}</p>
+        <h1>Shadow Ban Check Results</h1>
+        <div class="results-meta">
+            <span>Account: <strong>${checkResults.identifier}</strong></span>
+            <span>Checked: ${new Date(checkResults.timestamp).toLocaleString()}</span>
+        </div>
     `;
 }
 
 function displayOverallStatus() {
-    const statusDiv = document.getElementById('overall-status');
+    const statusEl = document.getElementById('overall-status');
+    const status = checkResults.status;
     
-    const statusConfig = {
-        clean: {
-            icon: '✅',
-            title: 'All Clear!',
-            description: 'No shadow ban detected. Your account appears to be in good standing.',
-            class: 'clean'
-        },
-        restricted: {
-            icon: '⚠️',
-            title: 'Issues Detected',
-            description: 'We found some restrictions on your account. Check the details below.',
-            class: 'restricted'
-        },
-        issues: {
-            icon: '⚠️',
-            title: 'Some Issues Found',
-            description: 'Your account has some issues that may affect visibility. Review recommendations below.',
-            class: 'issues'
-        },
-        error: {
-            icon: '❌',
-            title: 'Check Failed',
-            description: 'Unable to complete the check. Please try again.',
-            class: 'restricted'
-        }
-    };
+    let icon, title, description;
     
-    const config = statusConfig[checkResults.status] || statusConfig.error;
+    if (status === 'clean') {
+        icon = '✅';
+        title = 'All Clear!';
+        description = 'No shadow ban detected. Your content is reaching your audience.';
+    } else if (status === 'restricted') {
+        icon = '🚫';
+        title = 'Shadow Ban Detected';
+        description = 'Your account has visibility restrictions. See details below.';
+    } else if (status === 'issues') {
+        icon = '⚠️';
+        title = 'Issues Found';
+        description = 'Some problems detected that may affect your visibility.';
+    } else {
+        icon = '❓';
+        title = 'Status Unknown';
+        description = 'Unable to determine shadow ban status.';
+    }
     
-    statusDiv.innerHTML = `
-        <span class="status-icon">${config.icon}</span>
-        <h2 class="status-title ${config.class}">${config.title}</h2>
-        <p class="status-description">${config.description}</p>
+    statusEl.innerHTML = `
+        <span class="status-icon">${icon}</span>
+        <h2 class="status-title ${status}">${title}</h2>
+        <p class="status-description">${description}</p>
     `;
 }
 
 function displayDetailedChecks() {
     const checksGrid = document.getElementById('checks-grid');
+    checksGrid.innerHTML = '';
     
-    if (!checkResults.checks) {
-        checksGrid.innerHTML = '<p>No detailed checks available.</p>';
-        return;
-    }
-    
-    let checksHTML = '';
+    if (!checkResults.checks) return;
     
     for (const [checkName, checkData] of Object.entries(checkResults.checks)) {
-        const statusClass = checkData.status === 'passed' ? 'passed' : 
-                          checkData.status === 'failed' ? 'failed' : 'warning';
-        const statusIcon = checkData.status === 'passed' ? '✅' : 
-                         checkData.status === 'failed' ? '❌' : '⚠️';
-        
-        const formattedName = checkName
-            .replace(/([A-Z])/g, ' $1')
-            .replace(/^./, str => str.toUpperCase());
-        
-        let detailHTML = '';
-        if (checkData.found !== undefined) {
-            detailHTML = `<p class="check-detail">Found on ${checkData.found} blacklist(s)</p>`;
-        } else if (checkData.score !== undefined) {
-            detailHTML = `
-                <div class="score-display">
-                    <div class="score-circle ${checkData.score >= 70 ? 'high' : checkData.score >= 50 ? 'medium' : 'low'}">
-                        ${checkData.score}
-                    </div>
-                </div>
-            `;
-        }
-        
-        checksHTML += `
-            <div class="check-card ${statusClass}">
-                <div class="check-header">
-                    <span class="check-name">${formattedName}</span>
-                    <span class="check-status-icon">${statusIcon}</span>
-                </div>
-                <p class="check-description">${checkData.description}</p>
-                ${detailHTML}
-            </div>
-        `;
+        const checkCard = createCheckCard(checkName, checkData);
+        checksGrid.appendChild(checkCard);
+    }
+}
+
+function createCheckCard(checkName, checkData) {
+    const card = document.createElement('div');
+    const status = checkData.status || 'unknown';
+    
+    let icon;
+    if (status === 'passed') {
+        icon = '✅';
+    } else if (status === 'failed') {
+        icon = '❌';
+    } else {
+        icon = '⚠️';
     }
     
-    checksGrid.innerHTML = checksHTML;
+    card.className = `check-card ${status}`;
+    card.innerHTML = `
+        <div class="check-header">
+            <span class="check-name">${formatCheckName(checkName)}</span>
+            <span class="check-status-icon">${icon}</span>
+        </div>
+        <p class="check-description">${checkData.description || 'No description'}</p>
+        ${checkData.found !== undefined ? `<p class="check-detail">Found: ${checkData.found}</p>` : ''}
+        ${checkData.score !== undefined ? `<p class="check-detail">Score: ${checkData.score}/100</p>` : ''}
+    `;
+    
+    return card;
+}
+
+function formatCheckName(name) {
+    // Convert camelCase to Title Case
+    return name
+        .replace(/([A-Z])/g, ' $1')
+        .replace(/^./, str => str.toUpperCase())
+        .trim();
 }
 
 function displayAccountDetails() {
-    const detailsDiv = document.getElementById('account-details');
+    const detailsEl = document.getElementById('account-details');
     
     if (!checkResults.details) {
-        detailsDiv.style.display = 'none';
+        detailsEl.style.display = 'none';
         return;
     }
     
-    let detailsHTML = '<h3>📊 Account Information</h3><div class="details-grid">';
+    const detailsGrid = document.createElement('div');
+    detailsGrid.className = 'details-grid';
     
     for (const [key, value] of Object.entries(checkResults.details)) {
-        const formattedKey = key
-            .replace(/([A-Z])/g, ' $1')
-            .replace(/^./, str => str.toUpperCase());
-        
-        detailsHTML += `
-            <div class="detail-item">
-                <span class="detail-label">${formattedKey}</span>
-                <span class="detail-value">${value}</span>
-            </div>
+        const detailItem = document.createElement('div');
+        detailItem.className = 'detail-item';
+        detailItem.innerHTML = `
+            <span class="detail-label">${formatCheckName(key)}</span>
+            <span class="detail-value">${value}</span>
         `;
+        detailsGrid.appendChild(detailItem);
     }
     
-    detailsHTML += '</div>';
-    detailsDiv.innerHTML = detailsHTML;
+    detailsEl.innerHTML = '<h3>Account Details</h3>';
+    detailsEl.appendChild(detailsGrid);
 }
 
 function displayRecommendations() {
-    const recommendationsDiv = document.getElementById('recommendations-content');
-    
+    const recommendationsContent = document.getElementById('recommendations-content');
     const recommendations = generateRecommendations();
     
-    if (recommendations.length === 0) {
-        recommendationsDiv.innerHTML = `
-            <div class="recommendation-item success">
-                <div class="recommendation-title">✅ Keep Up The Good Work!</div>
-                <p class="recommendation-text">Your account is healthy. Continue following platform guidelines and engaging authentically.</p>
-            </div>
-        `;
-        return;
-    }
+    recommendationsContent.innerHTML = '';
     
-    let recsHTML = '';
     recommendations.forEach(rec => {
-        recsHTML += `
-            <div class="recommendation-item ${rec.type}">
-                <div class="recommendation-title">${rec.icon} ${rec.title}</div>
-                <p class="recommendation-text">${rec.text}</p>
-            </div>
+        const recItem = document.createElement('div');
+        recItem.className = `recommendation-item ${rec.type}`;
+        recItem.innerHTML = `
+            <div class="recommendation-title">${rec.icon} ${rec.title}</div>
+            <p class="recommendation-text">${rec.text}</p>
         `;
+        recommendationsContent.appendChild(recItem);
     });
-    
-    recommendationsDiv.innerHTML = recsHTML;
 }
 
 function generateRecommendations() {
     const recommendations = [];
     
-    if (!checkResults.checks) return recommendations;
-    
-    // Platform-specific recommendations
-    if (checkResults.platform === 'twitter') {
-        for (const [checkName, checkData] of Object.entries(checkResults.checks)) {
-            if (checkData.status === 'failed') {
-                if (checkName === 'searchBan') {
-                    recommendations.push({
-                        type: 'danger',
-                        icon: '🔍',
-                        title: 'Search Ban Detected',
-                        text: 'Reduce posting frequency for 48-72 hours. Avoid using banned hashtags. Review Twitter\'s spam policy and remove any content that may violate guidelines.'
-                    });
-                } else if (checkName === 'ghostBan') {
-                    recommendations.push({
-                        type: 'danger',
-                        icon: '👻',
-                        title: 'Ghost Ban Active',
-                        text: 'Your replies are hidden. Stop using automation tools, reduce reply frequency, and avoid repetitive content. Recovery typically takes 48-72 hours.'
-                    });
-                } else if (checkName === 'replyDeboosting') {
-                    recommendations.push({
-                        type: 'warning',
-                        icon: '💬',
-                        title: 'Reply Suppression',
-                        text: 'Engage more authentically. Avoid spammy behavior like copy-pasting replies. Focus on quality over quantity.'
-                    });
-                }
-            }
-        }
-    } else if (checkResults.platform === 'reddit') {
-        for (const [checkName, checkData] of Object.entries(checkResults.checks)) {
-            if (checkData.status === 'failed') {
-                if (checkName === 'sitewideBan') {
-                    recommendations.push({
-                        type: 'danger',
-                        icon: '🚫',
-                        title: 'Site-Wide Shadow Ban',
-                        text: 'Contact Reddit admins at reddit.com/appeals. Review site-wide rules. This may be a false positive - verify with moderators.'
-                    });
-                }
-            }
-        }
-    } else if (checkResults.platform === 'email') {
-        for (const [checkName, checkData] of Object.entries(checkResults.checks)) {
-            if (checkData.status === 'failed') {
-                if (checkName === 'blacklists' && checkData.found > 0) {
-                    recommendations.push({
-                        type: 'danger',
-                        icon: '📧',
-                        title: 'Blacklist Detected',
-                        text: `Your domain/IP is on ${checkData.found} blacklist(s). Request delisting from each service. Improve email practices: implement authentication, reduce spam complaints, and monitor sender reputation.`
-                    });
-                } else if (checkName === 'spfRecord') {
-                    recommendations.push({
-                        type: 'warning',
-                        icon: '🔐',
-                        title: 'SPF Record Missing',
-                        text: 'Add an SPF record to your DNS settings to authorize sending servers. This improves deliverability and reduces spoofing.'
-                    });
-                } else if (checkName === 'dkimRecord') {
-                    recommendations.push({
-                        type: 'warning',
-                        icon: '🔑',
-                        title: 'DKIM Not Configured',
-                        text: 'Configure DKIM signatures to verify email authenticity. Contact your email provider or hosting service for setup instructions.'
-                    });
-                } else if (checkName === 'dmarcRecord') {
-                    recommendations.push({
-                        type: 'warning',
-                        icon: '🛡️',
-                        title: 'DMARC Policy Needed',
-                        text: 'Implement DMARC to protect your domain from spoofing and improve email security. Start with a monitoring policy (p=none).'
-                    });
-                }
-            }
-        }
-    }
-    
-    // General recommendations if status is restricted
-    if (checkResults.status === 'restricted' && recommendations.length === 0) {
+    if (checkResults.status === 'clean') {
         recommendations.push({
-            type: 'warning',
-            icon: '⚠️',
-            title: 'Account Under Review',
-            text: 'Your account shows signs of restriction. Follow platform guidelines strictly, reduce activity for 48 hours, and avoid automation tools.'
+            type: 'success',
+            icon: '✅',
+            title: 'Keep Up the Good Work',
+            text: 'Your account is healthy. Continue following platform guidelines and engaging authentically with your audience.'
+        });
+        
+        recommendations.push({
+            type: 'success',
+            icon: '📊',
+            title: 'Monitor Regularly',
+            text: 'Check your shadow ban status weekly to catch any issues early. Upgrade to Pro for automated monitoring.'
         });
     }
     
+    if (checkResults.status === 'restricted' || checkResults.status === 'issues') {
+        recommendations.push({
+            type: 'danger',
+            icon: '⚠️',
+            title: 'Take Immediate Action',
+            text: 'Stop all posting and engagement for 48-72 hours. Review your recent content for any potential policy violations.'
+        });
+        
+        recommendations.push({
+            type: 'warning',
+            icon: '🔍',
+            title: 'Review Recent Activity',
+            text: 'Check for: rapid following/unfollowing, repetitive content, third-party automation tools, or potential spam behavior.'
+        });
+        
+        recommendations.push({
+            type: 'warning',
+            icon: '⏰',
+            title: 'Wait and Monitor',
+            text: 'Most shadow bans lift within 48-72 hours. Use our checker daily to track your recovery progress.'
+        });
+    }
+    
+    // Platform-specific recommendations
+    if (checkResults.platform === 'twitter') {
+        if (checkResults.checks?.searchBan?.status === 'failed') {
+            recommendations.push({
+                type: 'warning',
+                icon: '🔎',
+                title: 'Search Ban Detected',
+                text: 'Your tweets are hidden from search. Avoid hashtag spam, reduce posting frequency, and focus on quality engagement.'
+            });
+        }
+    }
+    
+    if (checkResults.platform === 'email') {
+        if (checkResults.checks?.blacklists?.found > 0) {
+            recommendations.push({
+                type: 'danger',
+                icon: '📧',
+                title: 'Email Blacklisted',
+                text: `You're on ${checkResults.checks.blacklists.found} blacklists. Request removal immediately and audit your sending practices.`
+            });
+        }
+        
+        if (checkResults.checks?.spfRecord?.status === 'failed') {
+            recommendations.push({
+                type: 'warning',
+                icon: '🔧',
+                title: 'Fix SPF Record',
+                text: 'Your SPF record is missing or invalid. Configure proper email authentication to improve deliverability.'
+            });
+        }
+    }
+    
+    // Always add upgrade CTA
+    recommendations.push({
+        type: 'success',
+        icon: '🚀',
+        title: 'Upgrade for More Features',
+        text: 'Get unlimited checks, historical tracking, automated monitoring, and priority support with our Pro plan.'
+    });
+    
     return recommendations;
+}
+
+function getPlatformEmoji(platform) {
+    const emojis = {
+        'twitter': '🐦',
+        'reddit': '🤖',
+        'email': '📧',
+        'instagram': '📸',
+        'tiktok': '🎵',
+        'linkedin': '💼'
+    };
+    return emojis[platform] || '🔍';
+}
+
+function getPlatformName(platform) {
+    const names = {
+        'twitter': 'Twitter / X',
+        'reddit': 'Reddit',
+        'email': 'Email',
+        'instagram': 'Instagram',
+        'tiktok': 'TikTok',
+        'linkedin': 'LinkedIn'
+    };
+    return names[platform] || platform.charAt(0).toUpperCase() + platform.slice(1);
 }
 
 // Share results
@@ -356,116 +341,6 @@ function generateReportText() {
     
     report += `\n--\nGenerated by ShadowBanCheck.io`;
     return report;
-}
-
-// Claude Co-Pilot
-const copilotBtn = document.getElementById('claude-copilot-btn');
-const copilotChat = document.getElementById('claude-copilot');
-const copilotClose = document.getElementById('copilot-close');
-const copilotInput = document.getElementById('copilot-input-field');
-const copilotSend = document.getElementById('copilot-send');
-const copilotMessages = document.getElementById('copilot-messages');
-
-copilotBtn?.addEventListener('click', () => {
-    copilotChat.classList.remove('hidden');
-    copilotBtn.style.display = 'none';
-    copilotInput.focus();
-});
-
-copilotClose?.addEventListener('click', () => {
-    copilotChat.classList.add('hidden');
-    copilotBtn.style.display = 'flex';
-});
-
-async function sendMessage() {
-    const message = copilotInput.value.trim();
-    if (!message) return;
-    
-    addMessage(message, 'user');
-    copilotInput.value = '';
-    
-    const typingId = addTypingIndicator();
-    
-    try {
-        const response = await getCopilotResponse(message);
-        removeTypingIndicator(typingId);
-        addMessage(response, 'assistant');
-    } catch (error) {
-        removeTypingIndicator(typingId);
-        addMessage('Sorry, I encountered an error.', 'assistant');
-    }
-    
-    copilotMessages.scrollTop = copilotMessages.scrollHeight;
-}
-
-copilotSend?.addEventListener('click', sendMessage);
-copilotInput?.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') sendMessage();
-});
-
-function addMessage(content, type) {
-    const messageDiv = document.createElement('div');
-    messageDiv.className = `copilot-message ${type}`;
-    
-    const contentDiv = document.createElement('div');
-    contentDiv.className = 'message-content';
-    contentDiv.innerHTML = formatMessage(content);
-    
-    messageDiv.appendChild(contentDiv);
-    copilotMessages.appendChild(messageDiv);
-    copilotMessages.scrollTop = copilotMessages.scrollHeight;
-}
-
-function formatMessage(text) {
-    text = text.replace(/\n/g, '<br>');
-    text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-    return text;
-}
-
-function addTypingIndicator() {
-    const typingDiv = document.createElement('div');
-    typingDiv.className = 'copilot-message assistant';
-    typingDiv.id = 'typing-' + Date.now();
-    
-    const contentDiv = document.createElement('div');
-    contentDiv.className = 'message-content';
-    contentDiv.textContent = '...';
-    
-    typingDiv.appendChild(contentDiv);
-    copilotMessages.appendChild(typingDiv);
-    
-    return typingDiv.id;
-}
-
-function removeTypingIndicator(id) {
-    document.getElementById(id)?.remove();
-}
-
-async function getCopilotResponse(message) {
-    const lowerMessage = message.toLowerCase();
-    
-    // Context-aware responses based on current results
-    if (lowerMessage.includes('what') && lowerMessage.includes('mean')) {
-        if (checkResults.status === 'restricted') {
-            return `Your **${checkResults.platform}** account shows signs of restriction. This means your content visibility is limited. Check the specific failed checks above - each indicates a different type of restriction.\n\nWant help with a specific check?`;
-        } else {
-            return `Your account is **${checkResults.status}**. ${checkResults.status === 'clean' ? 'No restrictions detected!' : 'Some minor issues found but nothing critical.'}\n\nWhat specifically would you like to know more about?`;
-        }
-    }
-    
-    if (lowerMessage.includes('fix') || lowerMessage.includes('recover')) {
-        return `**Recovery Steps:**\n\n1. **Stop current activity** for 48-72 hours\n2. **Review platform guidelines** and remove violating content\n3. **Disable automation tools** if you're using any\n4. **Gradually resume** with authentic engagement\n5. **Monitor** your status with our checker\n\nMost shadow bans lift within 48-72 hours. Need platform-specific advice?`;
-    }
-    
-    if (lowerMessage.includes('why') || lowerMessage.includes('cause')) {
-        return `**Common Causes:**\n\n- **Automation**: Using bots or third-party tools\n- **Spam behavior**: Repetitive content, excessive posting\n- **Policy violations**: Content against guidelines\n- **Mass actions**: Bulk following/unfollowing\n- **Reports**: User reports about your content\n\nWhich do you think might apply to you?`;
-    }
-    
-    if (lowerMessage.includes('how long')) {
-        return `**Shadow Ban Duration:**\n\nMost shadow bans last **48-72 hours** for first-time issues. However:\n\n- Light restrictions: 24-48 hours\n- Moderate bans: 3-7 days\n- Severe/repeat: 2+ weeks\n\nThe key is to stop the triggering behavior immediately and wait patiently.`;
-    }
-    
-    return `I can help you understand:\n- What your results mean\n- Why you might be restricted\n- How to fix specific issues\n- Recovery timeline and steps\n\nWhat would you like to know?`;
 }
 
 // Initialize

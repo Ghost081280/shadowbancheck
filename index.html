@@ -3,8 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ShadowBanCheck.io - Are You Shadow Banned?</title>
-    <meta name="description" content="Check if you're shadow banned. Free tools + AI-powered investigations across 26 platforms.">
+    <title>ShadowBanCheck.io - Check If You're Shadow Banned</title>
+    <meta name="description" content="Free shadow ban checker for Twitter, Reddit, Email, Instagram, TikTok and more. Check your visibility in seconds.">
+    
+    <!-- CSS - Updated for new architecture -->
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/shadow-ai.css">
 </head>
@@ -19,99 +21,102 @@
                 </a>
             </div>
             <nav class="nav">
-                <a href="#platforms">Platforms</a>
+                <a href="#how-it-works">How It Works</a>
                 <a href="#pricing">Pricing</a>
-                <a href="#" class="btn-nav">Get Shadow AI Pro</a>
+                <a href="checker.html" class="btn-nav">Check Now</a>
             </nav>
         </div>
     </header>
 
-    <!-- Hero -->
+    <!-- Hero Section -->
     <section class="hero">
         <div class="container">
-            <div class="hero-badge">🚀 AI-Powered Shadow Ban Detection</div>
+            <div class="hero-badge">✨ Free Shadow Ban Checker</div>
             <h1 class="hero-title">Are You Shadow Banned?</h1>
-            <p class="hero-subtitle">Free tools, AI investigations, and real-time monitoring for your digital presence</p>
+            <p class="hero-subtitle">Check your visibility on Twitter, Reddit, Email, and more platforms in seconds. Know if your content is being seen.</p>
             
-            <!-- Three Options -->
             <div class="hero-options">
-                <a href="checker.html" class="option-card">
+                <a href="checker.html" class="option-card featured">
+                    <span class="featured-badge">Most Popular</span>
                     <div class="option-icon">🔍</div>
-                    <h3>Quick Check</h3>
-                    <p>Single platform check</p>
-                    <span class="option-tag free">Free - 3/day</span>
+                    <h3>Shadow Ban Checker</h3>
+                    <p>Check if you're shadow banned on any platform</p>
+                    <span class="option-tag free">Free</span>
                 </a>
 
                 <a href="hashtag-checker.html" class="option-card">
                     <div class="option-icon">🚫</div>
-                    <h3>Hashtag Checker</h3>
-                    <p>Verify banned hashtags</p>
-                    <span class="option-tag free">Free - 5/day</span>
+                    <h3>Hashtag Safety Checker</h3>
+                    <p>Find banned hashtags before you post</p>
+                    <span class="option-tag free">Free</span>
                 </a>
 
-                <a href="#pricing" class="option-card featured">
-                    <div class="featured-badge">Most Popular</div>
-                    <div class="option-icon">🤖</div>
-                    <h3>Shadow AI Pro</h3>
-                    <p>AI + live checks</p>
-                    <span class="option-tag pro">$9.99/mo</span>
+                <a href="#pricing" class="option-card">
+                    <div class="option-icon">📊</div>
+                    <h3>Pro Monitoring</h3>
+                    <p>Automated daily checks & alerts</p>
+                    <span class="option-tag pro">Pro</span>
                 </a>
             </div>
         </div>
     </section>
 
-    <!-- Shadow AI Spotlight -->
-    <section class="spotlight">
+    <!-- Spotlight Section -->
+    <section class="spotlight section">
         <div class="container">
             <div class="spotlight-grid">
                 <div class="spotlight-content">
-                    <div class="spotlight-tag">🤖 Powered by Claude AI</div>
-                    <h2>Your AI Shadow Ban Detective</h2>
-                    <p class="lead">Get instant answers, live platform checks, and personalized recovery advice through a simple chat interface.</p>
+                    <span class="spotlight-tag">🤖 AI Powered</span>
+                    <h2>Meet Shadow AI</h2>
+                    <p class="lead">Your personal shadow ban expert. Get instant answers about your visibility, platform policies, and recovery strategies.</p>
                     
                     <div class="features-list">
                         <div class="feature-item">
-                            <span class="feature-icon">✨</span>
+                            <span class="feature-icon">💬</span>
                             <div>
-                                <strong>Unlimited Questions</strong>
-                                <p>Ask anything about shadow bans</p>
+                                <strong>Ask Anything</strong>
+                                <p>Questions about shadow bans, restrictions, or visibility issues</p>
                             </div>
                         </div>
                         <div class="feature-item">
-                            <span class="feature-icon">🔍</span>
+                            <span class="feature-icon">📈</span>
                             <div>
-                                <strong>Live Platform Checks</strong>
-                                <p>Real-time username & email lookups</p>
+                                <strong>Expert Guidance</strong>
+                                <p>Personalized advice based on your specific situation</p>
                             </div>
                         </div>
                         <div class="feature-item">
-                            <span class="feature-icon">📊</span>
+                            <span class="feature-icon">⚡</span>
                             <div>
-                                <strong>Smart Recommendations</strong>
-                                <p>Personalized recovery strategies</p>
+                                <strong>Instant Answers</strong>
+                                <p>Get help 24/7 without waiting for support</p>
                             </div>
                         </div>
                     </div>
-
+                    
                     <div class="spotlight-cta">
-                        <a href="#pricing" class="btn-large">Get Shadow AI Pro - $9.99/mo</a>
-                        <button id="try-ai-btn" class="btn-ghost">Try Free (3 questions/day)</button>
+                        <button id="try-ai-btn" class="btn btn-large">Try Shadow AI</button>
+                        <a href="checker.html" class="btn btn-ghost">Run a Check</a>
                     </div>
                 </div>
 
-                <div class="spotlight-demo">
-                    <div class="demo-chat">
-                        <div class="demo-header">
-                            <span>🤖</span>
-                            <span>Shadow AI Pro</span>
+                <div class="demo-chat">
+                    <div class="demo-header">
+                        <span>🤖</span>
+                        <span>Shadow AI</span>
+                    </div>
+                    <div class="demo-messages">
+                        <div class="demo-msg user">
+                            Am I shadow banned on Twitter?
                         </div>
-                        <div class="demo-messages">
-                            <div class="demo-msg user">Am I shadow banned on Twitter?</div>
-                            <div class="demo-msg ai">
-                                <strong>Good news!</strong> Your account shows no signs of shadow banning. Your tweets appear in search and replies are visible.
-                                <br><br>
-                                Want me to check other platforms?
-                            </div>
+                        <div class="demo-msg ai">
+                            I can help check! Shadow bans on Twitter typically affect: search visibility, reply threads, and suggestions. Run our free checker to see your exact status.
+                        </div>
+                        <div class="demo-msg user">
+                            How long do they last?
+                        </div>
+                        <div class="demo-msg ai">
+                            Most Twitter shadow bans lift in 48-72 hours if you stop the triggering behavior. I recommend checking daily to track your recovery.
                         </div>
                     </div>
                 </div>
@@ -119,16 +124,28 @@
         </div>
     </section>
 
-    <!-- Platforms -->
-    <section id="platforms" class="platforms">
+    <!-- Platforms Section -->
+    <section class="platforms section">
         <div class="container">
-            <h2 class="section-title">We Check 26 Platforms</h2>
-            <p class="section-desc">Comprehensive coverage across social media, streaming, and infrastructure</p>
+            <div class="section-header">
+                <h2 class="section-title">Check All Major Platforms</h2>
+                <p class="section-desc">Comprehensive shadow ban detection across social media, email, and more</p>
+            </div>
 
             <div class="platform-grid">
-                <div class="platform-item live">
+                <div class="platform-item">
                     <span>🐦</span>
                     <span>Twitter / X</span>
+                    <span class="badge live">Live</span>
+                </div>
+                <div class="platform-item">
+                    <span>🤖</span>
+                    <span>Reddit</span>
+                    <span class="badge live">Live</span>
+                </div>
+                <div class="platform-item">
+                    <span>📧</span>
+                    <span>Email</span>
                     <span class="badge live">Live</span>
                 </div>
                 <div class="platform-item">
@@ -142,98 +159,13 @@
                     <span class="badge soon">Soon</span>
                 </div>
                 <div class="platform-item">
-                    <span>📘</span>
-                    <span>Facebook</span>
-                    <span class="badge soon">Soon</span>
-                </div>
-                <div class="platform-item live">
-                    <span>🤖</span>
-                    <span>Reddit</span>
-                    <span class="badge live">Live</span>
-                </div>
-                <div class="platform-item">
                     <span>💼</span>
                     <span>LinkedIn</span>
                     <span class="badge soon">Soon</span>
                 </div>
                 <div class="platform-item">
-                    <span>🧵</span>
-                    <span>Threads</span>
-                    <span class="badge soon">Soon</span>
-                </div>
-                <div class="platform-item">
-                    <span>🦋</span>
-                    <span>Bluesky</span>
-                    <span class="badge soon">Soon</span>
-                </div>
-                <div class="platform-item">
-                    <span>📺</span>
-                    <span>YouTube</span>
-                    <span class="badge soon">Soon</span>
-                </div>
-                <div class="platform-item">
-                    <span>📌</span>
-                    <span>Pinterest</span>
-                    <span class="badge soon">Soon</span>
-                </div>
-                <div class="platform-item">
-                    <span>🎮</span>
-                    <span>Discord</span>
-                    <span class="badge soon">Soon</span>
-                </div>
-                <div class="platform-item">
-                    <span>🟣</span>
-                    <span>Twitch</span>
-                    <span class="badge soon">Soon</span>
-                </div>
-                <div class="platform-item">
-                    <span>⚡</span>
-                    <span>Kick</span>
-                    <span class="badge soon">Soon</span>
-                </div>
-                <div class="platform-item">
-                    <span>👻</span>
-                    <span>Snapchat</span>
-                    <span class="badge soon">Soon</span>
-                </div>
-                <div class="platform-item">
-                    <span>🇺🇸</span>
-                    <span>Truth Social</span>
-                    <span class="badge soon">Soon</span>
-                </div>
-                <div class="platform-item">
-                    <span>📹</span>
-                    <span>Rumble</span>
-                    <span class="badge soon">Soon</span>
-                </div>
-                <div class="platform-item">
-                    <span>✈️</span>
-                    <span>Telegram</span>
-                    <span class="badge soon">Soon</span>
-                </div>
-                <div class="platform-item">
-                    <span>🛍️</span>
-                    <span>Etsy</span>
-                    <span class="badge soon">Soon</span>
-                </div>
-                <div class="platform-item">
-                    <span>📦</span>
-                    <span>Amazon</span>
-                    <span class="badge soon">Soon</span>
-                </div>
-                <div class="platform-item">
-                    <span>🏷️</span>
-                    <span>eBay</span>
-                    <span class="badge soon">Soon</span>
-                </div>
-                <div class="platform-item live">
-                    <span>📧</span>
-                    <span>Email</span>
-                    <span class="badge live">Live</span>
-                </div>
-                <div class="platform-item">
                     <span>📱</span>
-                    <span>Phone</span>
+                    <span>Phone Number</span>
                     <span class="badge soon">Soon</span>
                 </div>
                 <div class="platform-item">
@@ -241,132 +173,108 @@
                     <span>Domain</span>
                     <span class="badge soon">Soon</span>
                 </div>
-                <div class="platform-item">
-                    <span>🖥️</span>
-                    <span>IP Address</span>
-                    <span class="badge soon">Soon</span>
-                </div>
-                <div class="platform-item">
-                    <span>📍</span>
-                    <span>Google Business</span>
-                    <span class="badge soon">Soon</span>
-                </div>
-                <div class="platform-item">
-                    <span>🔗</span>
-                    <span>Website</span>
-                    <span class="badge soon">Soon</span>
-                </div>
             </div>
         </div>
     </section>
 
     <!-- How It Works -->
-    <section class="how-it-works">
+    <section id="how-it-works" class="how-it-works section">
         <div class="container">
-            <h2 class="section-title">How It Works</h2>
+            <div class="section-header">
+                <h2 class="section-title">How It Works</h2>
+                <p class="section-desc">Get your shadow ban status in 3 simple steps</p>
+            </div>
+
             <div class="steps">
                 <div class="step">
                     <div class="step-num">1</div>
-                    <h3>Choose Your Tool</h3>
-                    <p>Free checks, hashtag verification, or AI chat</p>
+                    <h3>Choose Platform</h3>
+                    <p>Select which platform you want to check: Twitter, Reddit, Email, or more</p>
                 </div>
                 <div class="step">
                     <div class="step-num">2</div>
-                    <h3>Get Instant Results</h3>
-                    <p>Detailed analysis within seconds</p>
+                    <h3>Enter Details</h3>
+                    <p>Provide your username, email, or domain. We never ask for passwords</p>
                 </div>
                 <div class="step">
                     <div class="step-num">3</div>
-                    <h3>Take Action</h3>
-                    <p>Follow recovery guide or upgrade</p>
+                    <h3>Get Results</h3>
+                    <p>Instant analysis with detailed recommendations to fix any issues</p>
                 </div>
             </div>
         </div>
     </section>
 
     <!-- Pricing -->
-    <section id="pricing" class="pricing">
+    <section id="pricing" class="pricing section">
         <div class="container">
-            <h2 class="section-title">Simple Pricing</h2>
-            <p class="section-desc">Choose the plan that fits your needs</p>
+            <div class="section-header">
+                <h2 class="section-title">Simple, Transparent Pricing</h2>
+                <p class="section-desc">Choose the plan that fits your needs</p>
+            </div>
 
             <div class="pricing-grid">
+                <div class="price-card">
+                    <h3>Free</h3>
+                    <div class="price">
+                        <span class="amount">$0</span>
+                        <span class="period">/forever</span>
+                    </div>
+                    <ul>
+                        <li>3 checks per day</li>
+                        <li>Basic shadow ban detection</li>
+                        <li>Shadow AI access</li>
+                        <li>Email support</li>
+                    </ul>
+                    <a href="checker.html" class="btn-price">Get Started</a>
+                </div>
+
                 <div class="price-card featured">
-                    <div class="card-badge">Most Popular</div>
-                    <h3>Shadow AI Pro</h3>
-                    <div class="price">
-                        <span class="amount">$9.99</span>
-                        <span class="period">/month</span>
-                    </div>
-                    <ul>
-                        <li>✓ Unlimited AI questions</li>
-                        <li>✓ Live platform checks</li>
-                        <li>✓ Real-time lookups</li>
-                        <li>✓ Domain/IP verification</li>
-                        <li>✓ Recovery strategies</li>
-                    </ul>
-                    <a href="#" class="btn-price primary">Get Shadow AI Pro</a>
-                </div>
-
-                <div class="price-card">
-                    <h3>Starter</h3>
-                    <div class="price">
-                        <span class="amount">$9.99</span>
-                        <span class="period">/month</span>
-                    </div>
-                    <ul>
-                        <li>✓ 5 platforms monitored</li>
-                        <li>✓ Weekly checks</li>
-                        <li>✓ Email alerts</li>
-                        <li>✓ Historical tracking</li>
-                        <li>✓ Shadow AI Free (3/day)</li>
-                    </ul>
-                    <a href="#" class="btn-price">Get Starter</a>
-                </div>
-
-                <div class="price-card">
+                    <span class="card-badge">Most Popular</span>
                     <h3>Pro</h3>
+                    <div class="price">
+                        <span class="amount">$9.99</span>
+                        <span class="period">/month</span>
+                    </div>
+                    <ul>
+                        <li>Unlimited checks</li>
+                        <li>All platforms</li>
+                        <li>Daily automated monitoring</li>
+                        <li>Email alerts</li>
+                        <li>Historical tracking</li>
+                        <li>Priority support</li>
+                    </ul>
+                    <a href="#" class="btn-price primary">Upgrade to Pro</a>
+                </div>
+
+                <div class="price-card">
+                    <h3>Creator</h3>
                     <div class="price">
                         <span class="amount">$19.99</span>
                         <span class="period">/month</span>
                     </div>
                     <ul>
-                        <li>✓ 15 platforms monitored</li>
-                        <li>✓ Daily checks</li>
-                        <li>✓ Text + Email alerts</li>
-                        <li>✓ Shadow AI Pro included ⭐</li>
-                        <li>✓ Priority support</li>
+                        <li>Everything in Pro</li>
+                        <li>Hashtag bulk checker (30 at once)</li>
+                        <li>Alternative suggestions</li>
+                        <li>API access</li>
+                        <li>White-label reports</li>
+                        <li>Dedicated support</li>
                     </ul>
-                    <a href="#" class="btn-price">Get Pro</a>
-                </div>
-
-                <div class="price-card">
-                    <h3>Complete</h3>
-                    <div class="price">
-                        <span class="amount">$29.99</span>
-                        <span class="period">/month</span>
-                    </div>
-                    <ul>
-                        <li>✓ All 26 platforms</li>
-                        <li>✓ Real-time monitoring</li>
-                        <li>✓ Instant alerts</li>
-                        <li>✓ Shadow AI Pro included ⭐</li>
-                        <li>✓ API access</li>
-                    </ul>
-                    <a href="#" class="btn-price">Get Complete</a>
+                    <a href="#" class="btn-price">Get Creator</a>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- CTA -->
-    <section class="cta">
+    <!-- CTA Section -->
+    <section class="cta section">
         <div class="container">
-            <h2>Ready to Know Your Real Reach?</h2>
-            <p>Join thousands checking their visibility</p>
+            <h2>Ready to Check Your Status?</h2>
+            <p>Join thousands who've discovered their shadow ban status</p>
             <div class="cta-btns">
-                <a href="#pricing" class="btn-large">Get Shadow AI Pro</a>
-                <a href="checker.html" class="btn-ghost-light">Try Free Tools</a>
+                <a href="checker.html" class="btn btn-large">Check Now - It's Free</a>
+                <a href="hashtag-checker.html" class="btn btn-ghost-light">Try Hashtag Checker</a>
             </div>
         </div>
     </section>
@@ -378,38 +286,43 @@
                 <div class="footer-brand">
                     <div class="logo">
                         <span class="logo-emoji">🔍</span>
-                        <span>ShadowBanCheck.io</span>
+                        <span class="logo-text">ShadowBanCheck.io</span>
                     </div>
-                    <p>Know your real reach</p>
+                    <p>Check your visibility across all platforms. Free shadow ban detection and monitoring.</p>
                 </div>
-                <div class="footer-col">
-                    <h4>Product</h4>
-                    <a href="#platforms">Platforms</a>
-                    <a href="#pricing">Pricing</a>
-                </div>
+
                 <div class="footer-col">
                     <h4>Tools</h4>
                     <a href="checker.html">Shadow Ban Checker</a>
                     <a href="hashtag-checker.html">Hashtag Checker</a>
                 </div>
+
+                <div class="footer-col">
+                    <h4>Company</h4>
+                    <a href="#how-it-works">How It Works</a>
+                    <a href="#pricing">Pricing</a>
+                </div>
+
                 <div class="footer-col">
                     <h4>Support</h4>
-                    <a href="#">Help</a>
+                    <a href="#">Help Center</a>
                     <a href="#">Contact</a>
                 </div>
             </div>
+
             <div class="footer-bottom">
-                <p>&copy; 2024 ShadowBanCheck.io</p>
+                <p>&copy; 2025 ShadowBanCheck.io. All rights reserved.</p>
             </div>
         </div>
     </footer>
 
-    <!-- Shadow AI -->
+    <!-- Shadow AI Button -->
     <button id="shadow-ai-btn" class="copilot-btn">
         <span class="copilot-emoji">🤖</span>
-        <span>Shadow AI</span>
+        <span class="copilot-text">Shadow AI</span>
     </button>
 
+    <!-- Shadow AI Chat -->
     <div id="shadow-ai-chat" class="copilot-chat hidden">
         <div class="copilot-header">
             <div class="copilot-title">
@@ -418,14 +331,16 @@
             </div>
             <button id="shadow-ai-close" class="copilot-close">&times;</button>
         </div>
-        <div id="shadow-ai-messages" class="copilot-messages"></div>
+        <div id="shadow-ai-messages" class="copilot-messages">
+            <!-- Messages populated by shadow-ai.js -->
+        </div>
         <div class="copilot-input">
             <input type="text" id="shadow-ai-input" placeholder="Ask about shadow bans...">
             <button id="shadow-ai-send">Send</button>
         </div>
     </div>
 
-    <script src="js/main.js"></script>
     <script src="js/shadow-ai.js"></script>
+    <script src="js/main.js"></script>
 </body>
 </html>

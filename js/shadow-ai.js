@@ -6,9 +6,39 @@ class ShadowAI {
         this.chatOpen = false;
         this.messageHistory = [];
         this.freeQuestionsToday = 3;
-        this.freeQuestionsUsed = 0;
+        this.freeQuestionsUsed = this.loadDailyQuestions();
         
         this.init();
+    }
+    
+    loadDailyQuestions() {
+        const today = new Date().toDateString();
+        const stored = localStorage.getItem('shadowai_questions');
+        
+        if (stored) {
+            const data = JSON.parse(stored);
+            
+            // Check if it's the same day
+            if (data.date === today) {
+                return data.used;
+            }
+        }
+        
+        // New day or no data - reset to 0
+        this.saveDailyQuestions(0);
+        return 0;
+    }
+    
+    saveDailyQuestions(used) {
+        const today = new Date().toDateString();
+        localStorage.setItem('shadowai_questions', JSON.stringify({
+            date: today,
+            used: used
+        }));
+    }
+    
+    getRemainingQuestions() {
+        return Math.max(0, this.freeQuestionsToday - this.freeQuestionsUsed);
     }
 
     init() {
@@ -50,6 +80,7 @@ class ShadowAI {
     }
 
     async showWelcomeMessage() {
+        const remaining = this.getRemainingQuestions();
         await this.typeMessage(
             `👋 Hi! I'm Shadow AI, your personal shadow ban detective.\n\n` +
             `I use AI to search platforms and analyze multiple online factors to give you:\n` +
@@ -57,7 +88,7 @@ class ShadowAI {
             `• Probability scores when platforms aren't transparent\n` +
             `• Personalized recovery strategies\n` +
             `• Instant answers in 60 seconds or less\n\n` +
-            `You have **${this.freeQuestionsToday - this.freeQuestionsUsed} free questions** today.\n\n` +
+            `You have **${remaining} free question${remaining !== 1 ? 's' : ''}** today.\n\n` +
             `Want 100 questions/day + full AI analysis? **Shadow AI Pro is only $9.99/mo** with a 7-day free trial!\n\n` +
             `What would you like to check?`,
             'ai'
@@ -72,8 +103,15 @@ class ShadowAI {
         this.addMessage(text, 'user');
         this.input.value = '';
 
-        // Check free questions limit
+        // Check free questions limit BEFORE incrementing
+        if (this.freeQuestionsUsed >= this.freeQuestionsToday) {
+            await this.showUpgradeMessage();
+            return;
+        }
+
+        // Increment and save to localStorage
         this.freeQuestionsUsed++;
+        this.saveDailyQuestions(this.freeQuestionsUsed);
 
         // Show typing indicator
         const typingId = this.showTypingIndicator();
@@ -94,12 +132,6 @@ class ShadowAI {
         // Check if asking about Shadow AI Pro
         if (msg.includes('shadow ai pro') || msg.includes('unlimited') || msg.includes('upgrade') || msg.includes('pricing') || msg.includes('subscribe')) {
             await this.showShadowAIProPitch();
-            return;
-        }
-
-        // Check if they hit free limit
-        if (this.freeQuestionsUsed >= this.freeQuestionsToday) {
-            await this.showUpgradeMessage();
             return;
         }
 

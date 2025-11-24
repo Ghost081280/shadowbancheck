@@ -10,7 +10,6 @@
     <link rel="stylesheet" href="css/results.css">
 </head>
 <body>
-    <!-- Header -->
     <header class="header">
         <div class="container">
             <div class="logo">
@@ -20,121 +19,94 @@
                 </a>
             </div>
             <nav class="nav">
-                <a href="#" class="btn-login" onclick="alert('Login/Dashboard coming soon!'); return false;">Login</a>
+                <a href="#" class="btn-login">Login</a>
                 <a href="index.html#shadow-ai-pro" class="btn-nav">Get Shadow AI Pro</a>
             </nav>
         </div>
     </header>
 
-    <!-- Main Content -->
     <main class="main">
         <div class="container">
-            <!-- Results Header -->
-            <div id="results-header" class="results-header"></div>
+            <div id="results-header" class="results-header">
+                <div class="platform-badge-large">
+                    <span>-</span>
+                    <span>Loading...</span>
+                </div>
+                <h1>Loading Results...</h1>
+                <p class="results-meta">Checked: -</p>
+            </div>
 
-            <!-- Overall Status -->
-            <div id="overall-status" class="overall-status"></div>
+            <div id="overall-status" class="overall-status">
+                <div class="status-icon"></div>
+                <div class="status-content">
+                    <h2>...</h2>
+                    <p class="status-desc">...</p>
+                    <div class="status-score">
+                        <div class="score-label">Probability Score:</div>
+                        <div class="score-number">-</div>
+                    </div>
+                </div>
+            </div>
 
-            <!-- Detailed Checks -->
             <div id="detailed-checks" class="detailed-checks">
                 <h2>Detailed Analysis</h2>
-                <div id="checks-grid" class="checks-grid"></div>
+                <div id="check-items-container">
+                    </div>
             </div>
 
-            <!-- Recommendations -->
             <div id="recommendations" class="recommendations">
-                <h2>💡 Recommendations</h2>
-                <div id="recommendations-content" class="recommendations-content"></div>
-            </div>
-
-            <!-- Actions -->
-            <div class="actions">
-                <a href="checker.html" class="btn-secondary">Run Another Check</a>
-                <a href="hashtag-checker.html" class="btn-secondary">Check Hashtags</a>
-                <button id="download-report" class="btn-secondary">Download Report</button>
-            </div>
-
-            <!-- Cross-Promote: Hashtag Checker -->
-            <section class="cross-promote-section">
-                <div class="cross-promote-card">
-                    <div class="cross-promote-icon">🚫</div>
-                    <div class="cross-promote-content">
-                        <h3>Also Check Your Hashtags</h3>
-                        <p>Using banned hashtags can trigger shadow bans. Check if your hashtags are safe before posting.</p>
+                <h2>Next Steps: Recovery Strategies</h2>
+                <div id="recommendation-items-container">
                     </div>
-                    <a href="hashtag-checker.html" class="btn-cross-promote">Check Hashtags →</a>
-                </div>
-            </section>
+                <p class="recommendation-note">For a personalized recovery plan, talk to **Shadow AI Pro**.</p>
+            </div>
 
-            <!-- Share Results -->
-            <section class="share-results-section">
-                <h3>📢 Share Your Results</h3>
-                <p>Let others know about shadow ban checking!</p>
-                <div class="share-buttons-results">
-                    <button class="btn-share-result" id="share-twitter-results"><span class="share-icon">𝕏</span><span>Share on X</span></button>
-                    <button class="btn-share-result" id="share-facebook-results"><span class="share-icon">f</span><span>Facebook</span></button>
-                    <button class="btn-share-result" id="share-telegram-results"><span class="share-icon">✈️</span><span>Telegram</span></button>
-                    <button class="btn-share-result" id="share-linkedin-results"><span class="share-icon">in</span><span>LinkedIn</span></button>
-                </div>
-            </section>
+            <div class="results-actions text-center">
+                <a href="checker.html" class="btn btn-secondary btn-large">Run New Check</a>
+                <button id="download-report-btn" class="btn btn-ghost">Download Report</button>
+            </div>
 
-            <!-- Upgrade CTA -->
-            <section class="upgrade-cta-section">
+            <div class="share-section">
+                <h3>Share Your Results</h3>
+                <div class="share-buttons">
+                    <button id="share-twitter" class="btn-share twitter">🐦 Share on X</button>
+                    <button id="share-facebook" class="btn-share facebook">📘 Share on Facebook</button>
+                    <button id="share-linkedin" class="btn-share linkedin">💼 Share on LinkedIn</button>
+                </div>
+            </div>
+
+            <section id="upgrade-cta" class="upgrade-cta">
                 <div class="upgrade-cta-card">
-                    <div class="upgrade-cta-icon">🎯</div>
+                    <span class="upgrade-cta-icon">🤖</span>
                     <div class="upgrade-cta-content">
-                        <h3>Want Continuous Monitoring?</h3>
-                        <p>Get alerts when your account status changes. Monitor multiple accounts with real-time notifications.</p>
-                        <ul class="upgrade-features">
-                            <li>✓ Unlimited daily checks</li>
-                            <li>✓ Real-time monitoring</li>
-                            <li>✓ Email & text alerts</li>
-                            <li>✓ Recovery strategies</li>
-                        </ul>
+                        <h3>Ask Shadow AI for Your Recovery Plan</h3>
+                        <p>Our AI analyzes your specific issues and generates a step-by-step strategy to restore your visibility and reach.</p>
+                        <div class="upgrade-features">
+                            <li>✨ Personalized Strategy</li>
+                            <li>🔍 Unlimited Expert Q&A</li>
+                            <li>📊 Account Monitoring</li>
+                        </div>
                     </div>
-                    <a href="index.html#pricing" class="btn-upgrade-cta">View Plans - From $4.99/mo</a>
+                    <a href="index.html#pricing" class="btn-upgrade-cta">Unlock Shadow AI Pro →</a>
                 </div>
             </section>
         </div>
     </main>
 
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="container">
-            <div class="footer-grid">
-                <div class="footer-brand">
-                    <div class="logo"><span class="logo-emoji">🔍</span><span>ShadowBanCheck.io</span></div>
-                    <p>Protecting visibility for influencers, politicians, and online sellers worldwide.</p>
-                </div>
-                <div class="footer-col">
-                    <h4>Product</h4>
-                    <a href="index.html#platforms">Platforms</a>
-                    <a href="index.html#pricing">Pricing</a>
-                    <a href="index.html#shadow-ai-pro">Shadow AI Pro</a>
-                </div>
-                <div class="footer-col">
-                    <h4>Tools</h4>
-                    <a href="checker.html">Shadow Ban Checker</a>
-                    <a href="hashtag-checker.html">Banned Hashtags Checker</a>
-                </div>
-                <div class="footer-col">
-                    <h4>Developers</h4>
-                    <a href="#" onclick="alert('API documentation coming soon!'); return false;">API Access <span class="coming-soon-tiny">Soon</span></a>
-                    <a href="https://github.com/Ghost081280" target="_blank">GitHub</a>
-                </div>
+    <div id="cookie-popup" class="cookie-popup hidden">
+        <div class="cookie-content">
+            <div class="cookie-icon">🍪</div>
+            <div class="cookie-text">
+                <h3>We Use Cookies</h3>
+                <p>We use cookies to enhance your experience, analyze site traffic, and remember your preferences. By continuing to use ShadowBanCheck.io, you agree to our use of cookies.</p>
             </div>
-            <div class="footer-bottom">
-                <p>&copy; 2025 ShadowBanCheck.io. All rights reserved.</p>
-                <div class="footer-legal" style="margin-right: 100px;">
-                    <a href="#" onclick="alert('Terms coming soon!'); return false;">Terms</a>
-                    <a href="#" onclick="alert('Privacy coming soon!'); return false;">Privacy</a>
-                    <a href="#" onclick="showCookiePolicy(); return false;">Cookie Policy</a>
-                </div>
+            <div class="cookie-actions">
+                <button id="cookie-accept" class="btn-cookie-accept">Accept</button>
+                <button id="cookie-dismiss" class="btn-cookie-dismiss">Dismiss</button>
             </div>
         </div>
-    </footer>
+    </div>
 
-    <!-- Shadow AI -->
     <button id="shadow-ai-btn" class="copilot-btn"><span class="copilot-emoji">🤖</span><span>Shadow AI</span></button>
     <div id="shadow-ai-chat" class="copilot-chat hidden">
         <div class="copilot-header">
@@ -148,9 +120,55 @@
         </div>
     </div>
 
-    <script>
-        function showCookiePolicy() { alert('Cookie Policy\n\nWe use cookies to remember your preferences and track free searches.'); }
-    </script>
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-col logo-col">
+                    <div class="logo">
+                        <a href="index.html">
+                            <span class="logo-emoji">🔍</span>
+                            <span class="logo-text">ShadowBanCheck.io</span>
+                        </a>
+                    </div>
+                    <p class="tagline">The definitive tool for social media visibility.</p>
+                </div>
+                <div class="footer-col">
+                    <h4>Tools</h4>
+                    <ul>
+                        <li><a href="checker.html">Account Checker</a></li>
+                        <li><a href="hashtag-checker.html">Hashtag Checker</a></li>
+                        <li><a href="index.html#shadow-ai-pro">Shadow AI Pro</a></li>
+                        <li><a href="index.html#platforms">Platforms Checked</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Company</h4>
+                    <ul>
+                        <li><a href="index.html#how-it-works">How It Works</a></li>
+                        <li><a href="index.html#pricing">Pricing</a></li>
+                        <li><a href="index.html#faq">FAQ</a></li>
+                        <li><a href="index.html#contact">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Legal</h4>
+                    <ul>
+                        <li><a href="#" class="footer-link-terms">Terms of Service</a></li>
+                        <li><a href="#" class="footer-link-privacy">Privacy Policy</a></li>
+                        <li><a href="#" class="footer-link-cookie">Cookie Policy</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2025 ShadowBanCheck.io. All rights reserved.</p>
+                <div class="footer-legal">
+                    </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/main.js"></script>
     <script src="js/shadow-ai.js"></script>
     <script src="js/results.js"></script>
 </body>

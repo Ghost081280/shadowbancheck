@@ -1,199 +1,357 @@
-// =============================================================================
-// ShadowBanCheck.io - Hashtag Checker JavaScript
-// =============================================================================
+/* =============================================================================
+   HASHTAG-CHECKER.JS - Hashtag Checker Page Functionality
+   ============================================================================= */
 
-// Banned hashtags database
-const BANNED_HASHTAGS = {
-    instagram: ['ass', 'assday', 'adulting', 'alone', 'attractive', 'beautyblogger', 'bikinibody', 'boho', 'brain', 'costumes', 'curvygirls', 'dating', 'desk', 'dm', 'elevator', 'eggplant', 'fitnessgirls', 'fitfam', 'girlsonly', 'gloves', 'happythanksgiving', 'hardsummer', 'humpday', 'hustler', 'ilovemyjob', 'instamood', 'kansas', 'kissing', 'killingit', 'lavieenrose', 'leaves', 'like', 'likeforlike', 'milf', 'models', 'newyearseve', 'nasty', 'nudeart', 'overnight', 'petite', 'pornfood', 'popular', 'pushup', 'rate', 'saltwater', 'selfharm', 'sexy', 'single', 'skateboarding', 'skype', 'snap', 'stranger', 'snowstorm', 'streetphoto', 'sunbathing', 'swole', 'tanlines', 'teenagers', 'tgif', 'thinspo', 'todayimwearing', 'twerk', 'undies', 'valentinesday', 'woman', 'workflow', 'wrongway'],
-    tiktok: ['porn', 'sex', 'nudity', 'sexy', 'hot', 'underwear', 'lingerie', 'plottwist', 'xyzbca', 'foryou', 'pov', 'acne', 'weightloss', 'eatingdisorder', 'selfharm', 'depression', 'anxiety'],
-    twitter: ['covid', 'coronavirus', 'vaccine', 'election', 'fraud', 'rigged', 'porn', 'sex', 'nsfw', 'onlyfans']
+/* =============================================================================
+   BANNED HASHTAGS DATABASE
+   ============================================================================= */
+const bannedHashtags = {
+    instagram: {
+        banned: [
+            'adulting', 'alone', 'attractive', 'beautyblogger', 'bikinibody',
+            'costumes', 'dating', 'dm', 'elevator', 'girlsonly', 'humpday',
+            'hustler', 'killingit', 'models', 'nasty', 'petite', 'pushup',
+            'sexy', 'single', 'sunbathing', 'tanlines', 'teenagers', 'thinspo',
+            'twerk', 'undies', 'valentinesday', 'woman', 'women'
+        ],
+        restricted: [
+            'fitfam', 'likeforlike', 'popular', 'snap', 'tgif', 'followforfollow',
+            'like4like', 'follow4follow', 'l4l', 'f4f', 'fitness', 'gym'
+        ]
+    },
+    tiktok: {
+        banned: [
+            'porn', 'sex', 'nudity', 'sexy', 'hot', 'underwear', 'lingerie',
+            'acne', 'weightloss', 'eatingdisorder', 'selfharm', 'depression',
+            'anxiety', 'suicide', 'drugs', 'weed', 'cocaine'
+        ],
+        restricted: [
+            'fyp', 'foryou', 'foryoupage', 'viral', 'xyzbca', 'plottwist',
+            'trending', 'blowthisup', 'makemefamous'
+        ]
+    },
+    twitter: {
+        banned: [
+            'porn', 'sex', 'nsfw', 'onlyfans', 'fraud', 'rigged'
+        ],
+        restricted: [
+            'covid', 'coronavirus', 'vaccine', 'election', 'qanon', 'stopthesteal'
+        ]
+    },
+    facebook: {
+        banned: [
+            'porn', 'sex', 'nude', 'drugs', 'weed', 'cannabis', 'gambling', 'betting'
+        ],
+        restricted: [
+            'vaccine', 'covid', 'crypto', 'bitcoin', 'nft'
+        ]
+    },
+    linkedin: {
+        banned: [
+            'porn', 'sex', 'mlm', 'getrichquick', 'scam'
+        ],
+        restricted: [
+            'hiring', 'jobsearch', 'opentowork', 'follow', 'like', 'crypto',
+            'nft', 'viral', 'hustle'
+        ]
+    }
 };
 
-const RESTRICTED_HASHTAGS = {
-    instagram: ['bacak', 'beautyblogger', 'books', 'boobs', 'brain', 'bra', 'costumes', 'dating', 'direct', 'edm', 'fishnets', 'goddess', 'hipster', 'hotweather', 'ice', 'italiano', 'kissing', 'legs', 'master', 'models', 'mustfollow', 'parties', 'publicrelations', 'russian', 'saltwater', 'sexy', 'skateboarding', 'snap', 'southern', 'swingers', 'teens', 'thought', 'undies', 'weed'],
-    tiktok: ['fyp', 'foryou', 'foryoupage', 'viral', 'xyzbca'],
-    twitter: []
-};
+// Export for potential use elsewhere
+window.bannedHashtags = bannedHashtags;
 
-let checksRemaining = 5;
-let currentResults = [];
-
-// DOM Elements
-const hashtagInput = document.getElementById('hashtag-input');
-const hashtagCount = document.getElementById('hashtag-count');
-const checksRemainingDisplay = document.getElementById('checks-remaining-display');
-const checkBtn = document.getElementById('check-hashtags-btn');
-const clearBtn = document.getElementById('clear-btn');
-const exampleBtn = document.getElementById('example-btn');
-const resultsSection = document.getElementById('results-section');
-const resultsList = document.getElementById('results-list');
-const safeCountEl = document.getElementById('safe-count');
-const bannedCountEl = document.getElementById('banned-count');
-const restrictedCountEl = document.getElementById('restricted-count');
-const copySafeBtn = document.getElementById('copy-safe-btn');
-const exportBtn = document.getElementById('export-btn');
-const pricingCta = document.getElementById('pricing-cta');
-
-// Initialize
-document.addEventListener('DOMContentLoaded', () => {
-    loadChecksRemaining();
+/* =============================================================================
+   HASHTAG PARSING
+   ============================================================================= */
+function parseHashtags(input) {
+    if (!input) return [];
     
-    hashtagInput?.addEventListener('input', updateHashtagCount);
-    checkBtn?.addEventListener('click', checkHashtags);
-    clearBtn?.addEventListener('click', clearInput);
-    exampleBtn?.addEventListener('click', loadExample);
-    copySafeBtn?.addEventListener('click', copySafeHashtags);
-    exportBtn?.addEventListener('click', exportResults);
-});
-
-function loadChecksRemaining() {
-    const lastDate = localStorage.getItem('hashtag_last_check_date');
-    const today = new Date().toDateString();
+    // Clean input - handle various formats
+    let cleaned = input
+        .toLowerCase()
+        .replace(/[,\n\r]/g, ' ')  // Replace commas and newlines with spaces
+        .replace(/[^\w\s#]/g, '')  // Remove special chars except # and spaces
+        .trim();
     
-    if (lastDate !== today) {
-        checksRemaining = 5;
-        localStorage.setItem('hashtag_checks_remaining', '5');
-        localStorage.setItem('hashtag_last_check_date', today);
+    // Split by spaces and filter
+    let tags = cleaned.split(/\s+/)
+        .map(tag => tag.replace(/^#+/, ''))  // Remove leading #
+        .filter(tag => tag.length > 0);
+    
+    // Remove duplicates
+    return [...new Set(tags)];
+}
+
+/* =============================================================================
+   HASHTAG CHECKING
+   ============================================================================= */
+function checkHashtag(hashtag) {
+    const tag = hashtag.toLowerCase().replace(/^#/, '');
+    const results = {
+        hashtag: `#${tag}`,
+        platforms: {}
+    };
+    
+    // Check each platform
+    Object.keys(bannedHashtags).forEach(platform => {
+        const platformData = bannedHashtags[platform];
+        
+        if (platformData.banned.includes(tag)) {
+            results.platforms[platform] = 'banned';
+        } else if (platformData.restricted.includes(tag)) {
+            results.platforms[platform] = 'restricted';
+        } else {
+            results.platforms[platform] = 'safe';
+        }
+    });
+    
+    // Determine overall status
+    const statuses = Object.values(results.platforms);
+    if (statuses.includes('banned')) {
+        results.status = 'banned';
+    } else if (statuses.includes('restricted')) {
+        results.status = 'restricted';
     } else {
-        checksRemaining = parseInt(localStorage.getItem('hashtag_checks_remaining') || '5');
+        results.status = 'safe';
     }
     
-    updateChecksDisplay();
+    return results;
 }
 
-function updateChecksDisplay() {
-    const el = document.getElementById('hashtag-searches-remaining');
-    if (el) {
-        el.innerHTML = checksRemaining > 0 
-            ? `${checksRemaining} / 5 available`
-            : `<span style="color: #ef4444;">0 / 5 - <a href="index.html#pricing" style="color: var(--primary);">Upgrade</a></span>`;
-    }
-    if (checksRemainingDisplay) {
-        checksRemainingDisplay.textContent = checksRemaining > 0 ? `${checksRemaining} free checks left today` : 'Out of free checks';
-    }
-    if (checkBtn) checkBtn.disabled = checksRemaining <= 0;
+function checkAllHashtags(hashtags) {
+    return hashtags.map(tag => checkHashtag(tag));
 }
 
-function extractHashtags(text) {
-    const cleaned = text.replace(/#/g, '').toLowerCase();
-    const hashtags = cleaned.split(/[\s,\n]+/).filter(h => h.trim().length > 0);
-    return [...new Set(hashtags)];
-}
-
+/* =============================================================================
+   UI UPDATES
+   ============================================================================= */
 function updateHashtagCount() {
-    const hashtags = extractHashtags(hashtagInput.value);
-    if (hashtagCount) hashtagCount.textContent = `${hashtags.length} hashtag${hashtags.length !== 1 ? 's' : ''}`;
+    const input = document.getElementById('hashtag-input');
+    const countDisplay = document.getElementById('hashtag-count');
+    
+    if (!input || !countDisplay) return;
+    
+    const hashtags = parseHashtags(input.value);
+    const count = hashtags.length;
+    
+    countDisplay.textContent = `${count} hashtag${count !== 1 ? 's' : ''}`;
 }
 
-function checkHashtags() {
-    const hashtags = extractHashtags(hashtagInput.value);
-    if (hashtags.length === 0) { alert('Please enter at least one hashtag'); return; }
-    if (checksRemaining <= 0) { pricingCta?.classList.remove('hidden'); pricingCta?.scrollIntoView({ behavior: 'smooth' }); return; }
+function displayResults(results) {
+    const resultsSection = document.getElementById('results-section');
+    const resultsList = document.getElementById('results-list');
+    const safeCount = document.getElementById('safe-count');
+    const bannedCount = document.getElementById('banned-count');
+    const restrictedCount = document.getElementById('restricted-count');
     
-    currentResults = hashtags.map(analyzeHashtag);
-    checksRemaining--;
-    localStorage.setItem('hashtag_checks_remaining', checksRemaining.toString());
-    updateChecksDisplay();
-    displayResults();
-    if (checksRemaining === 0) pricingCta?.classList.remove('hidden');
-    resultsSection?.scrollIntoView({ behavior: 'smooth' });
+    if (!resultsSection || !resultsList) return;
+    
+    // Count by status
+    const counts = { safe: 0, banned: 0, restricted: 0 };
+    results.forEach(r => counts[r.status]++);
+    
+    // Update summary
+    if (safeCount) safeCount.textContent = counts.safe;
+    if (bannedCount) bannedCount.textContent = counts.banned;
+    if (restrictedCount) restrictedCount.textContent = counts.restricted;
+    
+    // Build results list
+    resultsList.innerHTML = '';
+    
+    results.forEach(result => {
+        const item = document.createElement('div');
+        item.className = `result-item ${result.status}`;
+        
+        const icon = result.status === 'safe' ? '✅' : 
+                     result.status === 'banned' ? '🚫' : '⚠️';
+        
+        const statusText = result.status === 'safe' ? 'Safe to use' :
+                          result.status === 'banned' ? 'Banned on some platforms' :
+                          'Restricted on some platforms';
+        
+        // Build platform status badges
+        let platformBadges = '';
+        Object.entries(result.platforms).forEach(([platform, status]) => {
+            if (status !== 'safe') {
+                const platformName = platform.charAt(0).toUpperCase() + platform.slice(1);
+                platformBadges += `<span class="platform-status ${status}">${platformName}: ${status}</span>`;
+            }
+        });
+        
+        item.innerHTML = `
+            <span class="result-icon">${icon}</span>
+            <div class="result-info">
+                <div class="result-hashtag">${result.hashtag}</div>
+                <div class="result-status">${statusText}</div>
+                ${platformBadges ? `<div class="result-platforms">${platformBadges}</div>` : ''}
+            </div>
+        `;
+        
+        resultsList.appendChild(item);
+    });
+    
+    // Show results section
+    resultsSection.classList.remove('hidden');
+    
+    // Scroll to results
+    resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
-function analyzeHashtag(tag) {
-    const result = { tag, status: 'safe', platforms: { instagram: 'safe', tiktok: 'safe', twitter: 'safe' }, message: 'Safe to use' };
+/* =============================================================================
+   FORM HANDLERS
+   ============================================================================= */
+function initHashtagForm() {
+    const input = document.getElementById('hashtag-input');
+    const checkBtn = document.getElementById('check-hashtags-btn');
+    const clearBtn = document.getElementById('clear-btn');
+    const exampleBtn = document.getElementById('example-btn');
     
-    if (BANNED_HASHTAGS.instagram.includes(tag)) { result.platforms.instagram = 'banned'; result.status = 'banned'; }
-    else if (RESTRICTED_HASHTAGS.instagram.includes(tag)) { result.platforms.instagram = 'restricted'; result.status = result.status === 'banned' ? 'banned' : 'restricted'; }
+    if (!input || !checkBtn) return;
     
-    if (BANNED_HASHTAGS.tiktok.includes(tag)) { result.platforms.tiktok = 'banned'; result.status = 'banned'; }
-    else if (RESTRICTED_HASHTAGS.tiktok.includes(tag)) { result.platforms.tiktok = 'restricted'; result.status = result.status === 'banned' ? 'banned' : 'restricted'; }
+    // Update count on input
+    input.addEventListener('input', updateHashtagCount);
     
-    if (BANNED_HASHTAGS.twitter.includes(tag)) { result.platforms.twitter = 'banned'; result.status = 'banned'; }
+    // Check button
+    checkBtn.addEventListener('click', handleHashtagCheck);
     
-    if (result.status === 'banned') {
-        const banned = [];
-        if (result.platforms.instagram === 'banned') banned.push('Instagram');
-        if (result.platforms.tiktok === 'banned') banned.push('TikTok');
-        if (result.platforms.twitter === 'banned') banned.push('Twitter');
-        result.message = `Banned on ${banned.join(', ')}`;
-    } else if (result.status === 'restricted') {
-        const restricted = [];
-        if (result.platforms.instagram === 'restricted') restricted.push('Instagram');
-        if (result.platforms.tiktok === 'restricted') restricted.push('TikTok');
-        result.message = `Restricted on ${restricted.join(', ')}`;
+    // Clear button
+    clearBtn?.addEventListener('click', function() {
+        input.value = '';
+        updateHashtagCount();
+        document.getElementById('results-section')?.classList.add('hidden');
+    });
+    
+    // Example button
+    exampleBtn?.addEventListener('click', function() {
+        input.value = '#fitness #healthy #motivation #likeforlike #travel #food #photography #love #instagood';
+        updateHashtagCount();
+    });
+}
+
+function handleHashtagCheck() {
+    const input = document.getElementById('hashtag-input');
+    const value = input?.value.trim();
+    
+    if (!value) {
+        showError('Please enter at least one hashtag');
+        return;
     }
     
-    return result;
-}
-
-function displayResults() {
-    resultsSection?.classList.remove('hidden');
+    const hashtags = parseHashtags(value);
     
-    const safe = currentResults.filter(r => r.status === 'safe').length;
-    const banned = currentResults.filter(r => r.status === 'banned').length;
-    const restricted = currentResults.filter(r => r.status === 'restricted').length;
-    
-    if (safeCountEl) safeCountEl.textContent = safe;
-    if (bannedCountEl) bannedCountEl.textContent = banned;
-    if (restrictedCountEl) restrictedCountEl.textContent = restricted;
-    
-    if (resultsList) {
-        resultsList.innerHTML = currentResults.map(result => {
-            const icon = result.status === 'safe' ? '✅' : result.status === 'banned' ? '🚫' : '⚠️';
-            return `
-                <div class="result-item ${result.status}">
-                    <div class="result-left">
-                        <div class="result-icon">${icon}</div>
-                        <div class="result-info">
-                            <div class="result-hashtag">#${result.tag}</div>
-                            <div class="result-status">${result.message}</div>
-                            <div class="result-platforms">
-                                <span class="platform-status ${result.platforms.instagram}">📸 IG: ${result.platforms.instagram}</span>
-                                <span class="platform-status ${result.platforms.tiktok}">🎵 TT: ${result.platforms.tiktok}</span>
-                                <span class="platform-status ${result.platforms.twitter}">🐦 X: ${result.platforms.twitter}</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            `;
-        }).join('');
+    if (hashtags.length === 0) {
+        showError('No valid hashtags found');
+        return;
     }
+    
+    // Check remaining searches for free users
+    const remaining = window.ShadowBan?.getRemainingSearches() || 0;
+    if (remaining <= 0) {
+        showUpgradeModal();
+        return;
+    }
+    
+    // Increment search count
+    window.ShadowBan?.incrementSearchCount();
+    
+    // Check hashtags
+    const results = checkAllHashtags(hashtags);
+    
+    // Display results
+    displayResults(results);
 }
 
-function clearInput() {
-    if (hashtagInput) hashtagInput.value = '';
+function showError(message) {
+    let toast = document.getElementById('toast');
+    if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'toast';
+        toast.className = 'toast error';
+        document.body.appendChild(toast);
+    }
+    
+    toast.textContent = message;
+    toast.classList.add('visible', 'error');
+    
+    setTimeout(() => {
+        toast.classList.remove('visible', 'error');
+    }, 4000);
+}
+
+function showUpgradeModal() {
+    alert('You\'ve used all your free checks for today. Visit our pricing page to upgrade for unlimited access!');
+    // Could be enhanced with a proper modal
+}
+
+/* =============================================================================
+   RESULTS ACTIONS
+   ============================================================================= */
+function initResultsActions() {
+    const copySafeBtn = document.getElementById('copy-safe-btn');
+    const exportBtn = document.getElementById('export-btn');
+    
+    copySafeBtn?.addEventListener('click', function() {
+        const safeItems = document.querySelectorAll('.result-item.safe .result-hashtag');
+        const safeTags = Array.from(safeItems).map(el => el.textContent).join(' ');
+        
+        if (safeTags) {
+            navigator.clipboard.writeText(safeTags).then(() => {
+                showToast('Safe hashtags copied to clipboard!');
+            });
+        } else {
+            showToast('No safe hashtags to copy');
+        }
+    });
+    
+    exportBtn?.addEventListener('click', function() {
+        const results = document.getElementById('results-list');
+        if (!results) return;
+        
+        let text = 'Hashtag Check Results\n';
+        text += '=====================\n\n';
+        
+        const items = results.querySelectorAll('.result-item');
+        items.forEach(item => {
+            const hashtag = item.querySelector('.result-hashtag')?.textContent || '';
+            const status = item.querySelector('.result-status')?.textContent || '';
+            text += `${hashtag}: ${status}\n`;
+        });
+        
+        // Download as text file
+        const blob = new Blob([text], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'hashtag-results.txt';
+        a.click();
+        URL.revokeObjectURL(url);
+    });
+}
+
+function showToast(message) {
+    let toast = document.getElementById('toast');
+    if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'toast';
+        toast.className = 'toast';
+        document.body.appendChild(toast);
+    }
+    
+    toast.textContent = message;
+    toast.classList.add('visible');
+    
+    setTimeout(() => {
+        toast.classList.remove('visible');
+    }, 3000);
+}
+
+/* =============================================================================
+   INITIALIZE
+   ============================================================================= */
+document.addEventListener('DOMContentLoaded', function() {
+    initHashtagForm();
+    initResultsActions();
     updateHashtagCount();
-    resultsSection?.classList.add('hidden');
-}
-
-function loadExample() {
-    if (hashtagInput) hashtagInput.value = '#fitness #motivation #gains #workout #fitfam #love #instagood #sexy #viral #fyp';
-    updateHashtagCount();
-}
-
-function copySafeHashtags() {
-    const safe = currentResults.filter(r => r.status === 'safe').map(r => '#' + r.tag).join(' ');
-    if (safe) {
-        navigator.clipboard.writeText(safe).then(() => alert('Safe hashtags copied!'));
-    } else {
-        alert('No safe hashtags to copy.');
-    }
-}
-
-function exportResults() {
-    let text = 'HASHTAG CHECK RESULTS\n====================\n\n';
-    text += `Checked: ${new Date().toLocaleString()}\nTotal: ${currentResults.length}\n\n`;
     
-    text += 'SAFE:\n' + currentResults.filter(r => r.status === 'safe').map(r => `#${r.tag}`).join(', ') + '\n\n';
-    text += 'BANNED:\n' + currentResults.filter(r => r.status === 'banned').map(r => `#${r.tag} (${r.message})`).join('\n') + '\n\n';
-    text += 'RESTRICTED:\n' + currentResults.filter(r => r.status === 'restricted').map(r => `#${r.tag} (${r.message})`).join('\n') + '\n\n';
-    text += '--\nGenerated by ShadowBanCheck.io';
-    
-    const blob = new Blob([text], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `hashtag-check-${Date.now()}.txt`;
-    a.click();
-    URL.revokeObjectURL(url);
-}
+    console.log('✅ Hashtag Checker initialized');
+});

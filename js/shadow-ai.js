@@ -19,7 +19,7 @@ async function loadShadowAIWidget() {
     }
     
     try {
-        const response = await fetch('./shadow-ai-widget.html');
+        const response = await fetch('./shared/shadow-ai-widget.html');
         if (!response.ok) {
             throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }

@@ -2191,6 +2191,7 @@ strong, b {
     background: var(--card);
     border-top: 2px solid var(--primary);
     padding: var(--space-lg);
+    padding-right: 180px; /* Space for Shadow AI chatbot button */
     z-index: var(--z-toast);
     box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.4);
     animation: slideUp var(--transition-base);
@@ -2463,6 +2464,7 @@ strong, b {
     .footer-legal { justify-content: flex-start; }
     
     /* Cookie Popup */
+    .cookie-popup { padding-right: var(--space-lg); } /* Reset on mobile */
     .cookie-content { flex-direction: column; text-align: center; }
     .cookie-actions { width: 100%; flex-direction: column; }
     .btn-cookie { width: 100%; }

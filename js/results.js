@@ -1,179 +1,191 @@
-// NEW FEATURES TO ADD TO results.js
+// =============================================================================
+// ShadowBanCheck.io - Results Page JavaScript
+// =============================================================================
 
-// ============================================================================
-// HOW IT WORKS SECTION
-// ============================================================================
+let checkResults = {};
 
-function displayHowItWorks() {
-    const howSimple = document.getElementById('how-simple');
-    const howTechnical = document.getElementById('how-technical');
-    
-    if (!howSimple) return;
-    
-    const platform = checkResults.platform;
-    
-    // Simple explanation
-    const simpleContent = getSimpleExplanation(platform);
-    howSimple.innerHTML = simpleContent;
-    
-    // Technical explanation
-    const technicalContent = getTechnicalExplanation(platform);
-    if (howTechnical) {
-        howTechnical.innerHTML = technicalContent;
+document.addEventListener('DOMContentLoaded', () => {
+    loadResults();
+    setupShareButtons();
+    setupDownload();
+});
+
+function loadResults() {
+    const stored = localStorage.getItem('checkResults');
+    if (!stored) {
+        window.location.href = 'checker.html';
+        return;
     }
     
-    // Setup expand/collapse button
-    const expandBtn = document.getElementById('expand-how');
-    if (expandBtn) {
-        expandBtn.addEventListener('click', () => {
-            const technical = document.getElementById('how-technical');
-            if (technical.style.display === 'none') {
-                technical.style.display = 'block';
-                expandBtn.querySelector('span').textContent = 'Hide Details';
-                expandBtn.classList.add('expanded');
-            } else {
-                technical.style.display = 'none';
-                expandBtn.querySelector('span').textContent = 'Show Details';
-                expandBtn.classList.remove('expanded');
-            }
-        });
-    }
+    checkResults = JSON.parse(stored);
+    displayResults();
 }
 
-function getSimpleExplanation(platform) {
-    const explanations = {
-        twitter: `
-            <p>We analyzed your Twitter account to check if you're shadow banned by testing:</p>
-            <ul>
-                <li>Whether your tweets appear in search results</li>
-                <li>If your profile shows up in search suggestions</li>
-                <li>Whether your replies are visible to others</li>
-                <li>If your content is being suppressed or "deboosted"</li>
-            </ul>
-            <p>The check simulates real user behavior to detect any visibility restrictions that Twitter may have placed on your account.</p>
-        `,
-        reddit: `
-            <p>We analyzed your Reddit account by checking:</p>
-            <ul>
-                <li>Site-wide shadow ban status</li>
-                <li>Profile visibility to other users</li>
-                <li>Whether your posts and comments appear publicly</li>
-                <li>Overall account standing with Reddit</li>
-            </ul>
-            <p>Our system tests your account from multiple angles to identify any restrictions Reddit may have applied.</p>
-        `,
-        email: `
-            <p>We analyzed your email domain and sender reputation by checking:</p>
-            <ul>
-                <li>25+ major spam blacklists</li>
-                <li>SPF, DKIM, and DMARC authentication records</li>
-                <li>Your sender reputation score</li>
-                <li>Mail server configuration</li>
-            </ul>
-            <p>These checks help identify issues that could cause your emails to land in spam folders or be blocked entirely.</p>
-        `
+function displayResults() {
+    displayHeader();
+    displayOverallStatus();
+    displayDetailedChecks();
+    displayRecommendations();
+}
+
+function displayHeader() {
+    const el = document.getElementById('results-header');
+    const date = new Date(checkResults.timestamp);
+    const formattedDate = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' });
+    
+    el.innerHTML = `
+        <div class="platform-badge-large">${checkResults.platformIcon} ${checkResults.platformName}</div>
+        <h1>Results for ${checkResults.username}</h1>
+        <p class="results-meta">Checked on ${formattedDate}</p>
+    `;
+}
+
+function displayOverallStatus() {
+    const el = document.getElementById('overall-status');
+    const prob = checkResults.probability;
+    
+    let icon, title, desc, statusClass;
+    
+    if (prob < 20) {
+        icon = '✅'; title = 'Looking Good!'; statusClass = 'clean';
+        desc = 'Your account appears to be in good standing. No significant issues detected.';
+    } else if (prob < 40) {
+        icon = '⚠️'; title = 'Minor Issues Detected'; statusClass = 'issues';
+        desc = `We found some potential concerns with a ${prob}% probability of restrictions. Review the details below.`;
+    } else {
+        icon = '🚫'; title = 'Issues Found'; statusClass = 'restricted';
+        desc = `Our analysis shows a ${prob}% probability of shadow ban or restrictions. Take action to improve visibility.`;
+    }
+    
+    el.innerHTML = `
+        <span class="status-icon">${icon}</span>
+        <h2 class="status-title ${statusClass}">${title}</h2>
+        <p class="status-description">${desc}</p>
+        <div style="margin-top: 1.5rem; padding: 1rem; background: var(--bg); border-radius: 0.5rem; display: inline-block;">
+            <span style="font-size: 2rem; font-weight: 700; color: var(--primary);">${prob}%</span>
+            <span style="color: var(--text-muted); display: block; font-size: 0.875rem;">Probability Score</span>
+        </div>
+    `;
+}
+
+function displayDetailedChecks() {
+    const grid = document.getElementById('checks-grid');
+    const checks = checkResults.checks;
+    
+    const checkDetails = {
+        visibility: { name: 'Profile Visibility', passDesc: 'Your profile is visible in search results', warnDesc: 'Your profile may have reduced visibility' },
+        engagement: { name: 'Engagement Reach', passDesc: 'Your posts are reaching your audience normally', warnDesc: 'Engagement may be limited or suppressed' },
+        searchability: { name: 'Search Indexing', passDesc: 'Your content is indexed and searchable', warnDesc: 'Some content may not appear in search' },
+        reach: { name: 'Overall Reach', passDesc: 'No restrictions detected on your reach', warnDesc: 'Your reach may be algorithmically reduced' }
     };
     
-    return explanations[platform] || '<p>We performed a comprehensive analysis of your account visibility.</p>';
+    grid.innerHTML = Object.entries(checks).map(([key, status]) => {
+        const detail = checkDetails[key];
+        const isPassed = status === 'pass';
+        return `
+            <div class="check-card ${isPassed ? 'passed' : 'warning'}">
+                <div class="check-header">
+                    <span class="check-name">${detail.name}</span>
+                    <span class="check-status-icon">${isPassed ? '✅' : '⚠️'}</span>
+                </div>
+                <p class="check-description">${isPassed ? detail.passDesc : detail.warnDesc}</p>
+            </div>
+        `;
+    }).join('');
 }
 
-function getTechnicalExplanation(platform) {
-    const explanations = {
-        twitter: `
-            <h4>Technical Details</h4>
-            <p>Our checker uses a multi-point verification system:</p>
-            <p><strong>Search Indexing:</strong> We query Twitter's search API to verify if your tweets are properly indexed. Shadow banned accounts typically don't appear in search results.</p>
-            <p><strong>Profile Visibility:</strong> We check if your profile appears in <code>typeahead</code> suggestions when users search for similar usernames.</p>
-            <p><strong>Reply Threading:</strong> We analyze whether your replies are properly threaded and visible in conversations, or if they're being hidden.</p>
-            <p><strong>Quality Filters:</strong> We test if your content triggers Twitter's quality filters that can hide tweets from users who don't follow you.</p>
-        `,
-        reddit: `
-            <h4>Technical Details</h4>
-            <p>Our verification process includes:</p>
-            <p><strong>Profile API Check:</strong> We verify your profile is accessible via Reddit's public API using <code>/user/USERNAME/about.json</code></p>
-            <p><strong>Content Visibility:</strong> We check if your recent posts appear in subreddit listings and can be accessed by non-logged-in users.</p>
-            <p><strong>Shadow Ban Detection:</strong> We use Reddit's shadow ban checker endpoint to verify your account status.</p>
-            <p><strong>Karma Consistency:</strong> We verify that your karma counts match between your profile and individual posts.</p>
-        `,
-        email: `
-            <h4>Technical Details</h4>
-            <p>Our deliverability check performs:</p>
-            <p><strong>DNS Record Analysis:</strong> We query your domain's <code>TXT</code> records to verify SPF, DKIM, and DMARC configurations.</p>
-            <p><strong>Blacklist Lookup:</strong> We check 25+ RBLs (Realtime Blackhole Lists) including Spamhaus, Barracuda, and SORBS.</p>
-            <p><strong>MX Record Validation:</strong> We verify your mail server configuration and SSL certificate validity.</p>
-            <p><strong>Reputation Scoring:</strong> We calculate your sender score based on historical sending patterns and complaint rates.</p>
-        `
-    };
+function displayRecommendations() {
+    const el = document.getElementById('recommendations-content');
+    const prob = checkResults.probability;
+    const checks = checkResults.checks;
     
-    return explanations[platform] || '<h4>Technical Details</h4><p>Detailed technical analysis performed.</p>';
-}
-
-// ============================================================================
-// SHARE MODAL FUNCTIONALITY
-// ============================================================================
-
-function setupShareModal() {
-    const shareBtn = document.getElementById('share-results');
-    const shareModal = document.getElementById('share-modal');
-    const closeModal = document.querySelector('.close-share-modal');
-    const shareButtons = document.querySelectorAll('.share-btn');
+    let recommendations = [];
     
-    if (!shareBtn || !shareModal) return;
-    
-    // Open modal
-    shareBtn.addEventListener('click', () => {
-        shareModal.classList.remove('hidden');
-    });
-    
-    // Close modal
-    if (closeModal) {
-        closeModal.addEventListener('click', () => {
-            shareModal.classList.add('hidden');
-        });
-    }
-    
-    // Close on overlay click
-    shareModal.addEventListener('click', (e) => {
-        if (e.target === shareModal) {
-            shareModal.classList.add('hidden');
+    if (prob < 20) {
+        recommendations.push({ type: 'success', title: '✅ Keep Up the Good Work', text: 'Continue posting quality content and engaging authentically with your audience.' });
+        recommendations.push({ type: 'success', title: '📊 Monitor Regularly', text: 'Check your account periodically to catch any issues early.' });
+    } else {
+        if (checks.visibility === 'warning') {
+            recommendations.push({ type: 'warning', title: '👤 Profile Optimization', text: 'Review your bio, profile picture, and display name. Remove any flagged content or links.' });
         }
-    });
-    
-    // Share buttons
-    shareButtons.forEach(btn => {
-        btn.addEventListener('click', () => {
-            const platform = btn.dataset.platform;
-            shareToSocial(platform);
-        });
-    });
-}
-
-function shareToSocial(platform) {
-    const text = `I just checked my ${getPlatformName(checkResults.platform)} for shadow bans. Status: ${checkResults.status === 'clean' ? '✅ All Clear' : '⚠️ Issues Found'}`;
-    const url = window.location.origin;
-    
-    const shareUrls = {
-        twitter: `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`,
-        facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`,
-        telegram: `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`,
-        linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`
-    };
-    
-    if (shareUrls[platform]) {
-        window.open(shareUrls[platform], '_blank', 'width=600,height=400');
+        if (checks.engagement === 'warning') {
+            recommendations.push({ type: 'warning', title: '💬 Engagement Strategy', text: 'Focus on authentic engagement. Avoid rapid liking, following, or commenting patterns.' });
+        }
+        if (checks.searchability === 'warning') {
+            recommendations.push({ type: 'warning', title: '#️⃣ Hashtag Review', text: 'Check if you\'re using any banned or restricted hashtags. Use our Hashtag Checker tool.' });
+        }
+        if (checks.reach === 'warning') {
+            recommendations.push({ type: 'danger', title: '🔄 Account Reset Steps', text: 'Take a brief break from posting, then gradually increase activity with high-quality content.' });
+        }
+        recommendations.push({ type: 'warning', title: '🤖 Get AI Help', text: 'Shadow AI Pro can provide personalized recovery strategies based on your specific situation.' });
     }
+    
+    el.innerHTML = recommendations.map(rec => `
+        <div class="recommendation-item ${rec.type}">
+            <div class="recommendation-title">${rec.title}</div>
+            <p class="recommendation-text">${rec.text}</p>
+        </div>
+    `).join('');
 }
 
-// ============================================================================
-// PDF EXPORT FUNCTIONALITY
-// ============================================================================
-
-function setupPDFExport() {
-    const exportBtn = document.getElementById('export-pdf');
-    if (!exportBtn) return;
+function setupShareButtons() {
+    const text = `I just checked my ${checkResults.username} for shadow bans on ${checkResults.platformName}! Got a ${checkResults.probability}% probability score. Check yours free: https://shadowbancheck.io`;
+    const url = 'https://shadowbancheck.io';
     
-    exportBtn.addEventListener('click', () => {
-        // Simple print-based PDF export
-        window.print();
+    document.getElementById('share-twitter-results')?.addEventListener('click', () => {
+        window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`, '_blank');
     });
+    document.getElementById('share-facebook-results')?.addEventListener('click', () => {
+        window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank');
+    });
+    document.getElementById('share-telegram-results')?.addEventListener('click', () => {
+        window.open(`https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`, '_blank');
+    });
+    document.getElementById('share-linkedin-results')?.addEventListener('click', () => {
+        window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`, '_blank');
+    });
+}
+
+function setupDownload() {
+    document.getElementById('download-report')?.addEventListener('click', () => {
+        const report = generateReport();
+        const blob = new Blob([report], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `shadowban-report-${checkResults.username}-${Date.now()}.txt`;
+        a.click();
+        URL.revokeObjectURL(url);
+    });
+}
+
+function generateReport() {
+    const date = new Date(checkResults.timestamp).toLocaleString();
+    return `SHADOW BAN CHECK REPORT
+========================
+Generated by ShadowBanCheck.io
+
+Platform: ${checkResults.platformName}
+Username: ${checkResults.username}
+Checked: ${date}
+
+OVERALL RESULT
+--------------
+Probability Score: ${checkResults.probability}%
+Status: ${checkResults.status === 'clean' ? 'Looking Good' : 'Issues Detected'}
+
+DETAILED CHECKS
+---------------
+Profile Visibility: ${checkResults.checks.visibility === 'pass' ? 'PASS' : 'WARNING'}
+Engagement Reach: ${checkResults.checks.engagement === 'pass' ? 'PASS' : 'WARNING'}
+Search Indexing: ${checkResults.checks.searchability === 'pass' ? 'PASS' : 'WARNING'}
+Overall Reach: ${checkResults.checks.reach === 'pass' ? 'PASS' : 'WARNING'}
+
+RECOMMENDATIONS
+---------------
+${checkResults.probability < 20 ? '• Your account appears healthy. Continue posting quality content.' : '• Review your recent activity for potential issues.\n• Check hashtags using our Hashtag Checker.\n• Consider Shadow AI Pro for personalized recovery strategies.'}
+
+--
+Visit https://shadowbancheck.io for more tools
+`;
 }

@@ -3,10 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Banned Hashtags Checker - Find Restricted Hashtags | ShadowBanCheck.io</title>
-    <meta name="description" content="Check if your hashtags are banned or restricted before you post. Works across Instagram, TikTok, Twitter/X, Facebook, LinkedIn + 20 more platforms.">
+    <title>Banned Hashtag Checker - Find Restricted Hashtags | ShadowBanCheck.io</title>
+    <meta name="description" content="Check if your hashtags are banned or restricted before you post. Works across Instagram, TikTok, Twitter/X, Facebook + 20 more platforms.">
     
-    <!-- CSS -->
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/shadow-ai.css">
     <link rel="stylesheet" href="css/hashtag-checker.css">
@@ -22,250 +21,193 @@
                 </a>
             </div>
             <nav class="nav">
-                <a href="#" class="btn-login" onclick="alert('Login/Dashboard coming soon! After purchase, you\'ll access your dashboard here.'); return false;">Login</a>
+                <a href="#" class="btn-login" onclick="alert('Login/Dashboard coming soon!'); return false;">Login</a>
                 <a href="index.html#shadow-ai-pro" class="btn-nav">Get Shadow AI Pro</a>
             </nav>
         </div>
     </header>
 
-    <!-- Hero -->
-    <section class="hero" style="padding: var(--space-2xl) 0 var(--space-xl);">
+    <!-- Hero - Compact like index -->
+    <section class="hero" style="padding: var(--space-xl) 0 var(--space-lg);">
         <div class="container">
-            <div class="hero-badge">🚫 Banned Hashtags Checker</div>
-            <h1 class="hero-title">Check Banned Hashtags</h1>
-            <p class="hero-subtitle">Check if your hashtags are banned or restricted before you post. Avoid shadowbans and maximize your reach.</p>
-            <p style="color: var(--text-muted); margin-top: 1rem; font-size: 0.875rem;">
-                Works across Instagram, TikTok, Twitter/X, Facebook, LinkedIn + 20 more platforms
-            </p>
-        </div>
-    </section>
-
-    <!-- Hashtag Checker Form Card -->
-    <section class="checker-section">
-        <div class="container">
-            <div class="checker-card">
-                <div class="checker-card-header">
-                    <div class="checker-icon">🚫</div>
-                    <div>
-                        <h2>Enter Hashtags to Check</h2>
-                        <p>We'll analyze each hashtag across all major platforms</p>
-                    </div>
-                </div>
-                
-                <form id="hashtag-form" class="hashtag-form">
-                    <div class="form-group">
-                        <label for="hashtag-input">Your Hashtags</label>
-                        <textarea 
-                            id="hashtag-input" 
-                            name="hashtags" 
-                            placeholder="#fitness, #motivation, #gains, #workout, #fitfam..."
-                            rows="4"
-                            required
-                        ></textarea>
-                        <div class="input-meta">
-                            <span id="hashtag-count">0 hashtags</span>
-                            <span>Separate with commas, spaces, or new lines</span>
+            <div class="hero-badge">🚫 Banned Hashtag Checker</div>
+            <h1 class="hero-title" style="font-size: clamp(2rem, 4vw, 3rem);">Are Your Hashtags Banned?</h1>
+            <p class="hero-subtitle">Paste your hashtags below. Our AI checks if they're banned, restricted, or safe across all major platforms.</p>
+            
+            <!-- HASHTAG CHECKER - Primary Feature (matches post-checker-card from index) -->
+            <div class="post-checker-hero">
+                <div class="post-checker-card">
+                    <div class="checker-header">
+                        <span class="checker-icon">🚫</span>
+                        <div>
+                            <h3>Instant Hashtag Analysis</h3>
+                            <p>Works with Instagram, TikTok, Twitter/X, Facebook + 20 more</p>
                         </div>
                     </div>
-                    
-                    <button type="submit" class="btn-check" id="check-hashtags-btn">
-                        <span class="btn-text">Check Hashtags Now</span>
-                        <span class="btn-icon">🔍</span>
-                    </button>
-                    
-                    <div class="quick-actions">
-                        <button type="button" class="btn-text-link" id="example-btn">Load Example Hashtags</button>
-                        <button type="button" class="btn-text-link" id="clear-btn">Clear All</button>
+                    <form id="hashtag-form" class="checker-form">
+                        <textarea 
+                            id="hashtag-input" 
+                            class="post-url-input hashtag-textarea"
+                            placeholder="#fitness #motivation #gains #workout #fitfam #love #instagood..."
+                            rows="2"
+                            required
+                        ></textarea>
+                        <button type="submit" class="btn-analyze" id="check-hashtags-btn">
+                            <span class="btn-text">Check Hashtags</span>
+                            <span class="btn-icon">🔍</span>
+                        </button>
+                    </form>
+                    <div class="checker-features">
+                        <span>✓ Results in seconds</span>
+                        <span>✓ 5 free checks/day</span>
+                        <span>✓ Multi-platform analysis</span>
+                        <span>✓ AI-powered detection</span>
                     </div>
-                </form>
+                    <div class="checker-meta">
+                        <span id="hashtag-count">0 hashtags detected</span>
+                        <span>•</span>
+                        <button type="button" class="link-btn" id="example-btn">Load examples</button>
+                        <span>•</span>
+                        <button type="button" class="link-btn" id="clear-btn">Clear</button>
+                    </div>
+                </div>
                 
-                <div class="checker-tips">
-                    <h4>💡 Tips for Best Results</h4>
-                    <ul>
-                        <li>Check hashtags <strong>before</strong> posting to avoid shadowbans</li>
-                        <li>Remove the # symbol or keep it - we handle both</li>
-                        <li>Check up to 30 hashtags at once (Instagram's limit)</li>
-                        <li>Banned hashtags change daily - check regularly!</li>
-                    </ul>
+                <!-- Results Area (Hidden Initially) -->
+                <div class="post-results" id="results-section" style="display: none;">
+                    <div class="result-header">
+                        <span class="result-icon">📊</span>
+                        <h3>Analysis Complete</h3>
+                    </div>
+                    <div class="result-content" id="results-content">
+                        <!-- Results inserted here -->
+                    </div>
                 </div>
+            </div>
+
+            <!-- Counter inline like index divider -->
+            <div class="hero-divider">
+                <span>🎯 <strong id="hashtag-searches-remaining">5 / 5</strong> free checks today • <a href="index.html#pricing">Unlock unlimited →</a></span>
             </div>
         </div>
     </section>
 
-    <!-- Free Searches Remaining Module -->
-    <section class="search-counter-section">
+    <!-- How It Works - Compact 3-column (matches index) -->
+    <section class="how-it-works" style="padding: var(--space-xl) 0;">
         <div class="container">
-            <div class="search-counter-module">
-                <div class="counter-content">
-                    <div class="counter-icon">🎯</div>
-                    <div class="counter-text">
-                        <h3>Free Searches Remaining</h3>
-                        <p id="hashtag-searches-remaining">5 / 5 searches available today</p>
-                    </div>
-                </div>
-                <a href="index.html#pricing" class="btn-counter">Unlock More Searches</a>
-            </div>
-        </div>
-    </section>
-
-    <!-- Results Section (Hidden Initially) -->
-    <section id="results-section" class="results-section hidden">
-        <div class="container">
-            <div class="results-header">
-                <h2>📊 Analysis Results</h2>
-                <div class="results-summary">
-                    <div class="summary-stat safe">
-                        <span class="stat-number" id="safe-count">0</span>
-                        <span class="stat-label">Safe</span>
-                    </div>
-                    <div class="summary-stat banned">
-                        <span class="stat-number" id="banned-count">0</span>
-                        <span class="stat-label">Banned</span>
-                    </div>
-                    <div class="summary-stat warning">
-                        <span class="stat-number" id="restricted-count">0</span>
-                        <span class="stat-label">Restricted</span>
-                    </div>
-                </div>
-            </div>
-            
-            <div id="results-list" class="results-list">
-                <!-- Results will be inserted here -->
-            </div>
-            
-            <div class="results-actions">
-                <button class="btn-secondary" id="copy-safe-btn">📋 Copy Safe Hashtags</button>
-                <button class="btn-secondary" id="export-btn">📥 Export Results</button>
-                <button class="btn-secondary" id="check-again-btn">🔄 Check More</button>
-            </div>
-        </div>
-    </section>
-
-    <!-- How Our Checker Works - Compact Grid -->
-    <section class="how-works-section">
-        <div class="container">
-            <h2 class="section-title">How Our Checker Works</h2>
-            <p class="section-desc">We analyze multiple data sources to identify banned and restricted hashtags</p>
-            
+            <h2 class="section-title">How It Works</h2>
             <div class="how-grid-compact">
-                <div class="how-card-compact">
+                <div class="how-item-compact">
                     <span class="how-icon-compact">🤖</span>
                     <div>
                         <strong>AI-Powered Search</strong>
-                        <p>Our AI scans databases and community reports to identify banned hashtags</p>
+                        <p>Scans platform databases & community reports for banned hashtags.</p>
                     </div>
                 </div>
-                <div class="how-card-compact">
+                <div class="how-item-compact">
                     <span class="how-icon-compact">⚡</span>
                     <div>
                         <strong>Real-Time API Checks</strong>
-                        <p>Direct platform API integration checks current ban status instantly</p>
+                        <p>Direct integration with platforms for live hashtag status.</p>
                     </div>
                 </div>
-                <div class="how-card-compact">
+                <div class="how-item-compact">
                     <span class="how-icon-compact">👥</span>
                     <div>
                         <strong>Community Reports</strong>
-                        <p>Thousands of users report violations daily for real-time updates</p>
+                        <p>Daily user-reported violations and newly banned hashtags.</p>
                     </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Data Sources Section -->
-    <section class="data-sources-section">
-        <div class="container">
-            <h2 class="section-title">Our Data Sources</h2>
-            <p class="section-desc">We analyze multiple data points for accurate hashtag ban detection</p>
-            
-            <div class="sources-grid">
-                <div class="source-card">
-                    <span class="source-icon">🔌</span>
-                    <h3>Platform APIs</h3>
-                    <p>Direct real-time status</p>
-                </div>
-                <div class="source-card">
-                    <span class="source-icon">🌐</span>
-                    <h3>Web Search</h3>
-                    <p>AI-powered analysis</p>
-                </div>
-                <div class="source-card">
-                    <span class="source-icon">📊</span>
-                    <h3>Historical Data</h3>
-                    <p>100K+ banned hashtags</p>
-                </div>
-                <div class="source-card">
-                    <span class="source-icon">👥</span>
-                    <h3>User Reports</h3>
-                    <p>Community verified</p>
-                </div>
-                <div class="source-card">
-                    <span class="source-icon">🤖</span>
-                    <h3>AI Detection</h3>
-                    <p>Pattern recognition</p>
-                </div>
-                <div class="source-card">
-                    <span class="source-icon">📈</span>
-                    <h3>Trend Analysis</h3>
-                    <p>Daily monitoring</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Trending Banned Hashtags Section -->
+    <!-- Trending Banned Hashtags -->
     <section class="trending-section">
         <div class="container">
-            <div class="trending-header">
-                <div class="trending-title">
-                    <h2 class="section-title">🔥 Trending Banned Hashtags</h2>
-                    <p class="section-desc">Top 100 currently banned or restricted hashtags across platforms</p>
-                </div>
-                <div class="trending-meta">
-                    <span class="last-updated">
-                        <span class="update-icon">🔄</span>
-                        Last updated: <strong id="trending-date">November 24, 2025</strong>
-                    </span>
-                </div>
+            <h2 class="section-title">🔥 Trending Banned Hashtags</h2>
+            <p class="section-desc">Top 100 currently banned or restricted hashtags across platforms</p>
+            
+            <div class="trending-meta">
+                <span class="update-badge">🔄 Updated: <strong id="trending-date">November 24, 2025</strong></span>
             </div>
             
-            <div class="platform-filter">
-                <button class="filter-btn active" data-platform="all">All Platforms</button>
+            <div class="filter-row">
+                <button class="filter-btn active" data-platform="all">All</button>
                 <button class="filter-btn" data-platform="instagram">📸 Instagram</button>
                 <button class="filter-btn" data-platform="tiktok">🎵 TikTok</button>
-                <button class="filter-btn" data-platform="twitter">🐦 Twitter/X</button>
+                <button class="filter-btn" data-platform="twitter">🐦 Twitter</button>
                 <button class="filter-btn" data-platform="facebook">📘 Facebook</button>
             </div>
             
-            <div class="trending-grid" id="trending-grid">
-                <!-- Trending hashtags will be inserted here -->
+            <div class="trending-tags" id="trending-grid">
+                <!-- Tags inserted by JS -->
             </div>
             
-            <div class="trending-actions">
-                <button class="btn-expand" id="show-more-trending">
-                    <span>Show All 100 Banned Hashtags</span>
-                    <span class="expand-icon">▼</span>
-                </button>
-            </div>
-            
-            <div class="trending-note">
-                <span class="note-icon">ℹ️</span>
-                <p>This list is updated daily by our AI scanning platform policies, community reports, and engagement patterns. Hashtag bans can change without notice.</p>
+            <button class="btn-show-more" id="show-more-trending">
+                Show All 100 <span class="arrow">▼</span>
+            </button>
+        </div>
+    </section>
+
+    <!-- Data Sources - Compact 3x2 grid (matches index pricing-extras style) -->
+    <section class="trust-section">
+        <div class="container">
+            <h2 class="section-title" style="margin-bottom: var(--space-lg);">Our Data Sources</h2>
+            <div class="trust-badges">
+                <div class="trust-badge">
+                    <span class="trust-icon">🔌</span>
+                    <div>
+                        <strong>Platform APIs</strong>
+                        <p>Direct integration</p>
+                    </div>
+                </div>
+                <div class="trust-badge">
+                    <span class="trust-icon">🌐</span>
+                    <div>
+                        <strong>Web Analysis</strong>
+                        <p>Cross-platform data</p>
+                    </div>
+                </div>
+                <div class="trust-badge">
+                    <span class="trust-icon">📊</span>
+                    <div>
+                        <strong>100K+ Records</strong>
+                        <p>Hashtag database</p>
+                    </div>
+                </div>
+                <div class="trust-badge">
+                    <span class="trust-icon">👥</span>
+                    <div>
+                        <strong>User Reports</strong>
+                        <p>Community verified</p>
+                    </div>
+                </div>
+                <div class="trust-badge">
+                    <span class="trust-icon">🤖</span>
+                    <div>
+                        <strong>AI Detection</strong>
+                        <p>Pattern analysis</p>
+                    </div>
+                </div>
+                <div class="trust-badge">
+                    <span class="trust-icon">📈</span>
+                    <div>
+                        <strong>Trend Data</strong>
+                        <p>Daily updates</p>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
 
-    <!-- Upgrade CTA -->
-    <section id="pricing-cta" class="pricing-cta-section hidden">
+    <!-- CTA - Compact (matches index) -->
+    <section class="cta" style="padding: var(--space-xl) 0;">
         <div class="container">
-            <div class="upgrade-cta-card">
-                <div class="upgrade-icon">🎯</div>
-                <div class="upgrade-content">
-                    <h3>Out of Free Searches?</h3>
-                    <p>Upgrade to unlock more daily hashtag checks, plus shadow ban monitoring across all platforms.</p>
-                    <a href="index.html#pricing" class="btn-upgrade">View Pricing Plans →</a>
-                </div>
+            <h2 style="font-size: 1.75rem;">Need More Hashtag Checks?</h2>
+            <p>Unlock unlimited checks + shadow ban monitoring across all 26 platforms</p>
+            <div class="cta-btns">
+                <a href="index.html#pricing" class="btn btn-large">View Plans →</a>
+                <a href="checker.html" class="btn-ghost-light">Try Shadow Ban Checker</a>
             </div>
         </div>
     </section>
@@ -279,7 +221,7 @@
                         <span class="logo-emoji">🔍</span>
                         <span>ShadowBanCheck.io</span>
                     </div>
-                    <p>Protecting visibility for influencers, politicians, and online sellers worldwide.</p>
+                    <p>Protecting visibility worldwide.</p>
                 </div>
                 <div class="footer-col">
                     <h4>Product</h4>
@@ -290,28 +232,26 @@
                 <div class="footer-col">
                     <h4>Tools</h4>
                     <a href="checker.html">Shadow Ban Checker</a>
-                    <a href="hashtag-checker.html">Banned Hashtags Checker</a>
+                    <a href="hashtag-checker.html">Hashtag Checker</a>
                 </div>
                 <div class="footer-col">
                     <h4>Developers</h4>
-                    <a href="#" onclick="alert('API documentation coming soon for developers!'); return false;">
-                        API Access <span class="coming-soon-tiny">Coming Soon</span>
-                    </a>
+                    <a href="#">API Access <span class="coming-soon-tiny">Soon</span></a>
                     <a href="https://github.com/Ghost081280" target="_blank">GitHub</a>
                 </div>
             </div>
             <div class="footer-bottom">
-                <p>&copy; 2025 ShadowBanCheck.io. All rights reserved.</p>
-                <div class="footer-legal" style="margin-right: 100px;">
-                    <a href="#" onclick="alert('Terms of Service coming soon!'); return false;">Terms</a>
-                    <a href="#" onclick="alert('Privacy Policy coming soon!'); return false;">Privacy</a>
-                    <a href="#" onclick="showCookiePolicy(); return false;">Cookie Policy</a>
+                <p>&copy; 2025 ShadowBanCheck.io</p>
+                <div class="footer-legal">
+                    <a href="#">Terms</a>
+                    <a href="#">Privacy</a>
+                    <a href="#" onclick="showCookiePolicy(); return false;">Cookies</a>
                 </div>
             </div>
         </div>
     </footer>
 
-    <!-- Shadow AI -->
+    <!-- Shadow AI Widget -->
     <button id="shadow-ai-btn" class="copilot-btn">
         <span class="copilot-emoji">🤖</span>
         <span>Shadow AI</span>
@@ -334,7 +274,7 @@
 
     <script>
         function showCookiePolicy() {
-            alert('Cookie Policy\n\nWe use cookies to:\n• Remember your preferences\n• Analyze site traffic and usage\n• Improve your experience\n• Track free searches per day\n\nBy using ShadowBanCheck.io, you consent to our use of cookies.');
+            alert('Cookie Policy\n\nWe use cookies for preferences, analytics, and tracking free searches.\n\nBy using ShadowBanCheck.io, you consent to cookies.');
         }
     </script>
     <script src="js/shadow-ai.js"></script>

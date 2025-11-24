@@ -6,42 +6,78 @@
     <title>Shadow Ban Checker - Check Any Platform | ShadowBanCheck.io</title>
     <meta name="description" content="Free shadow ban checker for Twitter, Instagram, TikTok, Reddit, and 22+ more platforms. Instant results in 60 seconds.">
     
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔍</text></svg>">
+    
+    <!-- CSS -->
     <link rel="stylesheet" href="css/main.css">
-    <link rel="stylesheet" href="css/shadow-ai.css">
     <link rel="stylesheet" href="css/checker.css">
+    <link rel="stylesheet" href="css/shadow-ai.css">
 </head>
 <body>
     <!-- Header -->
     <header class="header">
-        <div class="container">
+        <div class="container flex-between">
             <div class="logo">
                 <a href="index.html">
-                    <span class="logo-emoji">🔍</span>
-                    <span class="logo-text">ShadowBanCheck.io</span>
+                    <span class="logo-icon">🔍</span>
+                    <span>ShadowBanCheck.io</span>
                 </a>
             </div>
-            <nav class="nav">
-                <a href="#" class="btn-login" onclick="alert('Login/Dashboard coming soon!'); return false;">Login</a>
-                <a href="index.html#shadow-ai-pro" class="btn-nav">Get Shadow AI Pro</a>
+            
+            <!-- Desktop Nav -->
+            <nav class="nav-desktop">
+                <a href="index.html" class="btn-login">Home</a>
+                <a href="index.html#shadow-ai-pro" class="btn btn-nav">Get Shadow AI Pro</a>
             </nav>
+            
+            <!-- Mobile Nav Toggle -->
+            <button class="nav-toggle" id="nav-toggle" aria-label="Toggle navigation">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
         </div>
     </header>
+    
+    <!-- Mobile Nav Overlay -->
+    <div class="nav-overlay" id="nav-overlay"></div>
+    
+    <!-- Mobile Nav Slide-out -->
+    <nav class="nav-mobile" id="nav-mobile">
+        <div class="nav-mobile-header">
+            <div class="logo">
+                <span class="logo-icon">🔍</span>
+                <span>ShadowBanCheck</span>
+            </div>
+            <button class="nav-mobile-close" id="nav-close" aria-label="Close navigation">&times;</button>
+        </div>
+        <div class="nav-mobile-links">
+            <a href="index.html">🏠 Home</a>
+            <a href="index.html#platforms">🌐 Platforms</a>
+            <a href="index.html#pricing">💰 Pricing</a>
+            <a href="hashtag-checker.html">🚫 Hashtag Checker</a>
+        </div>
+        <div class="nav-mobile-cta">
+            <a href="index.html#shadow-ai-pro" class="btn btn-primary">Get Shadow AI Pro</a>
+        </div>
+    </nav>
 
     <!-- Hero - Compact -->
-    <section class="hero" style="padding: var(--space-xl) 0 var(--space-lg);">
+    <section class="hero">
         <div class="container">
             <div class="hero-badge">🔍 Free Shadow Ban Checker</div>
-            <h1 class="hero-title" style="font-size: 2.5rem;">Check Any Platform</h1>
-            <p class="hero-subtitle" style="margin-bottom: var(--space-md);">Select a platform below to check if you're shadow banned. 3 free checks per day.</p>
+            <h1 class="hero-title">Check Any Platform</h1>
+            <p class="hero-subtitle">Select a platform below to check if you're shadow banned. 3 free checks per day.</p>
         </div>
     </section>
 
     <!-- Search Counter -->
-    <section style="padding: 0 0 var(--space-lg) 0;">
+    <section class="section">
         <div class="container">
-            <div class="search-counter-module">
+            <div class="search-counter">
                 <div class="counter-content">
-                    <div class="counter-icon">🎯</div>
+                    <span class="counter-icon">🎯</span>
                     <div class="counter-text">
                         <h3>Free Searches Today</h3>
                         <p id="searches-remaining">3 / 3 available</p>
@@ -53,87 +89,227 @@
     </section>
 
     <!-- Platform Grid -->
-    <section class="platforms" style="padding: var(--space-lg) 0;">
+    <section class="platforms-checker section">
         <div class="container">
-            <h2 class="section-title" style="font-size: 1.5rem; margin-bottom: var(--space-sm);">Select Platform to Check</h2>
-            <p class="section-desc" style="margin-bottom: var(--space-lg);">Click any platform to start your shadow ban check</p>
-
+            <div class="section-header">
+                <h2 class="section-title">Select Platform to Check</h2>
+                <p class="section-desc">Click any platform to start your shadow ban check</p>
+            </div>
+            
             <div class="platform-grid">
-                <div class="platform-item clickable" data-platform="twitter"><span>🐦</span><span>Twitter / X</span><span class="badge live">Live</span></div>
-                <div class="platform-item clickable" data-platform="instagram"><span>📸</span><span>Instagram</span><span class="badge soon">Soon</span></div>
-                <div class="platform-item clickable" data-platform="tiktok"><span>🎵</span><span>TikTok</span><span class="badge soon">Soon</span></div>
-                <div class="platform-item clickable" data-platform="facebook"><span>📘</span><span>Facebook</span><span class="badge soon">Soon</span></div>
-                <div class="platform-item clickable" data-platform="reddit"><span>🤖</span><span>Reddit</span><span class="badge live">Live</span></div>
-                <div class="platform-item clickable" data-platform="linkedin"><span>💼</span><span>LinkedIn</span><span class="badge soon">Soon</span></div>
-                <div class="platform-item clickable" data-platform="threads"><span>🧵</span><span>Threads</span><span class="badge soon">Soon</span></div>
-                <div class="platform-item clickable" data-platform="bluesky"><span>🦋</span><span>Bluesky</span><span class="badge soon">Soon</span></div>
-                <div class="platform-item clickable" data-platform="youtube"><span>📺</span><span>YouTube</span><span class="badge soon">Soon</span></div>
-                <div class="platform-item clickable" data-platform="pinterest"><span>📌</span><span>Pinterest</span><span class="badge soon">Soon</span></div>
-                <div class="platform-item clickable" data-platform="discord"><span>🎮</span><span>Discord</span><span class="badge soon">Soon</span></div>
-                <div class="platform-item clickable" data-platform="twitch"><span>🟣</span><span>Twitch</span><span class="badge soon">Soon</span></div>
-                <div class="platform-item clickable" data-platform="kick"><span>⚡</span><span>Kick</span><span class="badge soon">Soon</span></div>
-                <div class="platform-item clickable" data-platform="snapchat"><span>👻</span><span>Snapchat</span><span class="badge soon">Soon</span></div>
-                <div class="platform-item clickable" data-platform="truth"><span>🇺🇸</span><span>Truth Social</span><span class="badge soon">Soon</span></div>
-                <div class="platform-item clickable" data-platform="rumble"><span>📹</span><span>Rumble</span><span class="badge soon">Soon</span></div>
-                <div class="platform-item clickable" data-platform="telegram"><span>✈️</span><span>Telegram</span><span class="badge soon">Soon</span></div>
-                <div class="platform-item clickable" data-platform="etsy"><span>🛍️</span><span>Etsy</span><span class="badge soon">Soon</span></div>
-                <div class="platform-item clickable" data-platform="amazon"><span>📦</span><span>Amazon</span><span class="badge soon">Soon</span></div>
-                <div class="platform-item clickable" data-platform="ebay"><span>🏷️</span><span>eBay</span><span class="badge soon">Soon</span></div>
-                <div class="platform-item clickable" data-platform="email"><span>📧</span><span>Email</span><span class="badge live">Live</span></div>
-                <div class="platform-item clickable" data-platform="phone"><span>📱</span><span>Phone</span><span class="badge soon">Soon</span></div>
-                <div class="platform-item clickable" data-platform="domain"><span>🌐</span><span>Domain</span><span class="badge soon">Soon</span></div>
-                <div class="platform-item clickable" data-platform="ip"><span>🖥️</span><span>IP Address</span><span class="badge soon">Soon</span></div>
-                <div class="platform-item clickable" data-platform="google"><span>📍</span><span>Google Business</span><span class="badge soon">Soon</span></div>
-                <div class="platform-item clickable" data-platform="website"><span>🔗</span><span>Website</span><span class="badge soon">Soon</span></div>
+                <div class="platform-item" data-platform="twitter">
+                    <span class="platform-icon">🐦</span>
+                    <span class="platform-name">Twitter / X</span>
+                    <span class="badge badge-live">Live</span>
+                </div>
+                <div class="platform-item" data-platform="instagram">
+                    <span class="platform-icon">📸</span>
+                    <span class="platform-name">Instagram</span>
+                    <span class="badge badge-soon">Soon</span>
+                </div>
+                <div class="platform-item" data-platform="tiktok">
+                    <span class="platform-icon">🎵</span>
+                    <span class="platform-name">TikTok</span>
+                    <span class="badge badge-soon">Soon</span>
+                </div>
+                <div class="platform-item" data-platform="facebook">
+                    <span class="platform-icon">📘</span>
+                    <span class="platform-name">Facebook</span>
+                    <span class="badge badge-soon">Soon</span>
+                </div>
+                <div class="platform-item" data-platform="reddit">
+                    <span class="platform-icon">🤖</span>
+                    <span class="platform-name">Reddit</span>
+                    <span class="badge badge-live">Live</span>
+                </div>
+                <div class="platform-item" data-platform="linkedin">
+                    <span class="platform-icon">💼</span>
+                    <span class="platform-name">LinkedIn</span>
+                    <span class="badge badge-soon">Soon</span>
+                </div>
+                <div class="platform-item" data-platform="threads">
+                    <span class="platform-icon">🧵</span>
+                    <span class="platform-name">Threads</span>
+                    <span class="badge badge-soon">Soon</span>
+                </div>
+                <div class="platform-item" data-platform="bluesky">
+                    <span class="platform-icon">🦋</span>
+                    <span class="platform-name">Bluesky</span>
+                    <span class="badge badge-soon">Soon</span>
+                </div>
+                <div class="platform-item" data-platform="youtube">
+                    <span class="platform-icon">📺</span>
+                    <span class="platform-name">YouTube</span>
+                    <span class="badge badge-soon">Soon</span>
+                </div>
+                <div class="platform-item" data-platform="pinterest">
+                    <span class="platform-icon">📌</span>
+                    <span class="platform-name">Pinterest</span>
+                    <span class="badge badge-soon">Soon</span>
+                </div>
+                <div class="platform-item" data-platform="discord">
+                    <span class="platform-icon">🎮</span>
+                    <span class="platform-name">Discord</span>
+                    <span class="badge badge-soon">Soon</span>
+                </div>
+                <div class="platform-item" data-platform="twitch">
+                    <span class="platform-icon">🟣</span>
+                    <span class="platform-name">Twitch</span>
+                    <span class="badge badge-soon">Soon</span>
+                </div>
+                <div class="platform-item" data-platform="kick">
+                    <span class="platform-icon">⚡</span>
+                    <span class="platform-name">Kick</span>
+                    <span class="badge badge-soon">Soon</span>
+                </div>
+                <div class="platform-item" data-platform="snapchat">
+                    <span class="platform-icon">👻</span>
+                    <span class="platform-name">Snapchat</span>
+                    <span class="badge badge-soon">Soon</span>
+                </div>
+                <div class="platform-item" data-platform="truth">
+                    <span class="platform-icon">🇺🇸</span>
+                    <span class="platform-name">Truth Social</span>
+                    <span class="badge badge-soon">Soon</span>
+                </div>
+                <div class="platform-item" data-platform="rumble">
+                    <span class="platform-icon">📹</span>
+                    <span class="platform-name">Rumble</span>
+                    <span class="badge badge-soon">Soon</span>
+                </div>
+                <div class="platform-item" data-platform="telegram">
+                    <span class="platform-icon">✈️</span>
+                    <span class="platform-name">Telegram</span>
+                    <span class="badge badge-soon">Soon</span>
+                </div>
+                <div class="platform-item" data-platform="etsy">
+                    <span class="platform-icon">🛍️</span>
+                    <span class="platform-name">Etsy</span>
+                    <span class="badge badge-soon">Soon</span>
+                </div>
+                <div class="platform-item" data-platform="amazon">
+                    <span class="platform-icon">📦</span>
+                    <span class="platform-name">Amazon</span>
+                    <span class="badge badge-soon">Soon</span>
+                </div>
+                <div class="platform-item" data-platform="ebay">
+                    <span class="platform-icon">🏷️</span>
+                    <span class="platform-name">eBay</span>
+                    <span class="badge badge-soon">Soon</span>
+                </div>
+                <div class="platform-item" data-platform="email">
+                    <span class="platform-icon">📧</span>
+                    <span class="platform-name">Email</span>
+                    <span class="badge badge-live">Live</span>
+                </div>
+                <div class="platform-item" data-platform="phone">
+                    <span class="platform-icon">📱</span>
+                    <span class="platform-name">Phone</span>
+                    <span class="badge badge-soon">Soon</span>
+                </div>
+                <div class="platform-item" data-platform="domain">
+                    <span class="platform-icon">🌐</span>
+                    <span class="platform-name">Domain</span>
+                    <span class="badge badge-soon">Soon</span>
+                </div>
+                <div class="platform-item" data-platform="ip">
+                    <span class="platform-icon">🖥️</span>
+                    <span class="platform-name">IP Address</span>
+                    <span class="badge badge-soon">Soon</span>
+                </div>
+                <div class="platform-item" data-platform="google">
+                    <span class="platform-icon">📍</span>
+                    <span class="platform-name">Google Business</span>
+                    <span class="badge badge-soon">Soon</span>
+                </div>
+                <div class="platform-item" data-platform="website">
+                    <span class="platform-icon">🔗</span>
+                    <span class="platform-name">Website</span>
+                    <span class="badge badge-soon">Soon</span>
+                </div>
             </div>
         </div>
     </section>
 
     <!-- How It Works - Compact -->
-    <section class="how-it-works" style="padding: var(--space-xl) 0;">
+    <section class="section section-alt how-compact">
         <div class="container">
-            <h2 class="section-title" style="font-size: 1.5rem;">How It Works</h2>
+            <div class="section-header">
+                <h2 class="section-title">How It Works</h2>
+            </div>
             <div class="how-grid">
-                <div class="how-item">
-                    <div class="how-icon">1️⃣</div>
-                    <h3>Select Platform</h3>
-                    <p>Choose from 26 platforms we monitor</p>
+                <div class="how-item reveal">
+                    <span class="how-icon">1️⃣</span>
+                    <div class="how-content">
+                        <h4>Select Platform</h4>
+                        <p>Choose from 26 platforms we monitor</p>
+                    </div>
                 </div>
-                <div class="how-item">
-                    <div class="how-icon">2️⃣</div>
-                    <h3>Enter Username</h3>
-                    <p>Provide your account info</p>
+                <div class="how-item reveal">
+                    <span class="how-icon">2️⃣</span>
+                    <div class="how-content">
+                        <h4>Enter Username</h4>
+                        <p>Provide your account info</p>
+                    </div>
                 </div>
-                <div class="how-item">
-                    <div class="how-icon">3️⃣</div>
-                    <h3>Get Results</h3>
-                    <p>Results in 60 seconds</p>
+                <div class="how-item reveal">
+                    <span class="how-icon">3️⃣</span>
+                    <div class="how-content">
+                        <h4>Get Results</h4>
+                        <p>Results in 60 seconds</p>
+                    </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Data Sources - Compact -->
-    <section class="data-sources-section" style="padding: var(--space-xl) 0;">
+    <!-- Data Sources -->
+    <section class="section">
         <div class="container">
-            <h2 class="section-title" style="font-size: 1.5rem;">Our Data Sources</h2>
-            <p class="section-desc">We analyze multiple data points for accurate probability scores</p>
+            <div class="section-header">
+                <h2 class="section-title">Our Data Sources</h2>
+                <p class="section-desc">We analyze multiple data points for accurate probability scores</p>
+            </div>
             <div class="sources-grid">
-                <div class="source-card"><span class="source-icon">🔌</span><h3>Platform APIs</h3><p>Direct real-time status</p></div>
-                <div class="source-card"><span class="source-icon">🌐</span><h3>Web Search</h3><p>AI-powered analysis</p></div>
-                <div class="source-card"><span class="source-icon">📊</span><h3>Public Data</h3><p>Historical records</p></div>
-                <div class="source-card"><span class="source-icon">👥</span><h3>User Reports</h3><p>Community verified</p></div>
-                <div class="source-card"><span class="source-icon">🤖</span><h3>AI Analysis</h3><p>10+ factor detection</p></div>
-                <div class="source-card"><span class="source-icon">📈</span><h3>Trend Data</h3><p>Pattern recognition</p></div>
+                <div class="source-card reveal">
+                    <span class="source-icon">🔌</span>
+                    <h4>Platform APIs</h4>
+                    <p>Direct real-time status</p>
+                </div>
+                <div class="source-card reveal">
+                    <span class="source-icon">🌐</span>
+                    <h4>Web Search</h4>
+                    <p>AI-powered analysis</p>
+                </div>
+                <div class="source-card reveal">
+                    <span class="source-icon">📊</span>
+                    <h4>Public Data</h4>
+                    <p>Historical records</p>
+                </div>
+                <div class="source-card reveal">
+                    <span class="source-icon">👥</span>
+                    <h4>User Reports</h4>
+                    <p>Community verified</p>
+                </div>
+                <div class="source-card reveal">
+                    <span class="source-icon">🤖</span>
+                    <h4>AI Analysis</h4>
+                    <p>10+ factor detection</p>
+                </div>
+                <div class="source-card reveal">
+                    <span class="source-icon">📈</span>
+                    <h4>Trend Data</h4>
+                    <p>Pattern recognition</p>
+                </div>
             </div>
         </div>
     </section>
 
     <!-- Cross-Promote: Hashtag Checker -->
-    <section style="padding: var(--space-xl) 0; background: var(--bg);">
+    <section class="section section-alt">
         <div class="container">
-            <div class="cross-promote-card">
-                <div class="cross-promote-icon">🚫</div>
+            <div class="cross-promote">
+                <span class="cross-promote-icon">🚫</span>
                 <div class="cross-promote-content">
                     <h3>Also Check Your Hashtags</h3>
                     <p>Using banned hashtags can trigger shadow bans. Check if your hashtags are safe before posting.</p>
@@ -156,7 +332,10 @@
         <div class="container">
             <div class="footer-grid">
                 <div class="footer-brand">
-                    <div class="logo"><span class="logo-emoji">🔍</span><span>ShadowBanCheck.io</span></div>
+                    <div class="logo">
+                        <span class="logo-icon">🔍</span>
+                        <span>ShadowBanCheck.io</span>
+                    </div>
                     <p>Protecting visibility for influencers, politicians, and online sellers worldwide.</p>
                 </div>
                 <div class="footer-col">
@@ -168,30 +347,37 @@
                 <div class="footer-col">
                     <h4>Tools</h4>
                     <a href="checker.html">Shadow Ban Checker</a>
-                    <a href="hashtag-checker.html">Banned Hashtags Checker</a>
+                    <a href="hashtag-checker.html">Hashtag Checker</a>
                 </div>
                 <div class="footer-col">
                     <h4>Developers</h4>
-                    <a href="#" onclick="alert('API documentation coming soon!'); return false;">API Access <span class="coming-soon-tiny">Soon</span></a>
+                    <a href="#" onclick="alert('API docs coming soon!'); return false;">API Access <span class="badge-coming">Soon</span></a>
                     <a href="https://github.com/Ghost081280" target="_blank">GitHub</a>
                 </div>
             </div>
             <div class="footer-bottom">
                 <p>&copy; 2025 ShadowBanCheck.io. All rights reserved.</p>
-                <div class="footer-legal" style="margin-right: 100px;">
+                <div class="footer-legal">
                     <a href="#" onclick="alert('Terms coming soon!'); return false;">Terms</a>
                     <a href="#" onclick="alert('Privacy coming soon!'); return false;">Privacy</a>
-                    <a href="#" onclick="showCookiePolicy(); return false;">Cookie Policy</a>
+                    <a href="#" onclick="showCookiePolicy(); return false;">Cookies</a>
                 </div>
             </div>
         </div>
     </footer>
 
-    <!-- Shadow AI -->
-    <button id="shadow-ai-btn" class="copilot-btn"><span class="copilot-emoji">🤖</span><span>Shadow AI</span></button>
+    <!-- Shadow AI Widget -->
+    <button id="shadow-ai-btn" class="copilot-btn">
+        <span class="copilot-emoji">🤖</span>
+        <span>Shadow AI</span>
+    </button>
+    
     <div id="shadow-ai-chat" class="copilot-chat hidden">
         <div class="copilot-header">
-            <div class="copilot-title"><span class="copilot-emoji">🤖</span><span>Shadow AI</span></div>
+            <div class="copilot-title">
+                <span class="copilot-emoji">🤖</span>
+                <span>Shadow AI</span>
+            </div>
             <button id="shadow-ai-close" class="copilot-close">&times;</button>
         </div>
         <div id="shadow-ai-messages" class="copilot-messages"></div>
@@ -201,12 +387,16 @@
         </div>
     </div>
 
+    <!-- Back to Top Button -->
+    <button id="back-to-top" class="back-to-top" aria-label="Back to top">↑</button>
+
     <script>
         function showCookiePolicy() {
-            alert('Cookie Policy\n\nWe use cookies to:\n• Remember your preferences\n• Track free searches (3 per day)\n• Improve your experience\n\nBy using ShadowBanCheck.io, you consent to our use of cookies.');
+            alert('Cookie Policy\n\nWe use cookies to:\n• Remember your preferences\n• Track free searches (3 per day)\n• Improve your experience');
         }
     </script>
-    <script src="js/shadow-ai.js"></script>
+    <script src="js/main.js"></script>
     <script src="js/checker.js"></script>
+    <script src="js/shadow-ai.js"></script>
 </body>
 </html>

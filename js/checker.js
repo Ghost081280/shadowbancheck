@@ -343,3 +343,10 @@ document.addEventListener('keydown', (e) => {
         closeCheckModal();
     }
 });
+
+// Close modal when clicking overlay
+document.addEventListener('click', (e) => {
+    if (e.target.classList.contains('modal-overlay')) {
+        closeCheckModal();
+    }
+});

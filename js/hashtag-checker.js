@@ -1,485 +1,352 @@
-/**
- * Hashtag Checker JavaScript
- * ShadowBanCheck.io
- */
+// Hashtag Checker JavaScript
 
-// Banned Hashtags Database (sample - 100 hashtags)
+// Real banned/restricted hashtags database
 const BANNED_HASHTAGS = {
-    instagram: {
-        banned: [
-            'adulting', 'alone', 'attractive', 'beautyblogger', 'besties', 'bikinibody',
-            'brain', 'costumes', 'curvy', 'date', 'dating', 'desk', 'direct', 'dm',
-            'easter', 'eggplant', 'elevator', 'goddess', 'graffiti', 'hardworkpaysoff',
-            'humpday', 'hustler', 'ice', 'instababy', 'instamood', 'iphone', 'italiano',
-            'kansas', 'killingit', 'kissing', 'lean', 'like', 'loseweight', 'master',
-            'models', 'mustfollow', 'nasty', 'newyears', 'nudity', 'parties', 'petite',
-            'photography', 'popular', 'pornfood', 'prettygirl', 'pushups', 'rate',
-            'saltwater', 'selfharm', 'single', 'singlelife', 'skateboarding', 'snap',
-            'snapchat', 'snowstorm', 'sopretty', 'stranger', 'streetphoto', 'stud',
-            'sunbathing', 'swole', 'tag4like', 'tagsforlikes', 'teen', 'teens', 'thought',
-            'todayimwearing', 'twerk', 'underage', 'valentinesday', 'workflow', 'wtf'
-        ],
-        restricted: [
-            'ass', 'assday', 'boho', 'bodypositive', 'booty', 'bootyday', 'curves',
-            'fitgirl', 'fitnessmodel', 'followme', 'glutes', 'goals', 'gym', 'hot',
-            'instadaily', 'instalike', 'likeforlike', 'likeback', 'sexy', 'thick',
-            'thickthighs', 'thinspiration', 'weightloss', 'l4l', 'f4f', 'follow4follow'
-        ]
-    },
-    tiktok: {
-        banned: [
-            'coronavirus', 'covid', 'pandemic', 'vaccine', 'deadlychallenge', 'blackoutchallenge',
-            'milkcratechallenge', 'nyquilchicken', 'tidepodchallenge', 'cinnamon', 'pro-ana',
-            'thinspo', 'proana', 'promia', 'suicidal', 'selfharm', 'cutting', 'sh',
-            'edtwt', 'anorexia', 'bulimia', 'restrict', 'purge', 'overdose', 'rope',
-            'pills', 'hanging', 'asphyxiation', 'choking', 'gore', 'violence', 'murder',
-            'shooting', 'terrorism', 'isis', 'fentanyl', 'meth', 'heroin', 'cocaine'
-        ],
-        restricted: [
-            'fyp', 'foryou', 'foryoupage', 'viral', 'blowthisup', 'trending', 'famous',
-            'duet', 'stitch', 'live', 'wap', 'adult', 'spicy', 'accountant', '304',
-            'corn', 'unalive', 'seggs', 'grippy', 'spicyaccountant', 'le dollar bean'
-        ]
-    },
-    twitter: {
-        banned: [
-            'nazi', 'whitesupremacy', 'whitepower', 'killall', 'deathto', 'terrorism',
-            'isis', 'alqaeda', 'massacre', 'genocide', 'childporn', 'pedophile', 'csam',
-            'grooming', 'trafficking', 'slavery', 'doxxing', 'swatting', 'harassment',
-            'brigading', 'hacking', 'ddos', 'malware', 'phishing', 'scam', 'pyramid'
-        ],
-        restricted: [
-            'shadowban', 'censored', 'banned', 'suppressed', 'hidden', 'silenced',
-            'nsfw', 'adult', 'xxx', 'onlyfans', 'lewd', 'explicit', 'gore', 'blood'
-        ]
-    },
-    facebook: {
-        banned: [
-            'drugs', 'weapons', 'firearms', 'ammunition', 'explosives', 'trafficking',
-            'smuggling', 'illegal', 'contraband', 'blackmarket', 'darkweb', 'hacking',
-            'violence', 'terrorism', 'hate', 'discrimination', 'harassment', 'bullying',
-            'suicide', 'selfharm', 'eating disorder', 'childabuse', 'exploitation'
-        ],
-        restricted: [
-            'crypto', 'bitcoin', 'investment', 'forex', 'mlm', 'getrichquick', 'passive income',
-            'workfromhome', 'sidehustle', 'dropshipping', 'affiliate', 'cbd', 'thc', 'vape'
-        ]
-    }
+    // Instagram banned hashtags
+    instagram: [
+        'ass', 'assday', 'adulting', 'alone', 'attractive', 'beautyblogger',
+        'bikinibody', 'boho', 'brain', 'costumes', 'curvygirls', 'dating',
+        'desk', 'dm', 'elevator', 'eggplant', 'fitnessgirls', 'fitfam',
+        'girlsonly', 'gloves', 'graffitiigers', 'happythanksgiving', 'hardsummer',
+        'humpday', 'hustler', 'ilovemyjob', 'instamood', 'kansas', 'kissing',
+        'killingit', 'lavieenrose', 'leaves', 'like', 'likeforlike', 'milf',
+        'models', 'newyearseve', 'nasty', 'nudeart', 'overnight', 'petite',
+        'pornfood', 'popular', 'pushup', 'rate', 'saltwater', 'selfharm',
+        'sexy', 'single', 'skateboarding', 'skype', 'snap', 'stranger',
+        'snowstorm', 'streetphoto', 'sunbathing', 'supplementsthatwork',
+        'swole', 'tanlines', 'teenagers', 'tgif', 'thinspo', 'todayimwearing',
+        'twerk', 'undies', 'valentinesday', 'woman', 'workflow', 'wrongway'
+    ],
+    
+    // TikTok restricted
+    tiktok: [
+        'porn', 'sex', 'nudity', 'sexy', 'hot', 'underwear', 'lingerie',
+        'plottwist', 'xyzbca', 'foryou', 'pov', 'acne', 'weightloss',
+        'eatingdisorder', 'selfharm', 'depression', 'anxiety'
+    ],
+    
+    // Twitter/X (mostly algorithmically suppressed)
+    twitter: [
+        'covid', 'coronavirus', 'vaccine', 'election', 'fraud', 'rigged',
+        'porn', 'sex', 'nsfw', 'onlyfans'
+    ]
 };
 
-// Trending Banned Hashtags (100 items)
-const TRENDING_BANNED = [
-    { tag: 'adulting', platforms: ['instagram'], reason: 'Associated with spam' },
-    { tag: 'alone', platforms: ['instagram'], reason: 'Mental health concerns' },
-    { tag: 'beautyblogger', platforms: ['instagram'], reason: 'Spam/bot activity' },
-    { tag: 'bikinibody', platforms: ['instagram'], reason: 'Body image concerns' },
-    { tag: 'curvy', platforms: ['instagram'], reason: 'Misuse/inappropriate content' },
-    { tag: 'eggplant', platforms: ['instagram'], reason: 'Inappropriate use' },
-    { tag: 'goddess', platforms: ['instagram'], reason: 'Spam association' },
-    { tag: 'humpday', platforms: ['instagram'], reason: 'Inappropriate content' },
-    { tag: 'instamood', platforms: ['instagram'], reason: 'Bot activity' },
-    { tag: 'killingit', platforms: ['instagram'], reason: 'Violence keywords' },
-    { tag: 'lean', platforms: ['instagram'], reason: 'Drug references' },
-    { tag: 'master', platforms: ['instagram'], reason: 'Inappropriate use' },
-    { tag: 'mustfollow', platforms: ['instagram'], reason: 'Spam/engagement bait' },
-    { tag: 'nasty', platforms: ['instagram'], reason: 'Inappropriate content' },
-    { tag: 'petite', platforms: ['instagram'], reason: 'Inappropriate content' },
-    { tag: 'popular', platforms: ['instagram'], reason: 'Engagement bait' },
-    { tag: 'single', platforms: ['instagram'], reason: 'Dating spam' },
-    { tag: 'snap', platforms: ['instagram'], reason: 'Cross-platform promotion' },
-    { tag: 'sopretty', platforms: ['instagram'], reason: 'Spam association' },
-    { tag: 'sunbathing', platforms: ['instagram'], reason: 'Inappropriate content' },
-    { tag: 'swole', platforms: ['instagram'], reason: 'Steroid association' },
-    { tag: 'tag4like', platforms: ['instagram'], reason: 'Engagement manipulation' },
-    { tag: 'teen', platforms: ['instagram'], reason: 'Safety concerns' },
-    { tag: 'twerk', platforms: ['instagram'], reason: 'Inappropriate content' },
-    { tag: 'wtf', platforms: ['instagram'], reason: 'Profanity' },
-    { tag: 'likeforlike', platforms: ['instagram'], reason: 'Engagement manipulation' },
-    { tag: 'follow4follow', platforms: ['instagram'], reason: 'Engagement manipulation' },
-    { tag: 'l4l', platforms: ['instagram'], reason: 'Engagement manipulation' },
-    { tag: 'f4f', platforms: ['instagram'], reason: 'Engagement manipulation' },
-    { tag: 'followback', platforms: ['instagram'], reason: 'Engagement manipulation' },
-    { tag: 'deadlychallenge', platforms: ['tiktok'], reason: 'Dangerous content' },
-    { tag: 'blackoutchallenge', platforms: ['tiktok'], reason: 'Life-threatening' },
-    { tag: 'milkcratechallenge', platforms: ['tiktok'], reason: 'Dangerous activity' },
-    { tag: 'nyquilchicken', platforms: ['tiktok'], reason: 'Dangerous activity' },
-    { tag: 'tidepodchallenge', platforms: ['tiktok'], reason: 'Dangerous activity' },
-    { tag: 'proana', platforms: ['tiktok', 'instagram'], reason: 'Eating disorders' },
-    { tag: 'thinspo', platforms: ['tiktok', 'instagram'], reason: 'Eating disorders' },
-    { tag: 'promia', platforms: ['tiktok'], reason: 'Eating disorders' },
-    { tag: 'edtwt', platforms: ['tiktok', 'twitter'], reason: 'Eating disorders' },
-    { tag: 'selfharm', platforms: ['tiktok', 'instagram'], reason: 'Self-harm content' },
-    { tag: 'sh', platforms: ['tiktok'], reason: 'Self-harm code' },
-    { tag: 'unalive', platforms: ['tiktok'], reason: 'Suicide reference' },
-    { tag: 'seggs', platforms: ['tiktok'], reason: 'Sexual content code' },
-    { tag: 'corn', platforms: ['tiktok'], reason: 'Adult content code' },
-    { tag: 'accountant', platforms: ['tiktok'], reason: 'Adult content code' },
-    { tag: '304', platforms: ['tiktok'], reason: 'Inappropriate code' },
-    { tag: 'grippy', platforms: ['tiktok'], reason: 'Mental health code' },
-    { tag: 'spicyaccountant', platforms: ['tiktok'], reason: 'Adult content' },
-    { tag: 'shadowban', platforms: ['twitter'], reason: 'Platform criticism' },
-    { tag: 'censored', platforms: ['twitter'], reason: 'Platform criticism' },
-    { tag: 'suppressed', platforms: ['twitter'], reason: 'Platform criticism' },
-    { tag: 'nsfw', platforms: ['twitter', 'facebook'], reason: 'Adult content' },
-    { tag: 'onlyfans', platforms: ['twitter', 'instagram'], reason: 'Adult platform' },
-    { tag: 'crypto', platforms: ['facebook'], reason: 'Financial spam' },
-    { tag: 'bitcoin', platforms: ['facebook'], reason: 'Financial spam' },
-    { tag: 'forex', platforms: ['facebook'], reason: 'Financial scams' },
-    { tag: 'mlm', platforms: ['facebook'], reason: 'Pyramid schemes' },
-    { tag: 'getrichquick', platforms: ['facebook'], reason: 'Scam association' },
-    { tag: 'passiveincome', platforms: ['facebook'], reason: 'Scam association' },
-    { tag: 'dropshipping', platforms: ['facebook'], reason: 'Spam/scams' },
-    { tag: 'cbd', platforms: ['facebook', 'instagram'], reason: 'Restricted products' },
-    { tag: 'vape', platforms: ['facebook', 'instagram'], reason: 'Restricted products' },
-    { tag: 'ass', platforms: ['instagram'], reason: 'Inappropriate' },
-    { tag: 'booty', platforms: ['instagram'], reason: 'Inappropriate content' },
-    { tag: 'bootyday', platforms: ['instagram'], reason: 'Inappropriate content' },
-    { tag: 'glutes', platforms: ['instagram'], reason: 'Misuse' },
-    { tag: 'thick', platforms: ['instagram'], reason: 'Inappropriate use' },
-    { tag: 'thickthighs', platforms: ['instagram'], reason: 'Inappropriate content' },
-    { tag: 'sexy', platforms: ['instagram'], reason: 'Adult content' },
-    { tag: 'hot', platforms: ['instagram'], reason: 'Misuse' },
-    { tag: 'wap', platforms: ['tiktok'], reason: 'Explicit reference' },
-    { tag: 'adult', platforms: ['tiktok', 'twitter'], reason: 'Adult content' },
-    { tag: 'spicy', platforms: ['tiktok'], reason: 'Adult content code' },
-    { tag: 'fyp', platforms: ['tiktok'], reason: 'Does not boost reach' },
-    { tag: 'foryou', platforms: ['tiktok'], reason: 'Does not boost reach' },
-    { tag: 'foryoupage', platforms: ['tiktok'], reason: 'Does not boost reach' },
-    { tag: 'viral', platforms: ['tiktok'], reason: 'Engagement bait' },
-    { tag: 'blowthisup', platforms: ['tiktok'], reason: 'Engagement bait' },
-    { tag: 'trending', platforms: ['tiktok'], reason: 'Engagement bait' },
-    { tag: 'coronavirus', platforms: ['tiktok'], reason: 'Misinformation concerns' },
-    { tag: 'covid', platforms: ['tiktok'], reason: 'Misinformation concerns' },
-    { tag: 'vaccine', platforms: ['tiktok'], reason: 'Misinformation concerns' },
-    { tag: 'violence', platforms: ['twitter', 'facebook'], reason: 'Violent content' },
-    { tag: 'gore', platforms: ['twitter'], reason: 'Graphic content' },
-    { tag: 'blood', platforms: ['twitter'], reason: 'Graphic content' },
-    { tag: 'drugs', platforms: ['facebook'], reason: 'Illegal substances' },
-    { tag: 'weapons', platforms: ['facebook'], reason: 'Restricted items' },
-    { tag: 'firearms', platforms: ['facebook'], reason: 'Restricted items' },
-    { tag: 'hacking', platforms: ['facebook', 'twitter'], reason: 'Illegal activity' },
-    { tag: 'scam', platforms: ['twitter', 'facebook'], reason: 'Fraud' },
-    { tag: 'pyramid', platforms: ['twitter', 'facebook'], reason: 'Illegal schemes' },
-    { tag: 'harassment', platforms: ['twitter', 'facebook'], reason: 'Abuse' },
-    { tag: 'doxxing', platforms: ['twitter'], reason: 'Privacy violation' },
-    { tag: 'swatting', platforms: ['twitter'], reason: 'Dangerous activity' },
-    { tag: 'instadaily', platforms: ['instagram'], reason: 'Spam association' },
-    { tag: 'instalike', platforms: ['instagram'], reason: 'Engagement bait' },
-    { tag: 'likeback', platforms: ['instagram'], reason: 'Engagement bait' },
-    { tag: 'followme', platforms: ['instagram'], reason: 'Engagement bait' },
-    { tag: 'goals', platforms: ['instagram'], reason: 'Overused/spam' },
-    { tag: 'thinspiration', platforms: ['instagram'], reason: 'Eating disorders' }
-];
-
-// Platform icons
-const PLATFORM_ICONS = {
-    instagram: '📸',
-    tiktok: '🎵',
-    twitter: '🐦',
-    facebook: '📘'
+// Restricted hashtags (not banned, but suppressed)
+const RESTRICTED_HASHTAGS = {
+    instagram: [
+        'bacak', 'beautyblogger', 'books', 'boobs', 'brain', 'bra',
+        'costumes', 'dating', 'direct', 'edm', 'fishnets', 'goddess',
+        'graffitiigers', 'hipster', 'hotweather', 'ice', 'italiano',
+        'kissing', 'legs', 'master', 'models', 'mustfollow', 'parties',
+        'publicrelations', 'russian', 'saltwater', 'sexy', 'skateboarding',
+        'snap', 'southern', 'swingers', 'teens', 'thought', 'undies', 'weed'
+    ],
+    tiktok: [
+        'fyp', 'foryou', 'foryoupage', 'viral', 'xyzbca'
+    ],
+    twitter: []
 };
 
-// Store last results for export
-let lastResults = [];
+// State
+let checksRemaining = 5;
+let currentResults = [];
 
-// Initialize
-document.addEventListener('DOMContentLoaded', function() {
-    initHashtagChecker();
-    initTrendingHashtags();
-    initSearchCounter();
-});
+// DOM Elements
+const hashtagInput = document.getElementById('hashtag-input');
+const hashtagCount = document.getElementById('hashtag-count');
+const checksRemainingDisplay = document.getElementById('checks-remaining-display');
+const checkBtn = document.getElementById('check-hashtags-btn');
+const clearBtn = document.getElementById('clear-btn');
+const exampleBtn = document.getElementById('example-btn');
+const resultsSection = document.getElementById('results-section');
+const resultsList = document.getElementById('results-list');
+const safeCountEl = document.getElementById('safe-count');
+const bannedCountEl = document.getElementById('banned-count');
+const restrictedCountEl = document.getElementById('restricted-count');
+const copySafeBtn = document.getElementById('copy-safe-btn');
+const exportBtn = document.getElementById('export-btn');
+const pricingCta = document.getElementById('pricing-cta');
 
-function initHashtagChecker() {
-    const form = document.getElementById('hashtag-form');
-    const input = document.getElementById('hashtag-input');
-    const countDisplay = document.getElementById('hashtag-count');
-    const exampleBtn = document.getElementById('example-btn');
-    const clearBtn = document.getElementById('clear-btn');
+// Update hashtag count as user types
+hashtagInput.addEventListener('input', updateHashtagCount);
+
+function updateHashtagCount() {
+    const hashtags = extractHashtags(hashtagInput.value);
+    const count = hashtags.length;
+    hashtagCount.textContent = `${count} hashtag${count !== 1 ? 's' : ''}`;
     
-    if (!form) return;
-    
-    // Update count on input
-    input.addEventListener('input', function() {
-        const hashtags = parseHashtags(this.value);
-        countDisplay.textContent = `${hashtags.length} hashtag${hashtags.length !== 1 ? 's' : ''} detected`;
-    });
-    
-    // Load examples
-    exampleBtn.addEventListener('click', function() {
-        input.value = '#fitness #motivation #gym #workout #fitfam #love #instagood #photooftheday #beautiful #fashion #like4like #follow4follow #selfie #me #cute #tbt #instadaily #girl #fun #smile #food #amazing #style #happy #travel #photography #nature #life #friends #family';
-        input.dispatchEvent(new Event('input'));
-    });
-    
-    // Clear
-    clearBtn.addEventListener('click', function() {
-        input.value = '';
-        input.dispatchEvent(new Event('input'));
-        document.getElementById('results-section').style.display = 'none';
-    });
-    
-    // Form submit
-    form.addEventListener('submit', function(e) {
-        e.preventDefault();
-        analyzeHashtags(parseHashtags(input.value));
-    });
+    // Enable/disable check button
+    checkBtn.disabled = count === 0 || checksRemaining <= 0;
 }
 
-function parseHashtags(text) {
-    const matches = text.match(/#[\w\u0080-\uFFFF]+/g) || [];
-    // Remove duplicates and # symbol
-    const unique = [...new Set(matches.map(h => h.toLowerCase().replace('#', '')))];
-    return unique;
+// Extract hashtags from text
+function extractHashtags(text) {
+    // Remove # symbols and split by whitespace, commas, newlines
+    const cleaned = text.replace(/#/g, '').toLowerCase();
+    const hashtags = cleaned.split(/[\s,\n]+/).filter(h => h.trim().length > 0);
+    return [...new Set(hashtags)]; // Remove duplicates
 }
 
-function analyzeHashtags(hashtags) {
+// Check hashtags button
+checkBtn.addEventListener('click', async () => {
+    const hashtags = extractHashtags(hashtagInput.value);
+    
     if (hashtags.length === 0) {
         alert('Please enter at least one hashtag');
         return;
     }
     
-    // Check remaining searches
-    const remaining = parseInt(localStorage.getItem('shadowban_hashtag_searches') || '5');
-    if (remaining <= 0) {
-        alert('You\'ve used all your free checks today. Upgrade to Shadow AI Pro for unlimited checks!');
+    if (checksRemaining <= 0) {
+        // Show pricing CTA and scroll to it
+        pricingCta.classList.remove('hidden');
+        pricingCta.scrollIntoView({ behavior: 'smooth' });
         return;
     }
     
-    // Show loading
-    const btn = document.getElementById('check-hashtags-btn');
-    btn.classList.add('loading');
+    // Analyze hashtags
+    currentResults = hashtags.map(tag => analyzeHashtag(tag));
     
-    // Simulate analysis
-    setTimeout(() => {
-        btn.classList.remove('loading');
-        
-        // Decrement counter
-        localStorage.setItem('shadowban_hashtag_searches', String(remaining - 1));
-        updateSearchCounterDisplay();
-        
-        // Analyze each hashtag
-        const results = hashtags.map(tag => checkHashtag(tag));
-        lastResults = results;
-        
-        // Display results
-        displayResults(results);
-    }, 1500);
-}
+    // Decrement checks
+    checksRemaining--;
+    updateChecksRemaining();
+    
+    // Display results
+    displayResults();
+    
+    // Show pricing CTA if out of checks
+    if (checksRemaining === 0) {
+        pricingCta.classList.remove('hidden');
+    }
+    
+    // Scroll to results
+    resultsSection.scrollIntoView({ behavior: 'smooth' });
+});
 
-function checkHashtag(tag) {
+function analyzeHashtag(tag) {
     const result = {
         tag: tag,
         status: 'safe',
-        reason: null,
         platforms: {
             instagram: 'safe',
             tiktok: 'safe',
-            twitter: 'safe',
-            facebook: 'safe'
-        }
+            twitter: 'safe'
+        },
+        message: 'This hashtag is safe to use'
     };
     
-    // Check each platform
-    for (const platform of ['instagram', 'tiktok', 'twitter', 'facebook']) {
-        const db = BANNED_HASHTAGS[platform];
-        if (db.banned.includes(tag)) {
-            result.platforms[platform] = 'banned';
-            result.status = 'banned';
-        } else if (db.restricted.includes(tag)) {
-            result.platforms[platform] = 'restricted';
-            if (result.status !== 'banned') result.status = 'restricted';
-        }
+    // Check if banned on each platform
+    if (BANNED_HASHTAGS.instagram.includes(tag)) {
+        result.platforms.instagram = 'banned';
+        result.status = 'banned';
+    } else if (RESTRICTED_HASHTAGS.instagram.includes(tag)) {
+        result.platforms.instagram = 'restricted';
+        result.status = result.status === 'banned' ? 'banned' : 'restricted';
     }
     
-    // Find reason from trending
-    const trendingMatch = TRENDING_BANNED.find(t => t.tag === tag);
-    if (trendingMatch) {
-        result.reason = trendingMatch.reason;
-    } else if (result.status === 'banned') {
-        result.reason = 'Banned for policy violations';
+    if (BANNED_HASHTAGS.tiktok.includes(tag)) {
+        result.platforms.tiktok = 'banned';
+        result.status = 'banned';
+    } else if (RESTRICTED_HASHTAGS.tiktok.includes(tag)) {
+        result.platforms.tiktok = 'restricted';
+        result.status = result.status === 'banned' ? 'banned' : 'restricted';
+    }
+    
+    if (BANNED_HASHTAGS.twitter.includes(tag)) {
+        result.platforms.twitter = 'banned';
+        result.status = 'banned';
+    } else if (RESTRICTED_HASHTAGS.twitter.includes(tag)) {
+        result.platforms.twitter = 'restricted';
+        result.status = result.status === 'banned' ? 'banned' : 'restricted';
+    }
+    
+    // Update message based on status
+    if (result.status === 'banned') {
+        const bannedPlatforms = [];
+        if (result.platforms.instagram === 'banned') bannedPlatforms.push('Instagram');
+        if (result.platforms.tiktok === 'banned') bannedPlatforms.push('TikTok');
+        if (result.platforms.twitter === 'banned') bannedPlatforms.push('Twitter');
+        result.message = `Banned on ${bannedPlatforms.join(', ')}`;
     } else if (result.status === 'restricted') {
-        result.reason = 'Limited reach on some platforms';
+        const restrictedPlatforms = [];
+        if (result.platforms.instagram === 'restricted') restrictedPlatforms.push('Instagram');
+        if (result.platforms.tiktok === 'restricted') restrictedPlatforms.push('TikTok');
+        if (result.platforms.twitter === 'restricted') restrictedPlatforms.push('Twitter');
+        result.message = `Restricted on ${restrictedPlatforms.join(', ')}`;
     }
     
     return result;
 }
 
-function displayResults(results) {
-    const section = document.getElementById('results-section');
-    const summary = document.getElementById('results-summary');
-    const grid = document.getElementById('results-grid');
-    const cta = document.getElementById('results-cta');
+function displayResults() {
+    // Show results section
+    resultsSection.classList.remove('hidden');
     
-    // Count stats
-    const safe = results.filter(r => r.status === 'safe').length;
-    const banned = results.filter(r => r.status === 'banned').length;
-    const restricted = results.filter(r => r.status === 'restricted').length;
+    // Calculate counts
+    const safeCount = currentResults.filter(r => r.status === 'safe').length;
+    const bannedCount = currentResults.filter(r => r.status === 'banned').length;
+    const restrictedCount = currentResults.filter(r => r.status === 'restricted').length;
     
     // Update summary
-    summary.innerHTML = `
-        <span class="stat-badge safe">✓ ${safe} Safe</span>
-        <span class="stat-badge banned">✕ ${banned} Banned</span>
-        <span class="stat-badge restricted">⚠ ${restricted} Restricted</span>
+    safeCountEl.textContent = safeCount;
+    bannedCountEl.textContent = bannedCount;
+    restrictedCountEl.textContent = restrictedCount;
+    
+    // Clear and populate results list
+    resultsList.innerHTML = '';
+    
+    currentResults.forEach(result => {
+        const resultItem = createResultItem(result);
+        resultsList.appendChild(resultItem);
+    });
+}
+
+function createResultItem(result) {
+    const item = document.createElement('div');
+    item.className = `result-item ${result.status}`;
+    
+    const icon = result.status === 'safe' ? '✅' : 
+                 result.status === 'banned' ? '🚫' : '⚠️';
+    
+    item.innerHTML = `
+        <div class="result-left">
+            <div class="result-icon">${icon}</div>
+            <div class="result-info">
+                <div class="result-hashtag">#${result.tag}</div>
+                <div class="result-status">${result.message}</div>
+                <div class="result-platforms">
+                    <span class="platform-status ${result.platforms.instagram}">
+                        📸 Instagram: ${result.platforms.instagram}
+                    </span>
+                    <span class="platform-status ${result.platforms.tiktok}">
+                        🎵 TikTok: ${result.platforms.tiktok}
+                    </span>
+                    <span class="platform-status ${result.platforms.twitter}">
+                        🐦 Twitter: ${result.platforms.twitter}
+                    </span>
+                </div>
+            </div>
+        </div>
+        <div class="result-right">
+            <button class="alternatives-btn pro-only" disabled>
+                Alternatives (Pro)
+            </button>
+        </div>
     `;
     
-    // Build grid
-    grid.innerHTML = results.map(r => {
-        const statusIcon = r.status === 'safe' ? '✓' : (r.status === 'banned' ? '✕' : '⚠');
-        
-        // Build platform icons (only show if not safe on that platform)
-        let platformsHtml = '';
-        for (const [platform, status] of Object.entries(r.platforms)) {
-            if (status !== 'safe') {
-                platformsHtml += `<span class="platform-icon ${status}" title="${platform}: ${status}">${PLATFORM_ICONS[platform]}</span>`;
-            }
-        }
-        
-        return `
-            <div class="hashtag-result ${r.status}">
-                <span class="hashtag-status">${statusIcon}</span>
-                <div class="hashtag-info">
-                    <div class="hashtag-name">#${r.tag}</div>
-                    ${r.reason ? `<div class="hashtag-reason">${r.reason}</div>` : ''}
-                </div>
-                ${platformsHtml ? `<div class="hashtag-platforms">${platformsHtml}</div>` : ''}
-            </div>
-        `;
-    }).join('');
-    
-    // Show/hide CTA
-    cta.style.display = (banned > 0 || restricted > 0) ? 'flex' : 'none';
-    
-    // Show section
-    section.style.display = 'block';
-    section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    return item;
 }
 
-function copySafeHashtags() {
-    const safe = lastResults.filter(r => r.status === 'safe').map(r => '#' + r.tag);
-    if (safe.length === 0) {
-        alert('No safe hashtags to copy!');
-        return;
+function updateChecksRemaining() {
+    if (checksRemaining > 0) {
+        checksRemainingDisplay.textContent = `${checksRemaining} free check${checksRemaining !== 1 ? 's' : ''} left today`;
+    } else {
+        checksRemainingDisplay.textContent = 'Out of free checks';
+        checksRemainingDisplay.style.color = '#ef4444';
     }
-    navigator.clipboard.writeText(safe.join(' '));
-    alert(`Copied ${safe.length} safe hashtags to clipboard!`);
+    
+    // Store in localStorage
+    localStorage.setItem('hashtagChecksRemaining', checksRemaining);
+    localStorage.setItem('hashtagLastCheckDate', new Date().toDateString());
+    
+    // Disable check button if no checks remaining
+    updateHashtagCount();
 }
 
-function exportResults() {
-    if (lastResults.length === 0) return;
+function loadChecksRemaining() {
+    const lastCheckDate = localStorage.getItem('hashtagLastCheckDate');
+    const today = new Date().toDateString();
     
-    let text = 'Hashtag Analysis Report\n';
-    text += '=======================\n';
-    text += `Generated: ${new Date().toLocaleString()}\n\n`;
+    if (lastCheckDate !== today) {
+        checksRemaining = 5;
+        localStorage.setItem('hashtagChecksRemaining', checksRemaining);
+        localStorage.setItem('hashtagLastCheckDate', today);
+    } else {
+        const stored = localStorage.getItem('hashtagChecksRemaining');
+        checksRemaining = stored ? parseInt(stored) : 5;
+    }
     
-    text += `Summary:\n`;
-    text += `- Safe: ${lastResults.filter(r => r.status === 'safe').length}\n`;
-    text += `- Banned: ${lastResults.filter(r => r.status === 'banned').length}\n`;
-    text += `- Restricted: ${lastResults.filter(r => r.status === 'restricted').length}\n\n`;
+    updateChecksRemaining();
+}
+
+// Clear button
+clearBtn.addEventListener('click', () => {
+    hashtagInput.value = '';
+    updateHashtagCount();
+    resultsSection.classList.add('hidden');
+});
+
+// Example button
+exampleBtn.addEventListener('click', () => {
+    hashtagInput.value = '#fitness #motivation #gains #workout #fitfam #love #instagood #sexy';
+    updateHashtagCount();
+});
+
+// Copy safe hashtags
+copySafeBtn.addEventListener('click', () => {
+    const safeHashtags = currentResults
+        .filter(r => r.status === 'safe')
+        .map(r => '#' + r.tag)
+        .join(' ');
     
-    text += 'Details:\n';
-    lastResults.forEach(r => {
-        const icon = r.status === 'safe' ? '✓' : (r.status === 'banned' ? '✕' : '⚠');
-        text += `${icon} #${r.tag} - ${r.status.toUpperCase()}`;
-        if (r.reason) text += ` (${r.reason})`;
-        text += '\n';
-    });
-    
-    text += '\nGenerated by ShadowBanCheck.io';
-    
-    const blob = new Blob([text], { type: 'text/plain' });
+    if (safeHashtags) {
+        navigator.clipboard.writeText(safeHashtags).then(() => {
+            alert('Safe hashtags copied to clipboard!');
+        });
+    } else {
+        alert('No safe hashtags to copy.');
+    }
+});
+
+// Export results
+exportBtn.addEventListener('click', () => {
+    const exportText = generateExportText();
+    const blob = new Blob([exportText], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'hashtag-analysis.txt';
+    a.download = `hashtag-check-${Date.now()}.txt`;
     a.click();
     URL.revokeObjectURL(url);
-}
+});
 
-function checkAgain() {
-    document.getElementById('hashtag-input').value = '';
-    document.getElementById('hashtag-count').textContent = '0 hashtags detected';
-    document.getElementById('results-section').style.display = 'none';
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
-function initTrendingHashtags() {
-    const grid = document.getElementById('trending-grid');
-    const countDisplay = document.getElementById('trending-count');
-    const showMoreBtn = document.getElementById('show-more-trending');
-    const filterBtns = document.querySelectorAll('.filter-btn');
+function generateExportText() {
+    let text = 'HASHTAG SAFETY CHECK RESULTS\n';
+    text += '============================\n\n';
+    text += `Checked: ${new Date().toLocaleString()}\n`;
+    text += `Total Hashtags: ${currentResults.length}\n\n`;
     
-    if (!grid) return;
-    
-    let currentPlatform = 'all';
-    let showAll = false;
-    
-    function renderTrending() {
-        let filtered = TRENDING_BANNED;
-        
-        if (currentPlatform !== 'all') {
-            filtered = TRENDING_BANNED.filter(t => t.platforms.includes(currentPlatform));
-        }
-        
-        const displayCount = showAll ? filtered.length : Math.min(30, filtered.length);
-        const toShow = filtered.slice(0, displayCount);
-        
-        grid.innerHTML = toShow.map(t => {
-            const platformIcons = t.platforms.map(p => PLATFORM_ICONS[p]).join('');
-            return `
-                <span class="trending-tag">
-                    <span>#${t.tag}</span>
-                    <span class="tag-platforms">${platformIcons}</span>
-                </span>
-            `;
-        }).join('');
-        
-        countDisplay.textContent = `Showing ${displayCount} of ${filtered.length}`;
-        showMoreBtn.querySelector('.show-text').textContent = showAll ? 'Show Less' : 'Show All';
-        showMoreBtn.classList.toggle('expanded', showAll);
-    }
-    
-    // Filter buttons
-    filterBtns.forEach(btn => {
-        btn.addEventListener('click', function() {
-            filterBtns.forEach(b => b.classList.remove('active'));
-            this.classList.add('active');
-            currentPlatform = this.dataset.platform;
-            showAll = false;
-            renderTrending();
-        });
+    text += 'SAFE HASHTAGS:\n';
+    currentResults.filter(r => r.status === 'safe').forEach(r => {
+        text += `#${r.tag}\n`;
     });
     
-    // Show more button
-    showMoreBtn.addEventListener('click', function() {
-        showAll = !showAll;
-        renderTrending();
+    text += '\nBANNED HASHTAGS:\n';
+    currentResults.filter(r => r.status === 'banned').forEach(r => {
+        text += `#${r.tag} - `;
+        const banned = [];
+        if (r.platforms.instagram === 'banned') banned.push('Instagram');
+        if (r.platforms.tiktok === 'banned') banned.push('TikTok');
+        if (r.platforms.twitter === 'banned') banned.push('Twitter');
+        text += banned.join(', ') + '\n';
     });
     
-    // Initial render
-    renderTrending();
+    text += '\nRESTRICTED HASHTAGS:\n';
+    currentResults.filter(r => r.status === 'restricted').forEach(r => {
+        text += `#${r.tag} - `;
+        const restricted = [];
+        if (r.platforms.instagram === 'restricted') restricted.push('Instagram');
+        if (r.platforms.tiktok === 'restricted') restricted.push('TikTok');
+        if (r.platforms.twitter === 'restricted') restricted.push('Twitter');
+        text += restricted.join(', ') + '\n';
+    });
     
-    // Update date
-    const dateEl = document.getElementById('trending-date');
-    if (dateEl) {
-        dateEl.textContent = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-    }
+    text += '\n--\nGenerated by ShadowBanCheck.io';
+    return text;
 }
 
-function initSearchCounter() {
-    const today = new Date().toDateString();
-    const lastReset = localStorage.getItem('shadowban_hashtag_last_reset');
-    
-    if (lastReset !== today) {
-        localStorage.setItem('shadowban_hashtag_searches', '5');
-        localStorage.setItem('shadowban_hashtag_last_reset', today);
-    }
-    
-    updateSearchCounterDisplay();
-}
-
-function updateSearchCounterDisplay() {
-    const remaining = parseInt(localStorage.getItem('shadowban_hashtag_searches') || '5');
-    const display = document.getElementById('searches-display');
-    if (display) {
-        display.textContent = `${remaining} / 5 checks available today`;
-    }
-}
+// Initialize
+document.addEventListener('DOMContentLoaded', () => {
+    loadChecksRemaining();
+    updateHashtagCount();
+});

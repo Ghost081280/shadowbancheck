@@ -556,10 +556,10 @@ strong, b {
 .nav-overlay {
     display: none;
     position: fixed;
-    top: 70px; /* Below header */
+    top: 60px; /* Below header */
     left: 0;
     right: 0;
-    bottom: 0;
+    bottom: 80px; /* Above chatbot button */
     background: rgba(0, 0, 0, 0.6);
     backdrop-filter: blur(4px);
     z-index: var(--z-overlay);
@@ -577,16 +577,16 @@ strong, b {
 .nav-mobile {
     display: none;
     position: fixed;
-    top: 70px; /* Below header */
+    top: 60px; /* Below header */
+    bottom: 80px; /* Above chatbot button */
     right: 0;
     width: 280px;
     max-width: 85vw;
-    height: calc(100vh - 70px - 100px); /* Full height minus header and bottom space for chatbot */
-    max-height: calc(100vh - 170px);
+    height: auto; /* Let top/bottom define height */
     background: var(--bg-secondary);
     border-left: 1px solid var(--border);
-    border-bottom: 1px solid var(--border);
     border-bottom-left-radius: var(--radius-xl);
+    border-top-left-radius: var(--radius-xl);
     z-index: calc(var(--z-overlay) + 1);
     transform: translateX(100%);
     transition: transform var(--transition-base);

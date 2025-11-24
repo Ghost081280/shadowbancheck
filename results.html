@@ -3,12 +3,290 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Check Results - ShadowBanCheck.io</title>
-    <meta name="description" content="Your shadow ban check results">
+    <title>Shadow Ban Results - Your Account Status | ShadowBanCheck.io</title>
+    <meta name="description" content="View your shadow ban check results. Get detailed insights on your account status and recommendations to restore your reach.">
     
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/shadow-ai.css">
-    <link rel="stylesheet" href="css/results.css">
+    <style>
+        /* =============================================================================
+           SHARED STYLES - Copy these to checker.html and hashtag-checker.html for consistency
+           ============================================================================= */
+        
+        /* How It Works - Compact */
+        .how-grid-compact {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+        }
+        .how-item-compact {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 0.75rem;
+            padding: 1.25rem;
+            transition: all 0.3s ease;
+        }
+        .how-item-compact:hover {
+            border-color: var(--primary);
+            transform: translateY(-2px);
+        }
+        .how-icon-compact { font-size: 1.75rem; flex-shrink: 0; }
+        .how-item-compact strong { display: block; margin-bottom: 0.25rem; }
+        .how-item-compact p { color: var(--text-muted); font-size: 0.875rem; margin: 0; line-height: 1.5; }
+        
+        /* Search Counter Module */
+        .search-counter-module {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
+            border: 2px solid var(--border);
+            border-radius: 1rem;
+            padding: 1.5rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 2rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .counter-content { display: flex; align-items: center; gap: 1rem; }
+        .counter-icon { font-size: 2rem; }
+        .counter-text h3 { font-size: 1rem; margin: 0 0 0.25rem 0; }
+        .counter-text p { margin: 0; color: var(--text-muted); font-size: 0.875rem; }
+        .btn-counter {
+            background: linear-gradient(135deg, var(--primary) 0%, #8b5cf6 100%);
+            color: white;
+            padding: 0.75rem 1.25rem;
+            border-radius: 0.5rem;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.875rem;
+            white-space: nowrap;
+            transition: all 0.3s ease;
+        }
+        .btn-counter:hover { transform: translateY(-2px); box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4); }
+        
+        /* Data Sources - Compact */
+        .data-sources-section { padding: var(--space-xl) 0; background: var(--bg-secondary); }
+        .sources-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+        .source-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        .source-card:hover { border-color: var(--primary); transform: translateY(-2px); }
+        .source-icon { font-size: 1.5rem; margin-bottom: 0.5rem; display: block; }
+        .source-card h3 { font-size: 0.875rem; margin: 0 0 0.25rem 0; }
+        .source-card p { color: var(--text-muted); font-size: 0.75rem; line-height: 1.4; margin: 0; }
+        
+        /* CTA Module */
+        .cta-module {
+            background: var(--card);
+            border: 2px solid var(--primary);
+            border-radius: var(--radius-xl);
+            padding: var(--space-2xl);
+            text-align: center;
+            box-shadow: 0 8px 32px rgba(99, 102, 241, 0.15);
+        }
+        .cta-module h2 { font-size: 1.5rem; margin-bottom: 0.5rem; }
+        .cta-module > p { color: var(--text-muted); margin-bottom: var(--space-lg); }
+        .cta-icon-large { font-size: 3rem; display: block; margin-bottom: var(--space-md); }
+        .cta-buttons { display: flex; gap: var(--space-md); justify-content: center; flex-wrap: wrap; }
+        
+        /* =============================================================================
+           PAGE-SPECIFIC STYLES - Results Page Only
+           ============================================================================= */
+        
+        /* Results Hero */
+        .results-hero {
+            padding: var(--space-2xl) 0 var(--space-xl);
+            text-align: center;
+        }
+        .results-account {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-md);
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-xl);
+            padding: 1rem 1.5rem;
+            margin-bottom: var(--space-lg);
+        }
+        .account-avatar {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--primary) 0%, #8b5cf6 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+            font-weight: 700;
+        }
+        .account-info { text-align: left; }
+        .account-username { font-weight: 700; font-size: 1.125rem; }
+        .account-platform { font-size: 0.875rem; color: var(--text-muted); }
+        
+        /* Overall Status Card */
+        .status-card {
+            background: var(--card);
+            border: 2px solid var(--border);
+            border-radius: var(--radius-xl);
+            padding: var(--space-2xl);
+            text-align: center;
+            margin-bottom: var(--space-xl);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        .status-card.clear { border-color: #10b981; }
+        .status-card.warning { border-color: #f59e0b; }
+        .status-card.banned { border-color: #ef4444; }
+        .status-icon { font-size: 4rem; margin-bottom: var(--space-md); display: block; }
+        .status-title { font-size: 1.75rem; margin-bottom: 0.5rem; }
+        .status-card.clear .status-title { color: #10b981; }
+        .status-card.warning .status-title { color: #f59e0b; }
+        .status-card.banned .status-title { color: #ef4444; }
+        .status-desc { color: var(--text-muted); font-size: 1rem; margin-bottom: var(--space-lg); }
+        .status-timestamp { font-size: 0.8125rem; color: var(--text-muted); }
+        
+        /* Detailed Checks Grid */
+        .checks-section { padding: var(--space-xl) 0; }
+        .checks-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: var(--space-md);
+        }
+        .check-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: var(--space-lg);
+            display: flex;
+            align-items: flex-start;
+            gap: var(--space-md);
+            transition: all 0.2s ease;
+        }
+        .check-card:hover { border-color: var(--primary); transform: translateY(-2px); }
+        .check-icon { font-size: 1.5rem; flex-shrink: 0; }
+        .check-content { flex: 1; }
+        .check-title { font-weight: 600; margin-bottom: 0.25rem; }
+        .check-desc { font-size: 0.875rem; color: var(--text-muted); margin-bottom: 0.5rem; }
+        .check-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            font-size: 0.8125rem;
+            font-weight: 600;
+            padding: 0.25rem 0.625rem;
+            border-radius: var(--radius-full);
+        }
+        .check-status.pass { background: rgba(16, 185, 129, 0.15); color: #10b981; }
+        .check-status.warning { background: rgba(245, 158, 11, 0.15); color: #f59e0b; }
+        .check-status.fail { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
+        
+        /* Recommendations */
+        .recommendations-section { padding: var(--space-xl) 0; background: var(--bg-secondary); }
+        .recommendations-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: var(--space-md);
+            margin-top: var(--space-lg);
+        }
+        .recommendation-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: var(--space-lg);
+            display: flex;
+            align-items: flex-start;
+            gap: var(--space-md);
+        }
+        .rec-icon { font-size: 1.75rem; flex-shrink: 0; }
+        .rec-content { flex: 1; }
+        .rec-title { font-weight: 600; margin-bottom: 0.5rem; }
+        .rec-desc { font-size: 0.875rem; color: var(--text-muted); line-height: 1.6; }
+        
+        /* Share Results */
+        .share-section { padding: var(--space-lg) 0; text-align: center; }
+        .share-buttons {
+            display: flex;
+            gap: var(--space-sm);
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: var(--space-md);
+        }
+        .btn-share {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.625rem 1.25rem;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            color: var(--text);
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: inherit;
+            text-decoration: none;
+        }
+        .btn-share:hover { border-color: var(--primary); color: var(--primary); }
+        
+        /* Action Buttons */
+        .action-buttons {
+            display: flex;
+            gap: var(--space-md);
+            justify-content: center;
+            margin-top: var(--space-lg);
+            flex-wrap: wrap;
+        }
+        
+        /* No Data State */
+        .no-data {
+            text-align: center;
+            padding: var(--space-2xl);
+        }
+        .no-data-icon { font-size: 4rem; margin-bottom: var(--space-md); opacity: 0.5; }
+        .no-data h2 { margin-bottom: var(--space-sm); }
+        .no-data p { color: var(--text-muted); margin-bottom: var(--space-lg); }
+        
+        /* Mobile */
+        @media (max-width: 768px) {
+            .how-grid-compact { grid-template-columns: 1fr; }
+            .sources-grid { grid-template-columns: repeat(3, 1fr); }
+            .search-counter-module {
+                flex-direction: column;
+                text-align: center;
+                padding: 1.25rem;
+                gap: 1rem;
+            }
+            .counter-content { flex-direction: column; gap: 0.5rem; }
+            .btn-counter { width: 100%; text-align: center; }
+            .checks-grid { grid-template-columns: 1fr; }
+            .recommendations-grid { grid-template-columns: 1fr; }
+            .results-account { flex-direction: column; text-align: center; }
+            .account-info { text-align: center; }
+            .share-buttons { flex-direction: column; }
+            .btn-share { width: 100%; justify-content: center; }
+            .action-buttons { flex-direction: column; }
+            .action-buttons a { width: 100%; }
+            .cta-buttons { flex-direction: column; }
+            .cta-buttons a { width: 100%; }
+        }
+        @media (max-width: 500px) {
+            .sources-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
 </head>
 <body>
     <!-- Header -->
@@ -21,123 +299,200 @@
                 </a>
             </div>
             <nav class="nav">
-                <a href="#" class="btn-login" onclick="alert('Login/Dashboard coming soon! After purchase, you\'ll access your dashboard here.'); return false;">Login</a>
+                <a href="#" class="btn-login" onclick="alert('Login/Dashboard coming soon!'); return false;">Login</a>
                 <a href="index.html#shadow-ai-pro" class="btn-nav">Get Shadow AI Pro</a>
             </nav>
         </div>
     </header>
 
-    <!-- Main Content -->
-    <main class="main">
-        <div class="container">
-            <!-- Results Header -->
-            <div id="results-header" class="results-header"></div>
-
-            <!-- Overall Status -->
-            <div id="overall-status" class="overall-status"></div>
-
-            <!-- Detailed Checks -->
-            <div id="detailed-checks" class="detailed-checks">
-                <h2>Detailed Analysis</h2>
-                <div id="checks-grid" class="checks-grid"></div>
+    <!-- Results Content (populated by JS) -->
+    <main id="results-content">
+        <!-- Hero with Account Info -->
+        <section class="results-hero">
+            <div class="container">
+                <div class="results-account" id="account-info">
+                    <div class="account-avatar" id="account-avatar">@</div>
+                    <div class="account-info">
+                        <div class="account-username" id="account-username">@username</div>
+                        <div class="account-platform" id="account-platform">📸 Instagram</div>
+                    </div>
+                </div>
+                
+                <!-- Overall Status -->
+                <div class="status-card" id="status-card">
+                    <span class="status-icon" id="status-icon">✅</span>
+                    <h1 class="status-title" id="status-title">No Shadow Ban Detected</h1>
+                    <p class="status-desc" id="status-desc">Your account appears to be in good standing with no restrictions detected.</p>
+                    <p class="status-timestamp" id="status-timestamp">Checked: Just now</p>
+                </div>
+                
+                <div class="action-buttons">
+                    <a href="checker.html" class="btn btn-large">Check Another Account</a>
+                    <a href="index.html#shadow-ai-pro" class="btn-ghost-light">Get Shadow AI Pro</a>
+                </div>
             </div>
+        </section>
 
-            <!-- Account Details -->
-            <div id="account-details" class="account-details"></div>
-
-            <!-- Recommendations -->
-            <div id="recommendations" class="recommendations">
-                <h2>💡 Recommendations</h2>
-                <div id="recommendations-content" class="recommendations-content"></div>
+        <!-- Detailed Checks -->
+        <section class="checks-section">
+            <div class="container">
+                <h2 class="section-title">Detailed Analysis</h2>
+                <div class="checks-grid" id="checks-grid">
+                    <div class="check-card">
+                        <span class="check-icon">🔍</span>
+                        <div class="check-content">
+                            <div class="check-title">Search Visibility</div>
+                            <p class="check-desc">Your profile appears in platform search results</p>
+                            <span class="check-status pass">✓ Visible</span>
+                        </div>
+                    </div>
+                    <div class="check-card">
+                        <span class="check-icon">📸</span>
+                        <div class="check-content">
+                            <div class="check-title">Content Reach</div>
+                            <p class="check-desc">Your posts are being shown on Explore/FYP</p>
+                            <span class="check-status pass">✓ Normal</span>
+                        </div>
+                    </div>
+                    <div class="check-card">
+                        <span class="check-icon">#️⃣</span>
+                        <div class="check-content">
+                            <div class="check-title">Hashtag Status</div>
+                            <p class="check-desc">Your hashtags are not banned or restricted</p>
+                            <span class="check-status pass">✓ Clean</span>
+                        </div>
+                    </div>
+                    <div class="check-card">
+                        <span class="check-icon">💬</span>
+                        <div class="check-content">
+                            <div class="check-title">Comment Visibility</div>
+                            <p class="check-desc">Your comments are visible to other users</p>
+                            <span class="check-status pass">✓ Visible</span>
+                        </div>
+                    </div>
+                    <div class="check-card">
+                        <span class="check-icon">👤</span>
+                        <div class="check-content">
+                            <div class="check-title">Profile Status</div>
+                            <p class="check-desc">No restrictions or warnings on your account</p>
+                            <span class="check-status pass">✓ Good</span>
+                        </div>
+                    </div>
+                    <div class="check-card">
+                        <span class="check-icon">📊</span>
+                        <div class="check-content">
+                            <div class="check-title">Engagement Rate</div>
+                            <p class="check-desc">Your engagement metrics are within normal range</p>
+                            <span class="check-status pass">✓ Normal</span>
+                        </div>
+                    </div>
+                </div>
             </div>
+        </section>
 
-            <!-- Actions -->
-            <div class="actions">
-                <a href="checker.html" class="btn-secondary">Run Another Check</a>
-                <button id="download-report" class="btn-secondary">Download Report</button>
+        <!-- Recommendations -->
+        <section class="recommendations-section" id="recommendations-section">
+            <div class="container">
+                <h2 class="section-title">Recommendations</h2>
+                <div class="recommendations-grid" id="recommendations-grid">
+                    <div class="recommendation-card">
+                        <span class="rec-icon">✅</span>
+                        <div class="rec-content">
+                            <div class="rec-title">Keep Up the Good Work</div>
+                            <p class="rec-desc">Your account is healthy. Continue posting quality content and engaging authentically with your audience.</p>
+                        </div>
+                    </div>
+                    <div class="recommendation-card">
+                        <span class="rec-icon">🔄</span>
+                        <div class="rec-content">
+                            <div class="rec-title">Regular Check-ups</div>
+                            <p class="rec-desc">Check your account status weekly to catch any issues early. Shadow bans can appear suddenly.</p>
+                        </div>
+                    </div>
+                    <div class="recommendation-card">
+                        <span class="rec-icon">#️⃣</span>
+                        <div class="rec-content">
+                            <div class="rec-title">Verify Your Hashtags</div>
+                            <p class="rec-desc">Use our Hashtag Checker to ensure you're not using banned or restricted hashtags.</p>
+                        </div>
+                    </div>
+                    <div class="recommendation-card">
+                        <span class="rec-icon">📈</span>
+                        <div class="rec-content">
+                            <div class="rec-title">Monitor Your Metrics</div>
+                            <p class="rec-desc">Watch for sudden drops in reach or engagement - these can be early signs of restrictions.</p>
+                        </div>
+                    </div>
+                </div>
             </div>
-        </div>
+        </section>
+
+        <!-- Share Results -->
+        <section class="share-section">
+            <div class="container">
+                <h3>Share Your Results</h3>
+                <div class="share-buttons">
+                    <button class="btn-share" onclick="copyResults()"><span>📋</span> Copy Link</button>
+                    <a class="btn-share" href="#" onclick="shareTwitter(); return false;"><span>🐦</span> Share on Twitter</a>
+                    <button class="btn-share" onclick="downloadReport()"><span>📥</span> Download Report</button>
+                </div>
+            </div>
+        </section>
     </main>
 
-    <!-- Free Searches Remaining - Matches Checker Page -->
-    <section class="search-counter-section">
+    <!-- No Data State (hidden by default) -->
+    <section class="no-data" id="no-data" style="display: none;">
+        <div class="container">
+            <div class="no-data-icon">🔍</div>
+            <h2>No Check Data Found</h2>
+            <p>You haven't run a shadow ban check yet. Start by entering your username.</p>
+            <a href="checker.html" class="btn btn-large">Run a Check Now</a>
+        </div>
+    </section>
+
+    <!-- Search Counter -->
+    <section style="padding: var(--space-lg) 0;">
         <div class="container">
             <div class="search-counter-module">
                 <div class="counter-content">
                     <div class="counter-icon">🎯</div>
                     <div class="counter-text">
-                        <h3>Free Searches Remaining</h3>
-                        <p id="searches-remaining">3 / 3 searches available today</p>
+                        <h3>Free Shadow Ban Checks Remaining</h3>
+                        <p id="searches-display">3 / 3 checks available today</p>
                     </div>
                 </div>
-                <a href="index.html#pricing" class="btn-counter">Unlock More Searches</a>
+                <a href="index.html#pricing" class="btn-counter">Unlock Unlimited</a>
             </div>
         </div>
     </section>
 
-    <!-- Data Sources - Trust Building -->
+    <!-- CTA -->
+    <section class="cta" style="padding: var(--space-xl) 0;">
+        <div class="container">
+            <div class="cta-module">
+                <span class="cta-icon-large">🚫</span>
+                <h2>Check Your Hashtags Too</h2>
+                <p>Banned hashtags are a common cause of shadow bans. Check yours before posting.</p>
+                <div class="cta-buttons">
+                    <a href="hashtag-checker.html" class="btn btn-large">Try Hashtag Checker →</a>
+                    <a href="index.html#pricing" class="btn-ghost-light">View All Plans</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Data Sources -->
     <section class="data-sources-section">
         <div class="container">
             <h2 class="section-title">Our Data Sources</h2>
-            <p class="section-desc">We analyze multiple data points for accurate probability scores</p>
+            <p class="section-desc">We analyze multiple data points for accurate shadow ban detection</p>
             <div class="sources-grid">
-                <div class="source-card">
-                    <span class="source-icon">🔌</span>
-                    <h3>Platform APIs</h3>
-                    <p>Direct real-time status</p>
-                </div>
-                <div class="source-card">
-                    <span class="source-icon">🌐</span>
-                    <h3>Web Search</h3>
-                    <p>AI-powered analysis</p>
-                </div>
-                <div class="source-card">
-                    <span class="source-icon">📊</span>
-                    <h3>Public Data</h3>
-                    <p>Historical records</p>
-                </div>
-                <div class="source-card">
-                    <span class="source-icon">👥</span>
-                    <h3>User Reports</h3>
-                    <p>Community verified</p>
-                </div>
-                <div class="source-card">
-                    <span class="source-icon">🤖</span>
-                    <h3>AI Analysis</h3>
-                    <p>10+ factor detection</p>
-                </div>
-                <div class="source-card">
-                    <span class="source-icon">📈</span>
-                    <h3>Trend Data</h3>
-                    <p>Pattern recognition</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Share Your Results Section - Styled Like Index Page -->
-    <section class="social-share-section">
-        <div class="container">
-            <h2 class="section-title">📢 Share Your Results</h2>
-            <p class="section-desc">Let others know you checked your account!</p>
-            
-            <div class="share-buttons">
-                <button class="btn-share" id="share-twitter-results">
-                    <span class="share-icon">𝕏</span>
-                    <span>Share on X</span>
-                </button>
-                <button class="btn-share" id="share-facebook-results">
-                    <span class="share-icon">f</span>
-                    <span>Share on Facebook</span>
-                </button>
-                <button class="btn-share" id="share-telegram-results">
-                    <span class="share-icon">✈️</span>
-                    <span>Share on Telegram</span>
-                </button>
-                <button class="btn-share" id="share-linkedin-results">
-                    <span class="share-icon">in</span>
-                    <span>Share on LinkedIn</span>
-                </button>
+                <div class="source-card"><span class="source-icon">🔌</span><h3>Platform APIs</h3><p>Direct real-time status</p></div>
+                <div class="source-card"><span class="source-icon">🌐</span><h3>Web Search</h3><p>AI-powered analysis</p></div>
+                <div class="source-card"><span class="source-icon">📊</span><h3>Public Data</h3><p>Historical records</p></div>
+                <div class="source-card"><span class="source-icon">👥</span><h3>User Reports</h3><p>Community verified</p></div>
+                <div class="source-card"><span class="source-icon">🤖</span><h3>AI Analysis</h3><p>10+ factor detection</p></div>
+                <div class="source-card"><span class="source-icon">📈</span><h3>Trend Data</h3><p>Pattern recognition</p></div>
             </div>
         </div>
     </section>
@@ -147,10 +502,7 @@
         <div class="container">
             <div class="footer-grid">
                 <div class="footer-brand">
-                    <div class="logo">
-                        <span class="logo-emoji">🔍</span>
-                        <span>ShadowBanCheck.io</span>
-                    </div>
+                    <div class="logo"><span class="logo-emoji">🔍</span><span>ShadowBanCheck.io</span></div>
                     <p>Protecting visibility for influencers, politicians, and online sellers worldwide.</p>
                 </div>
                 <div class="footer-col">
@@ -166,9 +518,7 @@
                 </div>
                 <div class="footer-col">
                     <h4>Developers</h4>
-                    <a href="#" onclick="alert('API documentation coming soon for developers!'); return false;">
-                        API Access <span class="coming-soon-tiny">Coming Soon</span>
-                    </a>
+                    <a href="#" onclick="alert('API documentation coming soon!'); return false;">API Access <span class="coming-soon-tiny">Soon</span></a>
                     <a href="https://github.com/Ghost081280" target="_blank">GitHub</a>
                 </div>
             </div>
@@ -184,17 +534,10 @@
     </footer>
 
     <!-- Shadow AI -->
-    <button id="shadow-ai-btn" class="copilot-btn">
-        <span class="copilot-emoji">🤖</span>
-        <span>Shadow AI</span>
-    </button>
-
+    <button id="shadow-ai-btn" class="copilot-btn"><span class="copilot-emoji">🤖</span><span>Shadow AI</span></button>
     <div id="shadow-ai-chat" class="copilot-chat hidden">
         <div class="copilot-header">
-            <div class="copilot-title">
-                <span class="copilot-emoji">🤖</span>
-                <span>Shadow AI</span>
-            </div>
+            <div class="copilot-title"><span class="copilot-emoji">🤖</span><span>Shadow AI</span></div>
             <button id="shadow-ai-close" class="copilot-close">&times;</button>
         </div>
         <div id="shadow-ai-messages" class="copilot-messages"></div>
@@ -206,50 +549,143 @@
 
     <script>
         function showCookiePolicy() {
-            alert('Cookie Policy\n\nWe use cookies to:\n• Remember your preferences\n• Analyze site traffic and usage\n• Improve your experience\n• Track free AI questions (3 per day)\n\nBy using ShadowBanCheck.io, you consent to our use of cookies.');
+            alert('Cookie Policy\n\nWe use cookies to:\n• Remember your preferences\n• Analyze site traffic and usage\n• Improve your experience\n• Track free checks (3 per day)\n\nBy using ShadowBanCheck.io, you consent to our use of cookies.');
         }
         
-        // Update searches remaining counter
-        document.addEventListener('DOMContentLoaded', () => {
-            // Get searches count from localStorage (or default to 3)
-            const searchesUsed = parseInt(localStorage.getItem('searchesUsed') || '0');
-            const searchesRemaining = Math.max(0, 3 - searchesUsed);
-            const searchesText = document.getElementById('searches-remaining');
-            if (searchesText) {
-                searchesText.textContent = `${searchesRemaining} / 3 searches available today`;
+        // Platform icons
+        const platformIcons = {
+            instagram: '📸 Instagram',
+            tiktok: '🎵 TikTok',
+            twitter: '🐦 Twitter/X',
+            facebook: '📘 Facebook',
+            youtube: '▶️ YouTube'
+        };
+        
+        // Load check data
+        function loadResults() {
+            const checkData = localStorage.getItem('shadowban_check');
+            
+            if (!checkData) {
+                document.getElementById('results-content').style.display = 'none';
+                document.getElementById('no-data').style.display = 'block';
+                return;
             }
             
-            // Share functionality
-            const resultsData = JSON.parse(localStorage.getItem('checkResults') || '{}');
-            const platform = resultsData.platform || 'Twitter/X';
-            const username = resultsData.username || 'your account';
-            const probability = resultsData.probability || 0;
+            const data = JSON.parse(checkData);
+            const username = data.username;
+            const platform = data.platform;
             
-            const shareText = `I just checked my ${username} for shadow bans on ${platform}! Got a ${probability}% probability score with detailed analysis. Check yours free: https://shadowbancheck.io`;
-            const shareUrl = 'https://shadowbancheck.io';
+            // Update account info
+            document.getElementById('account-avatar').textContent = username.charAt(0).toUpperCase();
+            document.getElementById('account-username').textContent = '@' + username;
+            document.getElementById('account-platform').textContent = platformIcons[platform] || platform;
             
-            // Twitter/X
-            document.getElementById('share-twitter-results')?.addEventListener('click', () => {
-                window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}`, '_blank');
-            });
+            // Update timestamp
+            const checkTime = new Date(data.timestamp);
+            document.getElementById('status-timestamp').textContent = 'Checked: ' + checkTime.toLocaleString();
             
-            // Facebook
-            document.getElementById('share-facebook-results')?.addEventListener('click', () => {
-                window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}&quote=${encodeURIComponent(shareText)}`, '_blank');
-            });
+            // Simulate random results for demo
+            const statuses = ['clear', 'warning', 'banned'];
+            const randomStatus = statuses[Math.floor(Math.random() * 10) < 7 ? 0 : (Math.random() < 0.7 ? 1 : 2)];
             
-            // Telegram
-            document.getElementById('share-telegram-results')?.addEventListener('click', () => {
-                window.open(`https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`, '_blank');
-            });
+            const statusCard = document.getElementById('status-card');
+            const statusIcon = document.getElementById('status-icon');
+            const statusTitle = document.getElementById('status-title');
+            const statusDesc = document.getElementById('status-desc');
             
-            // LinkedIn
-            document.getElementById('share-linkedin-results')?.addEventListener('click', () => {
-                window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`, '_blank');
-            });
-        });
+            statusCard.className = 'status-card ' + randomStatus;
+            
+            if (randomStatus === 'clear') {
+                statusIcon.textContent = '✅';
+                statusTitle.textContent = 'No Shadow Ban Detected';
+                statusDesc.textContent = 'Your account appears to be in good standing with no restrictions detected.';
+            } else if (randomStatus === 'warning') {
+                statusIcon.textContent = '⚠️';
+                statusTitle.textContent = 'Potential Issues Detected';
+                statusDesc.textContent = 'We found some signals that may indicate reduced visibility. See recommendations below.';
+                updateChecksForWarning();
+            } else {
+                statusIcon.textContent = '🚫';
+                statusTitle.textContent = 'Shadow Ban Likely';
+                statusDesc.textContent = 'Multiple indicators suggest your account has restricted visibility. Take action now.';
+                updateChecksForBanned();
+            }
+        }
+        
+        function updateChecksForWarning() {
+            const checks = document.querySelectorAll('.check-status');
+            checks[1].className = 'check-status warning';
+            checks[1].textContent = '⚠ Reduced';
+            checks[2].className = 'check-status warning';
+            checks[2].textContent = '⚠ Check';
+        }
+        
+        function updateChecksForBanned() {
+            const checks = document.querySelectorAll('.check-status');
+            checks[0].className = 'check-status fail';
+            checks[0].textContent = '✕ Hidden';
+            checks[1].className = 'check-status fail';
+            checks[1].textContent = '✕ Blocked';
+            checks[2].className = 'check-status fail';
+            checks[2].textContent = '✕ Banned';
+            checks[4].className = 'check-status warning';
+            checks[4].textContent = '⚠ Review';
+        }
+        
+        function copyResults() {
+            navigator.clipboard.writeText(window.location.href);
+            alert('Link copied to clipboard!');
+        }
+        
+        function shareTwitter() {
+            const text = "I just checked my shadow ban status with @ShadowBanCheck! 🔍";
+            window.open('https://twitter.com/intent/tweet?text=' + encodeURIComponent(text), '_blank');
+        }
+        
+        function downloadReport() {
+            const checkData = localStorage.getItem('shadowban_check');
+            if (!checkData) return;
+            
+            const data = JSON.parse(checkData);
+            const report = `Shadow Ban Check Report
+========================
+Username: @${data.username}
+Platform: ${data.platform}
+Checked: ${new Date(data.timestamp).toLocaleString()}
+
+Status: ${document.getElementById('status-title').textContent}
+
+Generated by ShadowBanCheck.io`;
+            
+            const blob = new Blob([report], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `shadowban-report-${data.username}.txt`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+        
+        // Search counter
+        function updateSearchCounter() {
+            const today = new Date().toDateString();
+            const lastReset = localStorage.getItem('shadowban_last_reset');
+            let remaining = parseInt(localStorage.getItem('shadowban_searches') || '3');
+            
+            if (lastReset !== today) {
+                remaining = 3;
+                localStorage.setItem('shadowban_searches', '3');
+                localStorage.setItem('shadowban_last_reset', today);
+            }
+            
+            document.getElementById('searches-display').textContent = `${remaining} / 3 checks available today`;
+        }
+        
+        // Init
+        loadResults();
+        updateSearchCounter();
     </script>
+    <script src="js/main.js"></script>
     <script src="js/shadow-ai.js"></script>
-    <script src="js/results.js"></script>
 </body>
 </html>

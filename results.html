@@ -56,42 +56,91 @@
                 <a href="checker.html" class="btn-secondary">Run Another Check</a>
                 <button id="download-report" class="btn-secondary">Download Report</button>
             </div>
+        </div>
+    </main>
 
-            <!-- Share Results Section -->
-            <section class="share-results-section">
-                <h3>📢 Share Your Results</h3>
-                <p>Let others know you checked your account!</p>
-                <div class="share-buttons-results">
-                    <button class="btn-share-result" id="share-twitter-results">
-                        <span class="share-icon">𝕏</span>
-                        <span>Share on X</span>
-                    </button>
-                    <button class="btn-share-result" id="share-facebook-results">
-                        <span class="share-icon">f</span>
-                        <span>Share on Facebook</span>
-                    </button>
-                    <button class="btn-share-result" id="share-telegram-results">
-                        <span class="share-icon">✈️</span>
-                        <span>Share on Telegram</span>
-                    </button>
-                    <button class="btn-share-result" id="share-linkedin-results">
-                        <span class="share-icon">in</span>
-                        <span>Share on LinkedIn</span>
-                    </button>
+    <!-- Free Searches Remaining - Matches Checker Page -->
+    <section class="search-counter-section">
+        <div class="container">
+            <div class="search-counter-module">
+                <div class="counter-content">
+                    <div class="counter-icon">🎯</div>
+                    <div class="counter-text">
+                        <h3>Free Searches Remaining</h3>
+                        <p id="searches-remaining">3 / 3 searches available today</p>
+                    </div>
                 </div>
-            </section>
+                <a href="index.html#pricing" class="btn-counter">Unlock More Searches</a>
+            </div>
+        </div>
+    </section>
 
-            <!-- Upgrade CTA Module -->
-            <div class="upgrade-cta-module">
-                <div class="upgrade-icon">🎯</div>
-                <div class="upgrade-content">
-                    <h3>Need More Checks?</h3>
-                    <p>You've used your free daily checks. Upgrade for unlimited access and advanced features.</p>
-                    <a href="index.html#pricing" class="btn-upgrade">View All Pricing Plans →</a>
+    <!-- Data Sources - Trust Building -->
+    <section class="data-sources-section">
+        <div class="container">
+            <h2 class="section-title">Our Data Sources</h2>
+            <p class="section-desc">We analyze multiple data points for accurate probability scores</p>
+            <div class="sources-grid">
+                <div class="source-card">
+                    <span class="source-icon">🔌</span>
+                    <h3>Platform APIs</h3>
+                    <p>Direct real-time status</p>
+                </div>
+                <div class="source-card">
+                    <span class="source-icon">🌐</span>
+                    <h3>Web Search</h3>
+                    <p>AI-powered analysis</p>
+                </div>
+                <div class="source-card">
+                    <span class="source-icon">📊</span>
+                    <h3>Public Data</h3>
+                    <p>Historical records</p>
+                </div>
+                <div class="source-card">
+                    <span class="source-icon">👥</span>
+                    <h3>User Reports</h3>
+                    <p>Community verified</p>
+                </div>
+                <div class="source-card">
+                    <span class="source-icon">🤖</span>
+                    <h3>AI Analysis</h3>
+                    <p>10+ factor detection</p>
+                </div>
+                <div class="source-card">
+                    <span class="source-icon">📈</span>
+                    <h3>Trend Data</h3>
+                    <p>Pattern recognition</p>
                 </div>
             </div>
         </div>
-    </main>
+    </section>
+
+    <!-- Share Your Results Section - Styled Like Index Page -->
+    <section class="social-share-section">
+        <div class="container">
+            <h2 class="section-title">📢 Share Your Results</h2>
+            <p class="section-desc">Let others know you checked your account!</p>
+            
+            <div class="share-buttons">
+                <button class="btn-share" id="share-twitter-results">
+                    <span class="share-icon">𝕏</span>
+                    <span>Share on X</span>
+                </button>
+                <button class="btn-share" id="share-facebook-results">
+                    <span class="share-icon">f</span>
+                    <span>Share on Facebook</span>
+                </button>
+                <button class="btn-share" id="share-telegram-results">
+                    <span class="share-icon">✈️</span>
+                    <span>Share on Telegram</span>
+                </button>
+                <button class="btn-share" id="share-linkedin-results">
+                    <span class="share-icon">in</span>
+                    <span>Share on LinkedIn</span>
+                </button>
+            </div>
+        </div>
+    </section>
 
     <!-- Footer -->
     <footer class="footer">
@@ -160,8 +209,17 @@
             alert('Cookie Policy\n\nWe use cookies to:\n• Remember your preferences\n• Analyze site traffic and usage\n• Improve your experience\n• Track free AI questions (3 per day)\n\nBy using ShadowBanCheck.io, you consent to our use of cookies.');
         }
         
-        // Share functionality
+        // Update searches remaining counter
         document.addEventListener('DOMContentLoaded', () => {
+            // Get searches count from localStorage (or default to 3)
+            const searchesUsed = parseInt(localStorage.getItem('searchesUsed') || '0');
+            const searchesRemaining = Math.max(0, 3 - searchesUsed);
+            const searchesText = document.getElementById('searches-remaining');
+            if (searchesText) {
+                searchesText.textContent = `${searchesRemaining} / 3 searches available today`;
+            }
+            
+            // Share functionality
             const resultsData = JSON.parse(localStorage.getItem('checkResults') || '{}');
             const platform = resultsData.platform || 'Twitter/X';
             const username = resultsData.username || 'your account';

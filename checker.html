@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="css/shadow-ai.css">
 </head>
 <body>
-    <!-- Header -->
+    <!-- Header - MATCHES INDEX -->
     <header class="header">
         <div class="container">
             <div class="logo">
@@ -20,8 +20,8 @@
                 </a>
             </div>
             <nav class="nav">
-                <a href="#" class="btn-nav" onclick="alert('Login coming soon!'); return false;">Login</a>
-                <a href="index.html#pricing" class="btn-nav">Get Shadow AI Pro</a>
+                <a href="#" class="btn-login" onclick="alert('Login/Dashboard coming soon! After purchase, you\'ll access your dashboard here.'); return false;">Login</a>
+                <a href="index.html#shadow-ai-pro" class="btn-nav">Get Shadow AI Pro</a>
             </nav>
         </div>
     </header>
@@ -67,7 +67,7 @@
             <p class="section-desc">Click any live platform to start your free shadow ban check</p>
 
             <div class="platform-grid">
-                <!-- Exact 26 platforms from index.html -->
+                <!-- All 26 platforms from index -->
                 <div class="platform-item clickable" data-platform="twitter">
                     <span>🐦</span>
                     <span>Twitter / X</span>
@@ -199,67 +199,20 @@
                     <span class="badge soon">Soon</span>
                 </div>
             </div>
-
-            <!-- Checks Counter -->
-            <div class="checks-counter">
-                <div class="counter-info">
-                    <span class="counter-icon">✨</span>
-                    <span class="counter-text">
-                        <strong id="checks-remaining">3</strong> free checks remaining today
-                    </span>
-                </div>
-                <a href="index.html#pricing" class="upgrade-link">Upgrade for unlimited →</a>
-            </div>
         </div>
     </section>
 
-    <!-- Trust Badges -->
-    <section class="trust-section" style="padding: var(--space-xl) 0 var(--space-2xl);">
-        <div class="container">
-            <div class="trust-badges">
-                <div class="trust-badge">
-                    <span class="trust-icon">⚡</span>
-                    <div>
-                        <strong>60-Second Results</strong>
-                        <p>Instant verification</p>
-                    </div>
-                </div>
-                <div class="trust-badge">
-                    <span class="trust-icon">✨</span>
-                    <div>
-                        <strong>3 Free Checks Daily</strong>
-                        <p>No credit card needed</p>
-                    </div>
-                </div>
-                <div class="trust-badge">
-                    <span class="trust-icon">🎯</span>
-                    <div>
-                        <strong>AI-Powered</strong>
-                        <p>Accurate analysis</p>
-                    </div>
-                </div>
-                <div class="trust-badge">
-                    <span class="trust-icon">🔒</span>
-                    <div>
-                        <strong>SSL Encrypted</strong>
-                        <p>Your data is secure</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Check Modal (Popup) -->
-    <div id="check-modal" class="modal hidden">
-        <div class="modal-content check-modal-content">
-            <button class="modal-close" onclick="closeCheckModal()">&times;</button>
-            <div id="modal-form-container">
-                <!-- Forms will be injected here -->
+    <!-- Platform Modal -->
+    <div id="platform-modal" class="modal hidden">
+        <div class="modal-content">
+            <button class="modal-close">&times;</button>
+            <div id="modal-body">
+                <!-- Modal content will be inserted here -->
             </div>
         </div>
     </div>
 
-    <!-- Footer -->
+    <!-- Footer - EXACT COPY FROM INDEX -->
     <footer class="footer">
         <div class="container">
             <div class="footer-grid">
@@ -291,7 +244,7 @@
             </div>
             <div class="footer-bottom">
                 <p>&copy; 2025 ShadowBanCheck.io. All rights reserved.</p>
-                <div class="footer-legal">
+                <div class="footer-legal" style="margin-right: 100px;">
                     <a href="#" onclick="alert('Terms of Service coming soon!'); return false;">Terms</a>
                     <a href="#" onclick="alert('Privacy Policy coming soon!'); return false;">Privacy</a>
                     <a href="#" onclick="showCookiePolicy(); return false;">Cookie Policy</a>
@@ -300,7 +253,7 @@
         </div>
     </footer>
 
-    <!-- Shadow AI Widget -->
+    <!-- Shadow AI -->
     <button id="shadow-ai-btn" class="copilot-btn">
         <span class="copilot-emoji">🤖</span>
         <span>Shadow AI</span>
@@ -314,54 +267,19 @@
             </div>
             <button id="shadow-ai-close" class="copilot-close">&times;</button>
         </div>
-        <div id="shadow-ai-messages" class="copilot-messages">
-            <!-- Messages populated by shadow-ai.js -->
-        </div>
+        <div id="shadow-ai-messages" class="copilot-messages"></div>
         <div class="copilot-input">
             <input type="text" id="shadow-ai-input" placeholder="Ask about shadow bans...">
             <button id="shadow-ai-send">Send</button>
         </div>
     </div>
 
-    <!-- Cookie Popup -->
-    <div id="cookie-popup" class="cookie-popup hidden">
-        <div class="cookie-content">
-            <div class="cookie-icon">🍪</div>
-            <div class="cookie-text">
-                <h3>We Use Cookies</h3>
-                <p>We use cookies to enhance your experience, analyze site traffic, and remember your preferences. By continuing to use ShadowBanCheck.io, you agree to our use of cookies.</p>
-            </div>
-            <div class="cookie-actions">
-                <button id="cookie-accept" class="btn-cookie-accept">Accept</button>
-                <button id="cookie-dismiss" class="btn-cookie-dismiss">Dismiss</button>
-            </div>
-        </div>
-    </div>
-
-    <script src="js/shadow-ai.js"></script>
-    <script src="js/checker-new.js"></script>
-    
-    <!-- Cookie Popup Script -->
     <script>
-        (function() {
-            const cookieAccepted = localStorage.getItem('shadowban_cookies_accepted');
-            if (!cookieAccepted) {
-                setTimeout(() => {
-                    document.getElementById('cookie-popup').classList.remove('hidden');
-                }, 1000);
-            }
-            document.getElementById('cookie-accept').addEventListener('click', () => {
-                localStorage.setItem('shadowban_cookies_accepted', 'true');
-                document.getElementById('cookie-popup').classList.add('hidden');
-            });
-            document.getElementById('cookie-dismiss').addEventListener('click', () => {
-                localStorage.setItem('shadowban_cookies_accepted', 'dismissed');
-                document.getElementById('cookie-popup').classList.add('hidden');
-            });
-        })();
         function showCookiePolicy() {
-            alert('Cookie Policy\n\nWe use cookies to:\n• Remember your preferences\n• Analyze site traffic and usage\n• Improve your experience\n• Track free checks (3 per day)\n\nBy using ShadowBanCheck.io, you consent to our use of cookies. You can disable cookies in your browser settings, but some features may not work properly.\n\nFor more information, contact us at andrew@ghost081280.com');
+            alert('Cookie Policy\n\nWe use cookies to:\n• Remember your preferences\n• Analyze site traffic and usage\n• Improve your experience\n• Track free AI questions (3 per day)\n\nBy using ShadowBanCheck.io, you consent to our use of cookies.');
         }
     </script>
+    <script src="js/shadow-ai.js"></script>
+    <script src="js/checker-new.js"></script>
 </body>
 </html>

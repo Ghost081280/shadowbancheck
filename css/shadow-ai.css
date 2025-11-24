@@ -1,61 +1,182 @@
 /* =============================================================================
-   SHADOW AI CHATBOT COMPONENT
-   Uses main.css variables - No duplicates
+   SHADOW AI CHATBOT COMPONENT - v2.0 PREMIUM EDITION
+   Based on Vault Phoenix patterns - Full feature parity
+   Uses main.css variables
    ============================================================================= */
+
+/* =============================================================================
+   CHATBOT BUTTON CONTAINER - Fixed position with tooltip
+   ============================================================================= */
+.shadow-ai-container {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    z-index: 998;
+    opacity: 0;
+    visibility: hidden;
+    display: block;
+    transition: opacity 0.5s ease, visibility 0.5s ease;
+}
+
+.shadow-ai-container.ready {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* =============================================================================
+   GLOW EFFECT
+   ============================================================================= */
+.shadow-ai-glow {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 120px;
+    height: 120px;
+    background: radial-gradient(circle, 
+        rgba(99, 102, 241, 0.6) 0%, 
+        rgba(168, 85, 247, 0.4) 40%, 
+        transparent 70%);
+    border-radius: 50%;
+    animation: pulse-glow 2s ease-in-out infinite;
+    pointer-events: none;
+}
+
+@keyframes pulse-glow {
+    0%, 100% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 0.8;
+    }
+    50% {
+        transform: translate(-50%, -50%) scale(1.15);
+        opacity: 1;
+    }
+}
 
 /* =============================================================================
    FLOATING BUTTON
    ============================================================================= */
 .copilot-btn {
-    position: fixed;
-    bottom: var(--space-xl);
-    right: var(--space-xl);
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
     background: var(--gradient-primary);
-    color: white;
-    border: none;
-    border-radius: var(--radius-full);
-    padding: var(--space-md) var(--space-lg);
+    border: 3px solid rgba(168, 85, 247, 0.6);
+    box-shadow: 0 8px 32px rgba(99, 102, 241, 0.5),
+                0 0 40px rgba(168, 85, 247, 0.3);
+    cursor: pointer;
     display: flex;
     align-items: center;
-    gap: var(--space-sm);
-    font-size: 1rem;
-    font-weight: 600;
-    font-family: inherit;
-    cursor: pointer;
-    box-shadow: var(--shadow-lg), 0 0 20px rgba(99, 102, 241, 0.4);
-    transition: all var(--transition-base);
-    z-index: 999;
+    justify-content: center;
+    transition: transform 0.1s ease;
+    position: relative;
+    z-index: 10;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+}
+
+.copilot-btn:active {
+    transform: scale(0.92);
 }
 
 .copilot-btn:hover {
-    transform: translateY(-3px);
-    box-shadow: var(--shadow-xl), 0 0 30px rgba(99, 102, 241, 0.5);
+    transform: translateY(-5px) scale(1.05);
+    box-shadow: 0 12px 48px rgba(99, 102, 241, 0.7),
+                0 0 60px rgba(168, 85, 247, 0.5);
+    border-color: var(--accent);
 }
 
 .copilot-emoji {
-    font-size: 1.5rem;
+    font-size: 2.5rem;
+    pointer-events: none;
+    filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.5));
 }
 
 /* =============================================================================
-   CHAT WINDOW
+   TOOLTIP - LEFT SIDE, FADES ON SCROLL
+   ============================================================================= */
+.shadow-ai-tooltip {
+    position: absolute;
+    bottom: 50%;
+    right: calc(100% + 15px);
+    transform: translateY(50%);
+    background: linear-gradient(135deg, 
+        rgba(19, 27, 46, 0.98) 0%, 
+        rgba(30, 41, 66, 0.95) 100%);
+    color: white;
+    padding: 12px 20px;
+    border-radius: var(--radius-xl);
+    font-size: 1rem;
+    font-weight: 700;
+    white-space: nowrap;
+    opacity: 1;
+    pointer-events: none;
+    transition: opacity 0.6s ease, right 0.3s ease;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    border: 2px solid rgba(99, 102, 241, 0.4);
+}
+
+.shadow-ai-tooltip::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    right: -10px;
+    transform: translateY(-50%);
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 10px 0 10px 10px;
+    border-color: transparent transparent transparent rgba(30, 41, 66, 0.95);
+}
+
+/* Fade out on scroll */
+.shadow-ai-tooltip.scrolled {
+    opacity: 0;
+    right: calc(100% + 10px);
+}
+
+/* Hide when chat is active */
+.shadow-ai-container.chatbot-active .shadow-ai-tooltip {
+    opacity: 0 !important;
+    pointer-events: none !important;
+}
+
+/* Show on hover when not active */
+.shadow-ai-container:not(.chatbot-active):hover .shadow-ai-tooltip {
+    opacity: 1 !important;
+    right: calc(100% + 15px) !important;
+}
+
+/* =============================================================================
+   CHAT WINDOW - DESKTOP (grows with screen, stays below nav)
    ============================================================================= */
 .copilot-chat {
     position: fixed;
-    bottom: 100px;
-    right: var(--space-xl);
-    width: 400px;
-    max-width: calc(100vw - 2rem);
-    height: 550px;
-    max-height: calc(100vh - 150px);
+    top: calc(75px + 20px); /* Below header */
+    bottom: 130px; /* Above button */
+    right: 30px;
+    width: min(450px, calc(100vw - 160px));
+    height: auto;
+    max-height: calc(100vh - 75px - 170px);
     background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-xl);
-    box-shadow: var(--shadow-xl);
+    border-radius: var(--radius-2xl);
+    border: 2px solid rgba(99, 102, 241, 0.4);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
     display: flex;
     flex-direction: column;
-    z-index: 998;
-    overflow: hidden;
-    transition: all var(--transition-base);
+    z-index: 997;
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+    pointer-events: none;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    will-change: opacity, transform;
+    transform-origin: bottom right;
+}
+
+.copilot-chat.active {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    pointer-events: all;
 }
 
 .copilot-chat.hidden {
@@ -66,41 +187,91 @@
    CHAT HEADER
    ============================================================================= */
 .copilot-header {
-    background: var(--gradient-primary);
-    color: white;
-    padding: var(--space-md) var(--space-lg);
     display: flex;
     justify-content: space-between;
     align-items: center;
+    padding: 1rem 1.25rem;
+    background: var(--gradient-primary);
+    border-radius: var(--radius-2xl) var(--radius-2xl) 0 0;
+    border-bottom: 2px solid rgba(99, 102, 241, 0.4);
+    flex-shrink: 0;
+    min-height: 70px;
+}
+
+.copilot-header-left {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.copilot-header-emoji {
+    font-size: 2rem;
+    filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.5));
+}
+
+.copilot-header-text h3 {
+    font-size: 1rem;
+    font-weight: 700;
+    color: white;
+    margin: 0;
+}
+
+.copilot-status {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.9);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.copilot-status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #ef4444;
+    animation: pulse-dot 2s ease-in-out infinite;
     flex-shrink: 0;
 }
 
-.copilot-title {
-    display: flex;
-    align-items: center;
-    gap: var(--space-sm);
-    font-weight: 600;
-    font-size: 1.125rem;
+.copilot-status-dot.online {
+    background: var(--success);
+}
+
+@keyframes pulse-dot {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
 }
 
 .copilot-close {
-    background: rgba(255, 255, 255, 0.2);
-    border: none;
+    font-size: 2rem;
     color: white;
-    font-size: 1.5rem;
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
+    background: transparent;
+    border: none;
     cursor: pointer;
+    width: 40px;
+    height: 40px;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: background var(--transition-fast);
-    line-height: 1;
+    border-radius: 50%;
+    transition: all var(--transition-base);
+    flex-shrink: 0;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
 }
 
 .copilot-close:hover {
-    background: rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.2);
+    transform: rotate(90deg);
+}
+
+.copilot-close:active {
+    transform: scale(0.9);
 }
 
 /* =============================================================================
@@ -110,11 +281,16 @@
     flex: 1;
     overflow-y: auto;
     overflow-x: hidden;
-    padding: var(--space-lg);
+    padding: 1.25rem;
     display: flex;
     flex-direction: column;
-    gap: var(--space-md);
-    scroll-behavior: smooth;
+    gap: 1rem;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
+    min-height: 0;
+    contain: layout style;
+    isolation: isolate;
 }
 
 /* Custom Scrollbar */
@@ -123,33 +299,39 @@
 }
 
 .copilot-messages::-webkit-scrollbar-track {
-    background: var(--bg-tertiary);
-    border-radius: 3px;
+    background: transparent;
 }
 
 .copilot-messages::-webkit-scrollbar-thumb {
-    background: var(--border);
-    border-radius: 3px;
+    background: linear-gradient(135deg, 
+        var(--primary) 0%, 
+        var(--accent) 50%, 
+        var(--primary-light) 100%);
+    border-radius: var(--radius-sm);
+    box-shadow: 0 0 8px rgba(99, 102, 241, 0.5);
 }
 
 .copilot-messages::-webkit-scrollbar-thumb:hover {
-    background: var(--primary);
+    background: linear-gradient(135deg, 
+        var(--primary-light) 0%, 
+        var(--primary) 50%, 
+        var(--accent) 100%);
+    box-shadow: 0 0 12px rgba(99, 102, 241, 0.7);
 }
 
 /* =============================================================================
    MESSAGE BUBBLES
    ============================================================================= */
-.copilot-message {
-    padding: var(--space-md);
-    border-radius: var(--radius-lg);
-    max-width: 85%;
-    line-height: 1.6;
-    font-size: 0.9rem;
-    word-wrap: break-word;
-    animation: messageSlideIn var(--transition-base);
+.chat-message {
+    display: flex;
+    margin-bottom: 0.75rem;
+    animation: slideIn 0.3s ease;
+    width: 100%;
+    transform: translateZ(0);
+    will-change: auto;
 }
 
-@keyframes messageSlideIn {
+@keyframes slideIn {
     from {
         opacity: 0;
         transform: translateY(10px);
@@ -160,58 +342,99 @@
     }
 }
 
-.copilot-message.user {
+.user-message {
+    justify-content: flex-end;
+}
+
+.assistant-message {
+    justify-content: flex-start;
+}
+
+.message-content {
+    display: flex;
+    gap: 0.75rem;
+    max-width: 85%;
+    align-items: flex-start;
+}
+
+.user-message .message-content {
+    flex-direction: row-reverse;
+}
+
+.message-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    overflow: hidden;
+    flex-shrink: 0;
+    box-shadow: var(--shadow-sm);
+    background: var(--gradient-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+}
+
+.message-text {
+    background: rgba(99, 102, 241, 0.2);
+    padding: 0.75rem 1rem;
+    border-radius: var(--radius-xl);
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: var(--text-secondary);
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    min-width: 0;
+    contain: layout style;
+}
+
+.user-message .message-text {
     background: var(--gradient-primary);
     color: white;
-    margin-left: auto;
-    border-bottom-right-radius: var(--space-2xs);
 }
 
-.copilot-message.ai,
-.copilot-message.assistant {
-    background: var(--bg-tertiary);
-    border: 1px solid var(--border);
-    color: var(--text-secondary);
-    border-bottom-left-radius: var(--space-2xs);
-}
-
-/* Message Content Formatting */
-.copilot-message strong {
-    font-weight: 700;
+.message-text strong {
     color: var(--primary-light);
+    font-weight: 700;
 }
 
-.copilot-message.user strong {
+.user-message .message-text strong {
     color: white;
 }
 
-.copilot-message a {
+.message-text a {
     color: var(--primary-light);
     text-decoration: underline;
 }
 
-.copilot-message.user a {
+.user-message .message-text a {
     color: white;
+}
+
+.message-text ul {
+    margin: 0.5rem 0;
+    padding-left: 1.25rem;
+}
+
+.message-text li {
+    margin: 0.25rem 0;
 }
 
 /* =============================================================================
    TYPING INDICATOR
    ============================================================================= */
-.copilot-message.typing {
-    padding: var(--space-sm) var(--space-md);
-    width: auto;
-}
-
-.typing-dots {
-    display: inline-flex;
+.typing-indicator .typing-dots {
+    display: flex;
     gap: 4px;
-    align-items: center;
+    padding: 0.75rem 1rem;
+    background: rgba(99, 102, 241, 0.2);
+    border-radius: var(--radius-xl);
 }
 
 .typing-dots span {
     width: 8px;
     height: 8px;
-    background: var(--primary);
+    background: var(--primary-light);
     border-radius: 50%;
     animation: typingBounce 1.4s infinite;
 }
@@ -227,105 +450,337 @@
 @keyframes typingBounce {
     0%, 60%, 100% {
         transform: translateY(0);
-        opacity: 0.5;
     }
     30% {
-        transform: translateY(-8px);
-        opacity: 1;
+        transform: translateY(-10px);
     }
+}
+
+/* Streaming Cursor */
+.streaming-cursor {
+    display: inline-block;
+    width: 2px;
+    height: 1em;
+    background: var(--primary-light);
+    margin-left: 2px;
+    animation: blink 1s infinite;
+    vertical-align: baseline;
+}
+
+@keyframes blink {
+    0%, 50% { opacity: 1; }
+    51%, 100% { opacity: 0; }
 }
 
 /* =============================================================================
    INPUT AREA
    ============================================================================= */
-.copilot-input {
-    padding: var(--space-md);
-    border-top: 1px solid var(--border);
+.copilot-input-area {
     display: flex;
-    gap: var(--space-sm);
+    gap: 0.75rem;
+    padding: 1rem 1.25rem;
     background: var(--bg-tertiary);
+    border-top: 1px solid var(--border);
+    border-radius: 0 0 var(--radius-2xl) var(--radius-2xl);
     flex-shrink: 0;
+    min-height: 70px;
 }
 
-.copilot-input input {
+.copilot-input-area input {
     flex: 1;
     background: var(--card);
     border: 2px solid var(--border);
     border-radius: var(--radius-md);
     color: var(--text);
-    padding: var(--space-sm) var(--space-md);
-    font-size: 0.9rem;
+    padding: 0.75rem 1rem;
+    font-size: 16px; /* Prevents zoom on iOS */
     font-family: inherit;
     min-height: 44px;
-    transition: border-color var(--transition-fast);
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
 }
 
-.copilot-input input:focus {
+.copilot-input-area input:focus {
     outline: none;
     border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
 }
 
-.copilot-input input::placeholder {
+.copilot-input-area input::placeholder {
     color: var(--text-muted);
 }
 
-.copilot-input button {
-    background: var(--gradient-primary);
-    color: white;
-    border: none;
-    border-radius: var(--radius-md);
-    padding: var(--space-sm) var(--space-lg);
-    font-size: 0.9rem;
-    font-weight: 600;
-    font-family: inherit;
-    cursor: pointer;
-    transition: all var(--transition-base);
-    white-space: nowrap;
-    min-height: 44px;
+/* Blink animation for empty input */
+@keyframes blink-border {
+    0%, 100% {
+        border-color: var(--border);
+    }
+    50% {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+    }
 }
 
-.copilot-input button:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
+.copilot-input-area input.blink-empty {
+    animation: blink-border 0.4s ease 3;
+}
+
+.copilot-send {
+    min-width: 80px;
+    height: 44px;
+    background: var(--gradient-primary);
+    border: none;
+    border-radius: var(--radius-md);
+    color: white;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.1s ease, box-shadow 0.2s ease;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+}
+
+.copilot-send:hover {
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 6px 20px rgba(99, 102, 241, 0.5);
+}
+
+.copilot-send:active {
+    transform: scale(0.95);
+}
+
+.copilot-send:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
 }
 
 /* =============================================================================
-   MOBILE RESPONSIVE
+   MOBILE PORTRAIT - Chat window between nav and button
    ============================================================================= */
 @media (max-width: 768px) {
+    .shadow-ai-container {
+        bottom: 20px;
+        right: 20px;
+    }
+    
     .copilot-btn {
-        bottom: var(--space-md);
-        right: var(--space-md);
-        padding: var(--space-sm) var(--space-md);
-        font-size: 0.875rem;
+        width: 70px;
+        height: 70px;
     }
-
+    
     .copilot-emoji {
-        font-size: 1.25rem;
+        font-size: 2rem;
     }
-
+    
+    .shadow-ai-glow {
+        width: 100px;
+        height: 100px;
+    }
+    
+    .shadow-ai-tooltip {
+        display: none; /* Hide on mobile portrait */
+    }
+    
     .copilot-chat {
         position: fixed;
-        bottom: 0;
-        right: 0;
-        left: 0;
-        top: 60px;
-        width: 100%;
-        max-width: 100%;
-        height: calc(100vh - 60px);
+        top: calc(75px + 10px); /* Below header */
+        bottom: calc(70px + 30px + 20px); /* Above button (70px button + 20px bottom + buffer) */
+        left: 10px;
+        right: 10px;
+        width: auto;
+        max-width: none;
         max-height: none;
-        border-radius: 0;
-        border: none;
-        border-top: 1px solid var(--border);
+        height: auto;
+        border-radius: var(--radius-xl);
     }
-
+    
     .copilot-header {
-        border-radius: 0;
+        padding: 0.75rem 1rem;
+        min-height: 60px;
     }
+    
+    .copilot-header-emoji {
+        font-size: 1.5rem;
+    }
+    
+    .copilot-header-text h3 {
+        font-size: 0.9rem;
+    }
+    
+    .copilot-status {
+        font-size: 0.75rem;
+    }
+    
+    .copilot-messages {
+        padding: 1rem;
+    }
+    
+    .message-text {
+        font-size: 0.9rem;
+    }
+    
+    .copilot-input-area {
+        padding: 1rem;
+        gap: 0.5rem;
+        min-height: 60px;
+    }
+    
+    .copilot-send {
+        min-width: 70px;
+        height: 42px;
+        font-size: 0.9rem;
+    }
+}
 
-    .copilot-message {
-        max-width: 90%;
-        font-size: 0.875rem;
+/* =============================================================================
+   MOBILE LANDSCAPE - LEFT SIDE LAYOUT
+   ============================================================================= */
+@media (max-width: 926px) and (max-height: 500px) and (orientation: landscape) {
+    
+    .shadow-ai-container {
+        bottom: 10px !important;
+        right: 10px !important;
+        z-index: 998 !important;
+    }
+    
+    .copilot-btn {
+        width: 60px !important;
+        height: 60px !important;
+    }
+    
+    .copilot-emoji {
+        font-size: 1.75rem !important;
+    }
+    
+    .shadow-ai-glow {
+        width: 85px !important;
+        height: 85px !important;
+    }
+    
+    .shadow-ai-tooltip {
+        display: none !important;
+    }
+    
+    /* CRITICAL: Chat window goes to the LEFT of button */
+    .copilot-chat {
+        position: fixed !important;
+        top: calc(75px + 5px) !important;
+        left: 5px !important;
+        right: 85px !important; /* Leave space for button */
+        bottom: 5px !important;
+        width: auto !important;
+        height: auto !important;
+        max-height: calc(100vh - 75px - 10px) !important;
+        transform: none !important;
+    }
+    
+    .copilot-chat.active {
+        opacity: 1 !important;
+        transform: none !important;
+    }
+    
+    /* Keyboard visible - shift window up */
+    .copilot-chat.keyboard-visible {
+        top: 5px !important;
+        bottom: 45% !important;
+    }
+    
+    .copilot-header {
+        padding: 0.5rem 0.75rem !important;
+        min-height: 50px !important;
+    }
+    
+    .copilot-header-emoji {
+        font-size: 1.25rem !important;
+    }
+    
+    .copilot-header-text h3 {
+        font-size: 0.85rem !important;
+    }
+    
+    .copilot-status {
+        font-size: 0.7rem !important;
+    }
+    
+    .copilot-messages {
+        padding: 0.625rem !important;
+    }
+    
+    .copilot-input-area {
+        padding: 0.625rem 0.75rem !important;
+        gap: 0.5rem !important;
+        min-height: 50px !important;
+    }
+    
+    .copilot-input-area input {
+        max-height: 50px !important;
+        min-height: 36px !important;
+        padding: 0.5rem 0.75rem !important;
+        font-size: 16px !important;
+    }
+    
+    .copilot-send {
+        min-width: 60px !important;
+        height: 36px !important;
+        font-size: 0.8rem !important;
+    }
+    
+    .message-text {
+        font-size: 0.85rem !important;
+        padding: 0.625rem 0.875rem !important;
+    }
+    
+    .message-avatar {
+        width: 30px !important;
+        height: 30px !important;
+        font-size: 1rem !important;
+    }
+}
+
+/* Small Mobile Portrait */
+@media (max-width: 480px) and (orientation: portrait) {
+    .shadow-ai-container {
+        bottom: 15px;
+        right: 15px;
+    }
+    
+    .copilot-btn {
+        width: 65px;
+        height: 65px;
+    }
+    
+    .copilot-emoji {
+        font-size: 1.75rem;
+    }
+    
+    .shadow-ai-glow {
+        width: 95px;
+        height: 95px;
+    }
+    
+    .copilot-chat {
+        left: 8px;
+        right: 8px;
+    }
+}
+
+/* Very Small Mobile Portrait */
+@media (max-width: 360px) and (orientation: portrait) {
+    .shadow-ai-container {
+        bottom: 12px;
+        right: 12px;
+    }
+    
+    .copilot-chat {
+        left: 5px;
+        right: 5px;
+        top: calc(75px + 5px);
+        bottom: calc(65px + 25px);
     }
 }
 
@@ -333,9 +788,11 @@
    ACCESSIBILITY
    ============================================================================= */
 @media (prefers-reduced-motion: reduce) {
-    .copilot-btn,
+    .shadow-ai-container,
     .copilot-chat,
-    .copilot-message {
+    .chat-message,
+    .copilot-btn,
+    .shadow-ai-glow {
         animation: none;
         transition: none;
     }
@@ -343,5 +800,9 @@
     .typing-dots span {
         animation: none;
         opacity: 0.7;
+    }
+    
+    .streaming-cursor {
+        animation: none;
     }
 }

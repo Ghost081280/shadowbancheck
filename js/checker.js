@@ -1,161 +1,471 @@
-// =============================================================================
-// ShadowBanCheck.io - Checker Page JavaScript
-// CRITICAL: Modal ALWAYS opens. Search check happens on SUBMIT, not on click.
-// =============================================================================
+/* =============================================================================
+   CHECKER.JS - Shadow Ban Checker Page Functionality
+   ============================================================================= */
 
-console.log('🔍 Checker.js loaded');
-
-const MAX_SEARCHES = 3;
-const STORAGE_KEY = 'shadowban_searches_remaining';
-const DATE_KEY = 'shadowban_last_reset_date';
-
-const platformData = {
-    twitter: { name: 'Twitter / X', icon: '🐦', placeholder: '@username', description: 'Check if your Twitter/X account is shadow banned', checks: ['Search visibility', 'Reply threading', 'Profile discovery', 'Engagement reach'], live: true },
-    reddit: { name: 'Reddit', icon: '🤖', placeholder: 'u/username', description: 'Check if your Reddit account is shadow banned', checks: ['Post visibility', 'Comment appearance', 'Profile access', 'Subreddit status'], live: true },
-    email: { name: 'Email', icon: '📧', placeholder: 'your@email.com', description: 'Check if your email domain is blacklisted', checks: ['Spam blacklists', 'Domain reputation', 'SPF/DKIM records', 'Deliverability score'], live: true },
-    instagram: { name: 'Instagram', icon: '📸', placeholder: '@username', description: 'Instagram shadow ban detection coming soon!', checks: ['Post visibility', 'Hashtag reach', 'Story views', 'Explore page'], live: false },
-    tiktok: { name: 'TikTok', icon: '🎵', placeholder: '@username', description: 'TikTok shadow ban detection coming soon!', checks: ['For You Page', 'Video reach', 'Hashtag performance'], live: false },
-    facebook: { name: 'Facebook', icon: '📘', placeholder: 'username', description: 'Coming soon!', checks: ['Post reach', 'Page visibility'], live: false },
-    linkedin: { name: 'LinkedIn', icon: '💼', placeholder: 'profile URL', description: 'Coming soon!', checks: ['Post visibility', 'Profile views'], live: false },
-    threads: { name: 'Threads', icon: '🧵', placeholder: '@username', description: 'Coming soon!', checks: ['Feed visibility', 'Reply reach'], live: false },
-    bluesky: { name: 'Bluesky', icon: '🦋', placeholder: '@handle.bsky.social', description: 'Coming soon!', checks: ['Feed presence', 'Reply visibility'], live: false },
-    youtube: { name: 'YouTube', icon: '📺', placeholder: 'channel name', description: 'Coming soon!', checks: ['Video visibility', 'Search ranking'], live: false },
-    pinterest: { name: 'Pinterest', icon: '📌', placeholder: 'username', description: 'Coming soon!', checks: ['Pin visibility', 'Board reach'], live: false },
-    discord: { name: 'Discord', icon: '🎮', placeholder: 'username#1234', description: 'Coming soon!', checks: ['Server bans', 'Message delivery'], live: false },
-    twitch: { name: 'Twitch', icon: '🟣', placeholder: 'channel name', description: 'Coming soon!', checks: ['Stream visibility', 'Chat access'], live: false },
-    kick: { name: 'Kick', icon: '⚡', placeholder: 'channel name', description: 'Coming soon!', checks: ['Stream reach', 'Chat status'], live: false },
-    snapchat: { name: 'Snapchat', icon: '👻', placeholder: 'username', description: 'Coming soon!', checks: ['Story views', 'Snap delivery'], live: false },
-    truth: { name: 'Truth Social', icon: '🇺🇸', placeholder: '@username', description: 'Coming soon!', checks: ['Post visibility', 'Feed presence'], live: false },
-    rumble: { name: 'Rumble', icon: '📹', placeholder: 'channel name', description: 'Coming soon!', checks: ['Video reach', 'Search visibility'], live: false },
-    telegram: { name: 'Telegram', icon: '✈️', placeholder: '@username', description: 'Coming soon!', checks: ['Channel visibility', 'Message delivery'], live: false },
-    etsy: { name: 'Etsy', icon: '🛍️', placeholder: 'shop name', description: 'Coming soon!', checks: ['Listing visibility', 'Search ranking'], live: false },
-    amazon: { name: 'Amazon', icon: '📦', placeholder: 'seller ID', description: 'Coming soon!', checks: ['Listing visibility', 'Buy Box eligibility'], live: false },
-    ebay: { name: 'eBay', icon: '🏷️', placeholder: 'seller username', description: 'Coming soon!', checks: ['Listing reach', 'Search ranking'], live: false },
-    phone: { name: 'Phone', icon: '📱', placeholder: '+1 555 123 4567', description: 'Coming soon!', checks: ['Spam lists', 'Carrier status'], live: false },
-    domain: { name: 'Domain', icon: '🌐', placeholder: 'example.com', description: 'Coming soon!', checks: ['Blacklists', 'DNS health'], live: false },
-    ip: { name: 'IP Address', icon: '🖥️', placeholder: '192.168.1.1', description: 'Coming soon!', checks: ['Blacklists', 'Spam databases'], live: false },
-    google: { name: 'Google Business', icon: '📍', placeholder: 'business name', description: 'Coming soon!', checks: ['Listing visibility', 'Map presence'], live: false },
-    website: { name: 'Website', icon: '🔗', placeholder: 'https://yoursite.com', description: 'Coming soon!', checks: ['Search indexing', 'Blacklists'], live: false }
-};
-
-function initSearchCounter() {
-    const today = new Date().toDateString();
-    const lastResetDate = localStorage.getItem(DATE_KEY);
-    if (lastResetDate !== today) {
-        localStorage.setItem(STORAGE_KEY, MAX_SEARCHES.toString());
-        localStorage.setItem(DATE_KEY, today);
-    }
-    updateSearchCounterDisplay();
-}
-
-function updateSearchCounterDisplay() {
-    const remaining = getSearchesRemaining();
-    const el = document.getElementById('searches-remaining');
-    if (el) {
-        el.innerHTML = remaining === 0 
-            ? `<span style="color: #ef4444;">0 / ${MAX_SEARCHES} - <a href="index.html#pricing" style="color: var(--primary);">Upgrade</a></span>`
-            : `${remaining} / ${MAX_SEARCHES} available`;
-    }
-}
-
-function getSearchesRemaining() { return parseInt(localStorage.getItem(STORAGE_KEY) || MAX_SEARCHES); }
-function hasSearchesRemaining() { return getSearchesRemaining() > 0; }
-function decrementSearchCounter() {
-    const remaining = getSearchesRemaining();
-    if (remaining > 0) { localStorage.setItem(STORAGE_KEY, (remaining - 1).toString()); updateSearchCounterDisplay(); return true; }
-    return false;
-}
-
-// ALWAYS opens modal - doesn't check search count here
-function openPlatformModal(platform) {
-    const modal = document.getElementById('platform-modal');
-    const modalBody = document.getElementById('modal-body');
-    const data = platformData[platform];
-    if (!data) return;
-
-    if (!data.live) {
-        modalBody.innerHTML = `
-            <div class="modal-coming-soon">
-                <div class="coming-soon-icon">${data.icon}</div>
-                <h2>${data.name}</h2>
-                <p class="coming-soon-text">Coming Soon!</p>
-                <p style="color: var(--text-muted); margin-bottom: 1.5rem;">${data.description}</p>
-                <div class="coming-soon-checks"><h4>What We'll Check:</h4><ul>${data.checks.map(c => `<li>✓ ${c}</li>`).join('')}</ul></div>
-                <p style="color: var(--text-muted); font-size: 0.875rem; margin: 1.5rem 0;">Currently live: Twitter/X, Reddit, and Email</p>
-                <a href="index.html#pricing" class="btn-modal-cta">Get Notified When Live</a>
-            </div>`;
-        modal.classList.remove('hidden'); document.body.style.overflow = 'hidden'; return;
-    }
-
-    const remaining = getSearchesRemaining();
-    const searchNote = remaining > 0 ? `${remaining} free check${remaining !== 1 ? 's' : ''} remaining today` : `<span style="color: #f59e0b;">0 checks remaining - submit to see upgrade options</span>`;
-
-    modalBody.innerHTML = `
-        <div class="modal-header-custom"><span class="modal-icon">${data.icon}</span><div><h2>${data.name} Check</h2><span class="badge live">Live</span></div></div>
-        <p class="modal-description">${data.description}</p>
-        <div class="modal-checks"><h4>What We Check:</h4><ul>${data.checks.map(c => `<li>✓ ${c}</li>`).join('')}</ul></div>
-        <form id="check-form" class="modal-form">
-            <input type="hidden" name="platform" value="${platform}">
-            <div class="form-group">
-                <label for="username-input">${platform === 'email' ? 'Email Address' : 'Username'}</label>
-                <input type="${platform === 'email' ? 'email' : 'text'}" id="username-input" name="username" placeholder="${data.placeholder}" required class="form-input" autocomplete="off">
-            </div>
-            <button type="submit" class="btn-check" id="submit-btn"><span class="btn-text">Check for Shadow Ban</span><span class="btn-icon">🔍</span></button>
-            <p class="modal-note">${searchNote}</p>
-        </form>`;
+/* =============================================================================
+   FORM HANDLING
+   ============================================================================= */
+function initCheckerForm() {
+    const postUrlInput = document.getElementById('post-url-input');
+    const checkPostBtn = document.getElementById('check-post-btn');
     
-    modal.classList.remove('hidden'); document.body.style.overflow = 'hidden';
-    document.getElementById('check-form').addEventListener('submit', handleFormSubmit);
-    setTimeout(() => { document.getElementById('username-input')?.focus(); }, 100);
+    if (!postUrlInput || !checkPostBtn) return;
+    
+    // Form submission
+    checkPostBtn.addEventListener('click', handlePostCheck);
+    
+    // Enter key submission
+    postUrlInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            handlePostCheck();
+        }
+    });
+    
+    // Input validation
+    postUrlInput.addEventListener('input', function() {
+        const isValid = validateUrl(this.value);
+        checkPostBtn.disabled = !isValid && this.value.length > 0;
+    });
+}
+
+function validateUrl(url) {
+    if (!url) return false;
+    
+    // Basic URL pattern check
+    const urlPattern = /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([\/\w .-]*)*\/?$/i;
+    if (!urlPattern.test(url)) return false;
+    
+    // Check for supported platforms
+    const supportedDomains = [
+        'instagram.com', 'tiktok.com', 'twitter.com', 'x.com',
+        'facebook.com', 'fb.com', 'linkedin.com', 'youtube.com',
+        'youtu.be', 'pinterest.com', 'reddit.com', 'threads.net'
+    ];
+    
+    const urlLower = url.toLowerCase();
+    return supportedDomains.some(domain => urlLower.includes(domain));
+}
+
+function handlePostCheck() {
+    const postUrlInput = document.getElementById('post-url-input');
+    const url = postUrlInput?.value.trim();
+    
+    if (!url) {
+        showError('Please enter a post URL');
+        return;
+    }
+    
+    if (!validateUrl(url)) {
+        showError('Please enter a valid URL from a supported platform');
+        return;
+    }
+    
+    // Check remaining searches
+    const remaining = window.ShadowBan?.getRemainingSearches() || 0;
+    if (remaining <= 0) {
+        showUpgradeModal();
+        return;
+    }
+    
+    // Increment search count
+    window.ShadowBan?.incrementSearchCount();
+    
+    // Detect platform
+    const platform = detectPlatform(url);
+    
+    // Run check
+    runShadowBanCheck(url, platform);
+}
+
+function detectPlatform(url) {
+    const urlLower = url.toLowerCase();
+    
+    if (urlLower.includes('instagram.com')) return 'Instagram';
+    if (urlLower.includes('tiktok.com')) return 'TikTok';
+    if (urlLower.includes('twitter.com') || urlLower.includes('x.com')) return 'Twitter/X';
+    if (urlLower.includes('facebook.com') || urlLower.includes('fb.com')) return 'Facebook';
+    if (urlLower.includes('linkedin.com')) return 'LinkedIn';
+    if (urlLower.includes('youtube.com') || urlLower.includes('youtu.be')) return 'YouTube';
+    if (urlLower.includes('pinterest.com')) return 'Pinterest';
+    if (urlLower.includes('reddit.com')) return 'Reddit';
+    if (urlLower.includes('threads.net')) return 'Threads';
+    
+    return 'Unknown';
+}
+
+/* =============================================================================
+   SHADOW BAN CHECK SIMULATION
+   ============================================================================= */
+function runShadowBanCheck(url, platform) {
+    // Show loading state
+    showCheckingState(platform);
+    
+    // Simulate API call with random results
+    setTimeout(() => {
+        const results = generateMockResults(platform);
+        
+        // Store results in sessionStorage
+        sessionStorage.setItem('shadowban_results', JSON.stringify({
+            url,
+            platform,
+            results,
+            timestamp: Date.now()
+        }));
+        
+        // Redirect to results page
+        window.location.href = 'results.html';
+    }, 2500);
+}
+
+function generateMockResults(platform) {
+    // Generate semi-random results for demo
+    const random = Math.random();
+    
+    let status, probability;
+    
+    if (random < 0.6) {
+        status = 'clean';
+        probability = Math.floor(Math.random() * 15) + 85; // 85-100
+    } else if (random < 0.85) {
+        status = 'issues';
+        probability = Math.floor(Math.random() * 30) + 50; // 50-80
+    } else {
+        status = 'restricted';
+        probability = Math.floor(Math.random() * 40) + 10; // 10-50
+    }
+    
+    return {
+        platform,
+        status,
+        probability,
+        checks: [
+            {
+                name: 'Search Visibility',
+                status: random < 0.7 ? 'passed' : (random < 0.9 ? 'warning' : 'failed'),
+                description: random < 0.7 
+                    ? 'Your content appears normally in search results'
+                    : 'Some content may have reduced search visibility'
+            },
+            {
+                name: 'Hashtag Reach',
+                status: random < 0.65 ? 'passed' : (random < 0.85 ? 'warning' : 'failed'),
+                description: random < 0.65 
+                    ? 'Hashtags are working correctly'
+                    : 'Some hashtags may be suppressed'
+            },
+            {
+                name: 'Explore/FYP',
+                status: random < 0.6 ? 'passed' : (random < 0.9 ? 'warning' : 'failed'),
+                description: random < 0.6 
+                    ? 'Content eligible for recommendations'
+                    : 'Limited recommendation distribution detected'
+            },
+            {
+                name: 'Account Standing',
+                status: random < 0.8 ? 'passed' : 'warning',
+                description: random < 0.8 
+                    ? 'No violations or strikes detected'
+                    : 'Minor policy notices on file'
+            },
+            {
+                name: 'Engagement Rate',
+                status: random < 0.7 ? 'passed' : (random < 0.9 ? 'warning' : 'failed'),
+                description: random < 0.7 
+                    ? 'Engagement metrics are healthy'
+                    : 'Lower than expected engagement detected'
+            },
+            {
+                name: 'Follower Visibility',
+                status: random < 0.75 ? 'passed' : 'warning',
+                description: random < 0.75 
+                    ? 'Your followers can see all your content'
+                    : 'Some content may not reach all followers'
+            }
+        ],
+        recommendations: generateRecommendations(status)
+    };
+}
+
+function generateRecommendations(status) {
+    const recommendations = [];
+    
+    if (status === 'clean') {
+        recommendations.push({
+            type: 'success',
+            title: '✅ Keep up the good work!',
+            text: 'Your account is performing well. Continue following platform guidelines.'
+        });
+        recommendations.push({
+            type: 'info',
+            title: '💡 Pro tip',
+            text: 'Consider setting up monitoring alerts to catch any issues early.'
+        });
+    } else if (status === 'issues') {
+        recommendations.push({
+            type: 'warning',
+            title: '⚠️ Review your recent posts',
+            text: 'Check if any recent content might be triggering filters.'
+        });
+        recommendations.push({
+            type: 'warning',
+            title: '🔍 Audit your hashtags',
+            text: 'Some hashtags may be restricted. Use our Hashtag Checker to verify.'
+        });
+        recommendations.push({
+            type: 'info',
+            title: '📊 Monitor engagement',
+            text: 'Track your metrics over the next 48 hours for changes.'
+        });
+    } else {
+        recommendations.push({
+            type: 'danger',
+            title: '🚨 Take immediate action',
+            text: 'Review and remove any content that may violate guidelines.'
+        });
+        recommendations.push({
+            type: 'warning',
+            title: '📝 Appeal if needed',
+            text: 'If you believe this is an error, submit an appeal through the platform.'
+        });
+        recommendations.push({
+            type: 'info',
+            title: '⏰ Wait period',
+            text: 'Most restrictions lift within 14-28 days if no further violations occur.'
+        });
+    }
+    
+    return recommendations;
+}
+
+/* =============================================================================
+   UI HELPERS
+   ============================================================================= */
+function showCheckingState(platform) {
+    const modal = document.getElementById('platform-modal');
+    if (!modal) {
+        // Create simple loading overlay
+        const overlay = document.createElement('div');
+        overlay.id = 'checking-overlay';
+        overlay.className = 'checking-overlay';
+        overlay.innerHTML = `
+            <div class="checking-content">
+                <div class="checking-spinner"></div>
+                <h3>Checking ${platform}...</h3>
+                <p>Analyzing visibility, reach, and account standing</p>
+            </div>
+        `;
+        document.body.appendChild(overlay);
+        
+        // Add styles if not already present
+        if (!document.getElementById('checking-styles')) {
+            const styles = document.createElement('style');
+            styles.id = 'checking-styles';
+            styles.textContent = `
+                .checking-overlay {
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    background: rgba(10, 15, 26, 0.95);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    z-index: 9999;
+                    animation: fadeIn 0.3s ease;
+                }
+                .checking-content {
+                    text-align: center;
+                    padding: 2rem;
+                }
+                .checking-spinner {
+                    width: 60px;
+                    height: 60px;
+                    border: 4px solid rgba(99, 102, 241, 0.2);
+                    border-top-color: #6366f1;
+                    border-radius: 50%;
+                    animation: spin 1s linear infinite;
+                    margin: 0 auto 1.5rem;
+                }
+                .checking-content h3 {
+                    font-size: 1.5rem;
+                    margin-bottom: 0.5rem;
+                }
+                .checking-content p {
+                    color: #94a3b8;
+                }
+                @keyframes spin {
+                    to { transform: rotate(360deg); }
+                }
+            `;
+            document.head.appendChild(styles);
+        }
+    } else {
+        // Use existing modal
+        modal.classList.add('active');
+        const modalContent = modal.querySelector('.modal-content');
+        if (modalContent) {
+            modalContent.innerHTML = `
+                <div class="checking-content">
+                    <div class="checking-spinner"></div>
+                    <h3>Checking ${platform}...</h3>
+                    <p>Analyzing visibility, reach, and account standing</p>
+                </div>
+            `;
+        }
+    }
+}
+
+function showError(message) {
+    let toast = document.getElementById('toast');
+    if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'toast';
+        toast.className = 'toast error';
+        document.body.appendChild(toast);
+    }
+    
+    toast.textContent = message;
+    toast.classList.add('visible', 'error');
+    
+    setTimeout(() => {
+        toast.classList.remove('visible', 'error');
+    }, 4000);
 }
 
 function showUpgradeModal() {
-    document.getElementById('modal-body').innerHTML = `
-        <div class="modal-upgrade">
-            <div class="upgrade-icon">🎯</div>
-            <h2>You've Used All Free Searches</h2>
-            <p>You've used your 3 free checks for today. Upgrade for unlimited access!</p>
-            <div class="upgrade-benefits"><div class="benefit">✓ Unlimited daily checks</div><div class="benefit">✓ All 26 platforms</div><div class="benefit">✓ Real-time monitoring</div><div class="benefit">✓ Email & text alerts</div></div>
-            <a href="index.html#pricing" class="btn-upgrade-modal">View Plans - From $4.99/mo</a>
-            <p style="color: var(--text-muted); font-size: 0.875rem; margin-top: 1rem;">Your free searches reset tomorrow at midnight</p>
-            <button class="btn-close-upgrade" onclick="closePlatformModal()">Maybe Later</button>
-        </div>`;
-}
-
-function closePlatformModal() { document.getElementById('platform-modal').classList.add('hidden'); document.body.style.overflow = ''; }
-
-// Check searches HERE on submit, not on click
-function handleFormSubmit(e) {
-    e.preventDefault();
-    const formData = new FormData(e.target);
-    const platform = formData.get('platform');
-    const username = formData.get('username');
-
-    if (!hasSearchesRemaining()) { showUpgradeModal(); return; }
-    decrementSearchCounter();
-
-    const data = platformData[platform];
-    const probability = Math.floor(Math.random() * 30) + 10;
-    const resultsData = {
-        platform, platformName: data?.name || platform, platformIcon: data?.icon || '🔍', username,
-        timestamp: new Date().toISOString(), probability, status: probability > 25 ? 'issues' : 'clean',
-        checks: { visibility: Math.random() > 0.3 ? 'pass' : 'warning', engagement: Math.random() > 0.3 ? 'pass' : 'warning', searchability: Math.random() > 0.3 ? 'pass' : 'warning', reach: Math.random() > 0.3 ? 'pass' : 'warning' }
-    };
-    localStorage.setItem('checkResults', JSON.stringify(resultsData));
-
-    const btn = document.getElementById('submit-btn');
-    btn.innerHTML = '<span class="btn-text">Analyzing...</span><span class="btn-icon">⏳</span>'; btn.disabled = true;
-    setTimeout(() => { window.location.href = 'results.html'; }, 1500);
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-    initSearchCounter();
-    document.querySelectorAll('.platform-item.clickable').forEach(item => { item.addEventListener('click', () => { openPlatformModal(item.getAttribute('data-platform')); }); });
-    document.querySelector('.modal-close')?.addEventListener('click', closePlatformModal);
-    document.getElementById('platform-modal')?.addEventListener('click', (e) => { if (e.target.id === 'platform-modal') closePlatformModal(); });
-    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closePlatformModal(); });
+    const modal = document.getElementById('platform-modal');
+    if (!modal) return;
     
-    const urlParams = new URLSearchParams(window.location.search);
-    const platformParam = urlParams.get('platform');
-    if (platformParam && platformData[platformParam]) { setTimeout(() => { openPlatformModal(platformParam); }, 300); }
+    modal.classList.add('active');
+    const modalContent = modal.querySelector('.modal-content');
+    
+    if (modalContent) {
+        modalContent.innerHTML = `
+            <div class="upgrade-modal-content">
+                <span class="upgrade-icon">🔒</span>
+                <h3>Daily Limit Reached</h3>
+                <p>You've used all your free checks for today. Upgrade for unlimited access!</p>
+                <div class="upgrade-options">
+                    <a href="index.html#pricing" class="btn btn-primary">View Plans - From $4.99/mo</a>
+                    <button class="btn btn-secondary" onclick="document.getElementById('platform-modal').classList.remove('active')">Maybe Later</button>
+                </div>
+            </div>
+        `;
+    }
+    
+    // Close handlers
+    const closeBtn = modal.querySelector('.modal-close');
+    const overlay = modal.querySelector('.modal-overlay');
+    
+    function closeModal() {
+        modal.classList.remove('active');
+    }
+    
+    closeBtn?.addEventListener('click', closeModal);
+    overlay?.addEventListener('click', closeModal);
+}
+
+/* =============================================================================
+   PLATFORM GRID CLICK HANDLERS (Override for checker page)
+   ============================================================================= */
+function initCheckerPlatformGrid() {
+    const platformGrid = document.getElementById('platform-grid');
+    if (!platformGrid) return;
+    
+    // Platform items click - show check form
+    platformGrid.addEventListener('click', function(e) {
+        const item = e.target.closest('.platform-item');
+        if (!item) return;
+        
+        const status = item.dataset.status;
+        const platformName = item.querySelector('.platform-name')?.textContent;
+        
+        if (status === 'soon') {
+            window.ShadowBan?.showComingSoonToast(platformName);
+            return;
+        }
+        
+        // Show platform-specific modal
+        showPlatformCheckModal(platformName, item.querySelector('.platform-icon')?.textContent);
+    });
+}
+
+function showPlatformCheckModal(platformName, icon) {
+    const modal = document.getElementById('platform-modal');
+    if (!modal) return;
+    
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+    
+    const modalContent = modal.querySelector('.modal-content');
+    if (modalContent) {
+        modalContent.innerHTML = `
+            <div class="modal-platform-check">
+                <span class="modal-platform-icon">${icon || '🔍'}</span>
+                <h3>Check ${platformName}</h3>
+                <p>Enter your ${platformName} profile URL or username to check for shadow bans</p>
+                <div class="modal-input-group">
+                    <input type="text" id="modal-url-input" placeholder="Paste profile URL or @username...">
+                </div>
+                <button id="modal-check-btn" class="btn btn-primary btn-full">Check Now</button>
+                <p class="modal-note">We'll analyze visibility, reach, and account standing</p>
+            </div>
+        `;
+        
+        // Handle check button
+        const checkBtn = modalContent.querySelector('#modal-check-btn');
+        const urlInput = modalContent.querySelector('#modal-url-input');
+        
+        checkBtn?.addEventListener('click', function() {
+            const value = urlInput?.value.trim();
+            if (!value) {
+                showError('Please enter a URL or username');
+                return;
+            }
+            
+            // Check remaining searches
+            const remaining = window.ShadowBan?.getRemainingSearches() || 0;
+            if (remaining <= 0) {
+                modal.classList.remove('active');
+                showUpgradeModal();
+                return;
+            }
+            
+            // Increment and run check
+            window.ShadowBan?.incrementSearchCount();
+            modal.classList.remove('active');
+            document.body.style.overflow = '';
+            runShadowBanCheck(value, platformName);
+        });
+        
+        // Enter key
+        urlInput?.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                checkBtn?.click();
+            }
+        });
+        
+        // Focus input
+        setTimeout(() => urlInput?.focus(), 100);
+    }
+    
+    // Close handlers
+    const closeModal = () => {
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+    };
+    
+    modal.querySelector('.modal-close')?.addEventListener('click', closeModal);
+    modal.querySelector('.modal-overlay')?.addEventListener('click', closeModal);
+}
+
+/* =============================================================================
+   INITIALIZE
+   ============================================================================= */
+document.addEventListener('DOMContentLoaded', function() {
+    initCheckerForm();
+    initCheckerPlatformGrid();
+    
+    console.log('✅ Checker page initialized');
 });

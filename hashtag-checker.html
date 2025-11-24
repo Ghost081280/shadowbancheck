@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="css/hashtag-checker.css">
 </head>
 <body>
-    <!-- Header -->
+    <!-- Header (same as all pages) -->
     <header class="header">
         <div class="container">
             <div class="logo">
@@ -27,14 +27,14 @@
         </div>
     </header>
 
-    <!-- Hero - Compact like index -->
+    <!-- Hero - uses existing hero classes from main.css -->
     <section class="hero" style="padding: var(--space-xl) 0 var(--space-lg);">
         <div class="container">
             <div class="hero-badge">🚫 Banned Hashtag Checker</div>
             <h1 class="hero-title" style="font-size: clamp(2rem, 4vw, 3rem);">Are Your Hashtags Banned?</h1>
             <p class="hero-subtitle">Paste your hashtags below. Our AI checks if they're banned, restricted, or safe across all major platforms.</p>
             
-            <!-- HASHTAG CHECKER - Primary Feature (matches post-checker-card from index) -->
+            <!-- Hashtag Checker Card - uses post-checker classes from main.css -->
             <div class="post-checker-hero">
                 <div class="post-checker-card">
                     <div class="checker-header">
@@ -47,9 +47,10 @@
                     <form id="hashtag-form" class="checker-form">
                         <textarea 
                             id="hashtag-input" 
-                            class="post-url-input hashtag-textarea"
+                            class="post-url-input"
                             placeholder="#fitness #motivation #gains #workout #fitfam #love #instagood..."
                             rows="2"
+                            style="resize: none; min-height: 70px;"
                             required
                         ></textarea>
                         <button type="submit" class="btn-analyze" id="check-hashtags-btn">
@@ -60,38 +61,39 @@
                     <div class="checker-features">
                         <span>✓ Results in seconds</span>
                         <span>✓ 5 free checks/day</span>
-                        <span>✓ Multi-platform analysis</span>
-                        <span>✓ AI-powered detection</span>
+                        <span>✓ Multi-platform</span>
+                        <span>✓ AI-powered</span>
                     </div>
+                    <!-- Page-specific: meta row with count/examples/clear -->
                     <div class="checker-meta">
                         <span id="hashtag-count">0 hashtags detected</span>
-                        <span>•</span>
-                        <button type="button" class="link-btn" id="example-btn">Load examples</button>
-                        <span>•</span>
-                        <button type="button" class="link-btn" id="clear-btn">Clear</button>
+                        <span class="meta-dot">•</span>
+                        <button type="button" class="meta-link" id="example-btn">Load examples</button>
+                        <span class="meta-dot">•</span>
+                        <button type="button" class="meta-link" id="clear-btn">Clear</button>
                     </div>
                 </div>
                 
-                <!-- Results Area (Hidden Initially) -->
+                <!-- Results Area (Hidden Initially) - uses post-results from main.css -->
                 <div class="post-results" id="results-section" style="display: none;">
                     <div class="result-header">
                         <span class="result-icon">📊</span>
                         <h3>Analysis Complete</h3>
                     </div>
                     <div class="result-content" id="results-content">
-                        <!-- Results inserted here -->
+                        <!-- Results inserted by JS -->
                     </div>
                 </div>
             </div>
 
-            <!-- Counter inline like index divider -->
+            <!-- Counter - uses hero-divider from main.css -->
             <div class="hero-divider">
                 <span>🎯 <strong id="hashtag-searches-remaining">5 / 5</strong> free checks today • <a href="index.html#pricing">Unlock unlimited →</a></span>
             </div>
         </div>
     </section>
 
-    <!-- How It Works - Compact 3-column (matches index) -->
+    <!-- How It Works - uses existing classes from main.css (same as index) -->
     <section class="how-it-works" style="padding: var(--space-xl) 0;">
         <div class="container">
             <h2 class="section-title">How It Works</h2>
@@ -121,7 +123,7 @@
         </div>
     </section>
 
-    <!-- Trending Banned Hashtags -->
+    <!-- Trending Banned Hashtags - Page-specific section -->
     <section class="trending-section">
         <div class="container">
             <h2 class="section-title">🔥 Trending Banned Hashtags</h2>
@@ -149,7 +151,7 @@
         </div>
     </section>
 
-    <!-- Data Sources - Compact 3x2 grid (matches index pricing-extras style) -->
+    <!-- Data Sources - uses trust-badges from main.css -->
     <section class="trust-section">
         <div class="container">
             <h2 class="section-title" style="margin-bottom: var(--space-lg);">Our Data Sources</h2>
@@ -200,7 +202,7 @@
         </div>
     </section>
 
-    <!-- CTA - Compact (matches index) -->
+    <!-- CTA - uses existing cta classes from main.css -->
     <section class="cta" style="padding: var(--space-xl) 0;">
         <div class="container">
             <h2 style="font-size: 1.75rem;">Need More Hashtag Checks?</h2>
@@ -212,7 +214,7 @@
         </div>
     </section>
 
-    <!-- Footer -->
+    <!-- Footer (same as all pages) -->
     <footer class="footer">
         <div class="container">
             <div class="footer-grid">
@@ -236,7 +238,7 @@
                 </div>
                 <div class="footer-col">
                     <h4>Developers</h4>
-                    <a href="#">API Access <span class="coming-soon-tiny">Soon</span></a>
+                    <a href="#" onclick="alert('API documentation coming soon!'); return false;">API Access <span class="coming-soon-tiny">Soon</span></a>
                     <a href="https://github.com/Ghost081280" target="_blank">GitHub</a>
                 </div>
             </div>
@@ -251,7 +253,7 @@
         </div>
     </footer>
 
-    <!-- Shadow AI Widget -->
+    <!-- Shadow AI Widget (site-wide, from shadow-ai.js) -->
     <button id="shadow-ai-btn" class="copilot-btn">
         <span class="copilot-emoji">🤖</span>
         <span>Shadow AI</span>
@@ -277,6 +279,7 @@
             alert('Cookie Policy\n\nWe use cookies for preferences, analytics, and tracking free searches.\n\nBy using ShadowBanCheck.io, you consent to cookies.');
         }
     </script>
+    <script src="js/main.js"></script>
     <script src="js/shadow-ai.js"></script>
     <script src="js/hashtag-checker.js"></script>
 </body>

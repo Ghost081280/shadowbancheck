@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="css/results.css">
 </head>
 <body>
-    <!-- Header -->
+    <!-- Header - MATCHES INDEX -->
     <header class="header">
         <div class="container">
             <div class="logo">
@@ -21,9 +21,8 @@
                 </a>
             </div>
             <nav class="nav">
-                <a href="index.html#platforms">Platforms</a>
-                <a href="index.html#pricing">Pricing</a>
-                <a href="index.html#pricing" class="btn-nav">Get Shadow AI Pro</a>
+                <a href="#" class="btn-login" onclick="alert('Login/Dashboard coming soon! After purchase, you\'ll access your dashboard here.'); return false;">Login</a>
+                <a href="index.html#shadow-ai-pro" class="btn-nav">Get Shadow AI Pro</a>
             </nav>
         </div>
     </header>
@@ -32,34 +31,24 @@
     <main class="main">
         <div class="container">
             <!-- Results Header -->
-            <div id="results-header" class="results-header">
-                <!-- Populated by JavaScript -->
-            </div>
+            <div id="results-header" class="results-header"></div>
 
             <!-- Overall Status -->
-            <div id="overall-status" class="overall-status">
-                <!-- Populated by JavaScript -->
-            </div>
+            <div id="overall-status" class="overall-status"></div>
 
             <!-- Detailed Checks -->
             <div id="detailed-checks" class="detailed-checks">
                 <h2>Detailed Analysis</h2>
-                <div id="checks-grid" class="checks-grid">
-                    <!-- Populated by JavaScript -->
-                </div>
+                <div id="checks-grid" class="checks-grid"></div>
             </div>
 
             <!-- Account Details -->
-            <div id="account-details" class="account-details">
-                <!-- Populated by JavaScript -->
-            </div>
+            <div id="account-details" class="account-details"></div>
 
             <!-- Recommendations -->
             <div id="recommendations" class="recommendations">
                 <h2>💡 Recommendations</h2>
-                <div id="recommendations-content" class="recommendations-content">
-                    <!-- Populated by JavaScript -->
-                </div>
+                <div id="recommendations-content" class="recommendations-content"></div>
             </div>
 
             <!-- Actions -->
@@ -78,7 +67,7 @@
         </div>
     </main>
 
-    <!-- Footer -->
+    <!-- Footer - EXACT COPY FROM INDEX -->
     <footer class="footer">
         <div class="container">
             <div class="footer-grid">
@@ -87,12 +76,13 @@
                         <span class="logo-emoji">🔍</span>
                         <span>ShadowBanCheck.io</span>
                     </div>
-                    <p>Know your real reach</p>
+                    <p>Protecting visibility for influencers, politicians, and online sellers worldwide.</p>
                 </div>
                 <div class="footer-col">
                     <h4>Product</h4>
                     <a href="index.html#platforms">Platforms</a>
                     <a href="index.html#pricing">Pricing</a>
+                    <a href="index.html#shadow-ai-pro">Shadow AI Pro</a>
                 </div>
                 <div class="footer-col">
                     <h4>Tools</h4>
@@ -100,13 +90,20 @@
                     <a href="hashtag-checker.html">Hashtag Checker</a>
                 </div>
                 <div class="footer-col">
-                    <h4>Support</h4>
-                    <a href="#">Help</a>
-                    <a href="#">Contact</a>
+                    <h4>Developers</h4>
+                    <a href="#" onclick="alert('API documentation coming soon for developers!'); return false;">
+                        API Access <span class="coming-soon-tiny">Coming Soon</span>
+                    </a>
+                    <a href="https://github.com/Ghost081280" target="_blank">GitHub</a>
                 </div>
             </div>
             <div class="footer-bottom">
-                <p>&copy; 2025 ShadowBanCheck.io</p>
+                <p>&copy; 2025 ShadowBanCheck.io. All rights reserved.</p>
+                <div class="footer-legal" style="margin-right: 100px;">
+                    <a href="#" onclick="alert('Terms of Service coming soon!'); return false;">Terms</a>
+                    <a href="#" onclick="alert('Privacy Policy coming soon!'); return false;">Privacy</a>
+                    <a href="#" onclick="showCookiePolicy(); return false;">Cookie Policy</a>
+                </div>
             </div>
         </div>
     </footer>
@@ -132,6 +129,11 @@
         </div>
     </div>
 
+    <script>
+        function showCookiePolicy() {
+            alert('Cookie Policy\n\nWe use cookies to:\n• Remember your preferences\n• Analyze site traffic and usage\n• Improve your experience\n• Track free AI questions (3 per day)\n\nBy using ShadowBanCheck.io, you consent to our use of cookies.');
+        }
+    </script>
     <script src="js/shadow-ai.js"></script>
     <script src="js/results.js"></script>
 </body>

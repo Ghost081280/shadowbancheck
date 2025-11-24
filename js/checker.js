@@ -344,9 +344,10 @@ document.addEventListener('keydown', (e) => {
     }
 });
 
-// Close modal when clicking overlay
+// Close modal when clicking on modal background (not content)
 document.addEventListener('click', (e) => {
-    if (e.target.classList.contains('modal-overlay')) {
+    const modal = document.getElementById('check-modal');
+    if (e.target === modal) {
         closeCheckModal();
     }
 });

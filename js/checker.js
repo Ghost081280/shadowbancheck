@@ -1,299 +1,258 @@
-// Shadow Ban Checker - Modal System
+// Checker Page JavaScript
+console.log('🔍 Checker.js loaded');
 
-let checksRemaining = 3;
-let lastCheckDate = null;
+// Search counter management
+const MAX_SEARCHES = 3;
+const STORAGE_KEY = 'shadowban_searches_remaining';
+const DATE_KEY = 'shadowban_last_reset_date';
 
-// Initialize checker page
-document.addEventListener('DOMContentLoaded', () => {
-    loadChecksCounter();
-    setupPlatformCards();
-    setupModalHandlers();
-    setupFormSubmissions();
-});
-
-// Load checks counter from localStorage
-function loadChecksCounter() {
-    const storedChecks = localStorage.getItem('checksRemaining');
-    const storedDate = localStorage.getItem('lastCheckDate');
+// Initialize or reset search counter
+function initSearchCounter() {
     const today = new Date().toDateString();
+    const lastResetDate = localStorage.getItem(DATE_KEY);
     
-    if (storedDate === today && storedChecks) {
-        checksRemaining = parseInt(storedChecks);
-    } else {
-        checksRemaining = 3;
-        localStorage.setItem('checksRemaining', checksRemaining);
-        localStorage.setItem('lastCheckDate', today);
+    // Reset counter if it's a new day
+    if (lastResetDate !== today) {
+        localStorage.setItem(STORAGE_KEY, MAX_SEARCHES.toString());
+        localStorage.setItem(DATE_KEY, today);
     }
     
-    updateChecksCounter();
+    updateSearchCounterDisplay();
 }
 
-// Update checks counter display
-function updateChecksCounter() {
-    const counterEl = document.getElementById('checks-remaining');
-    if (counterEl) {
-        counterEl.textContent = checksRemaining;
-        counterEl.style.color = checksRemaining > 0 ? '#10b981' : '#ef4444';
+// Update the search counter display
+function updateSearchCounterDisplay() {
+    const remaining = parseInt(localStorage.getItem(STORAGE_KEY) || MAX_SEARCHES);
+    const counterElement = document.getElementById('searches-remaining');
+    
+    if (counterElement) {
+        counterElement.textContent = `${remaining} / ${MAX_SEARCHES} searches available today`;
+        
+        if (remaining === 0) {
+            counterElement.innerHTML = `<span style="color: #ef4444;">No searches remaining today.</span> <a href="index.html#pricing" style="color: var(--primary); text-decoration: underline;">Upgrade for unlimited</a>`;
+        }
+    }
+}
+
+// Decrease search counter
+function decrementSearchCounter() {
+    const remaining = parseInt(localStorage.getItem(STORAGE_KEY) || MAX_SEARCHES);
+    
+    if (remaining > 0) {
+        localStorage.setItem(STORAGE_KEY, (remaining - 1).toString());
+        updateSearchCounterDisplay();
+        return true;
     }
     
-    localStorage.setItem('checksRemaining', checksRemaining);
+    return false;
 }
 
-// Setup platform card click handlers
-function setupPlatformCards() {
-    const platformCards = document.querySelectorAll('.platform-card.live');
-    
-    platformCards.forEach(card => {
-        card.addEventListener('click', () => {
-            const platform = card.dataset.platform;
-            openModal(platform);
-        });
-    });
+// Check if user has searches remaining
+function hasSearchesRemaining() {
+    const remaining = parseInt(localStorage.getItem(STORAGE_KEY) || MAX_SEARCHES);
+    return remaining > 0;
 }
 
-// Open modal for specific platform
-function openModal(platform) {
-    const modal = document.getElementById('check-modal');
-    const forms = modal.querySelectorAll('.platform-form');
-    
-    // Hide all forms
-    forms.forEach(form => {
-        form.style.display = 'none';
-    });
-    
-    // Show selected platform form
-    const selectedForm = document.getElementById(`${platform}-form`);
-    if (selectedForm) {
-        selectedForm.style.display = 'block';
+// Platform modal functionality
+const platformData = {
+    twitter: {
+        name: 'Twitter / X',
+        icon: '🐦',
+        placeholder: '@username',
+        description: 'Check if your Twitter/X account is shadow banned',
+        fields: ['username']
+    },
+    reddit: {
+        name: 'Reddit',
+        icon: '🤖',
+        placeholder: 'u/username',
+        description: 'Check if your Reddit account is shadow banned',
+        fields: ['username']
+    },
+    email: {
+        name: 'Email',
+        icon: '📧',
+        placeholder: 'your@email.com',
+        description: 'Check if your email is blacklisted',
+        fields: ['email']
+    },
+    instagram: {
+        name: 'Instagram',
+        icon: '📸',
+        placeholder: '@username',
+        description: 'Instagram checks coming soon!',
+        fields: ['username'],
+        disabled: true
     }
+};
+
+// Open platform modal
+function openPlatformModal(platform) {
+    console.log('🔓 Opening modal for:', platform);
+    
+    const modal = document.getElementById('platform-modal');
+    const modalBody = document.getElementById('modal-body');
+    const data = platformData[platform] || platformData.twitter;
+    
+    if (data.disabled) {
+        alert(`${data.name} checks are coming soon! Currently live: Twitter/X, Reddit, and Email.`);
+        return;
+    }
+    
+    // Check if user has searches remaining
+    if (!hasSearchesRemaining()) {
+        if (confirm('You\'ve used all your free searches today. Would you like to upgrade for unlimited checks?')) {
+            window.location.href = 'index.html#pricing';
+        }
+        return;
+    }
+    
+    // Create modal content
+    modalBody.innerHTML = `
+        <div class="modal-header-custom">
+            <span class="modal-icon">${data.icon}</span>
+            <h2>${data.name} Check</h2>
+        </div>
+        <p class="modal-description">${data.description}</p>
+        
+        <form id="check-form" class="modal-form">
+            <input type="hidden" name="platform" value="${platform}">
+            
+            <div class="form-group">
+                <label for="username-input">
+                    ${platform === 'email' ? 'Email Address' : 'Username'}
+                </label>
+                <input 
+                    type="text" 
+                    id="username-input" 
+                    name="username" 
+                    placeholder="${data.placeholder}" 
+                    required
+                    class="form-input"
+                >
+            </div>
+            
+            <button type="submit" class="btn-check">
+                <span>Check for Shadow Ban</span>
+                <span>→</span>
+            </button>
+        </form>
+    `;
     
     // Show modal
-    modal.classList.add('active');
+    modal.classList.remove('hidden');
     document.body.style.overflow = 'hidden';
+    
+    // Handle form submission
+    const form = document.getElementById('check-form');
+    form.addEventListener('submit', handleFormSubmit);
+    
+    // Focus input
+    setTimeout(() => {
+        document.getElementById('username-input')?.focus();
+    }, 100);
 }
 
 // Close modal
-function closeModal() {
-    const modal = document.getElementById('check-modal');
-    modal.classList.remove('active');
+function closePlatformModal() {
+    console.log('🔒 Closing modal');
+    const modal = document.getElementById('platform-modal');
+    modal.classList.add('hidden');
     document.body.style.overflow = '';
-    
-    // Reset all forms
-    const forms = modal.querySelectorAll('.platform-form');
-    forms.forEach(form => {
-        form.reset();
-    });
-}
-
-// Setup modal handlers
-function setupModalHandlers() {
-    const modal = document.getElementById('check-modal');
-    const modalClose = document.querySelector('.modal-close');
-    const modalOverlay = document.querySelector('.modal-overlay');
-    
-    // Close button
-    if (modalClose) {
-        modalClose.addEventListener('click', closeModal);
-    }
-    
-    // Overlay click
-    if (modalOverlay) {
-        modalOverlay.addEventListener('click', closeModal);
-    }
-    
-    // Escape key
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && modal.classList.contains('active')) {
-            closeModal();
-        }
-    });
-}
-
-// Setup form submissions
-function setupFormSubmissions() {
-    const forms = document.querySelectorAll('.platform-form');
-    
-    forms.forEach(form => {
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const platform = form.dataset.platform;
-            let inputValue = '';
-            
-            // Get input value based on platform
-            if (platform === 'twitter') {
-                inputValue = document.getElementById('twitter-username').value.trim();
-            } else if (platform === 'reddit') {
-                inputValue = document.getElementById('reddit-username').value.trim();
-            } else if (platform === 'email') {
-                inputValue = document.getElementById('email-address').value.trim();
-            }
-            
-            if (!inputValue) return;
-            
-            await handleFormSubmit(e, platform, inputValue);
-        });
-    });
 }
 
 // Handle form submission
-async function handleFormSubmit(e, platform, inputValue) {
-    // Check if user has checks remaining
-    if (checksRemaining <= 0) {
-        alert('You\'ve used all 3 free checks for today! Upgrade to Pro for unlimited checks.');
+function handleFormSubmit(e) {
+    e.preventDefault();
+    console.log('📝 Form submitted');
+    
+    const formData = new FormData(e.target);
+    const platform = formData.get('platform');
+    const username = formData.get('username');
+    
+    // Decrement search counter
+    if (!decrementSearchCounter()) {
+        alert('You\'ve used all your free searches today. Please upgrade for unlimited checks.');
         window.location.href = 'index.html#pricing';
         return;
     }
     
-    const submitBtn = e.target.querySelector('.btn-submit');
-    const btnText = submitBtn.querySelector('.btn-text');
-    const originalText = btnText.textContent;
+    // Prepare results data
+    const resultsData = {
+        platform: platform,
+        username: username,
+        timestamp: new Date().toISOString(),
+        // Mock data for demonstration
+        status: 'clear',
+        probability: Math.floor(Math.random() * 30) + 10, // 10-40% (low probability)
+        checks: {
+            visibility: Math.random() > 0.3 ? 'pass' : 'warning',
+            engagement: Math.random() > 0.3 ? 'pass' : 'warning',
+            searchability: Math.random() > 0.3 ? 'pass' : 'warning',
+            reach: Math.random() > 0.3 ? 'pass' : 'warning'
+        }
+    };
     
-    // Set loading state
+    // Store results in localStorage
+    localStorage.setItem('checkResults', JSON.stringify(resultsData));
+    
+    // Show loading state
+    const submitBtn = e.target.querySelector('.btn-check');
+    submitBtn.innerHTML = '<span>Analyzing...</span><span>⏳</span>';
     submitBtn.disabled = true;
-    submitBtn.classList.add('loading');
-    btnText.textContent = 'Analyzing...';
     
-    try {
-        // Simulate API call
-        const results = await simulateCheck(platform, inputValue);
-        
-        // Decrement checks
-        checksRemaining--;
-        updateChecksCounter();
-        
-        // Store results and redirect
-        localStorage.setItem('checkResults', JSON.stringify(results));
-        
-        // Close modal before redirect
-        closeModal();
-        
-        // Small delay for smooth transition
-        setTimeout(() => {
-            window.location.href = 'results.html';
-        }, 300);
-        
-    } catch (error) {
-        console.error('Check failed:', error);
-        alert('Something went wrong. Please try again.');
-        
-        // Reset button
-        submitBtn.disabled = false;
-        submitBtn.classList.remove('loading');
-        btnText.textContent = originalText;
-    }
+    // Redirect to results page after short delay
+    setTimeout(() => {
+        window.location.href = 'results.html';
+    }, 1500);
 }
 
-// Simulate shadow ban check
-async function simulateCheck(platform, identifier) {
-    await new Promise(resolve => setTimeout(resolve, 2000));
+// Initialize page
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('✅ Checker page initialized');
     
-    const timestamp = new Date().toISOString();
+    // Initialize search counter
+    initSearchCounter();
     
-    if (platform === 'twitter') {
-        return {
-            platform: 'twitter',
-            identifier: identifier,
-            timestamp: timestamp,
-            status: Math.random() > 0.3 ? 'clean' : 'restricted',
-            checks: {
-                searchBan: {
-                    status: Math.random() > 0.7 ? 'failed' : 'passed',
-                    description: 'Your tweets appear in search results'
-                },
-                searchSuggestion: {
-                    status: Math.random() > 0.8 ? 'failed' : 'passed',
-                    description: 'Your profile appears in search suggestions'
-                },
-                ghostBan: {
-                    status: 'passed',
-                    description: 'Your replies are visible to others'
-                },
-                replyDeboosting: {
-                    status: 'passed',
-                    description: 'Your replies are not being suppressed'
-                }
-            },
-            details: {
-                accountAge: '2 years',
-                followers: '1,234',
-                lastTweet: '2 hours ago',
-                engagementRate: 'Normal'
+    // Add click handlers to platform items
+    const platformItems = document.querySelectorAll('.platform-item.clickable');
+    platformItems.forEach(item => {
+        item.addEventListener('click', () => {
+            const platform = item.getAttribute('data-platform');
+            const isLive = item.querySelector('.badge.live');
+            
+            if (isLive) {
+                openPlatformModal(platform);
+            } else {
+                alert('This platform is coming soon! Currently live: Twitter/X, Reddit, and Email.');
             }
-        };
+        });
+    });
+    
+    // Close modal when clicking close button
+    const closeBtn = document.querySelector('.modal-close');
+    if (closeBtn) {
+        closeBtn.addEventListener('click', closePlatformModal);
     }
     
-    if (platform === 'reddit') {
-        return {
-            platform: 'reddit',
-            identifier: identifier,
-            timestamp: timestamp,
-            status: Math.random() > 0.8 ? 'restricted' : 'clean',
-            checks: {
-                sitewideBan: {
-                    status: 'passed',
-                    description: 'No site-wide shadow ban detected'
-                },
-                profileVisibility: {
-                    status: 'passed',
-                    description: 'Your profile is publicly visible'
-                },
-                postVisibility: {
-                    status: Math.random() > 0.9 ? 'failed' : 'passed',
-                    description: 'Your posts are visible to others'
-                },
-                accountStatus: {
-                    status: 'passed',
-                    description: 'Account is in good standing'
-                }
-            },
-            details: {
-                accountAge: '3 years',
-                karma: '12,456',
-                lastPost: '5 hours ago',
-                subredditBans: 0
+    // Close modal when clicking outside
+    const modal = document.getElementById('platform-modal');
+    if (modal) {
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                closePlatformModal();
             }
-        };
+        });
     }
     
-    if (platform === 'email') {
-        return {
-            platform: 'email',
-            identifier: identifier,
-            timestamp: timestamp,
-            status: Math.random() > 0.4 ? 'clean' : 'issues',
-            checks: {
-                blacklists: {
-                    status: Math.random() > 0.7 ? 'failed' : 'passed',
-                    description: 'Checked 25+ spam blacklists',
-                    found: Math.random() > 0.7 ? 2 : 0
-                },
-                spfRecord: {
-                    status: Math.random() > 0.5 ? 'failed' : 'passed',
-                    description: 'SPF record validation'
-                },
-                dkimRecord: {
-                    status: Math.random() > 0.6 ? 'failed' : 'passed',
-                    description: 'DKIM record validation'
-                },
-                dmarcRecord: {
-                    status: Math.random() > 0.6 ? 'failed' : 'passed',
-                    description: 'DMARC policy validation'
-                },
-                reputationScore: {
-                    status: 'passed',
-                    description: 'Sender reputation score',
-                    score: Math.floor(Math.random() * 30) + 70
-                }
-            },
-            details: {
-                domain: identifier.includes('@') ? identifier.split('@')[1] : identifier,
-                mxRecords: 'Valid',
-                sslCertificate: 'Valid',
-                lastChecked: 'Just now'
-            }
-        };
-    }
+    // Check if URL has platform parameter (from index page)
+    const urlParams = new URLSearchParams(window.location.search);
+    const platformParam = urlParams.get('platform');
     
-    return null;
-}
+    if (platformParam) {
+        console.log('🔗 Auto-opening platform from URL:', platformParam);
+        setTimeout(() => {
+            openPlatformModal(platformParam);
+        }, 500);
+    }
+});

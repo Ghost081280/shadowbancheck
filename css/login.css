@@ -71,7 +71,7 @@
 /* Header */
 .login-header {
     text-align: center;
-    margin-bottom: var(--space-xl);
+    margin-bottom: var(--space-md);
 }
 
 .login-logo {
@@ -80,13 +80,13 @@
     gap: var(--space-sm);
     text-decoration: none;
     color: var(--text);
-    font-size: 1.5rem;
+    font-size: 1.25rem;
     font-weight: 800;
-    margin-bottom: var(--space-md);
+    margin-bottom: var(--space-xs);
 }
 
 .login-logo .logo-icon {
-    font-size: 2rem;
+    font-size: 1.5rem;
 }
 
 .login-logo .logo-dot {
@@ -95,7 +95,7 @@
 
 .login-tagline {
     color: var(--text-muted);
-    font-size: 1rem;
+    font-size: 0.9rem;
     margin: 0;
 }
 
@@ -106,7 +106,7 @@
     background: var(--card);
     border: 1px solid var(--border);
     border-radius: var(--radius-xl);
-    padding: var(--space-xl);
+    padding: var(--space-lg);
     box-shadow: var(--shadow-xl);
 }
 
@@ -116,57 +116,55 @@
 .demo-notice {
     background: linear-gradient(135deg, rgba(251, 191, 36, 0.1) 0%, rgba(245, 158, 11, 0.1) 100%);
     border: 2px dashed var(--warning);
-    border-radius: var(--radius-lg);
-    padding: var(--space-md);
-    margin-bottom: var(--space-lg);
+    border-radius: var(--radius-md);
+    padding: var(--space-sm);
+    margin-bottom: var(--space-md);
 }
 
 .demo-notice-header {
     display: flex;
     align-items: center;
-    gap: var(--space-sm);
+    gap: var(--space-xs);
     font-weight: 700;
     color: var(--warning);
-    margin-bottom: var(--space-sm);
-    font-size: 0.875rem;
+    margin-bottom: var(--space-xs);
+    font-size: 0.8125rem;
 }
 
 .demo-credentials {
     display: flex;
-    flex-direction: column;
-    gap: var(--space-xs);
-    margin-bottom: var(--space-md);
+    gap: var(--space-md);
+    margin-bottom: var(--space-sm);
 }
 
 .demo-cred {
     display: flex;
     align-items: center;
-    gap: var(--space-sm);
-    font-size: 0.875rem;
+    gap: var(--space-xs);
+    font-size: 0.8125rem;
 }
 
 .demo-label {
     color: var(--text-muted);
-    min-width: 70px;
 }
 
 .demo-value {
     background: rgba(0, 0, 0, 0.3);
-    padding: var(--space-2xs) var(--space-sm);
+    padding: 2px var(--space-xs);
     border-radius: var(--radius-sm);
     font-family: monospace;
     color: var(--text);
-    flex: 1;
+    font-size: 0.75rem;
 }
 
 .demo-copy {
     background: transparent;
     border: none;
-    font-size: 1rem;
+    font-size: 0.875rem;
     cursor: pointer;
     opacity: 0.6;
     transition: opacity var(--transition-fast);
-    padding: var(--space-2xs);
+    padding: 2px;
 }
 
 .demo-copy:hover {
@@ -175,13 +173,13 @@
 
 .demo-autofill {
     width: 100%;
-    padding: var(--space-sm);
+    padding: var(--space-xs) var(--space-sm);
     background: var(--warning);
     border: none;
     border-radius: var(--radius-md);
     color: #000;
     font-weight: 700;
-    font-size: 0.875rem;
+    font-size: 0.8125rem;
     cursor: pointer;
     transition: all var(--transition-fast);
 }
@@ -200,12 +198,12 @@
     justify-content: center;
     gap: var(--space-sm);
     width: 100%;
-    padding: var(--space-md);
+    padding: var(--space-sm);
     background: white;
     border: 2px solid var(--border);
-    border-radius: var(--radius-lg);
+    border-radius: var(--radius-md);
     color: #333;
-    font-size: 1rem;
+    font-size: 0.9375rem;
     font-weight: 600;
     cursor: pointer;
     transition: all var(--transition-base);
@@ -229,7 +227,7 @@
     display: flex;
     align-items: center;
     gap: var(--space-md);
-    margin: var(--space-lg) 0;
+    margin: var(--space-md) 0;
 }
 
 .login-divider::before,
@@ -242,7 +240,7 @@
 
 .login-divider span {
     color: var(--text-muted);
-    font-size: 0.8125rem;
+    font-size: 0.75rem;
     white-space: nowrap;
 }
 
@@ -252,17 +250,17 @@
 .login-form {
     display: flex;
     flex-direction: column;
-    gap: var(--space-md);
+    gap: var(--space-sm);
 }
 
 .form-group {
     display: flex;
     flex-direction: column;
-    gap: var(--space-xs);
+    gap: 4px;
 }
 
 .form-group label {
-    font-size: 0.875rem;
+    font-size: 0.8125rem;
     font-weight: 600;
     color: var(--text-secondary);
 }
@@ -275,19 +273,19 @@
 
 .input-icon {
     position: absolute;
-    left: var(--space-md);
-    font-size: 1rem;
+    left: var(--space-sm);
+    font-size: 0.9rem;
     pointer-events: none;
 }
 
 .input-wrapper input {
     width: 100%;
-    padding: var(--space-md) var(--space-md) var(--space-md) calc(var(--space-md) + 28px);
+    padding: var(--space-sm) var(--space-sm) var(--space-sm) calc(var(--space-sm) + 24px);
     background: var(--bg-tertiary);
     border: 2px solid var(--border);
-    border-radius: var(--radius-lg);
+    border-radius: var(--radius-md);
     color: var(--text);
-    font-size: 1rem;
+    font-size: 0.9375rem;
     transition: all var(--transition-fast);
 }
 
@@ -303,10 +301,10 @@
 
 .toggle-password {
     position: absolute;
-    right: var(--space-md);
+    right: var(--space-sm);
     background: transparent;
     border: none;
-    font-size: 1rem;
+    font-size: 0.9rem;
     cursor: pointer;
     opacity: 0.6;
     transition: opacity var(--transition-fast);
@@ -321,13 +319,13 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-size: 0.875rem;
+    font-size: 0.8125rem;
 }
 
 .remember-me {
     display: flex;
     align-items: center;
-    gap: var(--space-sm);
+    gap: var(--space-xs);
     cursor: pointer;
     color: var(--text-secondary);
 }
@@ -337,8 +335,8 @@
 }
 
 .remember-me .checkmark {
-    width: 18px;
-    height: 18px;
+    width: 16px;
+    height: 16px;
     background: var(--bg-tertiary);
     border: 2px solid var(--border);
     border-radius: var(--radius-sm);
@@ -356,7 +354,7 @@
 .remember-me input:checked + .checkmark::after {
     content: '✓';
     color: white;
-    font-size: 0.75rem;
+    font-size: 0.625rem;
     font-weight: 700;
 }
 
@@ -374,13 +372,13 @@
 .login-error {
     display: flex;
     align-items: center;
-    gap: var(--space-sm);
-    padding: var(--space-sm) var(--space-md);
+    gap: var(--space-xs);
+    padding: var(--space-xs) var(--space-sm);
     background: var(--danger-bg);
     border: 1px solid var(--danger);
     border-radius: var(--radius-md);
     color: var(--danger);
-    font-size: 0.875rem;
+    font-size: 0.8125rem;
     animation: shake 0.4s ease-in-out;
 }
 
@@ -398,17 +396,18 @@
 /* Login Button */
 .btn-login {
     width: 100%;
-    padding: var(--space-md);
+    padding: var(--space-sm);
     background: var(--gradient-primary);
     border: none;
-    border-radius: var(--radius-lg);
+    border-radius: var(--radius-md);
     color: white;
-    font-size: 1rem;
+    font-size: 0.9375rem;
     font-weight: 700;
     cursor: pointer;
     transition: all var(--transition-base);
     position: relative;
     overflow: hidden;
+    margin-top: var(--space-xs);
 }
 
 .btn-login:hover:not(:disabled) {
@@ -456,10 +455,10 @@
    ============================================================================= */
 .signup-prompt {
     text-align: center;
-    margin-top: var(--space-lg);
-    padding-top: var(--space-lg);
+    margin-top: var(--space-md);
+    padding-top: var(--space-md);
     border-top: 1px solid var(--border);
-    font-size: 0.9375rem;
+    font-size: 0.8125rem;
     color: var(--text-muted);
 }
 
@@ -481,10 +480,10 @@
 .back-home {
     display: inline-flex;
     align-items: center;
-    gap: var(--space-sm);
-    margin-top: var(--space-lg);
+    gap: var(--space-xs);
+    margin-top: var(--space-md);
     color: var(--text-muted);
-    font-size: 0.875rem;
+    font-size: 0.8125rem;
     text-decoration: none;
     transition: color var(--transition-fast);
 }
@@ -497,7 +496,7 @@
    FOOTER
    ============================================================================= */
 .login-footer {
-    margin-top: var(--space-xl);
+    margin-top: var(--space-md);
     text-align: center;
 }
 

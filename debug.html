@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Dashboard - ShadowBanCheck.io</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #0f172a;
+            color: #e2e8f0;
+            padding: 2rem;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: #6366f1;
+        }
+        
+        .subtitle {
+            font-size: 1.125rem;
+            color: #94a3b8;
+            margin-bottom: 3rem;
+        }
+        
+        .status-card {
+            background: #1e293b;
+            border-radius: 1rem;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border: 2px solid #334155;
+        }
+        
+        .status-card.success {
+            border-color: #10b981;
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, #1e293b 100%);
+        }
+        
+        .status-card.error {
+            border-color: #ef4444;
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, #1e293b 100%);
+        }
+        
+        .status-card.warning {
+            border-color: #f59e0b;
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, #1e293b 100%);
+        }
+        
+        .status-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+        
+        h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: #f1f5f9;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .info-item {
+            background: #0f172a;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid #334155;
+        }
+        
+        .info-label {
+            font-size: 0.75rem;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.5rem;
+        }
+        
+        .info-value {
+            font-size: 1.125rem;
+            color: #f1f5f9;
+            font-weight: 600;
+            word-break: break-all;
+        }
+        
+        .data-preview {
+            background: #0f172a;
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            border: 1px solid #334155;
+            overflow-x: auto;
+            margin-top: 1rem;
+        }
+        
+        .data-preview pre {
+            color: #10b981;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+        }
+        
+        .btn-secondary {
+            background: #334155;
+            color: #e2e8f0;
+        }
+        
+        .btn-secondary:hover {
+            background: #475569;
+        }
+        
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+        
+        .checklist {
+            list-style: none;
+            margin-top: 1rem;
+        }
+        
+        .checklist li {
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            background: #0f172a;
+            border-radius: 0.5rem;
+            border-left: 4px solid #334155;
+        }
+        
+        .checklist li.pass {
+            border-left-color: #10b981;
+        }
+        
+        .checklist li.fail {
+            border-left-color: #ef4444;
+        }
+        
+        .icon {
+            margin-right: 0.5rem;
+        }
+        
+        .localStorage-list {
+            margin-top: 1rem;
+        }
+        
+        .localStorage-item {
+            background: #0f172a;
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+            border-radius: 0.5rem;
+            border: 1px solid #334155;
+        }
+        
+        .localStorage-key {
+            color: #6366f1;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        
+        .localStorage-value {
+            color: #94a3b8;
+            font-size: 0.875rem;
+            word-break: break-all;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Debug Dashboard</h1>
+        <p class="subtitle">Diagnostic tool to check why results page isn't working</p>
+
+        <!-- Overall Status -->
+        <div id="overall-status" class="status-card">
+            <span class="status-icon">⏳</span>
+            <h2>Checking System...</h2>
+        </div>
+
+        <!-- localStorage Check -->
+        <div class="status-card">
+            <h2>📦 localStorage Status</h2>
+            <div id="localStorage-status"></div>
+        </div>
+
+        <!-- Check Results Data -->
+        <div class="status-card">
+            <h2>🎯 Check Results Data</h2>
+            <div id="check-results-status"></div>
+        </div>
+
+        <!-- All localStorage Keys -->
+        <div class="status-card">
+            <h2>🗂️ All localStorage Keys</h2>
+            <div id="all-keys"></div>
+        </div>
+
+        <!-- File Checks -->
+        <div class="status-card">
+            <h2>📁 File Checks</h2>
+            <ul class="checklist" id="file-checks">
+                <li><span class="icon">⏳</span> Checking files...</li>
+            </ul>
+        </div>
+
+        <!-- Actions -->
+        <div class="status-card">
+            <h2>🛠️ Actions</h2>
+            <div class="btn-group">
+                <button class="btn btn-primary" onclick="createTestData()">Create Test Data</button>
+                <button class="btn btn-secondary" onclick="goToResults()">Go to Results Page</button>
+                <button class="btn btn-secondary" onclick="goToChecker()">Go to Checker Page</button>
+                <button class="btn btn-danger" onclick="clearAllData()">Clear All Data</button>
+                <button class="btn btn-secondary" onclick="location.reload()">Refresh Dashboard</button>
+            </div>
+        </div>
+
+        <!-- Instructions -->
+        <div class="status-card">
+            <h2>📖 Instructions</h2>
+            <ol style="margin-left: 1.5rem; color: #94a3b8;">
+                <li style="margin-bottom: 0.5rem;">Check the status cards above to see what's working and what's not</li>
+                <li style="margin-bottom: 0.5rem;">If "Check Results Data" shows ❌ NO DATA, click "Create Test Data"</li>
+                <li style="margin-bottom: 0.5rem;">Click "Go to Results Page" to test if it works</li>
+                <li style="margin-bottom: 0.5rem;">If results page still forwards, check "File Checks" section</li>
+                <li style="margin-bottom: 0.5rem;">If everything passes but checker page doesn't save data, the problem is in checker-new.js</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        // Check localStorage support
+        function checkLocalStorage() {
+            const statusEl = document.getElementById('localStorage-status');
+            
+            if (typeof(Storage) === "undefined") {
+                statusEl.innerHTML = `
+                    <div class="status-card error">
+                        <span class="status-icon">❌</span>
+                        <p style="color: #ef4444; font-weight: 600;">localStorage NOT supported in your browser!</p>
+                        <p style="margin-top: 0.5rem; color: #94a3b8;">Please use a modern browser like Chrome, Firefox, or Edge.</p>
+                    </div>
+                `;
+                return false;
+            }
+            
+            statusEl.innerHTML = `
+                <div style="color: #10b981; font-weight: 600; font-size: 1.125rem;">
+                    ✅ localStorage is supported and working
+                </div>
+            `;
+            return true;
+        }
+
+        // Check for checkResults data
+        function checkResultsData() {
+            const statusEl = document.getElementById('check-results-status');
+            const data = localStorage.getItem('checkResults');
+            
+            if (!data) {
+                statusEl.innerHTML = `
+                    <div style="color: #ef4444; font-weight: 600; font-size: 1.125rem; margin-bottom: 1rem;">
+                        ❌ NO DATA FOUND
+                    </div>
+                    <p style="color: #94a3b8;">The key "checkResults" does not exist in localStorage. This means:</p>
+                    <ul style="margin: 1rem 0 1rem 1.5rem; color: #94a3b8;">
+                        <li>You haven't run a check yet, OR</li>
+                        <li>The checker page isn't saving data properly, OR</li>
+                        <li>Your data was cleared</li>
+                    </ul>
+                    <p style="color: #f59e0b; font-weight: 600;">👉 Click "Create Test Data" button below to test if results page works</p>
+                `;
+                return false;
+            }
+            
+            try {
+                const parsed = JSON.parse(data);
+                statusEl.innerHTML = `
+                    <div style="color: #10b981; font-weight: 600; font-size: 1.125rem; margin-bottom: 1rem;">
+                        ✅ DATA FOUND
+                    </div>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <div class="info-label">Platform</div>
+                            <div class="info-value">${parsed.platform || 'Unknown'}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Identifier</div>
+                            <div class="info-value">${parsed.identifier || 'Unknown'}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Status</div>
+                            <div class="info-value">${parsed.status || 'Unknown'}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Checked</div>
+                            <div class="info-value">${parsed.timestamp ? new Date(parsed.timestamp).toLocaleString() : 'Unknown'}</div>
+                        </div>
+                    </div>
+                    <div class="data-preview">
+                        <pre>${JSON.stringify(parsed, null, 2)}</pre>
+                    </div>
+                `;
+                return true;
+            } catch (e) {
+                statusEl.innerHTML = `
+                    <div style="color: #ef4444; font-weight: 600; font-size: 1.125rem; margin-bottom: 1rem;">
+                        ⚠️ DATA CORRUPTED
+                    </div>
+                    <p style="color: #94a3b8;">Found data but it's not valid JSON. Raw data:</p>
+                    <div class="data-preview">
+                        <pre>${data}</pre>
+                    </div>
+                `;
+                return false;
+            }
+        }
+
+        // List all localStorage keys
+        function listAllKeys() {
+            const keysEl = document.getElementById('all-keys');
+            
+            if (localStorage.length === 0) {
+                keysEl.innerHTML = `
+                    <p style="color: #94a3b8;">No data in localStorage</p>
+                `;
+                return;
+            }
+            
+            let html = '<div class="localStorage-list">';
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                const value = localStorage.getItem(key);
+                const preview = value.length > 100 ? value.substring(0, 100) + '...' : value;
+                
+                html += `
+                    <div class="localStorage-item">
+                        <div class="localStorage-key">${key}</div>
+                        <div class="localStorage-value">${preview}</div>
+                    </div>
+                `;
+            }
+            html += '</div>';
+            keysEl.innerHTML = html;
+        }
+
+        // Check if files exist
+        function checkFiles() {
+            const checksEl = document.getElementById('file-checks');
+            const files = [
+                { name: 'results.html', url: 'results.html' },
+                { name: 'results.js', url: 'js/results.js' },
+                { name: 'results.css', url: 'css/results.css' },
+                { name: 'checker.html', url: 'checker.html' },
+                { name: 'checker-new.js', url: 'js/checker-new.js' }
+            ];
+            
+            let html = '';
+            let allPass = true;
+            
+            files.forEach(file => {
+                // We can't actually check if files exist without making requests
+                // So we'll just show them as pending
+                html += `<li><span class="icon">📄</span> ${file.name} - Check manually if this file exists</li>`;
+            });
+            
+            checksEl.innerHTML = html;
+        }
+
+        // Create test data
+        function createTestData() {
+            const testData = {
+                platform: 'twitter',
+                identifier: 'testuser',
+                timestamp: new Date().toISOString(),
+                status: 'clean',
+                checks: {
+                    searchBan: {
+                        status: 'passed',
+                        description: 'Your tweets appear in search results'
+                    },
+                    searchSuggestion: {
+                        status: 'passed',
+                        description: 'Your profile appears in search suggestions'
+                    },
+                    ghostBan: {
+                        status: 'passed',
+                        description: 'Your replies are visible to others'
+                    },
+                    replyDeboosting: {
+                        status: 'passed',
+                        description: 'Your replies are not being suppressed'
+                    }
+                },
+                details: {
+                    accountAge: '2 years',
+                    followers: '1,234',
+                    lastTweet: '2 hours ago',
+                    engagementRate: 'Normal'
+                }
+            };
+            
+            localStorage.setItem('checkResults', JSON.stringify(testData));
+            alert('✅ Test data created! Now click "Go to Results Page" to test.');
+            location.reload();
+        }
+
+        // Navigate functions
+        function goToResults() {
+            window.location.href = 'results.html';
+        }
+
+        function goToChecker() {
+            window.location.href = 'checker.html';
+        }
+
+        function clearAllData() {
+            if (confirm('Are you sure you want to clear ALL localStorage data?')) {
+                localStorage.clear();
+                alert('✅ All data cleared!');
+                location.reload();
+            }
+        }
+
+        // Update overall status
+        function updateOverallStatus() {
+            const statusEl = document.getElementById('overall-status');
+            const hasLocalStorage = checkLocalStorage();
+            const hasData = checkResultsData();
+            
+            if (!hasLocalStorage) {
+                statusEl.className = 'status-card error';
+                statusEl.innerHTML = `
+                    <span class="status-icon">❌</span>
+                    <h2>CRITICAL ERROR</h2>
+                    <p>localStorage not supported - upgrade your browser!</p>
+                `;
+            } else if (!hasData) {
+                statusEl.className = 'status-card warning';
+                statusEl.innerHTML = `
+                    <span class="status-icon">⚠️</span>
+                    <h2>NO CHECK DATA</h2>
+                    <p>localStorage works, but no check results found.</p>
+                    <p style="margin-top: 1rem; color: #f59e0b;">👉 Click "Create Test Data" to test if results page works</p>
+                `;
+            } else {
+                statusEl.className = 'status-card success';
+                statusEl.innerHTML = `
+                    <span class="status-icon">✅</span>
+                    <h2>ALL SYSTEMS GO!</h2>
+                    <p>localStorage works and check data exists.</p>
+                    <p style="margin-top: 1rem; color: #10b981;">👉 Click "Go to Results Page" - it should work!</p>
+                `;
+            }
+        }
+
+        // Initialize
+        window.addEventListener('DOMContentLoaded', () => {
+            updateOverallStatus();
+            listAllKeys();
+            checkFiles();
+        });
+    </script>
+</body>
+</html>

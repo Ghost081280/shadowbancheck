@@ -1,236 +1,738 @@
 /* =============================================================================
-   SHADOW-AI.JS - AI Chatbot Widget
+   SHADOW AI CHATBOT - v2.0 PREMIUM EDITION
+   ShadowBanCheck.io - Premium Copilot Experience
    ============================================================================= */
 
-/* =============================================================================
-   CHATBOT STATE
-   ============================================================================= */
-let chatState = {
-    isOpen: false,
-    messages: [],
-    isTyping: false
+(function() {
+'use strict';
+
+// ============================================
+// CONFIGURATION
+// ============================================
+const ShadowAI = {
+    name: 'Shadow AI',
+    version: '2.0.0',
+    welcomeMessage: `<strong>Welcome to ShadowBanCheck.io!</strong><br><br>
+I'm Shadow AI, your shadow ban detection assistant. I can help you:
+
+<ul>
+<li>Check if you're shadow banned</li>
+<li>Analyze engagement drops</li>
+<li>Get recovery strategies</li>
+<li>Understand platform algorithms</li>
+</ul>
+
+<strong>Free users:</strong> 3 questions per day<br>
+<a href="#shadow-ai-pro" onclick="closeShadowAI();">Upgrade to Pro for 100 questions/day →</a>`,
+    
+    offlineMessage: `<strong>Welcome to ShadowBanCheck.io!</strong><br><br>
+I'm Shadow AI, your shadow ban detection assistant.<br><br>
+<em style="color: var(--warning);">⚠️ AI services are currently connecting. I'll be fully operational shortly!</em><br><br>
+In the meantime, try our <a href="checker.html">free shadow ban checker</a> or explore our <a href="#pricing">pricing plans</a>.`
 };
 
-/* =============================================================================
-   PREDEFINED RESPONSES
-   ============================================================================= */
-const responses = {
-    greetings: [
-        "Hey there! 👋 I'm Shadow AI, your visibility assistant. How can I help you today?",
-        "Hi! 🔍 Ready to help you understand shadow bans and protect your online presence!",
-        "Hello! 👋 I'm here to help with shadow ban questions, hashtag advice, and visibility tips."
-    ],
-    
-    shadowban: {
-        what: "A shadow ban (also called stealth ban or ghost ban) is when a platform secretly restricts your content's visibility without notifying you. Your posts might not appear in hashtag searches, explore pages, or your followers' feeds. It's frustrating because everything looks normal from your end! 👻",
-        
-        why: "Platforms shadow ban accounts for various reasons:\n\n• Using banned or restricted hashtags\n• Posting too frequently (spam-like behavior)\n• Getting reported by other users\n• Violating community guidelines\n• Using automation tools or bots\n• Sudden spikes in follower growth\n• Posting controversial content\n\nThe tricky part is platforms rarely tell you exactly what triggered it!",
-        
-        how_long: "Shadow bans typically last anywhere from 24 hours to 2-4 weeks, depending on the platform and severity. Here's a rough guide:\n\n• Minor violations: 24-48 hours\n• Moderate issues: 1-2 weeks\n• Serious violations: 2-4 weeks\n• Repeat offenders: Can be permanent\n\nThe best approach is to pause suspicious activities and wait it out while following best practices.",
-        
-        fix: "Here's how to potentially lift a shadow ban:\n\n1️⃣ Stop all suspicious activity immediately\n2️⃣ Remove any banned hashtags from recent posts\n3️⃣ Avoid using automation tools\n4️⃣ Take a 24-48 hour break from posting\n5️⃣ Engage authentically with others\n6️⃣ Review and follow community guidelines\n7️⃣ Consider reaching out to platform support\n\nPatience is key - most bans lift within 1-2 weeks!"
-    },
-    
-    platforms: {
-        instagram: "Instagram is notorious for shadow bans! 📸 They primarily target:\n\n• Banned hashtags (there are hundreds!)\n• Repetitive comments or DMs\n• Mass following/unfollowing\n• Third-party apps\n• Posting too frequently\n\nUse our Hashtag Checker to verify your tags are safe!",
-        
-        tiktok: "TikTok's algorithm is complex! 🎵 Shadow bans on TikTok often result from:\n\n• Posting content that violates guidelines\n• Using banned sounds/hashtags\n• Spam-like behavior\n• Sudden engagement drops\n\nIf your FYP reach drops suddenly, you might be affected.",
-        
-        twitter: "Twitter/X shadow bans work differently. 🐦 They use \"quality filters\" that can hide your replies and reduce visibility. Common triggers:\n\n• Aggressive behavior\n• Mass messaging\n• Sensitive content without labels\n• Bot-like patterns\n\nSearch for your username in an incognito browser to test visibility."
-    },
-    
-    hashtags: {
-        general: "Hashtags are a double-edged sword! 🏷️\n\n✅ DO: Use relevant, niche hashtags (10-15 per post)\n✅ DO: Mix popular and less competitive tags\n✅ DO: Check if tags are banned before using\n\n❌ DON'T: Use the same hashtags every post\n❌ DON'T: Use banned/restricted hashtags\n❌ DON'T: Use irrelevant popular hashtags\n\nTry our Hashtag Checker to verify yours!",
-        
-        banned: "Banned hashtags can trigger shadow bans! Some surprising examples:\n\n• #adulting\n• #elevator  \n• #humpday\n• #valentinesday\n• #popular\n\nPlatforms ban hashtags that attract spam, inappropriate content, or violate guidelines. Always check before posting!"
-    },
-    
-    fallback: [
-        "That's a great question! While I specialize in shadow bans and visibility, let me point you to our tools:\n\n🔍 Use our Shadow Ban Checker to test your account\n🏷️ Try our Hashtag Checker to verify your tags\n\nIs there something specific about shadow bans I can help with?",
-        
-        "Hmm, I'm not 100% sure about that specific topic, but I'm an expert in:\n\n• Shadow ban detection\n• Platform-specific visibility issues\n• Hashtag safety\n• Account recovery tips\n\nWhat would you like to know about these?",
-        
-        "I want to make sure I give you accurate info! My expertise is in social media visibility and shadow bans. Try asking me about:\n\n• How to detect shadow bans\n• Why accounts get restricted\n• How to fix visibility issues\n• Safe hashtag practices"
-    ]
+// Service status tracking
+let serviceStatus = {
+    online: false
 };
 
-/* =============================================================================
-   MESSAGE HANDLING
-   ============================================================================= */
-function processMessage(input) {
-    const text = input.toLowerCase().trim();
-    
-    // Greetings
-    if (text.match(/^(hi|hello|hey|howdy|sup|yo)[\s!?]*$/)) {
-        return randomResponse(responses.greetings);
-    }
-    
-    // Shadow ban questions
-    if (text.includes('shadow') || text.includes('shadowban')) {
-        if (text.includes('what') || text.includes('mean')) {
-            return responses.shadowban.what;
-        }
-        if (text.includes('why') || text.includes('cause') || text.includes('reason')) {
-            return responses.shadowban.why;
-        }
-        if (text.includes('how long') || text.includes('duration') || text.includes('last')) {
-            return responses.shadowban.how_long;
-        }
-        if (text.includes('fix') || text.includes('remove') || text.includes('lift') || text.includes('get rid')) {
-            return responses.shadowban.fix;
-        }
-        // Default shadow ban response
-        return responses.shadowban.what;
-    }
-    
-    // Platform specific
-    if (text.includes('instagram') || text.includes('insta') || text.includes('ig')) {
-        return responses.platforms.instagram;
-    }
-    if (text.includes('tiktok') || text.includes('tik tok')) {
-        return responses.platforms.tiktok;
-    }
-    if (text.includes('twitter') || text.includes('x.com')) {
-        return responses.platforms.twitter;
-    }
-    
-    // Hashtag questions
-    if (text.includes('hashtag') || text.includes('#')) {
-        if (text.includes('banned') || text.includes('restricted')) {
-            return responses.hashtags.banned;
-        }
-        return responses.hashtags.general;
-    }
-    
-    // Help
-    if (text.match(/^(help|assist|support)[\s!?]*$/)) {
-        return "I can help you with:\n\n🔍 **Shadow Ban Detection** - Learn if you're affected\n❓ **Why It Happens** - Understand the causes\n🔧 **How To Fix** - Get recovery tips\n📱 **Platform Specific** - Instagram, TikTok, Twitter advice\n🏷️ **Hashtag Safety** - Avoid banned tags\n\nJust ask me anything about these topics!";
-    }
-    
-    // Gratitude
-    if (text.match(/(thanks|thank you|thx|ty)/)) {
-        return "You're welcome! 😊 Feel free to ask if you have more questions about shadow bans or visibility. Good luck with your account!";
-    }
-    
-    // Fallback
-    return randomResponse(responses.fallback);
+// Chat state
+let conversationHistory = [];
+let isTyping = false;
+let scrollTimeout = null;
+let tooltipVisible = true;
+
+// ============================================
+// COOKIE CONSENT INTEGRATION
+// ============================================
+function checkCookieConsent() {
+    const consent = localStorage.getItem('shadowban_cookie_consent');
+    return consent !== null;
 }
 
-function randomResponse(arr) {
-    return arr[Math.floor(Math.random() * arr.length)];
+function showChatbotButton() {
+    const container = document.querySelector('.shadow-ai-container');
+    if (container) {
+        container.classList.add('ready');
+        console.log('✅ Shadow AI button shown');
+        initializeTooltipScrollHandler();
+    }
 }
 
-/* =============================================================================
-   UI FUNCTIONS
-   ============================================================================= */
-function initChatbot() {
-    const chatBtn = document.getElementById('shadow-ai-btn');
+// Hook into existing cookie popup
+function hookCookieConsent() {
+    // Check if already consented
+    if (checkCookieConsent()) {
+        showChatbotButton();
+        return;
+    }
+    
+    // Watch for cookie popup dismissal
+    const cookieAccept = document.getElementById('cookie-accept');
+    const cookieDismiss = document.getElementById('cookie-dismiss');
+    
+    if (cookieAccept) {
+        cookieAccept.addEventListener('click', () => {
+            localStorage.setItem('shadowban_cookie_consent', 'accepted');
+            setTimeout(showChatbotButton, 400);
+        });
+    }
+    
+    if (cookieDismiss) {
+        cookieDismiss.addEventListener('click', () => {
+            localStorage.setItem('shadowban_cookie_consent', 'declined');
+            setTimeout(showChatbotButton, 400);
+        });
+    }
+    
+    // Fallback: show after delay if no cookie popup
+    setTimeout(() => {
+        const container = document.querySelector('.shadow-ai-container');
+        if (container && !container.classList.contains('ready')) {
+            console.log('🔄 No cookie popup detected - showing chatbot');
+            showChatbotButton();
+        }
+    }, 2000);
+}
+
+// ============================================
+// TOOLTIP SCROLL HANDLER
+// ============================================
+function initializeTooltipScrollHandler() {
+    const tooltip = document.querySelector('.shadow-ai-tooltip');
+    if (!tooltip) return;
+    
+    let scrollTimer = null;
+    tooltipVisible = true;
+    
+    const handleScroll = () => {
+        // Hide tooltip when scrolling
+        if (tooltipVisible) {
+            tooltip.classList.add('scrolled');
+            tooltipVisible = false;
+        }
+        
+        // Clear existing timer
+        if (scrollTimer) {
+            clearTimeout(scrollTimer);
+        }
+        
+        // Show tooltip again after scrolling stops (1.5s delay)
+        scrollTimer = setTimeout(() => {
+            const container = document.querySelector('.shadow-ai-container');
+            // Only show if chat is not active
+            if (container && !container.classList.contains('chatbot-active')) {
+                tooltip.classList.remove('scrolled');
+                tooltipVisible = true;
+            }
+        }, 1500);
+    };
+    
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    console.log('✅ Tooltip scroll handler initialized');
+}
+
+function showTooltipAfterClose() {
+    const tooltip = document.querySelector('.shadow-ai-tooltip');
+    if (tooltip) {
+        // Small delay before showing tooltip
+        setTimeout(() => {
+            tooltip.classList.remove('scrolled');
+            tooltipVisible = true;
+        }, 300);
+    }
+}
+
+// ============================================
+// CHATBOT TOGGLE
+// ============================================
+function toggleChatbot() {
     const chatWindow = document.getElementById('shadow-ai-chat');
+    const container = document.querySelector('.shadow-ai-container');
+    
+    if (!chatWindow || !container) return;
+    
+    const isActive = chatWindow.classList.contains('active');
+    
+    if (isActive) {
+        closeShadowAI();
+    } else {
+        openShadowAI();
+    }
+}
+
+function openShadowAI() {
+    const chatWindow = document.getElementById('shadow-ai-chat');
+    const container = document.querySelector('.shadow-ai-container');
+    const messagesContainer = document.getElementById('shadow-ai-messages');
+    
+    if (!chatWindow || !container) return;
+    
+    // Remove hidden class if present (for initial state)
+    chatWindow.classList.remove('hidden');
+    
+    // Add active states
+    chatWindow.classList.add('active');
+    container.classList.add('chatbot-active');
+    
+    // Show welcome message if first time
+    if (messagesContainer && messagesContainer.children.length === 0) {
+        showWelcomeMessage();
+    }
+    
+    console.log('✅ Shadow AI opened');
+}
+
+function closeShadowAI() {
+    const chatWindow = document.getElementById('shadow-ai-chat');
+    const container = document.querySelector('.shadow-ai-container');
+    const input = document.getElementById('shadow-ai-input');
+    
+    if (!chatWindow || !container) return;
+    
+    // Remove active states
+    chatWindow.classList.remove('active');
+    chatWindow.classList.remove('keyboard-visible');
+    container.classList.remove('chatbot-active');
+    
+    // Blur input to close keyboard
+    if (input) {
+        input.blur();
+    }
+    
+    // Show tooltip again
+    showTooltipAfterClose();
+    
+    console.log('✅ Shadow AI closed');
+}
+
+// Global close function for onclick handlers
+window.closeShadowAI = closeShadowAI;
+
+// ============================================
+// STATUS UPDATE
+// ============================================
+function updateStatus() {
+    const statusElement = document.querySelector('.copilot-status');
+    if (!statusElement) return;
+    
+    const isOnline = serviceStatus.online;
+    const dotClass = isOnline ? 'copilot-status-dot online' : 'copilot-status-dot';
+    const statusText = isOnline ? 'Online' : 'Connecting...';
+    
+    statusElement.innerHTML = `<span class="${dotClass}"></span>${statusText}`;
+}
+
+// ============================================
+// WELCOME MESSAGE WITH TYPING EFFECT
+// ============================================
+async function showWelcomeMessage() {
+    const messagesContainer = document.getElementById('shadow-ai-messages');
+    if (!messagesContainer) return;
+    
+    // Show typing indicator first
+    showTypingIndicator();
+    
+    // Wait for typing effect
+    await new Promise(resolve => setTimeout(resolve, 1200));
+    
+    // Remove typing indicator
+    removeTypingIndicator();
+    
+    // Determine message based on service status
+    const message = serviceStatus.online ? ShadowAI.welcomeMessage : ShadowAI.offlineMessage;
+    
+    // Stream the welcome message
+    await streamMessage(message);
+}
+
+// ============================================
+// MESSAGE FUNCTIONS
+// ============================================
+function addUserMessage(content) {
+    const messagesContainer = document.getElementById('shadow-ai-messages');
+    if (!messagesContainer) return;
+    
+    const messageDiv = document.createElement('div');
+    messageDiv.className = 'chat-message user-message';
+    messageDiv.innerHTML = `
+        <div class="message-content">
+            <div class="message-text">${escapeHtml(content)}</div>
+        </div>
+    `;
+    
+    messagesContainer.appendChild(messageDiv);
+    scrollToBottom();
+}
+
+function showTypingIndicator() {
+    const messagesContainer = document.getElementById('shadow-ai-messages');
+    if (!messagesContainer) return;
+    
+    const typingDiv = document.createElement('div');
+    typingDiv.className = 'chat-message assistant-message typing-indicator';
+    typingDiv.innerHTML = `
+        <div class="message-content">
+            <div class="message-avatar">🤖</div>
+            <div class="typing-dots">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    `;
+    
+    messagesContainer.appendChild(typingDiv);
+    scrollToBottom();
+}
+
+function removeTypingIndicator() {
+    const typingIndicator = document.querySelector('.typing-indicator');
+    if (typingIndicator) {
+        typingIndicator.remove();
+    }
+}
+
+// Stream message with typing effect
+async function streamMessage(fullText) {
+    const messagesContainer = document.getElementById('shadow-ai-messages');
+    if (!messagesContainer) return;
+    
+    // Create message container
+    const messageDiv = document.createElement('div');
+    messageDiv.className = 'chat-message assistant-message';
+    
+    const messageContent = document.createElement('div');
+    messageContent.className = 'message-content';
+    
+    const avatar = document.createElement('div');
+    avatar.className = 'message-avatar';
+    avatar.textContent = '🤖';
+    
+    const textDiv = document.createElement('div');
+    textDiv.className = 'message-text';
+    
+    messageContent.appendChild(avatar);
+    messageContent.appendChild(textDiv);
+    messageDiv.appendChild(messageContent);
+    
+    // Append container BEFORE streaming
+    messagesContainer.appendChild(messageDiv);
+    
+    // Check if content is HTML (has tags)
+    const isHTML = /<[^>]+>/.test(fullText);
+    
+    if (isHTML) {
+        // For HTML content, display progressively by chunks
+        const chunks = fullText.split(/(<[^>]+>)/);
+        let currentHTML = '';
+        
+        for (let i = 0; i < chunks.length; i++) {
+            currentHTML += chunks[i];
+            textDiv.innerHTML = currentHTML + '<span class="streaming-cursor"></span>';
+            scrollToBottom();
+            
+            // Faster for tags, slower for text
+            const delay = chunks[i].startsWith('<') ? 10 : 30;
+            await new Promise(resolve => setTimeout(resolve, delay));
+        }
+    } else {
+        // For plain text, stream word by word
+        const words = fullText.split(' ');
+        let currentText = '';
+        const batchSize = 3;
+        
+        for (let i = 0; i < words.length; i++) {
+            currentText += (i > 0 ? ' ' : '') + words[i];
+            
+            if (i % batchSize === 0 || i === words.length - 1) {
+                textDiv.innerHTML = escapeHtml(currentText) + '<span class="streaming-cursor"></span>';
+                scrollToBottom();
+                await new Promise(resolve => setTimeout(resolve, 40));
+            }
+        }
+    }
+    
+    // Remove cursor and finalize
+    textDiv.innerHTML = isHTML ? fullText : formatMessage(fullText);
+    scrollToBottom();
+}
+
+function addAssistantMessage(content) {
+    const messagesContainer = document.getElementById('shadow-ai-messages');
+    if (!messagesContainer) return;
+    
+    const messageDiv = document.createElement('div');
+    messageDiv.className = 'chat-message assistant-message';
+    messageDiv.innerHTML = `
+        <div class="message-content">
+            <div class="message-avatar">🤖</div>
+            <div class="message-text">${formatMessage(content)}</div>
+        </div>
+    `;
+    
+    messagesContainer.appendChild(messageDiv);
+    scrollToBottom();
+}
+
+function scrollToBottom() {
+    const messagesContainer = document.getElementById('shadow-ai-messages');
+    if (messagesContainer) {
+        requestAnimationFrame(() => {
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        });
+    }
+}
+
+// ============================================
+// MESSAGE FORMATTING
+// ============================================
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+function formatMessage(text) {
+    let formatted = escapeHtml(text);
+    // Bold text
+    formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    // Line breaks
+    formatted = formatted.replace(/\n/g, '<br>');
+    return formatted;
+}
+
+// ============================================
+// SEND MESSAGE
+// ============================================
+async function sendMessage() {
+    const input = document.getElementById('shadow-ai-input');
+    const sendBtn = document.getElementById('shadow-ai-send');
+    
+    if (!input || !sendBtn) return;
+    
+    const message = input.value.trim();
+    
+    // Blink if empty
+    if (!message) {
+        input.classList.add('blink-empty');
+        setTimeout(() => {
+            input.classList.remove('blink-empty');
+        }, 1200);
+        return;
+    }
+    
+    if (isTyping) return;
+    
+    // Add user message
+    addUserMessage(message);
+    input.value = '';
+    
+    // Disable inputs
+    input.disabled = true;
+    sendBtn.disabled = true;
+    isTyping = true;
+    
+    // Show typing indicator
+    showTypingIndicator();
+    
+    try {
+        // Get AI response
+        const reply = await getAIResponse(message);
+        
+        // Remove typing indicator
+        removeTypingIndicator();
+        
+        // Store in history
+        conversationHistory.push(
+            { role: 'user', content: message },
+            { role: 'assistant', content: reply }
+        );
+        
+        // Stream the response
+        await streamMessage(reply);
+        
+    } catch (error) {
+        console.error('Shadow AI Error:', error);
+        removeTypingIndicator();
+        addAssistantMessage('❌ Sorry, I encountered an error. Please try again.');
+    } finally {
+        input.disabled = false;
+        sendBtn.disabled = false;
+        isTyping = false;
+        input.focus();
+    }
+}
+
+// ============================================
+// AI RESPONSE (Simulated - replace with actual API)
+// ============================================
+async function getAIResponse(question) {
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 1000));
+    
+    const lowerQuestion = question.toLowerCase();
+    
+    // Check for common questions
+    if (lowerQuestion.includes('shadow ban') && lowerQuestion.includes('what')) {
+        serviceStatus.online = true;
+        updateStatus();
+        return `A **shadow ban** (also called stealth ban or ghost ban) is when a platform limits your content's visibility without telling you.
+
+Your posts appear normal to you, but they may not show up in:
+• Search results
+• Hashtag feeds  
+• Recommendations
+• Other users' feeds
+
+Want me to check if you're shadow banned? Share your username or post URL!`;
+    }
+    
+    if (lowerQuestion.includes('check') || lowerQuestion.includes('am i')) {
+        serviceStatus.online = true;
+        updateStatus();
+        return `To check if you're shadow banned, I'll need:
+
+1. **Your username** on the platform
+2. **The platform** (Twitter, Instagram, TikTok, etc.)
+
+Or you can paste a **post URL** and I'll analyze its visibility.
+
+💡 **Pro tip:** <a href="#shadow-ai-pro" onclick="closeShadowAI();">Shadow AI Pro users</a> get 100 checks per day with detailed probability scores!`;
+    }
+    
+    if (lowerQuestion.includes('price') || lowerQuestion.includes('cost') || lowerQuestion.includes('plan')) {
+        serviceStatus.online = true;
+        updateStatus();
+        return `Our plans are designed for different needs:
+
+**Starter** - $4.99/mo
+• 5 accounts monitored
+• 3 AI questions/day
+
+**Pro** - $9.99/mo ⭐ Most Popular
+• 15 accounts monitored
+• 10 AI questions/day
+
+**Premium** - $14.99/mo
+• 50 accounts monitored
+• 25 AI questions/day
+
+All plans include hashtag checker and recovery recommendations!
+
+<a href="#pricing" onclick="closeShadowAI();">View full pricing →</a>`;
+    }
+    
+    if (lowerQuestion.includes('fix') || lowerQuestion.includes('recover') || lowerQuestion.includes('help')) {
+        serviceStatus.online = true;
+        updateStatus();
+        return `Here are general recovery steps for shadow bans:
+
+1. **Stop posting** for 24-48 hours
+2. **Remove** recently used hashtags
+3. **Disconnect** third-party apps
+4. **Check** for community guideline violations
+5. **Report** the issue to platform support
+
+Want personalized recovery strategies? <a href="#shadow-ai-pro" onclick="closeShadowAI();">Shadow AI Pro</a> provides custom recovery plans based on your specific situation!`;
+    }
+    
+    // Default response
+    serviceStatus.online = true;
+    updateStatus();
+    return `Thanks for your question! I can help with:
+
+• **Shadow ban detection** - Check if you're being suppressed
+• **Platform analysis** - 26 platforms supported
+• **Recovery strategies** - Get back your reach
+• **Hashtag verification** - Avoid banned hashtags
+
+What would you like to know more about?
+
+💡 Get unlimited help with <a href="#shadow-ai-pro" onclick="closeShadowAI();">Shadow AI Pro →</a>`;
+}
+
+// ============================================
+// KEYBOARD HANDLER (Mobile Landscape)
+// ============================================
+function initializeKeyboardHandler() {
+    const input = document.getElementById('shadow-ai-input');
+    const chatWindow = document.getElementById('shadow-ai-chat');
+    
+    if (!input || !chatWindow) return;
+    
+    // Detect keyboard on mobile landscape
+    input.addEventListener('focus', () => {
+        if (window.innerWidth <= 926 && window.innerHeight <= 500 && window.matchMedia('(orientation: landscape)').matches) {
+            chatWindow.classList.add('keyboard-visible');
+            console.log('📱 Keyboard visible (landscape)');
+        }
+    });
+    
+    input.addEventListener('blur', () => {
+        setTimeout(() => {
+            chatWindow.classList.remove('keyboard-visible');
+            console.log('📱 Keyboard hidden');
+        }, 100);
+    });
+    
+    // Handle orientation change
+    window.addEventListener('orientationchange', () => {
+        setTimeout(() => {
+            chatWindow.classList.remove('keyboard-visible');
+            if (document.activeElement === input) {
+                input.blur();
+            }
+        }, 300);
+    });
+    
+    console.log('✅ Keyboard handler initialized');
+}
+
+// ============================================
+// SCROLL ISOLATION (Prevent page scroll when in chat)
+// ============================================
+function initializeScrollIsolation() {
+    const messagesContainer = document.getElementById('shadow-ai-messages');
+    if (!messagesContainer) return;
+    
+    messagesContainer.addEventListener('wheel', (e) => {
+        const isScrollable = messagesContainer.scrollHeight > messagesContainer.clientHeight;
+        
+        if (!isScrollable) {
+            e.preventDefault();
+            return;
+        }
+        
+        const scrollTop = messagesContainer.scrollTop;
+        const scrollHeight = messagesContainer.scrollHeight;
+        const clientHeight = messagesContainer.clientHeight;
+        const delta = e.deltaY;
+        
+        if ((delta < 0 && scrollTop <= 0) || (delta > 0 && scrollTop + clientHeight >= scrollHeight)) {
+            e.preventDefault();
+        }
+    }, { passive: false });
+    
+    messagesContainer.addEventListener('touchmove', (e) => {
+        e.stopPropagation();
+    }, { passive: true });
+    
+    console.log('✅ Scroll isolation initialized');
+}
+
+// ============================================
+// INITIALIZATION
+// ============================================
+function initializeShadowAI() {
+    console.log('🤖 Shadow AI v2.0 Initializing...');
+    
+    // Get elements
+    const btn = document.getElementById('shadow-ai-btn');
     const closeBtn = document.getElementById('shadow-ai-close');
     const sendBtn = document.getElementById('shadow-ai-send');
     const input = document.getElementById('shadow-ai-input');
-    const messagesContainer = document.getElementById('shadow-ai-messages');
     
-    if (!chatBtn || !chatWindow) return;
-    
-    // Toggle chat
-    chatBtn.addEventListener('click', function() {
-        chatWindow.classList.toggle('hidden');
-        chatState.isOpen = !chatWindow.classList.contains('hidden');
+    // Button click - toggle chat
+    if (btn) {
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            toggleChatbot();
+        });
         
-        if (chatState.isOpen && chatState.messages.length === 0) {
-            // Show welcome message
-            setTimeout(() => {
-                addMessage('ai', randomResponse(responses.greetings));
-            }, 300);
-        }
-        
-        if (chatState.isOpen) {
-            input?.focus();
-        }
-    });
-    
-    // Close button
-    closeBtn?.addEventListener('click', function() {
-        chatWindow.classList.add('hidden');
-        chatState.isOpen = false;
-    });
-    
-    // Send message
-    function sendMessage() {
-        const text = input?.value.trim();
-        if (!text || chatState.isTyping) return;
-        
-        // Add user message
-        addMessage('user', text);
-        input.value = '';
-        
-        // Show typing indicator
-        showTyping();
-        
-        // Process and respond
-        setTimeout(() => {
-            hideTyping();
-            const response = processMessage(text);
-            addMessage('ai', response);
-        }, 1000 + Math.random() * 1000);
+        btn.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            toggleChatbot();
+        }, { passive: false });
     }
     
-    sendBtn?.addEventListener('click', sendMessage);
+    // Close button
+    if (closeBtn) {
+        closeBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            closeShadowAI();
+        });
+        
+        closeBtn.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            closeShadowAI();
+        }, { passive: false });
+    }
     
-    input?.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
+    // Send button
+    if (sendBtn) {
+        sendBtn.addEventListener('click', (e) => {
+            e.preventDefault();
             sendMessage();
-        }
-    });
+        });
+        
+        sendBtn.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            sendMessage();
+        }, { passive: false });
+    }
+    
+    // Input enter key
+    if (input) {
+        input.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+    }
+    
+    // Initialize handlers
+    initializeKeyboardHandler();
+    initializeScrollIsolation();
+    
+    // Hook into cookie consent
+    hookCookieConsent();
+    
+    // Update status
+    updateStatus();
+    
+    // Also hook "Open Shadow AI" button in contact section
+    const openShadowAIBtn = document.getElementById('open-shadow-ai');
+    if (openShadowAIBtn) {
+        openShadowAIBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            openShadowAI();
+        });
+    }
+    
+    // Hook "Try Free" button in spotlight section
+    const tryAIBtn = document.getElementById('try-ai-btn');
+    if (tryAIBtn) {
+        tryAIBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            openShadowAI();
+        });
+    }
+    
+    console.log('✅ Shadow AI v2.0 Ready');
 }
 
-function addMessage(type, text) {
-    const messagesContainer = document.getElementById('shadow-ai-messages');
-    if (!messagesContainer) return;
-    
-    const msg = document.createElement('div');
-    msg.className = `copilot-message ${type}`;
-    
-    // Simple markdown-like formatting
-    let formattedText = text
-        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-        .replace(/\n/g, '<br>');
-    
-    msg.innerHTML = formattedText;
-    messagesContainer.appendChild(msg);
-    
-    // Scroll to bottom
-    messagesContainer.scrollTop = messagesContainer.scrollHeight;
-    
-    // Store message
-    chatState.messages.push({ type, text });
+// ============================================
+// DOM READY
+// ============================================
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeShadowAI);
+} else {
+    initializeShadowAI();
 }
 
-function showTyping() {
-    const messagesContainer = document.getElementById('shadow-ai-messages');
-    if (!messagesContainer) return;
-    
-    chatState.isTyping = true;
-    
-    const typingEl = document.createElement('div');
-    typingEl.className = 'copilot-message ai typing';
-    typingEl.id = 'typing-indicator';
-    typingEl.innerHTML = '<span class="typing-dots"><span></span><span></span><span></span></span>';
-    messagesContainer.appendChild(typingEl);
-    messagesContainer.scrollTop = messagesContainer.scrollHeight;
-}
+// Export for global access
+window.ShadowAI = {
+    open: openShadowAI,
+    close: closeShadowAI,
+    toggle: toggleChatbot,
+    sendMessage: sendMessage
+};
 
-function hideTyping() {
-    const typingEl = document.getElementById('typing-indicator');
-    typingEl?.remove();
-    chatState.isTyping = false;
-}
-
-/* =============================================================================
-   INITIALIZE
-   ============================================================================= */
-document.addEventListener('DOMContentLoaded', function() {
-    initChatbot();
-    console.log('✅ Shadow AI chatbot initialized');
-});
+})();

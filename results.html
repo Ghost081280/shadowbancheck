@@ -5,27 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Check Results - ShadowBanCheck.io</title>
     
-    <!-- CSS - Updated for new architecture -->
-    <link rel="stylesheet" href="css/main.css">
-    <link rel="stylesheet" href="css/shadow-ai.css">
+    <!-- CSS -->
+    <link rel="stylesheet" href="css/shared.css">
     <link rel="stylesheet" href="css/results.css">
 </head>
 <body>
-    <!-- Header -->
-    <header class="header">
-        <div class="container">
-            <div class="logo">
-                <a href="index.html">
-                    <span class="logo-emoji">🔍</span>
-                    <span class="logo-text">ShadowBanCheck.io</span>
-                </a>
-            </div>
-            <nav class="nav">
-                <a href="checker.html">New Check</a>
-                <a href="index.html#pricing">Upgrade</a>
-            </nav>
-        </div>
-    </header>
+    <!-- Navigation loaded by shared.js -->
+    <nav id="main-nav"></nav>
 
     <!-- Main Content -->
     <main class="main">
@@ -77,31 +63,14 @@
         </div>
     </main>
 
-    <!-- Shadow AI Button -->
-    <button id="shadow-ai-btn" class="copilot-btn">
-        <span class="copilot-emoji">🤖</span>
-        <span class="copilot-text">Shadow AI</span>
-    </button>
+    <!-- Footer loaded by shared.js -->
+    <footer id="main-footer"></footer>
 
-    <!-- Shadow AI Chat -->
-    <div id="shadow-ai-chat" class="copilot-chat hidden">
-        <div class="copilot-header">
-            <div class="copilot-title">
-                <span class="copilot-emoji">🤖</span>
-                <span>Shadow AI</span>
-            </div>
-            <button id="shadow-ai-close" class="copilot-close">&times;</button>
-        </div>
-        <div id="shadow-ai-messages" class="copilot-messages">
-            <!-- Messages populated by shadow-ai.js -->
-        </div>
-        <div class="copilot-input">
-            <input type="text" id="shadow-ai-input" placeholder="Ask about your results...">
-            <button id="shadow-ai-send">Send</button>
-        </div>
-    </div>
+    <!-- Phoenix AI Button loaded by shared.js -->
+    <div id="phoenix-ai-container"></div>
 
-    <script src="js/shadow-ai.js"></script>
+    <!-- Scripts -->
+    <script src="js/shared.js"></script>
     <script src="js/results.js"></script>
 </body>
 </html>

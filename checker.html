@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="css/shadow-ai.css">
 </head>
 <body>
-    <!-- Header - MATCHES INDEX -->
+    <!-- Header -->
     <header class="header">
         <div class="container">
             <div class="logo">
@@ -32,6 +32,22 @@
             <div class="hero-badge">🔍 Free Shadow Ban Checker</div>
             <h1 class="hero-title">Check Any Platform</h1>
             <p class="hero-subtitle">Select a platform below to instantly check if you're shadow banned. Fast, free, and accurate.</p>
+        </div>
+    </section>
+
+    <!-- Search Counter Module -->
+    <section style="padding: 0 0 var(--space-xl) 0;">
+        <div class="container">
+            <div class="search-counter-module">
+                <div class="counter-content">
+                    <div class="counter-icon">🎯</div>
+                    <div class="counter-text">
+                        <h3>Free Searches Remaining</h3>
+                        <p id="searches-remaining">3 / 3 searches available today</p>
+                    </div>
+                </div>
+                <a href="index.html#pricing" class="btn-counter">Unlock Unlimited</a>
+            </div>
         </div>
     </section>
 
@@ -67,7 +83,7 @@
             <p class="section-desc">Click any live platform to start your free shadow ban check</p>
 
             <div class="platform-grid">
-                <!-- All 26 platforms from index -->
+                <!-- All 26 platforms -->
                 <div class="platform-item clickable" data-platform="twitter">
                     <span>🐦</span>
                     <span>Twitter / X</span>
@@ -202,17 +218,63 @@
         </div>
     </section>
 
+    <!-- Data Sources Section -->
+    <section class="data-sources-section">
+        <div class="container">
+            <h2 class="section-title">Our Data Sources</h2>
+            <p class="section-desc">We analyze multiple data points to give you accurate probability scores</p>
+            
+            <div class="sources-grid">
+                <div class="source-card">
+                    <div class="source-icon">🔌</div>
+                    <h3>Platform APIs</h3>
+                    <p>Direct integration with social media APIs for real-time account status verification</p>
+                </div>
+                
+                <div class="source-card">
+                    <div class="source-icon">🌐</div>
+                    <h3>Web Search Analysis</h3>
+                    <p>AI-powered web searches across Google, Bing, and specialized databases</p>
+                </div>
+                
+                <div class="source-card">
+                    <div class="source-icon">📊</div>
+                    <h3>Public Databases</h3>
+                    <p>Historical shadow ban data, user reports, and community-verified cases</p>
+                </div>
+                
+                <div class="source-card">
+                    <div class="source-icon">👥</div>
+                    <h3>User Reports</h3>
+                    <p>Thousands of verified reports from our community help identify patterns</p>
+                </div>
+                
+                <div class="source-card">
+                    <div class="source-icon">🤖</div>
+                    <h3>AI Pattern Recognition</h3>
+                    <p>Machine learning algorithms detect shadow ban indicators across 10+ factors</p>
+                </div>
+                
+                <div class="source-card">
+                    <div class="source-icon">📈</div>
+                    <h3>Historical Data</h3>
+                    <p>Track trends and patterns over time to improve accuracy of probability scores</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <!-- Platform Modal -->
     <div id="platform-modal" class="modal hidden">
         <div class="modal-content">
             <button class="modal-close">&times;</button>
             <div id="modal-body">
-                <!-- Modal content will be inserted here -->
+                <!-- Modal content will be inserted here by JavaScript -->
             </div>
         </div>
     </div>
 
-    <!-- Footer - EXACT COPY FROM INDEX -->
+    <!-- Footer -->
     <footer class="footer">
         <div class="container">
             <div class="footer-grid">
@@ -232,7 +294,7 @@
                 <div class="footer-col">
                     <h4>Tools</h4>
                     <a href="checker.html">Shadow Ban Checker</a>
-                    <a href="hashtag-checker.html">Hashtag Checker</a>
+                    <a href="hashtag-checker.html">Banned Hashtags Checker</a>
                 </div>
                 <div class="footer-col">
                     <h4>Developers</h4>
@@ -280,6 +342,7 @@
         }
     </script>
     <script src="js/shadow-ai.js"></script>
-    <script src="js/checker-new.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/checker.js"></script>
 </body>
 </html>

@@ -6,7 +6,6 @@
     <title>Shadow Ban Checker - ShadowBanCheck.io</title>
     <meta name="description" content="Check if you're shadow banned on Twitter, Reddit, Email and more. Free visibility checker.">
     
-    <!-- CSS -->
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/shadow-ai.css">
     <link rel="stylesheet" href="css/checker.css">
@@ -22,8 +21,9 @@
                 </a>
             </div>
             <nav class="nav">
-                <a href="#login" class="nav-link">Login</a>
-                <a href="index.html#pricing" class="btn-nav-cta">Get Shadow AI Pro</a>
+                <a href="#platforms">Platforms</a>
+                <a href="#pricing">Pricing</a>
+                <a href="#" class="btn-nav">Get Shadow AI Pro</a>
             </nav>
         </div>
     </header>
@@ -33,69 +33,166 @@
         <div class="container">
             <div class="checker-header">
                 <h1>Check Your Visibility</h1>
-                <p>Select a platform to analyze your shadow ban status</p>
+                <p>Select a platform and we'll analyze your shadow ban status</p>
             </div>
 
-            <!-- Platform Selection Grid -->
+            <!-- Platform Selection -->
             <div class="platform-selection">
                 <h2>Choose Platform</h2>
-                <div class="platform-grid">
-                    <!-- Live Platforms -->
-                    <button class="platform-card live" data-platform="twitter">
+                <div class="platform-options">
+                    <button class="platform-option active" data-platform="twitter">
                         <span class="platform-icon">🐦</span>
                         <span class="platform-name">Twitter / X</span>
-                        <span class="platform-badge live">Live</span>
+                        <span class="platform-status live">Live</span>
                     </button>
                     
-                    <button class="platform-card live" data-platform="reddit">
+                    <button class="platform-option active" data-platform="reddit">
                         <span class="platform-icon">🤖</span>
                         <span class="platform-name">Reddit</span>
-                        <span class="platform-badge live">Live</span>
+                        <span class="platform-status live">Live</span>
                     </button>
                     
-                    <button class="platform-card live" data-platform="email">
+                    <button class="platform-option active" data-platform="email">
                         <span class="platform-icon">📧</span>
                         <span class="platform-name">Email</span>
-                        <span class="platform-badge live">Live</span>
+                        <span class="platform-status live">Live</span>
                     </button>
                     
-                    <!-- Coming Soon Platforms -->
-                    <button class="platform-card soon" data-platform="instagram" disabled>
+                    <button class="platform-option" data-platform="instagram" disabled>
                         <span class="platform-icon">📸</span>
                         <span class="platform-name">Instagram</span>
-                        <span class="platform-badge soon">Soon</span>
+                        <span class="platform-status soon">Soon</span>
                     </button>
                     
-                    <button class="platform-card soon" data-platform="tiktok" disabled>
+                    <button class="platform-option" data-platform="tiktok" disabled>
                         <span class="platform-icon">🎵</span>
                         <span class="platform-name">TikTok</span>
-                        <span class="platform-badge soon">Soon</span>
+                        <span class="platform-status soon">Soon</span>
                     </button>
                     
-                    <button class="platform-card soon" data-platform="linkedin" disabled>
+                    <button class="platform-option" data-platform="linkedin" disabled>
                         <span class="platform-icon">💼</span>
                         <span class="platform-name">LinkedIn</span>
-                        <span class="platform-badge soon">Soon</span>
+                        <span class="platform-status soon">Soon</span>
                     </button>
                     
-                    <button class="platform-card soon" data-platform="phone" disabled>
+                    <button class="platform-option" data-platform="phone" disabled>
                         <span class="platform-icon">📱</span>
-                        <span class="platform-name">Phone</span>
-                        <span class="platform-badge soon">Soon</span>
+                        <span class="platform-name">Phone Number</span>
+                        <span class="platform-status soon">Soon</span>
                     </button>
                     
-                    <button class="platform-card soon" data-platform="domain" disabled>
+                    <button class="platform-option" data-platform="domain" disabled>
                         <span class="platform-icon">🌐</span>
                         <span class="platform-name">Domain</span>
-                        <span class="platform-badge soon">Soon</span>
+                        <span class="platform-status soon">Soon</span>
                     </button>
                 </div>
             </div>
 
-            <!-- Free Checks Counter -->
+            <!-- Input Forms (Dynamic based on platform) -->
+            <div class="input-section">
+                <!-- Twitter Form -->
+                <form id="twitter-form" class="platform-form active">
+                    <h3>🐦 Twitter / X Check</h3>
+                    <p class="form-description">Enter your Twitter username (without @)</p>
+                    
+                    <div class="form-group">
+                        <label for="twitter-username">Username</label>
+                        <input 
+                            type="text" 
+                            id="twitter-username" 
+                            placeholder="elonmusk"
+                            required
+                        >
+                        <span class="input-hint">Example: elonmusk (not @elonmusk)</span>
+                    </div>
+                    
+                    <div class="checks-info">
+                        <h4>What we'll check:</h4>
+                        <ul>
+                            <li>✓ Search visibility</li>
+                            <li>✓ Search suggestions</li>
+                            <li>✓ Reply visibility</li>
+                            <li>✓ Thread participation</li>
+                        </ul>
+                    </div>
+                    
+                    <button type="submit" class="btn-submit">
+                        <span class="btn-text">Check Twitter Status</span>
+                        <span class="btn-icon">→</span>
+                    </button>
+                </form>
+
+                <!-- Reddit Form -->
+                <form id="reddit-form" class="platform-form">
+                    <h3>🤖 Reddit Check</h3>
+                    <p class="form-description">Enter your Reddit username</p>
+                    
+                    <div class="form-group">
+                        <label for="reddit-username">Username</label>
+                        <input 
+                            type="text" 
+                            id="reddit-username" 
+                            placeholder="spez"
+                            required
+                        >
+                        <span class="input-hint">Example: spez (without u/)</span>
+                    </div>
+                    
+                    <div class="checks-info">
+                        <h4>What we'll check:</h4>
+                        <ul>
+                            <li>✓ Site-wide shadow ban</li>
+                            <li>✓ Profile visibility</li>
+                            <li>✓ Post/comment visibility</li>
+                            <li>✓ Account status</li>
+                        </ul>
+                    </div>
+                    
+                    <button type="submit" class="btn-submit">
+                        <span class="btn-text">Check Reddit Status</span>
+                        <span class="btn-icon">→</span>
+                    </button>
+                </form>
+
+                <!-- Email Form -->
+                <form id="email-form" class="platform-form">
+                    <h3>📧 Email Deliverability Check</h3>
+                    <p class="form-description">Test your email or domain reputation</p>
+                    
+                    <div class="form-group">
+                        <label for="email-address">Email Address or Domain</label>
+                        <input 
+                            type="text" 
+                            id="email-address" 
+                            placeholder="yourname@example.com"
+                            required
+                        >
+                        <span class="input-hint">Example: hello@company.com or company.com</span>
+                    </div>
+                    
+                    <div class="checks-info">
+                        <h4>What we'll check:</h4>
+                        <ul>
+                            <li>✓ Blacklist status (25+ databases)</li>
+                            <li>✓ SPF/DKIM/DMARC records</li>
+                            <li>✓ Sender reputation score</li>
+                            <li>✓ Spam trap presence</li>
+                        </ul>
+                    </div>
+                    
+                    <button type="submit" class="btn-submit">
+                        <span class="btn-text">Check Email Status</span>
+                        <span class="btn-icon">→</span>
+                    </button>
+                </form>
+            </div>
+
+            <!-- Checks remaining counter -->
             <div class="checks-counter">
                 <span class="counter-icon">🎯</span>
-                <span class="counter-text">Free Checks Remaining: <strong id="checks-remaining">3</strong>/3 today</span>
+                <span class="counter-text">Free checks remaining: <strong id="checks-remaining">3</strong>/3 today</span>
             </div>
         </div>
     </main>
@@ -103,152 +200,42 @@
     <!-- Footer -->
     <footer class="footer">
         <div class="container">
-            <div class="footer-content">
-                <div class="footer-section">
-                    <h3>ShadowBanCheck.io</h3>
-                    <p>The #1 shadow ban detection tool for social media.</p>
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <div class="logo">
+                        <span class="logo-emoji">🔍</span>
+                        <span>ShadowBanCheck.io</span>
+                    </div>
+                    <p>Know your real reach</p>
                 </div>
-                <div class="footer-section">
+                <div class="footer-col">
                     <h4>Product</h4>
-                    <ul>
-                        <li><a href="checker.html">Shadow Ban Checker</a></li>
-                        <li><a href="hashtag-checker.html">Hashtag Checker</a></li>
-                        <li><a href="index.html#pricing">Pricing</a></li>
-                    </ul>
+                    <a href="#platforms">Platforms</a>
+                    <a href="#pricing">Pricing</a>
                 </div>
-                <div class="footer-section">
-                    <h4>Resources</h4>
-                    <ul>
-                        <li><a href="index.html#how">How It Works</a></li>
-                        <li><a href="index.html#faq">FAQ</a></li>
-                        <li><a href="#contact">Contact</a></li>
-                    </ul>
+                <div class="footer-col">
+                    <h4>Tools</h4>
+                    <a href="checker.html">Shadow Ban Checker</a>
+                    <a href="hashtag-checker.html">Hashtag Checker</a>
                 </div>
-                <div class="footer-section">
-                    <h4>Legal</h4>
-                    <ul>
-                        <li><a href="#privacy">Privacy Policy</a></li>
-                        <li><a href="#terms">Terms of Service</a></li>
-                    </ul>
+                <div class="footer-col">
+                    <h4>Support</h4>
+                    <a href="#">Help</a>
+                    <a href="#">Contact</a>
                 </div>
             </div>
             <div class="footer-bottom">
-                <p>&copy; 2025 ShadowBanCheck.io. All rights reserved.</p>
+                <p>&copy; 2025 ShadowBanCheck.io</p>
             </div>
         </div>
     </footer>
 
-    <!-- Modal Popup -->
-    <div id="check-modal" class="modal">
-        <div class="modal-overlay"></div>
-        <div class="modal-content">
-            <button class="modal-close">&times;</button>
-            
-            <!-- Twitter Form -->
-            <form id="twitter-form" class="platform-form" data-platform="twitter">
-                <h3>🐦 Twitter / X Check</h3>
-                <p class="form-description">Enter your Twitter username to check for shadow bans</p>
-                
-                <div class="form-group">
-                    <label for="twitter-username">Username</label>
-                    <input 
-                        type="text" 
-                        id="twitter-username" 
-                        placeholder="elonmusk"
-                        required
-                    >
-                    <span class="input-hint">Example: elonmusk (without @)</span>
-                </div>
-                
-                <div class="checks-info">
-                    <h4>What we'll check:</h4>
-                    <ul>
-                        <li>✓ Search visibility</li>
-                        <li>✓ Search suggestions</li>
-                        <li>✓ Reply visibility</li>
-                        <li>✓ Thread participation</li>
-                    </ul>
-                </div>
-                
-                <button type="submit" class="btn-submit">
-                    <span class="btn-text">Check Now</span>
-                    <span class="btn-icon">→</span>
-                </button>
-            </form>
-
-            <!-- Reddit Form -->
-            <form id="reddit-form" class="platform-form" data-platform="reddit" style="display: none;">
-                <h3>🤖 Reddit Check</h3>
-                <p class="form-description">Enter your Reddit username to check for shadow bans</p>
-                
-                <div class="form-group">
-                    <label for="reddit-username">Username</label>
-                    <input 
-                        type="text" 
-                        id="reddit-username" 
-                        placeholder="spez"
-                        required
-                    >
-                    <span class="input-hint">Example: spez (without u/)</span>
-                </div>
-                
-                <div class="checks-info">
-                    <h4>What we'll check:</h4>
-                    <ul>
-                        <li>✓ Site-wide shadow ban</li>
-                        <li>✓ Profile visibility</li>
-                        <li>✓ Post/comment visibility</li>
-                        <li>✓ Account status</li>
-                    </ul>
-                </div>
-                
-                <button type="submit" class="btn-submit">
-                    <span class="btn-text">Check Now</span>
-                    <span class="btn-icon">→</span>
-                </button>
-            </form>
-
-            <!-- Email Form -->
-            <form id="email-form" class="platform-form" data-platform="email" style="display: none;">
-                <h3>📧 Email Deliverability Check</h3>
-                <p class="form-description">Test your email or domain reputation</p>
-                
-                <div class="form-group">
-                    <label for="email-address">Email Address or Domain</label>
-                    <input 
-                        type="text" 
-                        id="email-address" 
-                        placeholder="yourname@example.com"
-                        required
-                    >
-                    <span class="input-hint">Example: hello@company.com or company.com</span>
-                </div>
-                
-                <div class="checks-info">
-                    <h4>What we'll check:</h4>
-                    <ul>
-                        <li>✓ Blacklist status (25+ databases)</li>
-                        <li>✓ SPF/DKIM/DMARC records</li>
-                        <li>✓ Sender reputation score</li>
-                        <li>✓ Mail server configuration</li>
-                    </ul>
-                </div>
-                
-                <button type="submit" class="btn-submit">
-                    <span class="btn-text">Check Now</span>
-                    <span class="btn-icon">→</span>
-                </button>
-            </form>
-        </div>
-    </div>
-
-    <!-- Shadow AI Button -->
+    <!-- Shadow AI -->
     <button id="shadow-ai-btn" class="copilot-btn">
         <span class="copilot-emoji">🤖</span>
-        <span class="copilot-text">Shadow AI</span>
+        <span>Shadow AI</span>
     </button>
 
-    <!-- Shadow AI Chat -->
     <div id="shadow-ai-chat" class="copilot-chat hidden">
         <div class="copilot-header">
             <div class="copilot-title">
@@ -259,7 +246,7 @@
         </div>
         <div id="shadow-ai-messages" class="copilot-messages"></div>
         <div class="copilot-input">
-            <input type="text" id="shadow-ai-input" placeholder="Ask me anything...">
+            <input type="text" id="shadow-ai-input" placeholder="Ask about shadow bans...">
             <button id="shadow-ai-send">Send</button>
         </div>
     </div>

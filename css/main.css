@@ -696,18 +696,20 @@ strong, b {
 
 .footer-bottom {
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-start;
     align-items: center;
     padding-top: var(--space-xl);
     border-top: 1px solid var(--border);
     flex-wrap: wrap;
     gap: var(--space-md);
+    padding-bottom: var(--space-3xl); /* Space for chatbot button */
 }
 
 .footer-bottom p {
     color: var(--text-muted);
     font-size: 0.875rem;
     margin: 0;
+    margin-right: var(--space-xl);
 }
 
 .footer-legal {
@@ -2456,8 +2458,9 @@ strong, b {
     .spotlight-cta .btn { width: 100%; }
     
     /* Footer */
-    .footer-bottom { flex-direction: column; text-align: center; }
-    .footer-legal { justify-content: center; }
+    .footer-bottom { flex-direction: column; align-items: flex-start; text-align: left; }
+    .footer-bottom p { margin-right: 0; margin-bottom: var(--space-xs); }
+    .footer-legal { justify-content: flex-start; }
     
     /* Cookie Popup */
     .cookie-content { flex-direction: column; text-align: center; }

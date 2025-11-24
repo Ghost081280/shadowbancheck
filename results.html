@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Check Results - ShadowBanCheck.io</title>
     <meta name="description" content="Your shadow ban check results">
-    
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/shadow-ai.css">
     <link rel="stylesheet" href="css/results.css">
@@ -21,7 +20,7 @@
                 </a>
             </div>
             <nav class="nav">
-                <a href="#" class="btn-login" onclick="alert('Login/Dashboard coming soon! After purchase, you\'ll access your dashboard here.'); return false;">Login</a>
+                <a href="#" class="btn-login" onclick="alert('Login/Dashboard coming soon!'); return false;">Login</a>
                 <a href="index.html#shadow-ai-pro" class="btn-nav">Get Shadow AI Pro</a>
             </nav>
         </div>
@@ -42,9 +41,6 @@
                 <div id="checks-grid" class="checks-grid"></div>
             </div>
 
-            <!-- Account Details -->
-            <div id="account-details" class="account-details"></div>
-
             <!-- Recommendations -->
             <div id="recommendations" class="recommendations">
                 <h2>💡 Recommendations</h2>
@@ -54,42 +50,51 @@
             <!-- Actions -->
             <div class="actions">
                 <a href="checker.html" class="btn-secondary">Run Another Check</a>
+                <a href="hashtag-checker.html" class="btn-secondary">Check Hashtags</a>
                 <button id="download-report" class="btn-secondary">Download Report</button>
             </div>
 
-            <!-- Share Results Section -->
-            <section class="share-results-section">
-                <h3>📢 Share Your Results</h3>
-                <p>Let others know you checked your account!</p>
-                <div class="share-buttons-results">
-                    <button class="btn-share-result" id="share-twitter-results">
-                        <span class="share-icon">𝕏</span>
-                        <span>Share on X</span>
-                    </button>
-                    <button class="btn-share-result" id="share-facebook-results">
-                        <span class="share-icon">f</span>
-                        <span>Share on Facebook</span>
-                    </button>
-                    <button class="btn-share-result" id="share-telegram-results">
-                        <span class="share-icon">✈️</span>
-                        <span>Share on Telegram</span>
-                    </button>
-                    <button class="btn-share-result" id="share-linkedin-results">
-                        <span class="share-icon">in</span>
-                        <span>Share on LinkedIn</span>
-                    </button>
+            <!-- Cross-Promote: Hashtag Checker -->
+            <section class="cross-promote-section">
+                <div class="cross-promote-card">
+                    <div class="cross-promote-icon">🚫</div>
+                    <div class="cross-promote-content">
+                        <h3>Also Check Your Hashtags</h3>
+                        <p>Using banned hashtags can trigger shadow bans. Check if your hashtags are safe before posting.</p>
+                    </div>
+                    <a href="hashtag-checker.html" class="btn-cross-promote">Check Hashtags →</a>
                 </div>
             </section>
 
-            <!-- Upgrade CTA Module -->
-            <div class="upgrade-cta-module">
-                <div class="upgrade-icon">🎯</div>
-                <div class="upgrade-content">
-                    <h3>Need More Checks?</h3>
-                    <p>You've used your free daily checks. Upgrade for unlimited access and advanced features.</p>
-                    <a href="index.html#pricing" class="btn-upgrade">View All Pricing Plans →</a>
+            <!-- Share Results -->
+            <section class="share-results-section">
+                <h3>📢 Share Your Results</h3>
+                <p>Let others know about shadow ban checking!</p>
+                <div class="share-buttons-results">
+                    <button class="btn-share-result" id="share-twitter-results"><span class="share-icon">𝕏</span><span>Share on X</span></button>
+                    <button class="btn-share-result" id="share-facebook-results"><span class="share-icon">f</span><span>Facebook</span></button>
+                    <button class="btn-share-result" id="share-telegram-results"><span class="share-icon">✈️</span><span>Telegram</span></button>
+                    <button class="btn-share-result" id="share-linkedin-results"><span class="share-icon">in</span><span>LinkedIn</span></button>
                 </div>
-            </div>
+            </section>
+
+            <!-- Upgrade CTA -->
+            <section class="upgrade-cta-section">
+                <div class="upgrade-cta-card">
+                    <div class="upgrade-cta-icon">🎯</div>
+                    <div class="upgrade-cta-content">
+                        <h3>Want Continuous Monitoring?</h3>
+                        <p>Get alerts when your account status changes. Monitor multiple accounts with real-time notifications.</p>
+                        <ul class="upgrade-features">
+                            <li>✓ Unlimited daily checks</li>
+                            <li>✓ Real-time monitoring</li>
+                            <li>✓ Email & text alerts</li>
+                            <li>✓ Recovery strategies</li>
+                        </ul>
+                    </div>
+                    <a href="index.html#pricing" class="btn-upgrade-cta">View Plans - From $4.99/mo</a>
+                </div>
+            </section>
         </div>
     </main>
 
@@ -98,10 +103,7 @@
         <div class="container">
             <div class="footer-grid">
                 <div class="footer-brand">
-                    <div class="logo">
-                        <span class="logo-emoji">🔍</span>
-                        <span>ShadowBanCheck.io</span>
-                    </div>
+                    <div class="logo"><span class="logo-emoji">🔍</span><span>ShadowBanCheck.io</span></div>
                     <p>Protecting visibility for influencers, politicians, and online sellers worldwide.</p>
                 </div>
                 <div class="footer-col">
@@ -117,17 +119,15 @@
                 </div>
                 <div class="footer-col">
                     <h4>Developers</h4>
-                    <a href="#" onclick="alert('API documentation coming soon for developers!'); return false;">
-                        API Access <span class="coming-soon-tiny">Coming Soon</span>
-                    </a>
+                    <a href="#" onclick="alert('API documentation coming soon!'); return false;">API Access <span class="coming-soon-tiny">Soon</span></a>
                     <a href="https://github.com/Ghost081280" target="_blank">GitHub</a>
                 </div>
             </div>
             <div class="footer-bottom">
                 <p>&copy; 2025 ShadowBanCheck.io. All rights reserved.</p>
                 <div class="footer-legal" style="margin-right: 100px;">
-                    <a href="#" onclick="alert('Terms of Service coming soon!'); return false;">Terms</a>
-                    <a href="#" onclick="alert('Privacy Policy coming soon!'); return false;">Privacy</a>
+                    <a href="#" onclick="alert('Terms coming soon!'); return false;">Terms</a>
+                    <a href="#" onclick="alert('Privacy coming soon!'); return false;">Privacy</a>
                     <a href="#" onclick="showCookiePolicy(); return false;">Cookie Policy</a>
                 </div>
             </div>
@@ -135,17 +135,10 @@
     </footer>
 
     <!-- Shadow AI -->
-    <button id="shadow-ai-btn" class="copilot-btn">
-        <span class="copilot-emoji">🤖</span>
-        <span>Shadow AI</span>
-    </button>
-
+    <button id="shadow-ai-btn" class="copilot-btn"><span class="copilot-emoji">🤖</span><span>Shadow AI</span></button>
     <div id="shadow-ai-chat" class="copilot-chat hidden">
         <div class="copilot-header">
-            <div class="copilot-title">
-                <span class="copilot-emoji">🤖</span>
-                <span>Shadow AI</span>
-            </div>
+            <div class="copilot-title"><span class="copilot-emoji">🤖</span><span>Shadow AI</span></div>
             <button id="shadow-ai-close" class="copilot-close">&times;</button>
         </div>
         <div id="shadow-ai-messages" class="copilot-messages"></div>
@@ -156,40 +149,7 @@
     </div>
 
     <script>
-        function showCookiePolicy() {
-            alert('Cookie Policy\n\nWe use cookies to:\n• Remember your preferences\n• Analyze site traffic and usage\n• Improve your experience\n• Track free AI questions (3 per day)\n\nBy using ShadowBanCheck.io, you consent to our use of cookies.');
-        }
-        
-        // Share functionality
-        document.addEventListener('DOMContentLoaded', () => {
-            const resultsData = JSON.parse(localStorage.getItem('checkResults') || '{}');
-            const platform = resultsData.platform || 'Twitter/X';
-            const username = resultsData.username || 'your account';
-            const probability = resultsData.probability || 0;
-            
-            const shareText = `I just checked my ${username} for shadow bans on ${platform}! Got a ${probability}% probability score with detailed analysis. Check yours free: https://shadowbancheck.io`;
-            const shareUrl = 'https://shadowbancheck.io';
-            
-            // Twitter/X
-            document.getElementById('share-twitter-results')?.addEventListener('click', () => {
-                window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}`, '_blank');
-            });
-            
-            // Facebook
-            document.getElementById('share-facebook-results')?.addEventListener('click', () => {
-                window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}&quote=${encodeURIComponent(shareText)}`, '_blank');
-            });
-            
-            // Telegram
-            document.getElementById('share-telegram-results')?.addEventListener('click', () => {
-                window.open(`https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`, '_blank');
-            });
-            
-            // LinkedIn
-            document.getElementById('share-linkedin-results')?.addEventListener('click', () => {
-                window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`, '_blank');
-            });
-        });
+        function showCookiePolicy() { alert('Cookie Policy\n\nWe use cookies to remember your preferences and track free searches.'); }
     </script>
     <script src="js/shadow-ai.js"></script>
     <script src="js/results.js"></script>

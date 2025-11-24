@@ -390,7 +390,7 @@
     gap: 1rem;
     justify-content: center;
     flex-wrap: wrap;
-    margin-bottom: 4rem;
+    margin-bottom: 2rem;
 }
 
 .btn-primary,
@@ -430,105 +430,6 @@
     box-shadow: 0 4px 15px rgba(99, 102, 241, 0.2);
 }
 
-/* Share Modal */
-.share-modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.8);
-    backdrop-filter: blur(4px);
-    z-index: 1000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 1rem;
-}
-
-.share-modal.hidden {
-    display: none;
-}
-
-.share-modal-content {
-    background: #1e293b;
-    border: 2px solid #334155;
-    border-radius: 1rem;
-    padding: 2rem;
-    max-width: 500px;
-    width: 100%;
-    animation: slideUp 0.3s ease;
-}
-
-.share-modal-content h3 {
-    color: #f1f5f9;
-    font-size: 1.5rem;
-    margin-bottom: 1.5rem;
-    text-align: center;
-}
-
-.share-buttons {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1rem;
-    margin-bottom: 1.5rem;
-}
-
-.share-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.75rem;
-    padding: 1rem;
-    border: 2px solid #334155;
-    border-radius: 0.75rem;
-    background: #0f172a;
-    color: #f1f5f9;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.share-btn:hover {
-    transform: translateY(-2px);
-}
-
-.share-btn.twitter:hover {
-    border-color: #1DA1F2;
-    color: #1DA1F2;
-}
-
-.share-btn.facebook:hover {
-    border-color: #1877F2;
-    color: #1877F2;
-}
-
-.share-btn.telegram:hover {
-    border-color: #0088cc;
-    color: #0088cc;
-}
-
-.share-btn.linkedin:hover {
-    border-color: #0077B5;
-    color: #0077B5;
-}
-
-.close-share-modal {
-    width: 100%;
-    padding: 0.75rem;
-    background: #334155;
-    border: none;
-    border-radius: 0.5rem;
-    color: #cbd5e1;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.close-share-modal:hover {
-    background: #475569;
-}
-
 /* Navigation CTA Button */
 .btn-nav-cta {
     background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
@@ -544,156 +445,209 @@
     transform: translateY(-2px);
     box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
 }
-/* Pricing CTA Section */
-.pricing-cta {
-    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-    border: 2px solid #334155;
+
+/* =============================================================================
+   SEARCH COUNTER MODULE - Matches Checker Page Exactly
+   ============================================================================= */
+
+.search-counter-section {
+    padding: var(--space-lg, 2rem) 0;
+    background: var(--bg, #0f172a);
+}
+
+.search-counter-module {
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
+    border: 2px solid var(--border, #334155);
     border-radius: 1rem;
-    padding: 3rem 2rem;
-    margin-bottom: 3rem;
-    text-align: center;
-}
-
-.pricing-cta h3 {
-    font-size: 2rem;
-    color: #f1f5f9;
-    margin-bottom: 1rem;
-}
-
-.pricing-cta > p {
-    color: #94a3b8;
-    font-size: 1.125rem;
-    margin-bottom: 3rem;
-    max-width: 700px;
-    margin-left: auto;
-    margin-right: auto;
-}
-
-.pricing-options {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    padding: 1.5rem 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
     gap: 2rem;
-    max-width: 1200px;
-    margin: 0 auto 2rem;
+    max-width: 600px;
+    margin: 0 auto;
 }
 
-.pricing-card {
-    background: #1e293b;
-    border: 2px solid #334155;
-    border-radius: 1rem;
-    padding: 2rem;
-    position: relative;
-    transition: all 0.3s ease;
+.counter-content {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
 }
 
-.pricing-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+.counter-icon {
+    font-size: 2rem;
 }
 
-.pricing-card.featured {
-    border-color: #6366f1;
-    background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, #1e293b 100%);
-}
-
-.featured-badge {
-    position: absolute;
-    top: -12px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-    color: white;
-    padding: 0.375rem 1rem;
-    border-radius: 50px;
-    font-size: 0.75rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-}
-
-.pricing-card h4 {
-    font-size: 1.5rem;
-    color: #f1f5f9;
-    margin-bottom: 1rem;
-}
-
-.price {
-    font-size: 3rem;
-    font-weight: 700;
-    color: #f1f5f9;
-    margin-bottom: 1.5rem;
-}
-
-.price span {
+.counter-text h3 {
     font-size: 1rem;
-    color: #94a3b8;
-    font-weight: 400;
+    margin: 0 0 0.25rem 0;
+    color: var(--text, #f1f5f9);
 }
 
-.pricing-card ul {
-    list-style: none;
-    padding: 0;
-    margin: 0 0 2rem 0;
-    text-align: left;
+.counter-text p {
+    margin: 0;
+    color: var(--text-muted, #94a3b8);
+    font-size: 0.875rem;
 }
 
-.pricing-card li {
-    padding: 0.75rem 0;
-    color: #cbd5e1;
-    font-size: 0.95rem;
-    border-bottom: 1px solid #334155;
-}
-
-.pricing-card li:last-child {
-    border-bottom: none;
-}
-
-.current-plan {
-    display: inline-block;
-    background: #334155;
-    color: #cbd5e1;
-    padding: 0.75rem 2rem;
-    border-radius: 0.5rem;
-    font-weight: 600;
-    width: 100%;
-}
-
-.btn-pricing {
-    display: inline-block;
-    width: 100%;
-    padding: 1rem 2rem;
-    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+.btn-counter {
+    background: linear-gradient(135deg, var(--primary, #6366f1) 0%, #8b5cf6 100%);
     color: white;
+    padding: 0.75rem 1.25rem;
+    border-radius: 0.5rem;
     text-decoration: none;
-    border-radius: 0.75rem;
-    font-weight: 700;
-    font-size: 1.125rem;
+    font-weight: 600;
+    font-size: 0.875rem;
+    white-space: nowrap;
     transition: all 0.3s ease;
+}
+
+.btn-counter:hover {
+    transform: translateY(-2px);
     box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
 }
 
-.btn-pricing:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(99, 102, 241, 0.5);
+/* =============================================================================
+   DATA SOURCES SECTION - Trust Building
+   ============================================================================= */
+
+.data-sources-section {
+    padding: var(--space-xl, 3rem) 0;
+    background: var(--bg-secondary, #1e293b);
 }
 
-.cta-footer {
-    margin-top: 2rem;
+.data-sources-section .section-title {
+    text-align: center;
+    font-size: 1.75rem;
+    margin-bottom: 0.5rem;
+    color: var(--text, #f1f5f9);
 }
 
-.link-primary {
-    color: #6366f1;
-    text-decoration: none;
-    font-weight: 600;
-    font-size: 1.125rem;
+.data-sources-section .section-desc {
+    text-align: center;
+    color: var(--text-muted, #94a3b8);
+    margin-bottom: 1.5rem;
+}
+
+.sources-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.source-card {
+    background: var(--card, #0f172a);
+    border: 1px solid var(--border, #334155);
+    border-radius: 0.5rem;
+    padding: 1rem;
+    text-align: center;
     transition: all 0.3s ease;
 }
 
-.link-primary:hover {
-    color: #8b5cf6;
+.source-card:hover {
+    border-color: var(--primary, #6366f1);
+    transform: translateY(-2px);
 }
 
-/* Mobile Responsive */
+.source-icon {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+.source-card h3 {
+    font-size: 0.875rem;
+    margin: 0 0 0.25rem 0;
+    color: var(--text, #f1f5f9);
+}
+
+.source-card p {
+    color: var(--text-muted, #94a3b8);
+    font-size: 0.75rem;
+    line-height: 1.4;
+    margin: 0;
+}
+
+/* =============================================================================
+   SOCIAL SHARE SECTION - Matches Index Page
+   ============================================================================= */
+
+.social-share-section {
+    padding: var(--space-xl, 3rem) 0;
+    background: var(--bg, #0f172a);
+    text-align: center;
+}
+
+.social-share-section .section-title {
+    font-size: 1.75rem;
+    margin-bottom: 0.5rem;
+    color: var(--text, #f1f5f9);
+}
+
+.social-share-section .section-desc {
+    color: var(--text-muted, #94a3b8);
+    margin-bottom: 2rem;
+}
+
+.share-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.btn-share {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    background: var(--card, #1e293b);
+    border: 2px solid var(--border, #334155);
+    border-radius: 0.5rem;
+    color: var(--text, #f1f5f9);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-share:hover {
+    border-color: var(--primary, #6366f1);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(99, 102, 241, 0.2);
+}
+
+.btn-share .share-icon {
+    font-size: 1.25rem;
+    width: 1.5rem;
+    text-align: center;
+}
+
+/* Share button hover colors */
+.btn-share:nth-child(1):hover {
+    border-color: #1DA1F2;
+    color: #1DA1F2;
+}
+
+.btn-share:nth-child(2):hover {
+    border-color: #1877F2;
+    color: #1877F2;
+}
+
+.btn-share:nth-child(3):hover {
+    border-color: #0088cc;
+    color: #0088cc;
+}
+
+.btn-share:nth-child(4):hover {
+    border-color: #0077B5;
+    color: #0077B5;
+}
+
+/* =============================================================================
+   MOBILE RESPONSIVE
+   ============================================================================= */
+
 @media (max-width: 768px) {
     .main {
         padding: 1rem 0 2rem;
@@ -757,29 +711,81 @@
         justify-content: center;
     }
 
-    .pricing-cta {
-        padding: 2rem 1rem;
+    /* Search Counter Module - Mobile */
+    .search-counter-module {
+        flex-direction: column;
+        text-align: center;
+        padding: 1.25rem;
+        gap: 1rem;
     }
 
-    .pricing-cta h3 {
-        font-size: 1.5rem;
+    .counter-content {
+        flex-direction: column;
+        gap: 0.5rem;
     }
 
-    .pricing-cta > p {
-        font-size: 1rem;
+    .btn-counter {
+        width: 100%;
+        text-align: center;
     }
 
-    .pricing-options {
-        grid-template-columns: 1fr;
-        gap: 1.5rem;
+    /* Data Sources - Mobile */
+    .sources-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
     }
 
-    .price {
-        font-size: 2.5rem;
+    .source-card {
+        padding: 0.875rem;
     }
 
+    /* Share Buttons - Mobile */
     .share-buttons {
-        grid-template-columns: 1fr;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .btn-share {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .sources-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* =============================================================================
+   PRINT STYLES
+   ============================================================================= */
+
+@media print {
+    .header,
+    .footer,
+    .actions,
+    .search-counter-section,
+    .data-sources-section,
+    .social-share-section,
+    .copilot-btn,
+    .copilot-chat,
+    .expand-btn,
+    .share-modal {
+        display: none !important;
+    }
+
+    .main {
+        padding: 0;
+    }
+
+    .overall-status,
+    .detailed-checks,
+    .account-details,
+    .recommendations,
+    .how-it-works {
+        page-break-inside: avoid;
+        border: 1px solid #334155;
     }
 }
 
@@ -805,32 +811,5 @@
     to {
         opacity: 1;
         transform: translateY(0);
-    }
-}
-
-/* Print styles */
-@media print {
-    .header,
-    .footer,
-    .actions,
-    .pricing-cta,
-    .copilot-btn,
-    .copilot-chat,
-    .expand-btn,
-    .share-modal {
-        display: none !important;
-    }
-
-    .main {
-        padding: 0;
-    }
-
-    .overall-status,
-    .detailed-checks,
-    .account-details,
-    .recommendations,
-    .how-it-works {
-        page-break-inside: avoid;
-        border: 1px solid #334155;
     }
 }

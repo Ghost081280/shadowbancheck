@@ -10,19 +10,20 @@ document.addEventListener('DOMContentLoaded', () => {
     initPlatformModals();
     initCookiePopup();
 
-    // Page-Specific Functions - Only run if the page elements exist
+    // Page-Specific Functions - Only run if their elements are present on the page
 
-    // Checker Page Initializations
-    if (document.getElementById('platform-checker-form')) {
-        // These functions are defined in checker.js and hashtag-checker.js
+    // Checker/Hashtag Checker Page Initializations (Requires an element from checker.html or hashtag-checker.html)
+    // We check for 'platform-checker-form' (from checker.html) or if the functions are defined 
+    // This uses the functions defined in checker.js and hashtag-checker.js
+    if (document.getElementById('platform-checker-form') || document.getElementById('hashtag-checker-form')) {
         if (typeof initPostChecker === 'function') initPostChecker();
         if (typeof initSearchCounter === 'function') initSearchCounter();
         if (typeof initCheckerPageModals === 'function') initCheckerPageModals();
     }
 
-    // Results Page Initializations
+    // Results Page Initializations (Requires an element from results.html)
     if (document.getElementById('results-header')) {
-        // These functions are defined in results.js
+        // This is defined in results.js
         if (typeof initResultsPageShare === 'function') initResultsPageShare();
     }
 });
@@ -120,7 +121,7 @@ function initPlatformModals() {
 
             if (platform) {
                 // If it's a live checker, go to the checker page
-                if (platform === 'twitter' || platform === 'reddit' || platform === 'email') {
+                if (platform === 'twitter' || platform === 'reddit' || platform === 'email' || targetUrl.includes('hashtag')) {
                     window.location.href = targetUrl;
                     return;
                 }

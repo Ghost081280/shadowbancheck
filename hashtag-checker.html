@@ -15,55 +15,10 @@
     <link rel="stylesheet" href="css/shadow-ai.css">
 </head>
 <body>
-    <!-- Header -->
-    <header class="header">
-        <div class="container flex-between">
-            <div class="logo">
-                <a href="index.html">
-                    <span class="logo-icon">🔍</span>
-                    <span>ShadowBanCheck.io</span>
-                </a>
-            </div>
-            
-            <!-- Desktop Nav -->
-            <nav class="nav-desktop">
-                <a href="index.html" class="btn-login">Home</a>
-                <a href="login.html" class="btn-login">Login</a>
-                <a href="index.html#shadow-ai-pro" class="btn btn-nav">Get Shadow AI Pro</a>
-            </nav>
-            
-            <!-- Mobile Nav Toggle -->
-            <button class="nav-toggle" id="nav-toggle" aria-label="Toggle navigation">
-                <span></span>
-                <span></span>
-                <span></span>
-            </button>
-        </div>
-    </header>
-    
-    <!-- Mobile Nav Overlay -->
-    <div class="nav-overlay" id="nav-overlay"></div>
-    
-    <!-- Mobile Nav Slide-out -->
-    <nav class="nav-mobile" id="nav-mobile">
-        <div class="nav-mobile-header">
-            <div class="logo">
-                <span class="logo-icon">🔍</span>
-                <span>ShadowBanCheck</span>
-            </div>
-            <button class="nav-mobile-close" id="nav-close" aria-label="Close navigation">&times;</button>
-        </div>
-        <div class="nav-mobile-links">
-            <a href="index.html">🏠 Home</a>
-            <a href="index.html#platforms">🌐 Platforms</a>
-            <a href="index.html#pricing">💰 Pricing</a>
-            <a href="checker.html">🔍 Account Checker</a>
-        </div>
-        <div class="nav-mobile-cta">
-            <a href="login.html" class="btn btn-secondary">Login</a>
-            <a href="index.html#shadow-ai-pro" class="btn btn-primary">Get Shadow AI Pro</a>
-        </div>
-    </nav>
+    <!-- ===================================
+         SHARED COMPONENTS
+         Header, Mobile Nav, Footer loaded by shared-components.js
+         =================================== -->
 
     <!-- Hero - Compact -->
     <section class="hero">
@@ -147,7 +102,7 @@
         </div>
     </section>
 
-    <!-- Platform-Specific Banned Hashtags (RESTORED) -->
+    <!-- Platform-Specific Banned Hashtags -->
     <section class="platform-hashtags-section">
         <div class="container">
             <div class="section-header">
@@ -391,55 +346,14 @@
         </div>
     </section>
 
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="container">
-            <div class="footer-grid">
-                <div class="footer-brand">
-                    <div class="logo">
-                        <span class="logo-icon">🔍</span>
-                        <span>ShadowBanCheck.io</span>
-                    </div>
-                    <p>Protecting visibility for influencers, politicians, and online sellers worldwide.</p>
-                </div>
-                <div class="footer-col">
-                    <h4>Product</h4>
-                    <a href="index.html#platforms">Platforms</a>
-                    <a href="index.html#pricing">Pricing</a>
-                    <a href="index.html#shadow-ai-pro">Shadow AI Pro</a>
-                </div>
-                <div class="footer-col">
-                    <h4>Tools</h4>
-                    <a href="checker.html">Shadow Ban Checker</a>
-                    <a href="hashtag-checker.html">Hashtag Checker</a>
-                </div>
-                <div class="footer-col">
-                    <h4>Developers</h4>
-                    <a href="#" onclick="alert('API docs coming soon!'); return false;">API Access <span class="badge-coming">Soon</span></a>
-                    <a href="https://github.com/Ghost081280" target="_blank">GitHub</a>
-                </div>
-            </div>
-            <div class="footer-bottom">
-                <p>&copy; 2025 ShadowBanCheck.io. All rights reserved.</p>
-                <div class="footer-legal">
-                    <a href="#" onclick="alert('Terms coming soon!'); return false;">Terms</a>
-                    <a href="#" onclick="alert('Privacy coming soon!'); return false;">Privacy</a>
-                    <a href="#" onclick="showCookiePolicy(); return false;">Cookies</a>
-                </div>
-            </div>
-        </div>
-    </footer>
-
-    <!-- Shadow AI Widget - Loaded dynamically by shadow-ai.js -->
+    <!-- ===================================
+         FOOTER - Loaded by shared-components.js
+         =================================== -->
 
     <!-- Back to Top Button -->
     <button id="back-to-top" class="back-to-top" aria-label="Back to top">↑</button>
 
     <script>
-        function showCookiePolicy() {
-            alert('Cookie Policy\n\nWe use cookies to remember your preferences and track free searches.');
-        }
-        
         // Platform tabs functionality
         document.addEventListener('DOMContentLoaded', function() {
             const tabs = document.querySelectorAll('.platform-tab');
@@ -465,6 +379,7 @@
             });
         });
     </script>
+    <script src="js/shared-components.js"></script>
     <script src="js/main.js"></script>
     <script src="js/hashtag-checker.js"></script>
     <script src="js/shadow-ai.js"></script>

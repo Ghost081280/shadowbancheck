@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="css/checker.css">
 </head>
 <body>
+    <!-- Header -->
     <header class="header">
         <div class="container">
             <div class="logo">
@@ -20,144 +21,173 @@
                 </a>
             </div>
             <nav class="nav">
-                <a href="#" class="btn-login">Login</a>
+                <a href="#" class="btn-login" onclick="alert('Login/Dashboard coming soon!'); return false;">Login</a>
                 <a href="index.html#shadow-ai-pro" class="btn-nav">Get Shadow AI Pro</a>
             </nav>
         </div>
     </header>
 
-    <main class="main">
-        <section class="hero hero-compact">
-            <div class="container" style="max-width: 900px;">
-                <div class="hero-badge">🔍 Free Shadow Ban Checker</div>
-                <h1 class="hero-title">Check Your Account for Shadow Bans Instantly</h1>
-                <p class="hero-subtitle">Our AI scans your profile across 26 platforms to find any visibility restrictions. Fast, free, and private.</p>
-                <div class="search-counter-module mb-xl">
-                    <div class="counter-content">
-                        <span class="counter-icon">🚀</span>
-                        <div class="counter-text">
-                            <h3><span id="search-count-total">2,000,000+</span> Accounts Checked</h3>
-                            <p>Total checks performed since Jan 2024</p>
-                        </div>
+    <!-- Hero - Compact -->
+    <section class="hero" style="padding: var(--space-xl) 0 var(--space-lg);">
+        <div class="container">
+            <div class="hero-badge">🔍 Free Shadow Ban Checker</div>
+            <h1 class="hero-title" style="font-size: 2.5rem;">Check Any Platform</h1>
+            <p class="hero-subtitle" style="margin-bottom: var(--space-md);">Select a platform below to check if you're shadow banned. 3 free checks per day.</p>
+        </div>
+    </section>
+
+    <!-- Search Counter -->
+    <section style="padding: 0 0 var(--space-lg) 0;">
+        <div class="container">
+            <div class="search-counter-module">
+                <div class="counter-content">
+                    <div class="counter-icon">🎯</div>
+                    <div class="counter-text">
+                        <h3>Free Searches Today</h3>
+                        <p id="searches-remaining">3 / 3 available</p>
                     </div>
-                    <a href="#checker-form" class="btn-counter">See How It Works →</a>
+                </div>
+                <a href="index.html#pricing" class="btn-counter">Unlock Unlimited</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Platform Grid -->
+    <section class="platforms" style="padding: var(--space-lg) 0;">
+        <div class="container">
+            <h2 class="section-title" style="font-size: 1.5rem; margin-bottom: var(--space-sm);">Select Platform to Check</h2>
+            <p class="section-desc" style="margin-bottom: var(--space-lg);">Click any platform to start your shadow ban check</p>
+
+            <div class="platform-grid">
+                <div class="platform-item clickable" data-platform="twitter"><span>🐦</span><span>Twitter / X</span><span class="badge live">Live</span></div>
+                <div class="platform-item clickable" data-platform="instagram"><span>📸</span><span>Instagram</span><span class="badge soon">Soon</span></div>
+                <div class="platform-item clickable" data-platform="tiktok"><span>🎵</span><span>TikTok</span><span class="badge soon">Soon</span></div>
+                <div class="platform-item clickable" data-platform="facebook"><span>📘</span><span>Facebook</span><span class="badge soon">Soon</span></div>
+                <div class="platform-item clickable" data-platform="reddit"><span>🤖</span><span>Reddit</span><span class="badge live">Live</span></div>
+                <div class="platform-item clickable" data-platform="linkedin"><span>💼</span><span>LinkedIn</span><span class="badge soon">Soon</span></div>
+                <div class="platform-item clickable" data-platform="threads"><span>🧵</span><span>Threads</span><span class="badge soon">Soon</span></div>
+                <div class="platform-item clickable" data-platform="bluesky"><span>🦋</span><span>Bluesky</span><span class="badge soon">Soon</span></div>
+                <div class="platform-item clickable" data-platform="youtube"><span>📺</span><span>YouTube</span><span class="badge soon">Soon</span></div>
+                <div class="platform-item clickable" data-platform="pinterest"><span>📌</span><span>Pinterest</span><span class="badge soon">Soon</span></div>
+                <div class="platform-item clickable" data-platform="discord"><span>🎮</span><span>Discord</span><span class="badge soon">Soon</span></div>
+                <div class="platform-item clickable" data-platform="twitch"><span>🟣</span><span>Twitch</span><span class="badge soon">Soon</span></div>
+                <div class="platform-item clickable" data-platform="kick"><span>⚡</span><span>Kick</span><span class="badge soon">Soon</span></div>
+                <div class="platform-item clickable" data-platform="snapchat"><span>👻</span><span>Snapchat</span><span class="badge soon">Soon</span></div>
+                <div class="platform-item clickable" data-platform="truth"><span>🇺🇸</span><span>Truth Social</span><span class="badge soon">Soon</span></div>
+                <div class="platform-item clickable" data-platform="rumble"><span>📹</span><span>Rumble</span><span class="badge soon">Soon</span></div>
+                <div class="platform-item clickable" data-platform="telegram"><span>✈️</span><span>Telegram</span><span class="badge soon">Soon</span></div>
+                <div class="platform-item clickable" data-platform="etsy"><span>🛍️</span><span>Etsy</span><span class="badge soon">Soon</span></div>
+                <div class="platform-item clickable" data-platform="amazon"><span>📦</span><span>Amazon</span><span class="badge soon">Soon</span></div>
+                <div class="platform-item clickable" data-platform="ebay"><span>🏷️</span><span>eBay</span><span class="badge soon">Soon</span></div>
+                <div class="platform-item clickable" data-platform="email"><span>📧</span><span>Email</span><span class="badge live">Live</span></div>
+                <div class="platform-item clickable" data-platform="phone"><span>📱</span><span>Phone</span><span class="badge soon">Soon</span></div>
+                <div class="platform-item clickable" data-platform="domain"><span>🌐</span><span>Domain</span><span class="badge soon">Soon</span></div>
+                <div class="platform-item clickable" data-platform="ip"><span>🖥️</span><span>IP Address</span><span class="badge soon">Soon</span></div>
+                <div class="platform-item clickable" data-platform="google"><span>📍</span><span>Google Business</span><span class="badge soon">Soon</span></div>
+                <div class="platform-item clickable" data-platform="website"><span>🔗</span><span>Website</span><span class="badge soon">Soon</span></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works - Compact -->
+    <section class="how-it-works" style="padding: var(--space-xl) 0;">
+        <div class="container">
+            <h2 class="section-title" style="font-size: 1.5rem;">How It Works</h2>
+            <div class="how-grid">
+                <div class="how-item">
+                    <div class="how-icon">1️⃣</div>
+                    <h3>Select Platform</h3>
+                    <p>Choose from 26 platforms we monitor</p>
+                </div>
+                <div class="how-item">
+                    <div class="how-icon">2️⃣</div>
+                    <h3>Enter Username</h3>
+                    <p>Provide your account info</p>
+                </div>
+                <div class="how-item">
+                    <div class="how-icon">3️⃣</div>
+                    <h3>Get Results</h3>
+                    <p>Results in 60 seconds</p>
                 </div>
             </div>
-        </section>
+        </div>
+    </section>
 
-        <section id="checker-section" style="padding: 0 0 var(--space-3xl);">
-            <div class="container">
-                <div id="checker-form" class="checker-form-container">
-                    <div class="platform-selector">
-                        <select id="platform-select">
-                            <option value="twitter">Twitter / X (@username)</option>
-                            <option value="reddit">Reddit (u/username)</option>
-                            <option value="email">Email (your@email.com)</option>
-                            <option value="instagram">Instagram (Coming Soon)</option>
-                            <option value="tiktok">TikTok (Coming Soon)</option>
-                            <option value="facebook">Facebook (Coming Soon)</option>
-                        </select>
-                        <button id="platform-info-btn" class="btn-info" type="button">ℹ️</button>
-                    </div>
-
-                    <div class="input-group">
-                        <input type="text" id="username-input" placeholder="@username or u/username" required>
-                        <button id="submit-btn" class="btn-submit" type="button">
-                            <span class="btn-text">Check Now (3 FREE left)</span>
-                            <span class="btn-icon">🔍</span>
-                        </button>
-                    </div>
-
-                    <p id="search-limit-message" class="search-limit-message"></p>
-                    <p id="platform-description" class="platform-description"></p>
-                </div>
+    <!-- Data Sources - Compact -->
+    <section class="data-sources-section" style="padding: var(--space-xl) 0;">
+        <div class="container">
+            <h2 class="section-title" style="font-size: 1.5rem;">Our Data Sources</h2>
+            <p class="section-desc">We analyze multiple data points for accurate probability scores</p>
+            <div class="sources-grid">
+                <div class="source-card"><span class="source-icon">🔌</span><h3>Platform APIs</h3><p>Direct real-time status</p></div>
+                <div class="source-card"><span class="source-icon">🌐</span><h3>Web Search</h3><p>AI-powered analysis</p></div>
+                <div class="source-card"><span class="source-icon">📊</span><h3>Public Data</h3><p>Historical records</p></div>
+                <div class="source-card"><span class="source-icon">👥</span><h3>User Reports</h3><p>Community verified</p></div>
+                <div class="source-card"><span class="source-icon">🤖</span><h3>AI Analysis</h3><p>10+ factor detection</p></div>
+                <div class="source-card"><span class="source-icon">📈</span><h3>Trend Data</h3><p>Pattern recognition</p></div>
             </div>
-        </section>
+        </div>
+    </section>
 
-        <section class="how-it-works-simple" style="padding: var(--space-3xl) 0;">
-            <div class="container">
-                <div class="section-title-group text-center">
-                    <h2 class="section-title">How Our Checker Works</h2>
-                    <p class="section-desc">We give you a definitive answer on your account's health.</p>
+    <!-- Cross-Promote: Hashtag Checker -->
+    <section style="padding: var(--space-xl) 0; background: var(--bg);">
+        <div class="container">
+            <div class="cross-promote-card">
+                <div class="cross-promote-icon">🚫</div>
+                <div class="cross-promote-content">
+                    <h3>Also Check Your Hashtags</h3>
+                    <p>Using banned hashtags can trigger shadow bans. Check if your hashtags are safe before posting.</p>
                 </div>
-                <div class="how-grid-compact">
-                    <div class="how-item-compact">
-                        <span class="how-icon-compact">1️⃣</span>
-                        <div>
-                            <strong>Enter Username</strong>
-                            <p>Select your platform and enter the account handle.</p>
-                        </div>
-                    </div>
-                    <div class="how-item-compact">
-                        <span class="how-icon-compact">2️⃣</span>
-                        <div>
-                            <strong>AI Analysis</strong>
-                            <p>Our AI model instantly checks against known shadow banning factors.</p>
-                        </div>
-                    </div>
-                    <div class="how-item-compact">
-                        <span class="how-icon-compact">3️⃣</span>
-                        <div>
-                            <strong>Get Score</strong>
-                            <p>Receive a clear probability score and next steps for recovery.</p>
-                        </div>
-                    </div>
-                </div>
+                <a href="hashtag-checker.html" class="btn-cross-promote">Check Hashtags →</a>
             </div>
-        </section>
+        </div>
+    </section>
 
-        <section class="spotlight-cta" style="padding: var(--space-3xl) 0;">
-            <div class="container">
-                <div class="spotlight-card">
-                    <div class="spotlight-content">
-                        <span class="spotlight-icon">🤖</span>
-                        <h3>Take the Guesswork Out of Your Growth</h3>
-                        <p>Upgrade to **Shadow AI Pro** for **unlimited checks**, live account monitoring, and personalized recovery strategies.</p>
-                    </div>
-                    <a href="index.html#pricing" class="btn btn-primary btn-large">Unlock Unlimited Checks →</a>
-                </div>
-            </div>
-        </section>
-    </main>
-
+    <!-- Platform Modal -->
     <div id="platform-modal" class="modal hidden">
         <div class="modal-content">
-            <button class="modal-close" id="modal-close">&times;</button>
+            <button class="modal-close">&times;</button>
             <div id="modal-body"></div>
         </div>
     </div>
 
-    <div id="upgrade-modal" class="modal hidden">
-        <div class="modal-content modal-upgrade text-center">
-            <button class="modal-close" id="upgrade-modal-close">&times;</button>
-            <span class="upgrade-icon">🔒</span>
-            <h2>You've Hit Your Limit!</h2>
-            <p>You have used your <strong id="free-count-used">3 free checks</strong> for today.</p>
-            <div class="upgrade-benefits">
-                <h3>Unlock Instant & Unlimited Access:</h3>
-                <div class="benefit">✨ Unlimited Account Checks</div>
-                <div class="benefit">🚫 Unlimited Hashtag Checks</div>
-                <div class="benefit">🤖 Full Shadow AI Chat Access</div>
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <div class="logo"><span class="logo-emoji">🔍</span><span>ShadowBanCheck.io</span></div>
+                    <p>Protecting visibility for influencers, politicians, and online sellers worldwide.</p>
+                </div>
+                <div class="footer-col">
+                    <h4>Product</h4>
+                    <a href="index.html#platforms">Platforms</a>
+                    <a href="index.html#pricing">Pricing</a>
+                    <a href="index.html#shadow-ai-pro">Shadow AI Pro</a>
+                </div>
+                <div class="footer-col">
+                    <h4>Tools</h4>
+                    <a href="checker.html">Shadow Ban Checker</a>
+                    <a href="hashtag-checker.html">Banned Hashtags Checker</a>
+                </div>
+                <div class="footer-col">
+                    <h4>Developers</h4>
+                    <a href="#" onclick="alert('API documentation coming soon!'); return false;">API Access <span class="coming-soon-tiny">Soon</span></a>
+                    <a href="https://github.com/Ghost081280" target="_blank">GitHub</a>
+                </div>
             </div>
-            <a href="index.html#pricing" class="btn-upgrade-modal">Go Pro for $9.99/mo →</a>
-            <button class="btn-close-upgrade" id="btn-close-upgrade">Check Again Tomorrow</button>
+            <div class="footer-bottom">
+                <p>&copy; 2025 ShadowBanCheck.io. All rights reserved.</p>
+                <div class="footer-legal" style="margin-right: 100px;">
+                    <a href="#" onclick="alert('Terms coming soon!'); return false;">Terms</a>
+                    <a href="#" onclick="alert('Privacy coming soon!'); return false;">Privacy</a>
+                    <a href="#" onclick="showCookiePolicy(); return false;">Cookie Policy</a>
+                </div>
+            </div>
         </div>
-    </div>
+    </footer>
 
-    <div id="cookie-popup" class="cookie-popup hidden">
-        <div class="cookie-content">
-            <div class="cookie-icon">🍪</div>
-            <div class="cookie-text">
-                <h3>We Use Cookies</h3>
-                <p>We use cookies to enhance your experience, analyze site traffic, and remember your preferences. By continuing to use ShadowBanCheck.io, you agree to our use of cookies.</p>
-            </div>
-            <div class="cookie-actions">
-                <button id="cookie-accept" class="btn-cookie-accept">Accept</button>
-                <button id="cookie-dismiss" class="btn-cookie-dismiss">Dismiss</button>
-            </div>
-        </div>
-    </div>
-
+    <!-- Shadow AI -->
     <button id="shadow-ai-btn" class="copilot-btn"><span class="copilot-emoji">🤖</span><span>Shadow AI</span></button>
     <div id="shadow-ai-chat" class="copilot-chat hidden">
         <div class="copilot-header">
@@ -170,56 +200,12 @@
             <button id="shadow-ai-send">Send</button>
         </div>
     </div>
-    
-    <footer class="footer">
-        <div class="container">
-            <div class="footer-grid">
-                <div class="footer-col logo-col">
-                    <div class="logo">
-                        <a href="index.html">
-                            <span class="logo-emoji">🔍</span>
-                            <span class="logo-text">ShadowBanCheck.io</span>
-                        </a>
-                    </div>
-                    <p class="tagline">The definitive tool for social media visibility.</p>
-                </div>
-                <div class="footer-col">
-                    <h4>Tools</h4>
-                    <ul>
-                        <li><a href="checker.html">Account Checker</a></li>
-                        <li><a href="hashtag-checker.html">Hashtag Checker</a></li>
-                        <li><a href="index.html#shadow-ai-pro">Shadow AI Pro</a></li>
-                        <li><a href="index.html#platforms">Platforms Checked</a></li>
-                    </ul>
-                </div>
-                <div class="footer-col">
-                    <h4>Company</h4>
-                    <ul>
-                        <li><a href="index.html#how-it-works">How It Works</a></li>
-                        <li><a href="index.html#pricing">Pricing</a></li>
-                        <li><a href="index.html#faq">FAQ</a></li>
-                        <li><a href="index.html#contact">Contact</a></li>
-                    </ul>
-                </div>
-                <div class="footer-col">
-                    <h4>Legal</h4>
-                    <ul>
-                        <li><a href="#" class="footer-link-terms">Terms of Service</a></li>
-                        <li><a href="#" class="footer-link-privacy">Privacy Policy</a></li>
-                        <li><a href="#" class="footer-link-cookie">Cookie Policy</a></li>
-                    </ul>
-                </div>
-            </div>
-            
-            <div class="footer-bottom">
-                <p>&copy; 2025 ShadowBanCheck.io. All rights reserved.</p>
-                <div class="footer-legal">
-                    </div>
-            </div>
-        </div>
-    </footer>
 
-    <script src="js/main.js"></script>
+    <script>
+        function showCookiePolicy() {
+            alert('Cookie Policy\n\nWe use cookies to:\n• Remember your preferences\n• Track free searches (3 per day)\n• Improve your experience\n\nBy using ShadowBanCheck.io, you consent to our use of cookies.');
+        }
+    </script>
     <script src="js/shadow-ai.js"></script>
     <script src="js/checker.js"></script>
 </body>

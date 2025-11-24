@@ -3,107 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shadow Ban Checker - Check Any Platform - ShadowBanCheck.io</title>
+    <title>Shadow Ban Checker - Check Any Platform | ShadowBanCheck.io</title>
     <meta name="description" content="Free shadow ban checker for Twitter, Instagram, TikTok, Reddit, and 22+ more platforms. Instant results in 60 seconds.">
     
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/shadow-ai.css">
-    <style>
-        /* Search Counter Module */
-        .search-counter-module {
-            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
-            border: 2px solid var(--border);
-            border-radius: 1rem;
-            padding: 1.5rem 2rem;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 2rem;
-            max-width: 600px;
-            margin: 0 auto;
-        }
-        .counter-content {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-        .counter-icon { font-size: 2rem; }
-        .counter-text h3 { font-size: 1rem; margin: 0 0 0.25rem 0; }
-        .counter-text p { margin: 0; color: var(--text-muted); font-size: 0.875rem; }
-        .btn-counter {
-            background: linear-gradient(135deg, var(--primary) 0%, #8b5cf6 100%);
-            color: white;
-            padding: 0.75rem 1.25rem;
-            border-radius: 0.5rem;
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 0.875rem;
-            white-space: nowrap;
-        }
-        .btn-counter:hover { transform: translateY(-2px); box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4); }
-        
-        /* Data Sources - Compact */
-        .data-sources-section { padding: var(--space-xl) 0; background: var(--bg-secondary); }
-        .sources-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-            gap: 1rem;
-            margin-top: 1.5rem;
-        }
-        .source-card {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: 0.5rem;
-            padding: 1rem;
-            text-align: center;
-        }
-        .source-card:hover { border-color: var(--primary); }
-        .source-icon { font-size: 1.5rem; margin-bottom: 0.5rem; display: block; }
-        .source-card h3 { font-size: 0.875rem; margin: 0 0 0.25rem 0; }
-        .source-card p { color: var(--text-muted); font-size: 0.75rem; line-height: 1.4; margin: 0; }
-        
-        /* Modal Form Styles */
-        .modal-header-custom { display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; }
-        .modal-icon { font-size: 2.5rem; }
-        .modal-header-custom h2 { margin: 0; }
-        .modal-description { color: var(--text-muted); margin-bottom: 1.5rem; }
-        .modal-form .form-group { margin-bottom: 1.5rem; }
-        .modal-form label { display: block; margin-bottom: 0.5rem; font-weight: 600; }
-        .form-input {
-            width: 100%;
-            padding: 0.875rem 1rem;
-            border: 2px solid var(--border);
-            border-radius: 0.5rem;
-            background: var(--bg);
-            color: var(--text);
-            font-size: 1rem;
-            box-sizing: border-box;
-        }
-        .form-input:focus { outline: none; border-color: var(--primary); }
-        .btn-check {
-            width: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            padding: 1rem;
-            background: linear-gradient(135deg, var(--primary) 0%, #8b5cf6 100%);
-            color: white;
-            border: none;
-            border-radius: 0.5rem;
-            font-size: 1.125rem;
-            font-weight: 700;
-            cursor: pointer;
-        }
-        .btn-check:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4); }
-        .btn-check:disabled { opacity: 0.6; cursor: not-allowed; }
-        
-        /* Coming Soon Modal */
-        .coming-soon-content { text-align: center; padding: 1rem; }
-        .coming-soon-icon { font-size: 4rem; margin-bottom: 1rem; }
-        .coming-soon-content h2 { margin-bottom: 0.5rem; }
-        .coming-soon-content p { color: var(--text-muted); margin-bottom: 1.5rem; }
-    </style>
+    <link rel="stylesheet" href="css/checker.css">
 </head>
 <body>
     <!-- Header -->
@@ -122,20 +27,36 @@
         </div>
     </header>
 
-    <!-- Hero -->
-    <section class="hero" style="padding: var(--space-2xl) 0 var(--space-xl);">
+    <!-- Hero - Compact -->
+    <section class="hero" style="padding: var(--space-xl) 0 var(--space-lg);">
         <div class="container">
             <div class="hero-badge">🔍 Free Shadow Ban Checker</div>
-            <h1 class="hero-title">Check Any Platform</h1>
-            <p class="hero-subtitle">Select a platform below to check if you're shadow banned.</p>
+            <h1 class="hero-title" style="font-size: 2.5rem;">Check Any Platform</h1>
+            <p class="hero-subtitle" style="margin-bottom: var(--space-md);">Select a platform below to check if you're shadow banned. 3 free checks per day.</p>
+        </div>
+    </section>
+
+    <!-- Search Counter -->
+    <section style="padding: 0 0 var(--space-lg) 0;">
+        <div class="container">
+            <div class="search-counter-module">
+                <div class="counter-content">
+                    <div class="counter-icon">🎯</div>
+                    <div class="counter-text">
+                        <h3>Free Searches Today</h3>
+                        <p id="searches-remaining">3 / 3 available</p>
+                    </div>
+                </div>
+                <a href="index.html#pricing" class="btn-counter">Unlock Unlimited</a>
+            </div>
         </div>
     </section>
 
     <!-- Platform Grid -->
-    <section class="platforms" style="padding: var(--space-xl) 0;">
+    <section class="platforms" style="padding: var(--space-lg) 0;">
         <div class="container">
-            <h2 class="section-title">Select Platform to Check</h2>
-            <p class="section-desc">Click any platform to start your shadow ban check</p>
+            <h2 class="section-title" style="font-size: 1.5rem; margin-bottom: var(--space-sm);">Select Platform to Check</h2>
+            <p class="section-desc" style="margin-bottom: var(--space-lg);">Click any platform to start your shadow ban check</p>
 
             <div class="platform-grid">
                 <div class="platform-item clickable" data-platform="twitter"><span>🐦</span><span>Twitter / X</span><span class="badge live">Live</span></div>
@@ -168,26 +89,34 @@
         </div>
     </section>
 
-    <!-- Search Counter - Below Platforms, Centered -->
-    <section style="padding: var(--space-lg) 0;">
+    <!-- How It Works - Compact -->
+    <section class="how-it-works" style="padding: var(--space-xl) 0;">
         <div class="container">
-            <div class="search-counter-module">
-                <div class="counter-content">
-                    <div class="counter-icon">🎯</div>
-                    <div class="counter-text">
-                        <h3>Free Searches Remaining</h3>
-                        <p id="searches-remaining">3 / 3 searches available today</p>
-                    </div>
+            <h2 class="section-title" style="font-size: 1.5rem;">How It Works</h2>
+            <div class="how-grid">
+                <div class="how-item">
+                    <div class="how-icon">1️⃣</div>
+                    <h3>Select Platform</h3>
+                    <p>Choose from 26 platforms we monitor</p>
                 </div>
-                <a href="index.html#pricing" class="btn-counter">Unlock More Searches</a>
+                <div class="how-item">
+                    <div class="how-icon">2️⃣</div>
+                    <h3>Enter Username</h3>
+                    <p>Provide your account info</p>
+                </div>
+                <div class="how-item">
+                    <div class="how-icon">3️⃣</div>
+                    <h3>Get Results</h3>
+                    <p>Results in 60 seconds</p>
+                </div>
             </div>
         </div>
     </section>
 
     <!-- Data Sources - Compact -->
-    <section class="data-sources-section">
+    <section class="data-sources-section" style="padding: var(--space-xl) 0;">
         <div class="container">
-            <h2 class="section-title">Our Data Sources</h2>
+            <h2 class="section-title" style="font-size: 1.5rem;">Our Data Sources</h2>
             <p class="section-desc">We analyze multiple data points for accurate probability scores</p>
             <div class="sources-grid">
                 <div class="source-card"><span class="source-icon">🔌</span><h3>Platform APIs</h3><p>Direct real-time status</p></div>
@@ -196,6 +125,20 @@
                 <div class="source-card"><span class="source-icon">👥</span><h3>User Reports</h3><p>Community verified</p></div>
                 <div class="source-card"><span class="source-icon">🤖</span><h3>AI Analysis</h3><p>10+ factor detection</p></div>
                 <div class="source-card"><span class="source-icon">📈</span><h3>Trend Data</h3><p>Pattern recognition</p></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Cross-Promote: Hashtag Checker -->
+    <section style="padding: var(--space-xl) 0; background: var(--bg);">
+        <div class="container">
+            <div class="cross-promote-card">
+                <div class="cross-promote-icon">🚫</div>
+                <div class="cross-promote-content">
+                    <h3>Also Check Your Hashtags</h3>
+                    <p>Using banned hashtags can trigger shadow bans. Check if your hashtags are safe before posting.</p>
+                </div>
+                <a href="hashtag-checker.html" class="btn-cross-promote">Check Hashtags →</a>
             </div>
         </div>
     </section>
@@ -229,15 +172,15 @@
                 </div>
                 <div class="footer-col">
                     <h4>Developers</h4>
-                    <a href="#">API Access</a>
+                    <a href="#" onclick="alert('API documentation coming soon!'); return false;">API Access <span class="coming-soon-tiny">Soon</span></a>
                     <a href="https://github.com/Ghost081280" target="_blank">GitHub</a>
                 </div>
             </div>
             <div class="footer-bottom">
                 <p>&copy; 2025 ShadowBanCheck.io. All rights reserved.</p>
                 <div class="footer-legal" style="margin-right: 100px;">
-                    <a href="#">Terms</a>
-                    <a href="#">Privacy</a>
+                    <a href="#" onclick="alert('Terms coming soon!'); return false;">Terms</a>
+                    <a href="#" onclick="alert('Privacy coming soon!'); return false;">Privacy</a>
                     <a href="#" onclick="showCookiePolicy(); return false;">Cookie Policy</a>
                 </div>
             </div>
@@ -258,7 +201,12 @@
         </div>
     </div>
 
-    <script src="js/main.js"></script>
+    <script>
+        function showCookiePolicy() {
+            alert('Cookie Policy\n\nWe use cookies to:\n• Remember your preferences\n• Track free searches (3 per day)\n• Improve your experience\n\nBy using ShadowBanCheck.io, you consent to our use of cookies.');
+        }
+    </script>
     <script src="js/shadow-ai.js"></script>
+    <script src="js/checker.js"></script>
 </body>
 </html>

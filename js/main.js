@@ -413,12 +413,22 @@ function initCheckerPageModals() {
             const isLive = this.querySelector('.badge.live');
             
             if (!isLive) {
-                alert(`${data ? data.name : 'This platform'} is coming soon! Currently live: Twitter/X, Reddit, and Email.`);
+                // Show Coming Soon modal
+                modalBody.innerHTML = `
+                    <div class="coming-soon-content">
+                        <div class="coming-soon-icon">${data ? data.icon : '🔜'}</div>
+                        <h2>${data ? data.name : 'This Platform'}</h2>
+                        <p>Coming Soon! We're working on adding this platform.</p>
+                        <p style="color: var(--text-muted); font-size: 0.875rem;">Currently live: Twitter/X, Reddit, and Email</p>
+                        <a href="index.html#pricing" class="btn" style="margin-top: 1rem;">Get Notified When Live</a>
+                    </div>
+                `;
+                openModal(modal);
                 return;
             }
             
             if (!hasSearchesRemaining()) {
-                if (confirm('You\'ve used all your free searches today. Would you like to upgrade for unlimited checks?')) {
+                if (confirm('You\'ve used all your free searches today. Would you like to get more searches?')) {
                     window.location.href = 'index.html#pricing';
                 }
                 return;

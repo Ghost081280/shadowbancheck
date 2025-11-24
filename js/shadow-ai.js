@@ -7,6 +7,38 @@
 'use strict';
 
 // ============================================
+// LOAD SHARED WIDGET HTML
+// ============================================
+async function loadShadowAIWidget() {
+    console.log('🤖 Loading Shadow AI widget...');
+    
+    // Check if widget already exists (avoid duplicate loading)
+    if (document.querySelector('.shadow-ai-container')) {
+        console.log('✅ Shadow AI widget already present');
+        return true;
+    }
+    
+    try {
+        const response = await fetch('./shadow-ai-widget.html');
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const html = await response.text();
+        
+        // Append to body
+        document.body.insertAdjacentHTML('beforeend', html);
+        
+        console.log('✅ Shadow AI widget loaded successfully');
+        return true;
+        
+    } catch (error) {
+        console.error('❌ Failed to load Shadow AI widget:', error);
+        return false;
+    }
+}
+
+// ============================================
 // CONFIGURATION
 // ============================================
 const ShadowAI = {
@@ -624,10 +656,19 @@ function initializeScrollIsolation() {
 // ============================================
 // INITIALIZATION
 // ============================================
-function initializeShadowAI() {
+async function initializeShadowAI() {
     console.log('🤖 Shadow AI v2.0 Initializing...');
     
-    // Get elements
+    // STEP 1: Load the widget HTML first
+    const widgetLoaded = await loadShadowAIWidget();
+    
+    if (!widgetLoaded) {
+        console.error('❌ Failed to load widget - retrying in 1 second...');
+        setTimeout(initializeShadowAI, 1000);
+        return;
+    }
+    
+    // STEP 2: Get elements (now that they exist)
     const btn = document.getElementById('shadow-ai-btn');
     const closeBtn = document.getElementById('shadow-ai-close');
     const sendBtn = document.getElementById('shadow-ai-send');

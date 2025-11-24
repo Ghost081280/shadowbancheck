@@ -6,12 +6,26 @@
     <title>Check Results - ShadowBanCheck.io</title>
     
     <!-- CSS -->
-    <link rel="stylesheet" href="css/shared.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/shadow-ai.css">
     <link rel="stylesheet" href="css/results.css">
 </head>
 <body>
-    <!-- Navigation loaded by shared.js -->
-    <nav id="main-nav"></nav>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="logo">
+                <a href="index.html">
+                    <span class="logo-emoji">🔍</span>
+                    <span class="logo-text">ShadowBanCheck.io</span>
+                </a>
+            </div>
+            <nav class="nav">
+                <a href="checker.html">New Check</a>
+                <a href="index.html#pricing">Upgrade</a>
+            </nav>
+        </div>
+    </header>
 
     <!-- Main Content -->
     <main class="main">
@@ -63,14 +77,69 @@
         </div>
     </main>
 
-    <!-- Footer loaded by shared.js -->
-    <footer id="main-footer"></footer>
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>ShadowBanCheck.io</h3>
+                    <p>The #1 shadow ban detection tool for social media.</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Product</h4>
+                    <ul>
+                        <li><a href="checker.html">Shadow Ban Checker</a></li>
+                        <li><a href="hashtag-checker.html">Hashtag Checker</a></li>
+                        <li><a href="index.html#pricing">Pricing</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Resources</h4>
+                    <ul>
+                        <li><a href="#how">How It Works</a></li>
+                        <li><a href="#faq">FAQ</a></li>
+                        <li><a href="#contact">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Legal</h4>
+                    <ul>
+                        <li><a href="#privacy">Privacy Policy</a></li>
+                        <li><a href="#terms">Terms of Service</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 ShadowBanCheck.io. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
 
-    <!-- Phoenix AI Button loaded by shared.js -->
-    <div id="phoenix-ai-container"></div>
+    <!-- Shadow AI Button -->
+    <button id="shadow-ai-btn" class="copilot-btn">
+        <span class="copilot-emoji">🤖</span>
+        <span class="copilot-text">Shadow AI</span>
+    </button>
 
-    <!-- Scripts -->
-    <script src="js/shared.js"></script>
+    <!-- Shadow AI Chat -->
+    <div id="shadow-ai-chat" class="copilot-chat hidden">
+        <div class="copilot-header">
+            <div class="copilot-title">
+                <span class="copilot-emoji">🤖</span>
+                <span>Shadow AI</span>
+            </div>
+            <button id="shadow-ai-close" class="copilot-close">&times;</button>
+        </div>
+        <div id="shadow-ai-messages" class="copilot-messages">
+            <!-- Messages populated by shadow-ai.js -->
+        </div>
+        <div class="copilot-input">
+            <input type="text" id="shadow-ai-input" placeholder="Ask about your results...">
+            <button id="shadow-ai-send">Send</button>
+        </div>
+    </div>
+
+    <script src="js/shadow-ai.js"></script>
     <script src="js/results.js"></script>
 </body>
 </html>

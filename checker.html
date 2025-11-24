@@ -3,40 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shadow Ban Checker - Check Your Account Status | ShadowBanCheck.io</title>
-    <meta name="description" content="Check if you're shadow banned on Instagram, TikTok, Twitter/X, Facebook and 26+ platforms. Get instant results with our AI-powered detection.">
+    <title>Shadow Ban Checker - Check Any Platform - ShadowBanCheck.io</title>
+    <meta name="description" content="Free shadow ban checker for Twitter, Instagram, TikTok, Reddit, and 22+ more platforms. Instant results in 60 seconds.">
     
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/shadow-ai.css">
     <style>
-        /* =============================================================================
-           SHARED STYLES - Copy these to hashtag-checker.html and results.html for consistency
-           ============================================================================= */
-        
-        /* How It Works - Compact */
-        .how-grid-compact {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 1.5rem;
-        }
-        .how-item-compact {
-            display: flex;
-            align-items: flex-start;
-            gap: 1rem;
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: 0.75rem;
-            padding: 1.25rem;
-            transition: all 0.3s ease;
-        }
-        .how-item-compact:hover {
-            border-color: var(--primary);
-            transform: translateY(-2px);
-        }
-        .how-icon-compact { font-size: 1.75rem; flex-shrink: 0; }
-        .how-item-compact strong { display: block; margin-bottom: 0.25rem; }
-        .how-item-compact p { color: var(--text-muted); font-size: 0.875rem; margin: 0; line-height: 1.5; }
-        
         /* Search Counter Module */
         .search-counter-module {
             background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
@@ -50,7 +22,11 @@
             max-width: 600px;
             margin: 0 auto;
         }
-        .counter-content { display: flex; align-items: center; gap: 1rem; }
+        .counter-content {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
         .counter-icon { font-size: 2rem; }
         .counter-text h3 { font-size: 1rem; margin: 0 0 0.25rem 0; }
         .counter-text p { margin: 0; color: var(--text-muted); font-size: 0.875rem; }
@@ -63,7 +39,6 @@
             font-weight: 600;
             font-size: 0.875rem;
             white-space: nowrap;
-            transition: all 0.3s ease;
         }
         .btn-counter:hover { transform: translateY(-2px); box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4); }
         
@@ -71,7 +46,7 @@
         .data-sources-section { padding: var(--space-xl) 0; background: var(--bg-secondary); }
         .sources-grid {
             display: grid;
-            grid-template-columns: repeat(6, 1fr);
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
             gap: 1rem;
             margin-top: 1.5rem;
         }
@@ -81,139 +56,53 @@
             border-radius: 0.5rem;
             padding: 1rem;
             text-align: center;
-            transition: all 0.3s ease;
         }
-        .source-card:hover { border-color: var(--primary); transform: translateY(-2px); }
+        .source-card:hover { border-color: var(--primary); }
         .source-icon { font-size: 1.5rem; margin-bottom: 0.5rem; display: block; }
         .source-card h3 { font-size: 0.875rem; margin: 0 0 0.25rem 0; }
         .source-card p { color: var(--text-muted); font-size: 0.75rem; line-height: 1.4; margin: 0; }
         
-        /* CTA Module */
-        .cta-module {
-            background: var(--card);
-            border: 2px solid var(--primary);
-            border-radius: var(--radius-xl);
-            padding: var(--space-2xl);
-            text-align: center;
-            box-shadow: 0 8px 32px rgba(99, 102, 241, 0.15);
-        }
-        .cta-module h2 { font-size: 1.5rem; margin-bottom: 0.5rem; }
-        .cta-module > p { color: var(--text-muted); margin-bottom: var(--space-lg); }
-        .cta-icon-large { font-size: 3rem; display: block; margin-bottom: var(--space-md); }
-        .cta-buttons { display: flex; gap: var(--space-md); justify-content: center; flex-wrap: wrap; }
-        
-        /* =============================================================================
-           PAGE-SPECIFIC STYLES - Shadow Ban Checker Only
-           ============================================================================= */
-        
-        /* Platform Input Toggle */
-        .platform-toggle {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-            justify-content: center;
-            margin-bottom: var(--space-lg);
-        }
-        .platform-chip {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.5rem 1rem;
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-full);
-            font-size: 0.875rem;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-        .platform-chip:hover { border-color: var(--primary); }
-        .platform-chip.active { background: var(--primary); border-color: var(--primary); color: white; }
-        .platform-chip input { display: none; }
-        
-        /* Account Input */
-        .account-input-group {
-            display: flex;
-            gap: var(--space-sm);
-            max-width: 500px;
-            margin: 0 auto var(--space-md);
-        }
-        .account-input-group input {
-            flex: 1;
-            padding: 1rem 1.25rem;
-            background: var(--bg);
+        /* Modal Form Styles */
+        .modal-header-custom { display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; }
+        .modal-icon { font-size: 2.5rem; }
+        .modal-header-custom h2 { margin: 0; }
+        .modal-description { color: var(--text-muted); margin-bottom: 1.5rem; }
+        .modal-form .form-group { margin-bottom: 1.5rem; }
+        .modal-form label { display: block; margin-bottom: 0.5rem; font-weight: 600; }
+        .form-input {
+            width: 100%;
+            padding: 0.875rem 1rem;
             border: 2px solid var(--border);
-            border-radius: var(--radius-md);
+            border-radius: 0.5rem;
+            background: var(--bg);
             color: var(--text);
             font-size: 1rem;
-            transition: border-color 0.2s ease;
+            box-sizing: border-box;
         }
-        .account-input-group input:focus {
-            outline: none;
-            border-color: var(--primary);
-        }
-        .account-input-group input::placeholder { color: var(--text-muted); }
-        
-        /* Recent Checks */
-        .recent-checks {
-            margin-top: var(--space-lg);
-            padding-top: var(--space-lg);
-            border-top: 1px solid var(--border);
-        }
-        .recent-checks h4 {
-            font-size: 0.875rem;
-            color: var(--text-muted);
-            margin-bottom: var(--space-sm);
-            text-align: center;
-        }
-        .recent-list {
+        .form-input:focus { outline: none; border-color: var(--primary); }
+        .btn-check {
+            width: 100%;
             display: flex;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-            justify-content: center;
-        }
-        .recent-item {
-            display: inline-flex;
             align-items: center;
+            justify-content: center;
             gap: 0.5rem;
-            padding: 0.375rem 0.75rem;
-            background: var(--bg);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-sm);
-            font-size: 0.8125rem;
-            color: var(--text-muted);
+            padding: 1rem;
+            background: linear-gradient(135deg, var(--primary) 0%, #8b5cf6 100%);
+            color: white;
+            border: none;
+            border-radius: 0.5rem;
+            font-size: 1.125rem;
+            font-weight: 700;
             cursor: pointer;
-            transition: all 0.2s ease;
         }
-        .recent-item:hover { border-color: var(--primary); color: var(--text); }
-        .recent-platform { opacity: 0.7; }
+        .btn-check:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4); }
+        .btn-check:disabled { opacity: 0.6; cursor: not-allowed; }
         
-        /* Loading State */
-        .btn-analyze.loading .btn-text { display: none; }
-        .btn-analyze.loading::before { content: 'Checking...'; }
-        .btn-analyze.loading .btn-icon { animation: spin 1s linear infinite; }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        
-        /* Mobile */
-        @media (max-width: 768px) {
-            .how-grid-compact { grid-template-columns: 1fr; }
-            .sources-grid { grid-template-columns: repeat(3, 1fr); }
-            .search-counter-module {
-                flex-direction: column;
-                text-align: center;
-                padding: 1.25rem;
-                gap: 1rem;
-            }
-            .counter-content { flex-direction: column; gap: 0.5rem; }
-            .btn-counter { width: 100%; text-align: center; }
-            .account-input-group { flex-direction: column; }
-            .platform-toggle { gap: 0.375rem; }
-            .platform-chip { padding: 0.375rem 0.75rem; font-size: 0.8125rem; }
-            .cta-buttons { flex-direction: column; }
-            .cta-buttons a { width: 100%; }
-        }
-        @media (max-width: 500px) {
-            .sources-grid { grid-template-columns: repeat(2, 1fr); }
-        }
+        /* Coming Soon Modal */
+        .coming-soon-content { text-align: center; padding: 1rem; }
+        .coming-soon-icon { font-size: 4rem; margin-bottom: 1rem; }
+        .coming-soon-content h2 { margin-bottom: 0.5rem; }
+        .coming-soon-content p { color: var(--text-muted); margin-bottom: 1.5rem; }
     </style>
 </head>
 <body>
@@ -236,127 +125,70 @@
     <!-- Hero -->
     <section class="hero" style="padding: var(--space-2xl) 0 var(--space-xl);">
         <div class="container">
-            <div class="hero-badge">🔍 Shadow Ban Checker</div>
-            <h1 class="hero-title">Are You Shadow Banned?</h1>
-            <p class="hero-subtitle">Enter your username to check your status across 26+ platforms instantly.</p>
-            
-            <!-- Shadow Ban Checker Card -->
-            <div class="post-checker-hero">
-                <div class="post-checker-card">
-                    <div class="checker-header">
-                        <span class="checker-icon">🔍</span>
-                        <div>
-                            <h3>Instant Shadow Ban Detection</h3>
-                            <p>AI analyzes 10+ signals to detect hidden restrictions</p>
-                        </div>
-                    </div>
-                    
-                    <!-- Platform Selection -->
-                    <div class="platform-toggle">
-                        <label class="platform-chip active">
-                            <input type="radio" name="platform" value="instagram" checked>
-                            <span>📸</span> Instagram
-                        </label>
-                        <label class="platform-chip">
-                            <input type="radio" name="platform" value="tiktok">
-                            <span>🎵</span> TikTok
-                        </label>
-                        <label class="platform-chip">
-                            <input type="radio" name="platform" value="twitter">
-                            <span>🐦</span> Twitter/X
-                        </label>
-                        <label class="platform-chip">
-                            <input type="radio" name="platform" value="facebook">
-                            <span>📘</span> Facebook
-                        </label>
-                        <label class="platform-chip">
-                            <input type="radio" name="platform" value="youtube">
-                            <span>▶️</span> YouTube
-                        </label>
-                    </div>
-                    
-                    <form id="checker-form" class="checker-form">
-                        <div class="account-input-group">
-                            <input 
-                                type="text" 
-                                id="username-input" 
-                                placeholder="@username or profile URL"
-                                required
-                            >
-                            <button type="submit" class="btn-analyze" id="check-btn">
-                                <span class="btn-text">Check Now</span>
-                                <span class="btn-icon">🔍</span>
-                            </button>
-                        </div>
-                    </form>
-                    
-                    <div class="checker-features">
-                        <span>✓ Results in seconds</span>
-                        <span>✓ 3 free checks/day</span>
-                        <span>✓ 26+ platforms</span>
-                        <span>✓ AI-powered</span>
-                    </div>
-                    
-                    <div class="recent-checks" id="recent-checks" style="display: none;">
-                        <h4>Recent Checks</h4>
-                        <div class="recent-list" id="recent-list"></div>
-                    </div>
-                </div>
+            <div class="hero-badge">🔍 Free Shadow Ban Checker</div>
+            <h1 class="hero-title">Check Any Platform</h1>
+            <p class="hero-subtitle">Select a platform below to check if you're shadow banned.</p>
+        </div>
+    </section>
+
+    <!-- Platform Grid -->
+    <section class="platforms" style="padding: var(--space-xl) 0;">
+        <div class="container">
+            <h2 class="section-title">Select Platform to Check</h2>
+            <p class="section-desc">Click any platform to start your shadow ban check</p>
+
+            <div class="platform-grid">
+                <div class="platform-item clickable" data-platform="twitter"><span>🐦</span><span>Twitter / X</span><span class="badge live">Live</span></div>
+                <div class="platform-item clickable" data-platform="instagram"><span>📸</span><span>Instagram</span><span class="badge soon">Soon</span></div>
+                <div class="platform-item clickable" data-platform="tiktok"><span>🎵</span><span>TikTok</span><span class="badge soon">Soon</span></div>
+                <div class="platform-item clickable" data-platform="facebook"><span>📘</span><span>Facebook</span><span class="badge soon">Soon</span></div>
+                <div class="platform-item clickable" data-platform="reddit"><span>🤖</span><span>Reddit</span><span class="badge live">Live</span></div>
+                <div class="platform-item clickable" data-platform="linkedin"><span>💼</span><span>LinkedIn</span><span class="badge soon">Soon</span></div>
+                <div class="platform-item clickable" data-platform="threads"><span>🧵</span><span>Threads</span><span class="badge soon">Soon</span></div>
+                <div class="platform-item clickable" data-platform="bluesky"><span>🦋</span><span>Bluesky</span><span class="badge soon">Soon</span></div>
+                <div class="platform-item clickable" data-platform="youtube"><span>📺</span><span>YouTube</span><span class="badge soon">Soon</span></div>
+                <div class="platform-item clickable" data-platform="pinterest"><span>📌</span><span>Pinterest</span><span class="badge soon">Soon</span></div>
+                <div class="platform-item clickable" data-platform="discord"><span>🎮</span><span>Discord</span><span class="badge soon">Soon</span></div>
+                <div class="platform-item clickable" data-platform="twitch"><span>🟣</span><span>Twitch</span><span class="badge soon">Soon</span></div>
+                <div class="platform-item clickable" data-platform="kick"><span>⚡</span><span>Kick</span><span class="badge soon">Soon</span></div>
+                <div class="platform-item clickable" data-platform="snapchat"><span>👻</span><span>Snapchat</span><span class="badge soon">Soon</span></div>
+                <div class="platform-item clickable" data-platform="truth"><span>🇺🇸</span><span>Truth Social</span><span class="badge soon">Soon</span></div>
+                <div class="platform-item clickable" data-platform="rumble"><span>📹</span><span>Rumble</span><span class="badge soon">Soon</span></div>
+                <div class="platform-item clickable" data-platform="telegram"><span>✈️</span><span>Telegram</span><span class="badge soon">Soon</span></div>
+                <div class="platform-item clickable" data-platform="etsy"><span>🛍️</span><span>Etsy</span><span class="badge soon">Soon</span></div>
+                <div class="platform-item clickable" data-platform="amazon"><span>📦</span><span>Amazon</span><span class="badge soon">Soon</span></div>
+                <div class="platform-item clickable" data-platform="ebay"><span>🏷️</span><span>eBay</span><span class="badge soon">Soon</span></div>
+                <div class="platform-item clickable" data-platform="email"><span>📧</span><span>Email</span><span class="badge live">Live</span></div>
+                <div class="platform-item clickable" data-platform="phone"><span>📱</span><span>Phone</span><span class="badge soon">Soon</span></div>
+                <div class="platform-item clickable" data-platform="domain"><span>🌐</span><span>Domain</span><span class="badge soon">Soon</span></div>
+                <div class="platform-item clickable" data-platform="ip"><span>🖥️</span><span>IP Address</span><span class="badge soon">Soon</span></div>
+                <div class="platform-item clickable" data-platform="google"><span>📍</span><span>Google Business</span><span class="badge soon">Soon</span></div>
+                <div class="platform-item clickable" data-platform="website"><span>🔗</span><span>Website</span><span class="badge soon">Soon</span></div>
             </div>
         </div>
     </section>
 
-    <!-- Search Counter -->
+    <!-- Search Counter - Below Platforms, Centered -->
     <section style="padding: var(--space-lg) 0;">
         <div class="container">
             <div class="search-counter-module">
                 <div class="counter-content">
                     <div class="counter-icon">🎯</div>
                     <div class="counter-text">
-                        <h3>Free Shadow Ban Checks Remaining</h3>
-                        <p id="searches-display">3 / 3 checks available today</p>
+                        <h3>Free Searches Remaining</h3>
+                        <p id="searches-remaining">3 / 3 searches available today</p>
                     </div>
                 </div>
-                <a href="index.html#pricing" class="btn-counter">Unlock Unlimited</a>
+                <a href="index.html#pricing" class="btn-counter">Unlock More Searches</a>
             </div>
         </div>
     </section>
 
-    <!-- How It Works -->
-    <section class="how-it-works" style="padding: var(--space-xl) 0;">
-        <div class="container">
-            <h2 class="section-title">How It Works</h2>
-            <div class="how-grid-compact">
-                <div class="how-item-compact">
-                    <span class="how-icon-compact">🤖</span>
-                    <div>
-                        <strong>AI-Powered Analysis</strong>
-                        <p>Our AI scans your profile for 10+ shadow ban indicators in real-time.</p>
-                    </div>
-                </div>
-                <div class="how-item-compact">
-                    <span class="how-icon-compact">⚡</span>
-                    <div>
-                        <strong>Real-Time API Checks</strong>
-                        <p>Direct integration with platforms for live account status detection.</p>
-                    </div>
-                </div>
-                <div class="how-item-compact">
-                    <span class="how-icon-compact">📊</span>
-                    <div>
-                        <strong>Detailed Report</strong>
-                        <p>Get actionable insights and recommendations to restore your reach.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Data Sources -->
+    <!-- Data Sources - Compact -->
     <section class="data-sources-section">
         <div class="container">
             <h2 class="section-title">Our Data Sources</h2>
-            <p class="section-desc">We analyze multiple data points for accurate shadow ban detection</p>
+            <p class="section-desc">We analyze multiple data points for accurate probability scores</p>
             <div class="sources-grid">
                 <div class="source-card"><span class="source-icon">🔌</span><h3>Platform APIs</h3><p>Direct real-time status</p></div>
                 <div class="source-card"><span class="source-icon">🌐</span><h3>Web Search</h3><p>AI-powered analysis</p></div>
@@ -368,20 +200,13 @@
         </div>
     </section>
 
-    <!-- CTA -->
-    <section class="cta" style="padding: var(--space-xl) 0;">
-        <div class="container">
-            <div class="cta-module">
-                <span class="cta-icon-large">🚫</span>
-                <h2>Using Banned Hashtags?</h2>
-                <p>Check your hashtags before posting to avoid shadow bans</p>
-                <div class="cta-buttons">
-                    <a href="hashtag-checker.html" class="btn btn-large">Try Hashtag Checker →</a>
-                    <a href="index.html#pricing" class="btn-ghost-light">View All Plans</a>
-                </div>
-            </div>
+    <!-- Platform Modal -->
+    <div id="platform-modal" class="modal hidden">
+        <div class="modal-content">
+            <button class="modal-close">&times;</button>
+            <div id="modal-body"></div>
         </div>
-    </section>
+    </div>
 
     <!-- Footer -->
     <footer class="footer">
@@ -404,15 +229,15 @@
                 </div>
                 <div class="footer-col">
                     <h4>Developers</h4>
-                    <a href="#" onclick="alert('API documentation coming soon!'); return false;">API Access <span class="coming-soon-tiny">Soon</span></a>
+                    <a href="#">API Access</a>
                     <a href="https://github.com/Ghost081280" target="_blank">GitHub</a>
                 </div>
             </div>
             <div class="footer-bottom">
                 <p>&copy; 2025 ShadowBanCheck.io. All rights reserved.</p>
                 <div class="footer-legal" style="margin-right: 100px;">
-                    <a href="#" onclick="alert('Terms of Service coming soon!'); return false;">Terms</a>
-                    <a href="#" onclick="alert('Privacy Policy coming soon!'); return false;">Privacy</a>
+                    <a href="#">Terms</a>
+                    <a href="#">Privacy</a>
                     <a href="#" onclick="showCookiePolicy(); return false;">Cookie Policy</a>
                 </div>
             </div>
@@ -433,61 +258,6 @@
         </div>
     </div>
 
-    <script>
-        function showCookiePolicy() {
-            alert('Cookie Policy\n\nWe use cookies to:\n• Remember your preferences\n• Analyze site traffic and usage\n• Improve your experience\n• Track free checks (3 per day)\n\nBy using ShadowBanCheck.io, you consent to our use of cookies.');
-        }
-        
-        // Platform chip toggle
-        document.querySelectorAll('.platform-chip').forEach(chip => {
-            chip.addEventListener('click', function() {
-                document.querySelectorAll('.platform-chip').forEach(c => c.classList.remove('active'));
-                this.classList.add('active');
-            });
-        });
-        
-        // Form submission
-        document.getElementById('checker-form').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const username = document.getElementById('username-input').value.trim();
-            const platform = document.querySelector('.platform-chip.active input').value;
-            
-            if (!username) return;
-            
-            // Show loading
-            const btn = document.getElementById('check-btn');
-            btn.classList.add('loading');
-            
-            // Simulate check and redirect to results
-            setTimeout(() => {
-                // Store check data
-                localStorage.setItem('shadowban_check', JSON.stringify({
-                    username: username.replace('@', ''),
-                    platform: platform,
-                    timestamp: Date.now()
-                }));
-                
-                // Redirect to results
-                window.location.href = 'results.html';
-            }, 1500);
-        });
-        
-        // Search counter
-        function updateSearchCounter() {
-            const today = new Date().toDateString();
-            const lastReset = localStorage.getItem('shadowban_last_reset');
-            let remaining = parseInt(localStorage.getItem('shadowban_searches') || '3');
-            
-            if (lastReset !== today) {
-                remaining = 3;
-                localStorage.setItem('shadowban_searches', '3');
-                localStorage.setItem('shadowban_last_reset', today);
-            }
-            
-            document.getElementById('searches-display').textContent = `${remaining} / 3 checks available today`;
-        }
-        updateSearchCounter();
-    </script>
     <script src="js/main.js"></script>
     <script src="js/shadow-ai.js"></script>
 </body>

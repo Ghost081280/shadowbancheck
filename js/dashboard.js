@@ -1,8 +1,10 @@
 /* =============================================================================
-   DASHBOARD.JS - Clean Dashboard Functionality
+   DASHBOARD.JS - ShadowBanCheck.io Dashboard
    ============================================================================= */
 
-// Mock Data
+// =============================================================================
+// DEMO DATA
+// =============================================================================
 const userData = {
     firstName: 'John',
     lastName: 'Doe',
@@ -13,38 +15,34 @@ const userData = {
 
 const accounts = [
     { id: 1, platform: 'instagram', icon: '📸', username: '@johndoe', nickname: 'Personal', status: 'healthy', score: 95, lastCheck: '2h ago' },
-    { id: 2, platform: 'tiktok', icon: '🎵', username: '@johndoe_tiktok', nickname: 'TikTok', status: 'banned', score: 15, lastCheck: '2h ago' },
+    { id: 2, platform: 'tiktok', icon: '🎵', username: '@johndoe_tiktok', nickname: 'TikTok Main', status: 'banned', score: 15, lastCheck: '2h ago' },
     { id: 3, platform: 'twitter', icon: '🐦', username: '@johndoe_x', nickname: 'Twitter', status: 'healthy', score: 92, lastCheck: '2h ago' },
     { id: 4, platform: 'youtube', icon: '▶️', username: 'JohnDoeChannel', nickname: 'YouTube', status: 'healthy', score: 88, lastCheck: '3h ago' },
     { id: 5, platform: 'facebook', icon: '📘', username: 'john.doe', nickname: 'Facebook', status: 'healthy', score: 90, lastCheck: '3h ago' },
     { id: 6, platform: 'linkedin', icon: '💼', username: 'johndoe', nickname: 'Professional', status: 'healthy', score: 100, lastCheck: '4h ago' },
-    { id: 7, platform: 'instagram', icon: '📸', username: '@mybrand', nickname: 'Business', status: 'issues', score: 62, lastCheck: '1h ago' },
+    { id: 7, platform: 'instagram', icon: '📸', username: '@mybrand', nickname: 'Business IG', status: 'issues', score: 62, lastCheck: '1h ago' },
     { id: 8, platform: 'threads', icon: '🧵', username: '@johndoe', nickname: 'Threads', status: 'healthy', score: 85, lastCheck: '4h ago' }
 ];
 
-// AI Hashtag Alternatives (placeholder for backend)
+// Platform icons
+const platformIcons = {
+    instagram: '📸', tiktok: '🎵', twitter: '🐦', facebook: '📘', youtube: '▶️',
+    linkedin: '💼', reddit: '🤖', pinterest: '📌', snapchat: '👻', threads: '🧵',
+    mastodon: '🐘', bluesky: '🦋', truth: '🇺🇸', telegram: '✈️', discord: '🎮',
+    whatsapp: '💬', signal: '📶', amazon: '📦', ebay: '🛒', etsy: '🎨',
+    shopify: '🛍️', twitch: '🎮', kick: '🟢', rumble: '📺', medium: '✍️', quora: '❓'
+};
+
+// Hashtag alternatives (AI placeholder)
 const hashtagAlternatives = {
     '#fitness': ['#fitnessjourney', '#fitlife', '#workoutmotivation'],
     '#gym': ['#gymlife', '#gymmotivation', '#strengthtraining'],
-    '#weightloss': ['#weightlossjourney', '#healthylifestyle', '#transformation'],
+    '#weightloss': ['#healthylifestyle', '#transformation', '#fitnessgoals'],
     '#diet': ['#healthyeating', '#nutrition', '#cleaneating'],
     '#money': ['#personalfinance', '#financialfreedom', '#investing'],
     '#crypto': ['#cryptocurrency', '#blockchain', '#web3'],
-    '#adult': ['No alternatives - content policy violation'],
     '#follow4follow': ['#communitybuilding', '#engagement', '#connectwithme'],
-    '#likeforlike': ['#engagementtips', '#growthtips', '#socialmediatips']
-};
-
-// Platform icons
-const platformIcons = {
-    instagram: '📸',
-    tiktok: '🎵',
-    twitter: '🐦',
-    facebook: '📘',
-    youtube: '▶️',
-    linkedin: '💼',
-    reddit: '🤖',
-    threads: '🧵'
+    '#likeforlike': ['#engagementtips', '#growthtips', '#socialmedia']
 };
 
 // =============================================================================
@@ -57,11 +55,12 @@ document.addEventListener('DOMContentLoaded', () => {
     initQuickActions();
     initAccountsPage();
     initTools();
-    initAI();
+    initModal();
     initForms();
     populateDashboard();
+    detectUserIP();
     
-    // Check hash
+    // Check URL hash
     const hash = window.location.hash.slice(1);
     if (hash) navigateTo(hash);
 });
@@ -80,20 +79,16 @@ function initNavigation() {
 }
 
 function navigateTo(sectionId) {
-    // Update URL
     window.location.hash = sectionId;
     
-    // Update nav
     document.querySelectorAll('.nav-link').forEach(link => {
         link.classList.toggle('active', link.dataset.section === sectionId);
     });
     
-    // Update sections
     document.querySelectorAll('.section').forEach(section => {
         section.classList.toggle('active', section.id === sectionId);
     });
     
-    // Scroll to top
     document.querySelector('.content-scroll').scrollTop = 0;
 }
 
@@ -108,7 +103,6 @@ function initSidebar() {
     toggle?.addEventListener('click', () => sidebar.classList.add('open'));
     close?.addEventListener('click', closeSidebar);
     
-    // Close on outside click
     document.addEventListener('click', (e) => {
         if (sidebar.classList.contains('open') && 
             !sidebar.contains(e.target) && 
@@ -145,19 +139,21 @@ function initTabs() {
 // QUICK ACTIONS
 // =============================================================================
 function initQuickActions() {
-    document.querySelectorAll('.action-btn, [data-action]').forEach(btn => {
+    document.querySelectorAll('[data-action]').forEach(btn => {
         btn.addEventListener('click', () => {
             const action = btn.dataset.action;
             
             switch (action) {
                 case 'check-all':
-                    runBulkCheck();
+                    navigateTo('tools');
+                    setTimeout(() => document.getElementById('run-bulk')?.click(), 100);
                     break;
                 case 'add-account':
-                    openAddAccountModal();
+                    openModal();
                     break;
                 case 'check-hashtags':
                     navigateTo('tools');
+                    document.getElementById('hashtag-input')?.focus();
                     break;
             }
         });
@@ -168,7 +164,6 @@ function initQuickActions() {
 // ACCOUNTS PAGE
 // =============================================================================
 function initAccountsPage() {
-    // Filters
     document.querySelectorAll('.filter').forEach(btn => {
         btn.addEventListener('click', () => {
             document.querySelectorAll('.filter').forEach(b => b.classList.remove('active'));
@@ -177,8 +172,7 @@ function initAccountsPage() {
         });
     });
     
-    // Add account button
-    document.getElementById('add-account-btn')?.addEventListener('click', openAddAccountModal);
+    document.getElementById('add-account-btn')?.addEventListener('click', openModal);
 }
 
 function filterAccounts(filter) {
@@ -229,7 +223,7 @@ function renderMiniAccounts() {
     `).join('');
 }
 
-// Account actions
+// Account actions (global)
 window.checkAccount = function(id) {
     const acc = accounts.find(a => a.id === id);
     showToast('🔍', `Checking ${acc.username}...`);
@@ -242,11 +236,11 @@ window.checkAccount = function(id) {
 
 window.viewAccount = function(id) {
     const acc = accounts.find(a => a.id === id);
-    alert(`${acc.username}\n\nPlatform: ${acc.platform}\nStatus: ${acc.status}\nScore: ${acc.score}%\nLast Check: ${acc.lastCheck}`);
+    alert(`Account Details\n\n${acc.icon} ${acc.username}\nPlatform: ${acc.platform}\nNickname: ${acc.nickname}\nStatus: ${acc.status}\nScore: ${acc.score}%\nLast Check: ${acc.lastCheck}`);
 };
 
 window.removeAccount = function(id) {
-    if (!confirm('Remove this account?')) return;
+    if (!confirm('Remove this account from monitoring?')) return;
     const idx = accounts.findIndex(a => a.id === id);
     if (idx > -1) {
         accounts.splice(idx, 1);
@@ -257,53 +251,43 @@ window.removeAccount = function(id) {
     }
 };
 
-// Add Account Modal
-function openAddAccountModal() {
-    const modal = document.getElementById('modal');
-    const body = document.getElementById('modal-body');
-    const footer = document.getElementById('modal-footer');
+// =============================================================================
+// MODAL
+// =============================================================================
+function initModal() {
+    const modal = document.getElementById('add-account-modal');
+    const closeBtn = document.getElementById('modal-close');
+    const cancelBtn = document.getElementById('modal-cancel');
+    const confirmBtn = document.getElementById('modal-confirm');
     
-    document.getElementById('modal-title').textContent = 'Add Account';
+    closeBtn?.addEventListener('click', closeModal);
+    cancelBtn?.addEventListener('click', closeModal);
+    confirmBtn?.addEventListener('click', addAccount);
     
-    body.innerHTML = `
-        <div class="form-group">
-            <label>Platform</label>
-            <select id="new-platform" class="input">
-                <option value="">Select...</option>
-                <option value="instagram">Instagram</option>
-                <option value="tiktok">TikTok</option>
-                <option value="twitter">Twitter/X</option>
-                <option value="facebook">Facebook</option>
-                <option value="youtube">YouTube</option>
-                <option value="linkedin">LinkedIn</option>
-                <option value="reddit">Reddit</option>
-            </select>
-        </div>
-        <div class="form-group">
-            <label>Username</label>
-            <input type="text" id="new-username" class="input" placeholder="@username">
-        </div>
-        <div class="form-group">
-            <label>Nickname (optional)</label>
-            <input type="text" id="new-nickname" class="input" placeholder="My Account">
-        </div>
-    `;
-    
-    footer.innerHTML = `
-        <button class="btn-secondary" onclick="closeModal()">Cancel</button>
-        <button class="btn-primary" onclick="addAccount()">Add Account</button>
-    `;
-    
-    modal.classList.remove('hidden');
+    // Close on overlay click
+    modal?.addEventListener('click', (e) => {
+        if (e.target === modal) closeModal();
+    });
 }
 
-window.addAccount = function() {
+function openModal() {
+    document.getElementById('add-account-modal')?.classList.remove('hidden');
+    document.getElementById('new-platform').value = '';
+    document.getElementById('new-username').value = '';
+    document.getElementById('new-nickname').value = '';
+}
+
+function closeModal() {
+    document.getElementById('add-account-modal')?.classList.add('hidden');
+}
+
+function addAccount() {
     const platform = document.getElementById('new-platform').value;
-    const username = document.getElementById('new-username').value;
-    const nickname = document.getElementById('new-nickname').value;
+    const username = document.getElementById('new-username').value.trim();
+    const nickname = document.getElementById('new-nickname').value.trim();
     
     if (!platform || !username) {
-        showToast('⚠️', 'Please fill in platform and username');
+        showToast('⚠️', 'Please select platform and enter username');
         return;
     }
     
@@ -318,7 +302,7 @@ window.addAccount = function() {
         platform,
         icon: platformIcons[platform] || '📱',
         username: username.startsWith('@') ? username : '@' + username,
-        nickname: nickname || platform,
+        nickname: nickname || platform.charAt(0).toUpperCase() + platform.slice(1),
         status: 'healthy',
         score: 80 + Math.floor(Math.random() * 20),
         lastCheck: 'Just now'
@@ -328,39 +312,40 @@ window.addAccount = function() {
     userData.usage.accounts++;
     
     renderAccounts();
+    renderMiniAccounts();
     populateDashboard();
     closeModal();
-    showToast('✅', `${newAcc.username} added!`);
-};
-
-window.closeModal = function() {
-    document.getElementById('modal').classList.add('hidden');
-};
-
-document.getElementById('modal-close')?.addEventListener('click', closeModal);
+    showToast('✅', `${newAcc.username} added successfully!`);
+}
 
 // =============================================================================
 // TOOLS
 // =============================================================================
 function initTools() {
-    // Shadow ban check
-    document.getElementById('run-check')?.addEventListener('click', runShadowCheck);
-    
-    // Hashtag check
+    document.getElementById('run-check')?.addEventListener('click', runAccountCheck);
     document.getElementById('run-hashtag-check')?.addEventListener('click', runHashtagCheck);
-    
-    // Bulk check
+    document.getElementById('run-ip-check')?.addEventListener('click', runIPCheck);
+    document.getElementById('run-email-check')?.addEventListener('click', runEmailCheck);
+    document.getElementById('run-phone-check')?.addEventListener('click', runPhoneCheck);
+    document.getElementById('run-website-check')?.addEventListener('click', runWebsiteCheck);
     document.getElementById('run-bulk')?.addEventListener('click', runBulkCheck);
-    
-    // Close results
-    document.getElementById('close-results')?.addEventListener('click', () => {
-        document.getElementById('results-box').classList.add('hidden');
-    });
+    document.getElementById('close-results')?.addEventListener('click', hideResults);
 }
 
-function runShadowCheck() {
+// Detect user IP
+function detectUserIP() {
+    const ipEl = document.getElementById('user-ip');
+    if (!ipEl) return;
+    
+    // Demo IP
+    setTimeout(() => {
+        ipEl.textContent = '192.168.1.' + Math.floor(Math.random() * 255);
+    }, 500);
+}
+
+function runAccountCheck() {
     const platform = document.getElementById('tool-platform').value;
-    const username = document.getElementById('tool-username').value;
+    const username = document.getElementById('tool-username').value.trim();
     
     if (!platform || !username) {
         showToast('⚠️', 'Select platform and enter username');
@@ -371,15 +356,18 @@ function runShadowCheck() {
     
     setTimeout(() => {
         const score = Math.floor(Math.random() * 100);
-        const status = score > 70 ? 'safe' : 'banned';
+        const status = score > 70 ? 'healthy' : score > 40 ? 'issues' : 'banned';
+        const statusText = status === 'healthy' ? '✅ No Shadow Ban Detected' : 
+                          status === 'issues' ? '⚠️ Possible Restrictions' : '🚫 Shadow Ban Likely';
         
-        showResults('Shadow Ban Check', `
-            <div style="text-align: center; padding: 1rem;">
-                <div style="font-size: 3rem; margin-bottom: 0.5rem;">${status === 'safe' ? '✅' : '🚫'}</div>
-                <h3 style="margin: 0 0 0.5rem;">${status === 'safe' ? 'No Shadow Ban Detected' : 'Shadow Ban Likely'}</h3>
-                <p style="color: var(--text-muted); margin: 0;">
-                    ${platformIcons[platform]} ${username} • Visibility Score: ${score}%
+        showResults('Account Check Results', `
+            <div style="text-align: center; padding: 1.5rem;">
+                <div style="font-size: 3rem; margin-bottom: 0.75rem;">${status === 'healthy' ? '✅' : status === 'issues' ? '⚠️' : '🚫'}</div>
+                <h3 style="margin: 0 0 0.5rem;">${statusText}</h3>
+                <p style="color: var(--text-muted); margin: 0 0 1rem;">
+                    ${platformIcons[platform] || '📱'} ${username} • Visibility Score: ${score}%
                 </p>
+                ${status !== 'healthy' ? `<p style="font-size: 0.85rem; color: var(--primary-light);">💡 Tip: Try posting original content and avoid flagged hashtags for 48 hours.</p>` : ''}
             </div>
         `);
     }, 2000);
@@ -404,11 +392,11 @@ function runHashtagCheck() {
     showToast('🏷️', `Checking ${hashtags.length} hashtags...`);
     
     setTimeout(() => {
-        // Simulate results - ~20% banned
         const results = hashtags.map(tag => ({
             tag,
-            status: Math.random() > 0.2 ? 'safe' : 'banned',
-            alternatives: hashtagAlternatives[tag.toLowerCase()] || ['#' + tag.slice(1) + 'life', '#' + tag.slice(1) + 'community', '#' + tag.slice(1) + 'tips']
+            status: Math.random() > 0.25 ? 'safe' : 'banned',
+            alternatives: hashtagAlternatives[tag.toLowerCase()] || 
+                         ['#' + tag.slice(1) + 'life', '#' + tag.slice(1) + 'daily', '#' + tag.slice(1) + 'tips']
         }));
         
         const safe = results.filter(r => r.status === 'safe').length;
@@ -430,19 +418,100 @@ function runHashtagCheck() {
                     <span class="status ${r.status}">${r.status === 'safe' ? '✅ Safe' : '🚫 Banned'}</span>
                 </div>
             `;
-            
             if (r.status === 'banned') {
-                html += `
-                    <div class="hashtag-alt">
-                        💡 <strong>Try instead:</strong> ${r.alternatives.slice(0, 3).join(', ')}
-                    </div>
-                `;
+                html += `<div class="hashtag-alt">💡 <strong>Try instead:</strong> ${r.alternatives.slice(0, 3).join(', ')}</div>`;
             }
         });
         
         html += '</div>';
-        
         showResults(`Hashtag Check - ${platform}`, html);
+    }, 1500);
+}
+
+function runIPCheck() {
+    const customIP = document.getElementById('custom-ip').value.trim();
+    const userIP = document.getElementById('user-ip').textContent;
+    const ip = customIP || userIP;
+    
+    showToast('🌐', `Checking IP ${ip}...`);
+    
+    setTimeout(() => {
+        const isFlagged = Math.random() > 0.85;
+        showResults('IP Address Check', `
+            <div style="text-align: center; padding: 1.5rem;">
+                <div style="font-size: 3rem; margin-bottom: 0.75rem;">${isFlagged ? '⚠️' : '✅'}</div>
+                <h3 style="margin: 0 0 0.5rem;">${isFlagged ? 'IP May Be Flagged' : 'IP Looks Clean'}</h3>
+                <p style="color: var(--text-muted); margin: 0; font-family: monospace;">${ip}</p>
+                ${isFlagged ? `<p style="font-size: 0.85rem; color: var(--primary-light); margin-top: 1rem;">💡 Tip: Try using a VPN or contact your ISP.</p>` : ''}
+            </div>
+        `);
+    }, 1500);
+}
+
+function runEmailCheck() {
+    const email = document.getElementById('check-email').value.trim();
+    
+    if (!email) {
+        showToast('⚠️', 'Enter an email address');
+        return;
+    }
+    
+    showToast('📧', `Checking ${email}...`);
+    
+    setTimeout(() => {
+        const isBlacklisted = Math.random() > 0.9;
+        showResults('Email Check', `
+            <div style="text-align: center; padding: 1.5rem;">
+                <div style="font-size: 3rem; margin-bottom: 0.75rem;">${isBlacklisted ? '🚫' : '✅'}</div>
+                <h3 style="margin: 0 0 0.5rem;">${isBlacklisted ? 'Email May Be Blacklisted' : 'Email Looks Good'}</h3>
+                <p style="color: var(--text-muted); margin: 0;">${email}</p>
+            </div>
+        `);
+    }, 1500);
+}
+
+function runPhoneCheck() {
+    const phone = document.getElementById('check-phone').value.trim();
+    
+    if (!phone) {
+        showToast('⚠️', 'Enter a phone number');
+        return;
+    }
+    
+    showToast('📱', `Checking phone...`);
+    
+    setTimeout(() => {
+        const isFlagged = Math.random() > 0.9;
+        showResults('Phone Check', `
+            <div style="text-align: center; padding: 1.5rem;">
+                <div style="font-size: 3rem; margin-bottom: 0.75rem;">${isFlagged ? '⚠️' : '✅'}</div>
+                <h3 style="margin: 0 0 0.5rem;">${isFlagged ? 'Phone May Be Flagged' : 'Phone Looks Clean'}</h3>
+                <p style="color: var(--text-muted); margin: 0;">${phone}</p>
+            </div>
+        `);
+    }, 1500);
+}
+
+function runWebsiteCheck() {
+    const website = document.getElementById('check-website').value.trim();
+    
+    if (!website) {
+        showToast('⚠️', 'Enter a website URL');
+        return;
+    }
+    
+    showToast('🔗', `Checking domain...`);
+    
+    setTimeout(() => {
+        const isBlocked = Math.random() > 0.85;
+        showResults('Website Check', `
+            <div style="text-align: center; padding: 1.5rem;">
+                <div style="font-size: 3rem; margin-bottom: 0.75rem;">${isBlocked ? '🚫' : '✅'}</div>
+                <h3 style="margin: 0 0 0.5rem;">${isBlocked ? 'Domain May Be Blocked' : 'Domain Looks Safe'}</h3>
+                <p style="color: var(--text-muted); margin: 0; word-break: break-all;">${website}</p>
+                ${isBlocked ? `<p style="font-size: 0.85rem; color: var(--primary-light); margin-top: 1rem;">💡 Some platforms may block links to this domain.</p>` : ''}
+            </div>
+        `);
     }, 1500);
 }
 
@@ -450,89 +519,53 @@ function runBulkCheck() {
     showToast('⚡', `Checking ${accounts.length} accounts...`);
     
     setTimeout(() => {
-        accounts.forEach(acc => acc.lastCheck = 'Just now');
+        // Update all accounts with new check time
+        accounts.forEach(acc => {
+            acc.lastCheck = 'Just now';
+            // Randomly adjust scores slightly
+            acc.score = Math.max(0, Math.min(100, acc.score + (Math.random() > 0.5 ? 2 : -2)));
+        });
+        
         renderAccounts();
+        
+        // Show bulk results
+        let html = `
+            <div style="margin-bottom: 1rem;">
+                <span style="color: #22c55e;">✅ ${accounts.filter(a => a.status === 'healthy').length} Healthy</span> • 
+                <span style="color: #eab308;">⚠️ ${accounts.filter(a => a.status === 'issues').length} Issues</span> • 
+                <span style="color: #ef4444;">🚫 ${accounts.filter(a => a.status === 'banned').length} Banned</span>
+            </div>
+            <div class="bulk-results">
+        `;
+        
+        accounts.forEach(acc => {
+            html += `
+                <div class="bulk-result-row">
+                    <span class="platform-icon">${acc.icon}</span>
+                    <span class="username">${acc.username}</span>
+                    <span class="score">${acc.score}%</span>
+                    <span class="status ${acc.status}">${acc.status === 'healthy' ? '✓' : acc.status === 'issues' ? '!' : '✕'} ${acc.status}</span>
+                </div>
+            `;
+        });
+        
+        html += '</div>';
+        showResults('Bulk Check Results', html);
         showToast('✅', 'All accounts checked!');
-    }, 2000);
+    }, 2500);
 }
 
 function showResults(title, html) {
     document.getElementById('results-title').textContent = title;
     document.getElementById('results-content').innerHTML = html;
     document.getElementById('results-box').classList.remove('hidden');
+    
+    // Scroll to results
+    document.getElementById('results-box').scrollIntoView({ behavior: 'smooth' });
 }
 
-// =============================================================================
-// AI CHAT
-// =============================================================================
-function initAI() {
-    const fab = document.getElementById('ai-fab');
-    const panel = document.getElementById('ai-panel');
-    const close = document.getElementById('ai-close');
-    const send = document.getElementById('ai-send');
-    const input = document.getElementById('ai-input');
-    
-    // Also support button in Support section
-    document.getElementById('open-ai')?.addEventListener('click', () => {
-        panel.classList.remove('hidden');
-    });
-    
-    fab?.addEventListener('click', () => {
-        panel.classList.toggle('hidden');
-    });
-    
-    close?.addEventListener('click', () => {
-        panel.classList.add('hidden');
-    });
-    
-    send?.addEventListener('click', sendAIMessage);
-    input?.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') sendAIMessage();
-    });
-}
-
-function sendAIMessage() {
-    const input = document.getElementById('ai-input');
-    const messages = document.getElementById('ai-messages');
-    const text = input.value.trim();
-    
-    if (!text) return;
-    
-    // Add user message
-    messages.innerHTML += `
-        <div style="text-align: right; margin-bottom: 0.75rem;">
-            <span style="background: var(--primary); color: white; padding: 0.5rem 0.75rem; border-radius: 12px 12px 0 12px; display: inline-block; max-width: 80%;">
-                ${text}
-            </span>
-        </div>
-    `;
-    
-    input.value = '';
-    
-    // Scroll to bottom
-    messages.scrollTop = messages.scrollHeight;
-    
-    // Simulate AI response
-    setTimeout(() => {
-        const responses = [
-            "Shadow bans typically last 14-30 days. Focus on posting original content and avoiding banned hashtags.",
-            "To recover from a shadow ban: 1) Take a 48-hour break from posting, 2) Remove any flagged content, 3) Avoid banned hashtags, 4) Engage authentically with your community.",
-            "Your account's visibility score indicates how much reach you're getting. A score below 50% suggests potential restrictions.",
-            "I recommend checking your hashtags before posting - some hashtags get banned without notice and can trigger restrictions on your account."
-        ];
-        
-        const response = responses[Math.floor(Math.random() * responses.length)];
-        
-        messages.innerHTML += `
-            <div style="text-align: left; margin-bottom: 0.75rem;">
-                <span style="background: var(--bg-tertiary); padding: 0.5rem 0.75rem; border-radius: 12px 12px 12px 0; display: inline-block; max-width: 80%;">
-                    🤖 ${response}
-                </span>
-            </div>
-        `;
-        
-        messages.scrollTop = messages.scrollHeight;
-    }, 1000);
+function hideResults() {
+    document.getElementById('results-box').classList.add('hidden');
 }
 
 // =============================================================================
@@ -548,9 +581,11 @@ function initForms() {
     
     // Logout
     document.getElementById('logout-btn')?.addEventListener('click', () => {
-        if (confirm('Log out?')) {
+        if (confirm('Log out of your account?')) {
+            localStorage.removeItem('shadowban_session');
+            sessionStorage.removeItem('shadowban_session');
             showToast('👋', 'Logging out...');
-            setTimeout(() => window.location.href = 'index.html', 1000);
+            setTimeout(() => window.location.href = 'login.html', 1000);
         }
     });
     
@@ -558,6 +593,13 @@ function initForms() {
     document.getElementById('cancel-btn')?.addEventListener('click', () => {
         if (confirm('Cancel your subscription? You\'ll keep access until your billing period ends.')) {
             showToast('😢', 'Subscription cancelled');
+        }
+    });
+    
+    // Open Shadow AI
+    document.getElementById('open-ai')?.addEventListener('click', () => {
+        if (window.ShadowAI && window.ShadowAI.open) {
+            window.ShadowAI.open();
         }
     });
 }
@@ -590,9 +632,6 @@ function populateDashboard() {
     setText('accounts-limit', userData.plan.accountLimit);
     setText('bulk-count', accounts.length);
     
-    // AI count
-    setText('ai-count', `${userData.usage.aiUsed}/${userData.plan.aiPerDay} today`);
-    
     // Render
     renderAccounts();
     renderMiniAccounts();
@@ -615,7 +654,5 @@ function showToast(icon, message) {
     
     toast.classList.remove('hidden');
     
-    setTimeout(() => {
-        toast.classList.add('hidden');
-    }, 3000);
+    setTimeout(() => toast.classList.add('hidden'), 3000);
 }

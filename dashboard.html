@@ -7,8 +7,28 @@
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔍</text></svg>">
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="css/shadow-ai.css">
 </head>
 <body class="dashboard-body">
+    <!-- Auth Check - Redirect if not logged in -->
+    <script>
+        (function() {
+            const session = localStorage.getItem('shadowban_session') || sessionStorage.getItem('shadowban_session');
+            if (!session) {
+                window.location.href = 'login.html';
+                return;
+            }
+            try {
+                const data = JSON.parse(session);
+                if (!data.loggedIn) {
+                    window.location.href = 'login.html';
+                }
+            } catch (e) {
+                window.location.href = 'login.html';
+            }
+        })();
+    </script>
+
     <div class="dashboard-layout">
         <!-- Sidebar -->
         <aside class="sidebar" id="sidebar">
@@ -158,46 +178,121 @@
                     <div class="section-top">
                         <div>
                             <h1>Check Tools</h1>
-                            <p>Unlimited checks with your plan</p>
+                            <p>Check accounts, hashtags, IP, email, phone & websites across 26 platforms</p>
                         </div>
                     </div>
                     
-                    <div class="tools-row">
+                    <div class="tools-grid">
+                        <!-- Account Check -->
                         <div class="tool-box">
-                            <h3>🔍 Shadow Ban Check</h3>
-                            <p>Check any account for shadow ban indicators</p>
+                            <h3>🔍 Account Check</h3>
+                            <p>Check any username for shadow ban</p>
                             <select id="tool-platform" class="input">
-                                <option value="">Platform...</option>
+                                <option value="">Select Platform...</option>
+                                <optgroup label="Social Media">
+                                    <option value="twitter">Twitter/X</option>
+                                    <option value="instagram">Instagram</option>
+                                    <option value="tiktok">TikTok</option>
+                                    <option value="facebook">Facebook</option>
+                                    <option value="youtube">YouTube</option>
+                                    <option value="linkedin">LinkedIn</option>
+                                    <option value="reddit">Reddit</option>
+                                    <option value="pinterest">Pinterest</option>
+                                    <option value="snapchat">Snapchat</option>
+                                    <option value="threads">Threads</option>
+                                    <option value="mastodon">Mastodon</option>
+                                    <option value="bluesky">Bluesky</option>
+                                    <option value="truth">Truth Social</option>
+                                </optgroup>
+                                <optgroup label="Messaging">
+                                    <option value="telegram">Telegram</option>
+                                    <option value="discord">Discord</option>
+                                    <option value="whatsapp">WhatsApp</option>
+                                    <option value="signal">Signal</option>
+                                </optgroup>
+                                <optgroup label="E-commerce">
+                                    <option value="amazon">Amazon</option>
+                                    <option value="ebay">eBay</option>
+                                    <option value="etsy">Etsy</option>
+                                    <option value="shopify">Shopify</option>
+                                </optgroup>
+                                <optgroup label="Streaming">
+                                    <option value="twitch">Twitch</option>
+                                    <option value="kick">Kick</option>
+                                    <option value="rumble">Rumble</option>
+                                </optgroup>
+                                <optgroup label="Other">
+                                    <option value="medium">Medium</option>
+                                    <option value="quora">Quora</option>
+                                </optgroup>
+                            </select>
+                            <input type="text" id="tool-username" class="input" placeholder="@username or profile URL">
+                            <button class="btn-primary" id="run-check">Check Now</button>
+                        </div>
+                        
+                        <!-- Hashtag Check -->
+                        <div class="tool-box">
+                            <h3>🏷️ Hashtag Check</h3>
+                            <p>Verify hashtags aren't banned</p>
+                            <select id="hashtag-platform" class="input">
+                                <option value="">Select Platform...</option>
                                 <option value="instagram">Instagram</option>
                                 <option value="tiktok">TikTok</option>
                                 <option value="twitter">Twitter/X</option>
                                 <option value="facebook">Facebook</option>
                                 <option value="youtube">YouTube</option>
                             </select>
-                            <input type="text" id="tool-username" class="input" placeholder="@username">
-                            <button class="btn-primary" id="run-check">Check Now</button>
-                        </div>
-                        
-                        <div class="tool-box">
-                            <h3>🏷️ Hashtag Check</h3>
-                            <p>Verify hashtags aren't banned</p>
-                            <select id="hashtag-platform" class="input">
-                                <option value="">Platform...</option>
-                                <option value="instagram">Instagram</option>
-                                <option value="tiktok">TikTok</option>
-                                <option value="twitter">Twitter/X</option>
-                            </select>
-                            <textarea id="hashtag-input" class="input" placeholder="#fitness #motivation" rows="2"></textarea>
+                            <textarea id="hashtag-input" class="input" placeholder="#fitness #motivation #health" rows="2"></textarea>
                             <button class="btn-primary" id="run-hashtag-check">Check Hashtags</button>
                         </div>
                         
+                        <!-- IP Check -->
                         <div class="tool-box">
-                            <h3>⚡ Bulk Check</h3>
-                            <p>Check all <span id="bulk-count">8</span> accounts at once</p>
-                            <button class="btn-primary btn-full" id="run-bulk">Check All Accounts</button>
+                            <h3>🌐 IP Address Check</h3>
+                            <p>Check if your IP is flagged</p>
+                            <div class="ip-display">
+                                <span>Your IP:</span>
+                                <strong id="user-ip">Loading...</strong>
+                            </div>
+                            <input type="text" id="custom-ip" class="input" placeholder="Or enter custom IP...">
+                            <button class="btn-primary" id="run-ip-check">Check IP</button>
+                        </div>
+                        
+                        <!-- Email Check -->
+                        <div class="tool-box">
+                            <h3>📧 Email Check</h3>
+                            <p>Check if email is blacklisted</p>
+                            <input type="email" id="check-email" class="input" placeholder="you@example.com">
+                            <button class="btn-primary" id="run-email-check">Check Email</button>
+                        </div>
+                        
+                        <!-- Phone Check -->
+                        <div class="tool-box">
+                            <h3>📱 Phone Check</h3>
+                            <p>Check if phone number is flagged</p>
+                            <input type="tel" id="check-phone" class="input" placeholder="+1 555 123 4567">
+                            <button class="btn-primary" id="run-phone-check">Check Phone</button>
+                        </div>
+                        
+                        <!-- Website Check -->
+                        <div class="tool-box">
+                            <h3>🔗 Website/Domain Check</h3>
+                            <p>Check if your domain is blocked</p>
+                            <input type="url" id="check-website" class="input" placeholder="https://yoursite.com">
+                            <button class="btn-primary" id="run-website-check">Check Website</button>
                         </div>
                     </div>
                     
+                    <!-- Bulk Check -->
+                    <div class="bulk-check-box">
+                        <div class="bulk-info">
+                            <h3>⚡ Bulk Check All Accounts</h3>
+                            <p>Check all <span id="bulk-count">8</span> monitored accounts at once</p>
+                        </div>
+                        <button class="btn-primary btn-lg" id="run-bulk">Run Bulk Check</button>
+                    </div>
+                    
+                    <!-- Results Area -->
                     <div class="results-box hidden" id="results-box">
                         <div class="results-header">
                             <h3 id="results-title">Results</h3>
@@ -212,7 +307,7 @@
                     <div class="section-top">
                         <div>
                             <h1>Reports</h1>
-                            <p>Download and schedule reports</p>
+                            <p>Download and schedule detailed visibility reports</p>
                         </div>
                     </div>
                     
@@ -475,29 +570,83 @@
                     </div>
                 </section>
                 
-                <!-- Footer -->
+                <!-- Footer - Links on LEFT to avoid chatbot overlap -->
                 <footer class="footer">
-                    <div class="footer-links">
+                    <div class="footer-left">
+                        <span>© 2025 ShadowBanCheck.io</span>
                         <a href="index.html">Home</a>
                         <a href="index.html#faq">FAQ</a>
                         <a href="#">Terms</a>
                         <a href="#">Privacy</a>
                     </div>
-                    <span>© 2025 ShadowBanCheck.io</span>
                 </footer>
             </div>
         </main>
     </div>
     
-    <!-- Modal -->
-    <div class="modal-overlay hidden" id="modal">
+    <!-- Add Account Modal -->
+    <div class="modal-overlay hidden" id="add-account-modal">
         <div class="modal">
             <div class="modal-header">
-                <h2 id="modal-title">Add Account</h2>
+                <h2>Add Account</h2>
                 <button class="btn-close" id="modal-close">×</button>
             </div>
-            <div class="modal-body" id="modal-body"></div>
-            <div class="modal-footer" id="modal-footer"></div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Platform</label>
+                    <select id="new-platform" class="input">
+                        <option value="">Select Platform...</option>
+                        <optgroup label="Social Media">
+                            <option value="twitter">Twitter/X</option>
+                            <option value="instagram">Instagram</option>
+                            <option value="tiktok">TikTok</option>
+                            <option value="facebook">Facebook</option>
+                            <option value="youtube">YouTube</option>
+                            <option value="linkedin">LinkedIn</option>
+                            <option value="reddit">Reddit</option>
+                            <option value="pinterest">Pinterest</option>
+                            <option value="snapchat">Snapchat</option>
+                            <option value="threads">Threads</option>
+                            <option value="mastodon">Mastodon</option>
+                            <option value="bluesky">Bluesky</option>
+                            <option value="truth">Truth Social</option>
+                        </optgroup>
+                        <optgroup label="Messaging">
+                            <option value="telegram">Telegram</option>
+                            <option value="discord">Discord</option>
+                            <option value="whatsapp">WhatsApp</option>
+                            <option value="signal">Signal</option>
+                        </optgroup>
+                        <optgroup label="E-commerce">
+                            <option value="amazon">Amazon</option>
+                            <option value="ebay">eBay</option>
+                            <option value="etsy">Etsy</option>
+                            <option value="shopify">Shopify</option>
+                        </optgroup>
+                        <optgroup label="Streaming">
+                            <option value="twitch">Twitch</option>
+                            <option value="kick">Kick</option>
+                            <option value="rumble">Rumble</option>
+                        </optgroup>
+                        <optgroup label="Other">
+                            <option value="medium">Medium</option>
+                            <option value="quora">Quora</option>
+                        </optgroup>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Username</label>
+                    <input type="text" id="new-username" class="input" placeholder="@username">
+                </div>
+                <div class="form-group">
+                    <label>Nickname (optional)</label>
+                    <input type="text" id="new-nickname" class="input" placeholder="My Business Account">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" id="modal-cancel">Cancel</button>
+                <button class="btn-primary" id="modal-confirm">Add Account</button>
+            </div>
         </div>
     </div>
     
@@ -507,23 +656,9 @@
         <span id="toast-message">Success</span>
     </div>
     
-    <!-- Shadow AI Button -->
-    <button class="ai-fab" id="ai-fab">🤖 Shadow AI</button>
-    
-    <!-- Shadow AI Chat -->
-    <div class="ai-panel hidden" id="ai-panel">
-        <div class="ai-header">
-            <span>🤖 Shadow AI</span>
-            <span class="ai-count" id="ai-count">7/10 today</span>
-            <button id="ai-close">×</button>
-        </div>
-        <div class="ai-messages" id="ai-messages"></div>
-        <div class="ai-input-row">
-            <input type="text" id="ai-input" placeholder="Ask about shadow bans...">
-            <button id="ai-send">Send</button>
-        </div>
-    </div>
+    <!-- Shadow AI Widget - Loaded dynamically by shadow-ai.js -->
     
     <script src="js/dashboard.js"></script>
+    <script src="js/shadow-ai.js"></script>
 </body>
 </html>

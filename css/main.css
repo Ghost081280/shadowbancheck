@@ -552,24 +552,20 @@ strong, b {
     transform: rotate(-45deg) translate(5px, -5px);
 }
 
-/* Mobile Nav Overlay */
+/* Mobile Nav Overlay - invisible, just for click-to-close */
 .nav-overlay {
     display: none;
     position: fixed;
-    top: 60px; /* Below header */
+    top: 0;
     left: 0;
     right: 0;
-    bottom: 80px; /* Above chatbot button */
-    background: rgba(0, 0, 0, 0.6);
-    backdrop-filter: blur(4px);
+    bottom: 0;
+    background: transparent; /* No visible overlay */
     z-index: var(--z-overlay);
-    opacity: 0;
     pointer-events: none;
-    transition: opacity var(--transition-base);
 }
 
 .nav-overlay.active {
-    opacity: 1;
     pointer-events: auto;
 }
 
@@ -577,18 +573,17 @@ strong, b {
 .nav-mobile {
     display: none;
     position: fixed;
-    top: 60px; /* Below header */
-    bottom: 80px; /* Above chatbot button */
-    right: 0;
-    width: 280px;
-    max-width: 85vw;
+    top: 75px; /* Below header with gap */
+    bottom: 95px; /* Above chatbot button with gap */
+    right: 10px; /* Small gap from edge */
+    width: 270px;
+    max-width: calc(85vw - 20px);
     height: auto; /* Let top/bottom define height */
     background: var(--bg-secondary);
-    border-left: 1px solid var(--border);
-    border-bottom-left-radius: var(--radius-xl);
-    border-top-left-radius: var(--radius-xl);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
     z-index: calc(var(--z-overlay) + 1);
-    transform: translateX(100%);
+    transform: translateX(calc(100% + 10px));
     transition: transform var(--transition-base);
     overflow-y: auto;
     box-shadow: var(--shadow-xl);

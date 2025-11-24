@@ -81,27 +81,30 @@
             
             <!-- Three Options -->
             <div class="hero-options">
-                <a href="checker.html" class="option-card">
+                <div class="option-card">
                     <div class="option-icon">🔍</div>
                     <h3>Quick Check</h3>
                     <p>Single platform verification</p>
                     <span class="option-tag free">Free - 3/day</span>
-                </a>
+                    <a href="checker.html" class="btn-option">Check Now →</a>
+                </div>
 
-                <a href="hashtag-checker.html" class="option-card">
+                <div class="option-card">
                     <div class="option-icon">🚫</div>
-                    <h3>Hashtag Safety</h3>
+                    <h3>Banned Hashtags</h3>
                     <p>Verify banned hashtags</p>
                     <span class="option-tag free">Free - 5/day</span>
-                </a>
+                    <a href="hashtag-checker.html" class="btn-option">Check Hashtags →</a>
+                </div>
 
-                <a href="#shadow-ai-pro" class="option-card featured">
+                <div class="option-card featured">
                     <div class="featured-badge">Most Popular</div>
                     <div class="option-icon">🤖</div>
                     <h3>Shadow AI Pro</h3>
                     <p>AI investigation + monitoring</p>
                     <span class="option-tag pro">From $9.99/mo</span>
-                </a>
+                    <a href="#shadow-ai-pro" class="btn-option btn-option-featured">Learn More →</a>
+                </div>
             </div>
         </div>
     </section>
@@ -903,7 +906,7 @@
                             <div>
                                 <strong>Email Us Directly</strong>
                                 <p>Send platform suggestions or questions to our team</p>
-                                <a href="mailto:andrew@ghost081280.com?subject=ShadowBanCheck.io Inquiry&body=Hi Andrew,%0D%0A%0D%0AI have a question about ShadowBanCheck.io:%0D%0A%0D%0A" class="btn-method">Launch Email</a>
+                                <a href="/cdn-cgi/l/email-protection#4627282234233106212e293532767e77747e766825292b793533242c2325327b152e27222931042728052e23252d682f29660f2837332f343f602429223f7b0e2f660728223423316a6376026376076376026376070f662e27302366276637332335322f292866272429333266152e27222931042728052e23252d682f297c637602637607637602637607" class="btn-method">Launch Email</a>
                             </div>
                         </div>
                         
@@ -1059,39 +1062,7 @@
         </div>
     </div>
 
-    <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script src="js/main.js"></script>
+    <script src="js/main.js"></script>
     <script src="js/shadow-ai.js"></script>
-    
-    <!-- Cookie Popup Script -->
-    <script>
-        // Show cookie popup only once on first visit
-        (function() {
-            const cookieAccepted = localStorage.getItem('shadowban_cookies_accepted');
-            
-            if (!cookieAccepted) {
-                // Show popup after 1 second
-                setTimeout(() => {
-                    document.getElementById('cookie-popup').classList.remove('hidden');
-                }, 1000);
-            }
-            
-            // Accept button
-            document.getElementById('cookie-accept').addEventListener('click', () => {
-                localStorage.setItem('shadowban_cookies_accepted', 'true');
-                document.getElementById('cookie-popup').classList.add('hidden');
-            });
-            
-            // Dismiss button
-            document.getElementById('cookie-dismiss').addEventListener('click', () => {
-                localStorage.setItem('shadowban_cookies_accepted', 'dismissed');
-                document.getElementById('cookie-popup').classList.add('hidden');
-            });
-        })();
-        
-        // Function to show cookie policy manually
-        function showCookiePolicy() {
-            alert('Cookie Policy\n\nWe use cookies to:\n• Remember your preferences\n• Analyze site traffic and usage\n• Improve your experience\n• Track free AI questions (3 per day)\n\nBy using ShadowBanCheck.io, you consent to our use of cookies. You can disable cookies in your browser settings, but some features may not work properly.\n\nFor more information, contact us at andrew@ghost081280.com');
-        }
-    </script>
 </body>
 </html>

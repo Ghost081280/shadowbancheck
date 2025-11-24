@@ -1,142 +1,149 @@
-// Shadow Ban Checker - New Modal System
+// Shadow Ban Checker - Modal System
 
 let checksRemaining = 3;
-let selectedPlatform = null;
-
-// Platform data with check details
-const platformData = {
-    twitter: {
-        name: 'Twitter / X',
-        icon: '🐦',
-        inputLabel: 'Username',
-        inputPlaceholder: 'elonmusk',
-        inputHint: 'Example: elonmusk (without @)',
-        checks: [
-            '✓ Search visibility',
-            '✓ Search suggestions',
-            '✓ Reply visibility',
-            '✓ Thread participation'
-        ]
-    },
-    reddit: {
-        name: 'Reddit',
-        icon: '🤖',
-        inputLabel: 'Username',
-        inputPlaceholder: 'spez',
-        inputHint: 'Example: spez (without u/)',
-        checks: [
-            '✓ Site-wide shadow ban',
-            '✓ Profile visibility',
-            '✓ Post/comment visibility',
-            '✓ Account status'
-        ]
-    },
-    email: {
-        name: 'Email / Domain',
-        icon: '📧',
-        inputLabel: 'Email or Domain',
-        inputPlaceholder: 'hello@example.com',
-        inputHint: 'Example: yourname@company.com or company.com',
-        checks: [
-            '✓ Blacklist status (25+ databases)',
-            '✓ SPF/DKIM/DMARC records',
-            '✓ Sender reputation score',
-            '✓ Spam trap presence'
-        ]
-    }
-};
+let lastCheckDate = null;
 
 // Initialize checker page
 document.addEventListener('DOMContentLoaded', () => {
     loadChecksCounter();
-    setupPlatformClicks();
+    setupPlatformCards();
+    setupModalHandlers();
     setupFormSubmissions();
 });
 
+// Load checks counter from localStorage
+function loadChecksCounter() {
+    const storedChecks = localStorage.getItem('checksRemaining');
+    const storedDate = localStorage.getItem('lastCheckDate');
+    const today = new Date().toDateString();
+    
+    if (storedDate === today && storedChecks) {
+        checksRemaining = parseInt(storedChecks);
+    } else {
+        checksRemaining = 3;
+        localStorage.setItem('checksRemaining', checksRemaining);
+        localStorage.setItem('lastCheckDate', today);
+    }
+    
+    updateChecksCounter();
+}
+
+// Update checks counter display
+function updateChecksCounter() {
+    const counterEl = document.getElementById('checks-remaining');
+    if (counterEl) {
+        counterEl.textContent = checksRemaining;
+        counterEl.style.color = checksRemaining > 0 ? '#10b981' : '#ef4444';
+    }
+    
+    localStorage.setItem('checksRemaining', checksRemaining);
+}
+
+// Setup platform card click handlers
+function setupPlatformCards() {
+    const platformCards = document.querySelectorAll('.platform-card.live');
+    
+    platformCards.forEach(card => {
+        card.addEventListener('click', () => {
+            const platform = card.dataset.platform;
+            openModal(platform);
+        });
+    });
+}
+
+// Open modal for specific platform
+function openModal(platform) {
+    const modal = document.getElementById('check-modal');
+    const forms = modal.querySelectorAll('.platform-form');
+    
+    // Hide all forms
+    forms.forEach(form => {
+        form.style.display = 'none';
+    });
+    
+    // Show selected platform form
+    const selectedForm = document.getElementById(`${platform}-form`);
+    if (selectedForm) {
+        selectedForm.style.display = 'block';
+    }
+    
+    // Show modal
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
+// Close modal
+function closeModal() {
+    const modal = document.getElementById('check-modal');
+    modal.classList.remove('active');
+    document.body.style.overflow = '';
+    
+    // Reset all forms
+    const forms = modal.querySelectorAll('.platform-form');
+    forms.forEach(form => {
+        form.reset();
+    });
+}
+
+// Setup modal handlers
+function setupModalHandlers() {
+    const modal = document.getElementById('check-modal');
+    const modalClose = document.querySelector('.modal-close');
+    const modalOverlay = document.querySelector('.modal-overlay');
+    
+    // Close button
+    if (modalClose) {
+        modalClose.addEventListener('click', closeModal);
+    }
+    
+    // Overlay click
+    if (modalOverlay) {
+        modalOverlay.addEventListener('click', closeModal);
+    }
+    
+    // Escape key
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && modal.classList.contains('active')) {
+            closeModal();
+        }
+    });
+}
+
 // Setup form submissions
 function setupFormSubmissions() {
-    // Twitter form
-    const twitterForm = document.getElementById('twitter-form');
-    if (twitterForm) {
-        twitterForm.addEventListener('submit', (e) => handleFormSubmit(e, 'twitter', 'twitter-username'));
-    }
+    const forms = document.querySelectorAll('.platform-form');
     
-    // Reddit form
-    const redditForm = document.getElementById('reddit-form');
-    if (redditForm) {
-        redditForm.addEventListener('submit', (e) => handleFormSubmit(e, 'reddit', 'reddit-username'));
-    }
-    
-    // Email form
-    const emailForm = document.getElementById('email-form');
-    if (emailForm) {
-        emailForm.addEventListener('submit', (e) => handleFormSubmit(e, 'email', 'email-input'));
-    }
-}
-
-// Setup platform click handlers
-function setupPlatformClicks() {
-    const platforms = document.querySelectorAll('.platform-option');
-    
-    platforms.forEach(platform => {
-        platform.addEventListener('click', () => {
-            const platformId = platform.dataset.platform;
+    forms.forEach(form => {
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
             
-            // Check if platform is disabled
-            if (platform.disabled) {
-                const platformName = platform.querySelector('.platform-name').textContent;
-                alert(`${platformName} is coming soon! We're adding new platforms regularly. Check back soon or try Twitter, Reddit, or Email checking.`);
-                return;
+            const platform = form.dataset.platform;
+            let inputValue = '';
+            
+            // Get input value based on platform
+            if (platform === 'twitter') {
+                inputValue = document.getElementById('twitter-username').value.trim();
+            } else if (platform === 'reddit') {
+                inputValue = document.getElementById('reddit-username').value.trim();
+            } else if (platform === 'email') {
+                inputValue = document.getElementById('email-address').value.trim();
             }
             
-            // Show the form for this platform
-            showPlatformForm(platformId);
+            if (!inputValue) return;
+            
+            await handleFormSubmit(e, platform, inputValue);
         });
     });
-}
-
-// Show platform form
-function showPlatformForm(platformId) {
-    // Hide all forms
-    document.querySelectorAll('.platform-form').forEach(form => {
-        form.classList.remove('active');
-    });
-    
-    // Show selected form
-    const selectedForm = document.getElementById(`${platformId}-form`);
-    if (selectedForm) {
-        selectedForm.classList.add('active');
-        
-        // Update active state on platform buttons
-        document.querySelectorAll('.platform-option').forEach(btn => {
-            btn.classList.remove('active');
-        });
-        document.querySelector(`[data-platform="${platformId}"]`).classList.add('active');
-        
-        // Scroll to form
-        selectedForm.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        
-        // Focus input after scroll
-        setTimeout(() => {
-            const input = selectedForm.querySelector('input');
-            if (input) input.focus();
-        }, 500);
-    }
 }
 
 // Handle form submission
-async function handleFormSubmit(e, platform, inputId) {
-    e.preventDefault();
-    
+async function handleFormSubmit(e, platform, inputValue) {
     // Check if user has checks remaining
     if (checksRemaining <= 0) {
         alert('You\'ve used all 3 free checks for today! Upgrade to Pro for unlimited checks.');
         window.location.href = 'index.html#pricing';
         return;
     }
-    
-    const input = document.getElementById(inputId).value.trim();
-    if (!input) return;
     
     const submitBtn = e.target.querySelector('.btn-submit');
     const btnText = submitBtn.querySelector('.btn-text');
@@ -149,7 +156,7 @@ async function handleFormSubmit(e, platform, inputId) {
     
     try {
         // Simulate API call
-        const results = await simulateCheck(platform, input);
+        const results = await simulateCheck(platform, inputValue);
         
         // Decrement checks
         checksRemaining--;
@@ -157,11 +164,20 @@ async function handleFormSubmit(e, platform, inputId) {
         
         // Store results and redirect
         localStorage.setItem('checkResults', JSON.stringify(results));
-        window.location.href = 'results.html';
+        
+        // Close modal before redirect
+        closeModal();
+        
+        // Small delay for smooth transition
+        setTimeout(() => {
+            window.location.href = 'results.html';
+        }, 300);
         
     } catch (error) {
         console.error('Check failed:', error);
-        alert('An error occurred. Please try again.');
+        alert('Something went wrong. Please try again.');
+        
+        // Reset button
         submitBtn.disabled = false;
         submitBtn.classList.remove('loading');
         btnText.textContent = originalText;
@@ -258,59 +274,26 @@ async function simulateCheck(platform, identifier) {
                 },
                 dkimRecord: {
                     status: Math.random() > 0.6 ? 'failed' : 'passed',
-                    description: 'DKIM signature present'
+                    description: 'DKIM record validation'
                 },
                 dmarcRecord: {
-                    status: Math.random() > 0.5 ? 'failed' : 'passed',
-                    description: 'DMARC policy configured'
+                    status: Math.random() > 0.6 ? 'failed' : 'passed',
+                    description: 'DMARC policy validation'
                 },
-                reputation: {
+                reputationScore: {
                     status: 'passed',
-                    score: Math.floor(Math.random() * 30) + 70,
-                    description: 'Sender reputation score'
+                    description: 'Sender reputation score',
+                    score: Math.floor(Math.random() * 30) + 70
                 }
             },
             details: {
                 domain: identifier.includes('@') ? identifier.split('@')[1] : identifier,
                 mxRecords: 'Valid',
                 sslCertificate: 'Valid',
-                reverseDNS: 'Configured'
+                lastChecked: 'Just now'
             }
         };
     }
     
-    return {
-        platform: platform,
-        identifier: identifier,
-        timestamp: timestamp,
-        status: 'error',
-        message: 'Platform not yet implemented'
-    };
-}
-
-// Update checks counter
-function updateChecksCounter() {
-    const counterElement = document.getElementById('checks-remaining');
-    if (counterElement) {
-        counterElement.textContent = checksRemaining;
-        localStorage.setItem('checksRemaining', checksRemaining);
-        localStorage.setItem('lastCheckDate', new Date().toDateString());
-    }
-}
-
-// Load checks counter from localStorage
-function loadChecksCounter() {
-    const lastCheckDate = localStorage.getItem('lastCheckDate');
-    const today = new Date().toDateString();
-    
-    if (lastCheckDate !== today) {
-        checksRemaining = 3;
-        localStorage.setItem('checksRemaining', checksRemaining);
-        localStorage.setItem('lastCheckDate', today);
-    } else {
-        const stored = localStorage.getItem('checksRemaining');
-        checksRemaining = stored ? parseInt(stored) : 3;
-    }
-    
-    updateChecksCounter();
+    return null;
 }

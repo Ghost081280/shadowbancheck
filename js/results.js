@@ -4,25 +4,34 @@ let checkResults = null;
 
 // Load and display results
 function loadResults() {
+    console.log('🔍 Loading results...');
+    
     // Get results from localStorage
     const resultsData = localStorage.getItem('checkResults');
     
+    console.log('📦 Raw data from localStorage:', resultsData);
+    
     if (!resultsData) {
-        // No results found, redirect to checker
+        console.error('❌ No results found in localStorage');
+        alert('No check results found. Please run a check first.');
         window.location.href = 'checker.html';
         return;
     }
     
     try {
         checkResults = JSON.parse(resultsData);
+        console.log('✅ Parsed results:', checkResults);
         displayResults();
     } catch (error) {
-        console.error('Failed to parse results:', error);
+        console.error('❌ Failed to parse results:', error);
+        alert('Error loading results. Please try again.');
         window.location.href = 'checker.html';
     }
 }
 
 function displayResults() {
+    console.log('🎨 Displaying results...');
+    
     // Display header
     displayHeader();
     
@@ -37,6 +46,8 @@ function displayResults() {
     
     // Display recommendations
     displayRecommendations();
+    
+    console.log('✅ Results displayed successfully!');
 }
 
 function displayHeader() {
@@ -52,6 +63,7 @@ function displayHeader() {
         <h1>Shadow Ban Check Results</h1>
         <div class="results-meta">
             <span>Account: <strong>${checkResults.identifier}</strong></span>
+            <span> • </span>
             <span>Checked: ${new Date(checkResults.timestamp).toLocaleString()}</span>
         </div>
     `;
@@ -92,7 +104,12 @@ function displayDetailedChecks() {
     const checksGrid = document.getElementById('checks-grid');
     checksGrid.innerHTML = '';
     
-    if (!checkResults.checks) return;
+    if (!checkResults.checks) {
+        console.warn('⚠️ No checks data found');
+        return;
+    }
+    
+    console.log('📊 Displaying checks:', checkResults.checks);
     
     for (const [checkName, checkData] of Object.entries(checkResults.checks)) {
         const checkCard = createCheckCard(checkName, checkData);
@@ -139,9 +156,12 @@ function displayAccountDetails() {
     const detailsEl = document.getElementById('account-details');
     
     if (!checkResults.details) {
+        console.log('ℹ️ No account details found');
         detailsEl.style.display = 'none';
         return;
     }
+    
+    console.log('📋 Displaying account details:', checkResults.details);
     
     const detailsGrid = document.createElement('div');
     detailsGrid.className = 'details-grid';
@@ -163,6 +183,8 @@ function displayAccountDetails() {
 function displayRecommendations() {
     const recommendationsContent = document.getElementById('recommendations-content');
     const recommendations = generateRecommendations();
+    
+    console.log('💡 Displaying recommendations:', recommendations.length);
     
     recommendationsContent.innerHTML = '';
     
@@ -288,18 +310,21 @@ function getPlatformName(platform) {
 
 // Share results
 document.getElementById('share-results')?.addEventListener('click', () => {
-    const shareText = `I just checked my ${checkResults.platform} account for shadow bans! Status: ${checkResults.status}. Check yours at ShadowBanCheck.io`;
+    const shareText = `I just checked my ${getPlatformName(checkResults.platform)} account for shadow bans! Status: ${checkResults.status}. Check yours at ShadowBanCheck.io`;
     
     if (navigator.share) {
         navigator.share({
             title: 'Shadow Ban Check Results',
             text: shareText,
-            url: window.location.href
-        });
+            url: window.location.origin
+        }).catch(err => console.log('Share cancelled', err));
     } else {
         // Fallback: copy to clipboard
         navigator.clipboard.writeText(shareText).then(() => {
-            alert('Results copied to clipboard!');
+            alert('Results link copied to clipboard!');
+        }).catch(err => {
+            console.error('Failed to copy:', err);
+            alert('Could not copy to clipboard');
         });
     }
 });
@@ -319,15 +344,15 @@ document.getElementById('download-report')?.addEventListener('click', () => {
 function generateReportText() {
     let report = `SHADOW BAN CHECK REPORT\n`;
     report += `========================\n\n`;
-    report += `Platform: ${checkResults.platform}\n`;
+    report += `Platform: ${getPlatformName(checkResults.platform)}\n`;
     report += `Account: ${checkResults.identifier}\n`;
-    report += `Status: ${checkResults.status}\n`;
+    report += `Status: ${checkResults.status.toUpperCase()}\n`;
     report += `Checked: ${new Date(checkResults.timestamp).toLocaleString()}\n\n`;
     
     report += `DETAILED CHECKS:\n`;
     report += `----------------\n`;
     for (const [checkName, checkData] of Object.entries(checkResults.checks || {})) {
-        report += `${checkName}: ${checkData.status.toUpperCase()}\n`;
+        report += `${formatCheckName(checkName)}: ${checkData.status.toUpperCase()}\n`;
         report += `  ${checkData.description}\n\n`;
     }
     
@@ -335,7 +360,7 @@ function generateReportText() {
         report += `ACCOUNT DETAILS:\n`;
         report += `----------------\n`;
         for (const [key, value] of Object.entries(checkResults.details)) {
-            report += `${key}: ${value}\n`;
+            report += `${formatCheckName(key)}: ${value}\n`;
         }
     }
     
@@ -344,4 +369,7 @@ function generateReportText() {
 }
 
 // Initialize
-document.addEventListener('DOMContentLoaded', loadResults);
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('🚀 Results page loaded');
+    loadResults();
+});

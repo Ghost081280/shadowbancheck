@@ -1,296 +1,236 @@
-// Shadow AI Chatbot - ShadowBanCheck.io
-// Promotes Shadow AI Pro subscription ($9.99/mo)
+/* =============================================================================
+   SHADOW-AI.JS - AI Chatbot Widget
+   ============================================================================= */
 
-class ShadowAI {
-    constructor() {
-        this.chatOpen = false;
-        this.messageHistory = [];
-        this.freeQuestionsToday = 3;
-        this.freeQuestionsUsed = this.loadDailyQuestions();
+/* =============================================================================
+   CHATBOT STATE
+   ============================================================================= */
+let chatState = {
+    isOpen: false,
+    messages: [],
+    isTyping: false
+};
+
+/* =============================================================================
+   PREDEFINED RESPONSES
+   ============================================================================= */
+const responses = {
+    greetings: [
+        "Hey there! 👋 I'm Shadow AI, your visibility assistant. How can I help you today?",
+        "Hi! 🔍 Ready to help you understand shadow bans and protect your online presence!",
+        "Hello! 👋 I'm here to help with shadow ban questions, hashtag advice, and visibility tips."
+    ],
+    
+    shadowban: {
+        what: "A shadow ban (also called stealth ban or ghost ban) is when a platform secretly restricts your content's visibility without notifying you. Your posts might not appear in hashtag searches, explore pages, or your followers' feeds. It's frustrating because everything looks normal from your end! 👻",
         
-        this.init();
+        why: "Platforms shadow ban accounts for various reasons:\n\n• Using banned or restricted hashtags\n• Posting too frequently (spam-like behavior)\n• Getting reported by other users\n• Violating community guidelines\n• Using automation tools or bots\n• Sudden spikes in follower growth\n• Posting controversial content\n\nThe tricky part is platforms rarely tell you exactly what triggered it!",
+        
+        how_long: "Shadow bans typically last anywhere from 24 hours to 2-4 weeks, depending on the platform and severity. Here's a rough guide:\n\n• Minor violations: 24-48 hours\n• Moderate issues: 1-2 weeks\n• Serious violations: 2-4 weeks\n• Repeat offenders: Can be permanent\n\nThe best approach is to pause suspicious activities and wait it out while following best practices.",
+        
+        fix: "Here's how to potentially lift a shadow ban:\n\n1️⃣ Stop all suspicious activity immediately\n2️⃣ Remove any banned hashtags from recent posts\n3️⃣ Avoid using automation tools\n4️⃣ Take a 24-48 hour break from posting\n5️⃣ Engage authentically with others\n6️⃣ Review and follow community guidelines\n7️⃣ Consider reaching out to platform support\n\nPatience is key - most bans lift within 1-2 weeks!"
+    },
+    
+    platforms: {
+        instagram: "Instagram is notorious for shadow bans! 📸 They primarily target:\n\n• Banned hashtags (there are hundreds!)\n• Repetitive comments or DMs\n• Mass following/unfollowing\n• Third-party apps\n• Posting too frequently\n\nUse our Hashtag Checker to verify your tags are safe!",
+        
+        tiktok: "TikTok's algorithm is complex! 🎵 Shadow bans on TikTok often result from:\n\n• Posting content that violates guidelines\n• Using banned sounds/hashtags\n• Spam-like behavior\n• Sudden engagement drops\n\nIf your FYP reach drops suddenly, you might be affected.",
+        
+        twitter: "Twitter/X shadow bans work differently. 🐦 They use \"quality filters\" that can hide your replies and reduce visibility. Common triggers:\n\n• Aggressive behavior\n• Mass messaging\n• Sensitive content without labels\n• Bot-like patterns\n\nSearch for your username in an incognito browser to test visibility."
+    },
+    
+    hashtags: {
+        general: "Hashtags are a double-edged sword! 🏷️\n\n✅ DO: Use relevant, niche hashtags (10-15 per post)\n✅ DO: Mix popular and less competitive tags\n✅ DO: Check if tags are banned before using\n\n❌ DON'T: Use the same hashtags every post\n❌ DON'T: Use banned/restricted hashtags\n❌ DON'T: Use irrelevant popular hashtags\n\nTry our Hashtag Checker to verify yours!",
+        
+        banned: "Banned hashtags can trigger shadow bans! Some surprising examples:\n\n• #adulting\n• #elevator  \n• #humpday\n• #valentinesday\n• #popular\n\nPlatforms ban hashtags that attract spam, inappropriate content, or violate guidelines. Always check before posting!"
+    },
+    
+    fallback: [
+        "That's a great question! While I specialize in shadow bans and visibility, let me point you to our tools:\n\n🔍 Use our Shadow Ban Checker to test your account\n🏷️ Try our Hashtag Checker to verify your tags\n\nIs there something specific about shadow bans I can help with?",
+        
+        "Hmm, I'm not 100% sure about that specific topic, but I'm an expert in:\n\n• Shadow ban detection\n• Platform-specific visibility issues\n• Hashtag safety\n• Account recovery tips\n\nWhat would you like to know about these?",
+        
+        "I want to make sure I give you accurate info! My expertise is in social media visibility and shadow bans. Try asking me about:\n\n• How to detect shadow bans\n• Why accounts get restricted\n• How to fix visibility issues\n• Safe hashtag practices"
+    ]
+};
+
+/* =============================================================================
+   MESSAGE HANDLING
+   ============================================================================= */
+function processMessage(input) {
+    const text = input.toLowerCase().trim();
+    
+    // Greetings
+    if (text.match(/^(hi|hello|hey|howdy|sup|yo)[\s!?]*$/)) {
+        return randomResponse(responses.greetings);
     }
     
-    loadDailyQuestions() {
-        const today = new Date().toDateString();
-        const stored = localStorage.getItem('shadowai_questions');
-        
-        if (stored) {
-            const data = JSON.parse(stored);
-            
-            // Check if it's the same day
-            if (data.date === today) {
-                return data.used;
-            }
+    // Shadow ban questions
+    if (text.includes('shadow') || text.includes('shadowban')) {
+        if (text.includes('what') || text.includes('mean')) {
+            return responses.shadowban.what;
         }
-        
-        // New day or no data - reset to 0
-        this.saveDailyQuestions(0);
-        return 0;
+        if (text.includes('why') || text.includes('cause') || text.includes('reason')) {
+            return responses.shadowban.why;
+        }
+        if (text.includes('how long') || text.includes('duration') || text.includes('last')) {
+            return responses.shadowban.how_long;
+        }
+        if (text.includes('fix') || text.includes('remove') || text.includes('lift') || text.includes('get rid')) {
+            return responses.shadowban.fix;
+        }
+        // Default shadow ban response
+        return responses.shadowban.what;
     }
     
-    saveDailyQuestions(used) {
-        const today = new Date().toDateString();
-        localStorage.setItem('shadowai_questions', JSON.stringify({
-            date: today,
-            used: used
-        }));
+    // Platform specific
+    if (text.includes('instagram') || text.includes('insta') || text.includes('ig')) {
+        return responses.platforms.instagram;
+    }
+    if (text.includes('tiktok') || text.includes('tik tok')) {
+        return responses.platforms.tiktok;
+    }
+    if (text.includes('twitter') || text.includes('x.com')) {
+        return responses.platforms.twitter;
     }
     
-    getRemainingQuestions() {
-        return Math.max(0, this.freeQuestionsToday - this.freeQuestionsUsed);
-    }
-
-    init() {
-        // Get elements
-        this.btn = document.getElementById('shadow-ai-btn');
-        this.chat = document.getElementById('shadow-ai-chat');
-        this.closeBtn = document.getElementById('shadow-ai-close');
-        this.messagesContainer = document.getElementById('shadow-ai-messages');
-        this.input = document.getElementById('shadow-ai-input');
-        this.sendBtn = document.getElementById('shadow-ai-send');
-
-        if (!this.btn || !this.chat) return;
-
-        // Event listeners
-        this.btn.addEventListener('click', () => this.openChat());
-        this.closeBtn.addEventListener('click', () => this.closeChat());
-        this.sendBtn.addEventListener('click', () => this.sendMessage());
-        this.input.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') this.sendMessage();
-        });
-    }
-
-    openChat() {
-        if (this.chatOpen) return; // Already open
-        
-        this.chatOpen = true;
-        this.chat.classList.remove('hidden');
-        this.input.focus();
-        
-        // Show welcome message only if no messages yet
-        if (this.messageHistory.length === 0) {
-            setTimeout(() => this.showWelcomeMessage(), 500);
+    // Hashtag questions
+    if (text.includes('hashtag') || text.includes('#')) {
+        if (text.includes('banned') || text.includes('restricted')) {
+            return responses.hashtags.banned;
         }
+        return responses.hashtags.general;
     }
-
-    closeChat() {
-        this.chatOpen = false;
-        this.chat.classList.add('hidden');
+    
+    // Help
+    if (text.match(/^(help|assist|support)[\s!?]*$/)) {
+        return "I can help you with:\n\n🔍 **Shadow Ban Detection** - Learn if you're affected\n❓ **Why It Happens** - Understand the causes\n🔧 **How To Fix** - Get recovery tips\n📱 **Platform Specific** - Instagram, TikTok, Twitter advice\n🏷️ **Hashtag Safety** - Avoid banned tags\n\nJust ask me anything about these topics!";
     }
-
-    async showWelcomeMessage() {
-        const remaining = this.getRemainingQuestions();
-        await this.typeMessage(
-            `👋 Hi! I'm Shadow AI, your personal shadow ban detective.\n\n` +
-            `I use AI to search platforms and analyze multiple online factors to give you:\n` +
-            `• Real-time verification across 26 platforms\n` +
-            `• Probability scores when platforms aren't transparent\n` +
-            `• Personalized recovery strategies\n` +
-            `• Instant answers in 60 seconds or less\n\n` +
-            `You have **${remaining} free question${remaining !== 1 ? 's' : ''}** today.\n\n` +
-            `Want 100 questions/day + full AI analysis? **Shadow AI Pro is only $9.99/mo** with a 7-day free trial!\n\n` +
-            `What would you like to check?`,
-            'ai'
-        );
+    
+    // Gratitude
+    if (text.match(/(thanks|thank you|thx|ty)/)) {
+        return "You're welcome! 😊 Feel free to ask if you have more questions about shadow bans or visibility. Good luck with your account!";
     }
-
-    async sendMessage() {
-        const text = this.input.value.trim();
-        if (!text) return;
-
-        // Add user message
-        this.addMessage(text, 'user');
-        this.input.value = '';
-
-        // Check free questions limit BEFORE incrementing
-        if (this.freeQuestionsUsed >= this.freeQuestionsToday) {
-            await this.showUpgradeMessage();
-            return;
-        }
-
-        // Increment and save to localStorage
-        this.freeQuestionsUsed++;
-        this.saveDailyQuestions(this.freeQuestionsUsed);
-
-        // Show typing indicator
-        const typingId = this.showTypingIndicator();
-
-        // Wait a moment for realism
-        await this.delay(1000 + Math.random() * 1000);
-
-        // Remove typing indicator
-        this.removeTypingIndicator(typingId);
-
-        // Get response
-        await this.getResponse(text);
-    }
-
-    async getResponse(userMessage) {
-        const msg = userMessage.toLowerCase();
-
-        // Check if asking about Shadow AI Pro
-        if (msg.includes('shadow ai pro') || msg.includes('unlimited') || msg.includes('upgrade') || msg.includes('pricing') || msg.includes('subscribe')) {
-            await this.showShadowAIProPitch();
-            return;
-        }
-
-        // Check if asking about being shadow banned
-        if (msg.includes('shadow ban') || msg.includes('shadowban') || msg.includes('banned') || msg.includes('restricted')) {
-            await this.typeMessage(
-                `I'd love to help you check that! 🔍\n\n` +
-                `With **Shadow AI Pro ($9.99/mo)**, I can:\n` +
-                `• Run live checks on your accounts right now\n` +
-                `• Search platforms + analyze online factors\n` +
-                `• Give you a **probability score** based on multiple data points\n` +
-                `• Create a personalized recovery plan\n` +
-                `• Check all 26 platforms we support\n\n` +
-                `**Free users:** I can give general advice, but I can't run live checks or provide probability scores.\n\n` +
-                `Want instant answers with AI analysis? Only $9.99/mo with a 7-day free trial!`,
-                'ai'
-            );
-            return;
-        }
-
-        // Check if asking what Shadow AI can do
-        if (msg.includes('what can you') || msg.includes('how can you help') || msg.includes('what do you do')) {
-            await this.typeMessage(
-                `Great question! Here's what I can do:\n\n` +
-                `**Free Version (${this.freeQuestionsToday - this.freeQuestionsUsed} questions left today):**\n` +
-                `• Answer general questions about shadow bans\n` +
-                `• Explain platform policies\n` +
-                `• Give basic recovery tips\n\n` +
-                `**Shadow AI Pro ($9.99/mo):**\n` +
-                `• 100 questions per day (not 3!)\n` +
-                `• Live platform checks + web analysis\n` +
-                `• **Probability scores** when platforms hide info\n` +
-                `• Personalized recovery strategies\n` +
-                `• Username & email verification\n` +
-                `• Results in 60 seconds or less\n\n` +
-                `Most users upgrade immediately because they need real answers with confidence scores, not guesses. Want to try it free for 7 days?`,
-                'ai'
-            );
-            return;
-        }
-
-        // Generic helpful response that promotes upgrade
-        await this.typeMessage(
-            `I can help with that! However, to give you the most accurate answer, I'd need to run live checks on your account.\n\n` +
-            `That's a **Shadow AI Pro** feature. For just $9.99/mo, you get:\n` +
-            `• Unlimited live platform checks\n` +
-            `• Real-time verification\n` +
-            `• Personalized recovery plans\n` +
-            `• 100 questions per day\n\n` +
-            `You've used ${this.freeQuestionsUsed}/${this.freeQuestionsToday} free questions today. Want to upgrade and get instant answers?`,
-            'ai'
-        );
-    }
-
-    async showShadowAIProPitch() {
-        await this.typeMessage(
-            `🤖 **Shadow AI Pro - Your 24/7 Shadow Ban Expert**\n\n` +
-            `Here's what you get for $9.99/month:\n\n` +
-            `✓ **100 AI questions per day** (not just 3!)\n` +
-            `✓ **Live platform checks** - verify accounts in real-time\n` +
-            `✓ **Probability scores** - AI analyzes multiple factors to give you confidence percentages\n` +
-            `✓ **All 26 platforms** - Twitter, Instagram, TikTok, and more\n` +
-            `✓ **Results in 60 seconds** - instant answers, no waiting\n` +
-            `✓ **Personalized recovery plans** - custom strategies for your situation\n\n` +
-            `**7-Day Free Trial** - No credit card required\n\n` +
-            `When platforms aren't transparent about bans, our AI searches multiple online sources and gives you a probability score so you know what's really happening.\n\n` +
-            `Ready to get real answers? [Start Free Trial →](#shadow-ai-pro)`,
-            'ai'
-        );
-    }
-
-    async showUpgradeMessage() {
-        await this.typeMessage(
-            `⚠️ You've used all **${this.freeQuestionsToday} free questions** today.\n\n` +
-            `Want to keep going? Upgrade to **Shadow AI Pro** for just $9.99/mo:\n\n` +
-            `✓ 100 questions per day (vs 3 free)\n` +
-            `✓ Live platform checks\n` +
-            `✓ Real-time verification\n` +
-            `✓ Personalized recovery plans\n` +
-            `✓ 7-day free trial\n\n` +
-            `Your visibility is worth $9.99/mo. [Start Free Trial →](#shadow-ai-pro)`,
-            'ai'
-        );
-    }
-
-    addMessage(text, type) {
-        const msg = document.createElement('div');
-        msg.className = `copilot-message ${type}`;
-        msg.innerHTML = this.formatMessage(text);
-        this.messagesContainer.appendChild(msg);
-        this.scrollToBottom();
-        
-        this.messageHistory.push({ text, type });
-    }
-
-    async typeMessage(text, type) {
-        const msg = document.createElement('div');
-        msg.className = `copilot-message ${type}`;
-        this.messagesContainer.appendChild(msg);
-
-        // Type out character by character
-        let i = 0;
-        const speed = 20; // milliseconds per character
-
-        while (i < text.length) {
-            // Add next character
-            msg.innerHTML = this.formatMessage(text.substring(0, i + 1));
-            i++;
-            
-            // Scroll to bottom
-            this.scrollToBottom();
-            
-            // Wait before next character
-            await this.delay(speed);
-        }
-
-        // Final formatted version
-        msg.innerHTML = this.formatMessage(text);
-        this.messageHistory.push({ text, type });
-    }
-
-    formatMessage(text) {
-        // Convert markdown-style formatting
-        text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>'); // Bold
-        text = text.replace(/\n/g, '<br>'); // Line breaks
-        text = text.replace(/• /g, '&nbsp;&nbsp;• '); // Bullets
-        
-        // Make links clickable
-        text = text.replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2">$1</a>');
-        
-        return text;
-    }
-
-    showTypingIndicator() {
-        const id = 'typing-' + Date.now();
-        const typing = document.createElement('div');
-        typing.className = 'copilot-message ai typing';
-        typing.id = id;
-        typing.innerHTML = '<span class="typing-dots"><span>.</span><span>.</span><span>.</span></span>';
-        this.messagesContainer.appendChild(typing);
-        this.scrollToBottom();
-        return id;
-    }
-
-    removeTypingIndicator(id) {
-        const typing = document.getElementById(id);
-        if (typing) typing.remove();
-    }
-
-    scrollToBottom() {
-        this.messagesContainer.scrollTop = this.messagesContainer.scrollHeight;
-    }
-
-    delay(ms) {
-        return new Promise(resolve => setTimeout(resolve, ms));
-    }
+    
+    // Fallback
+    return randomResponse(responses.fallback);
 }
 
-// Initialize when DOM is ready
-document.addEventListener('DOMContentLoaded', () => {
-    window.shadowAI = new ShadowAI();
+function randomResponse(arr) {
+    return arr[Math.floor(Math.random() * arr.length)];
+}
+
+/* =============================================================================
+   UI FUNCTIONS
+   ============================================================================= */
+function initChatbot() {
+    const chatBtn = document.getElementById('shadow-ai-btn');
+    const chatWindow = document.getElementById('shadow-ai-chat');
+    const closeBtn = document.getElementById('shadow-ai-close');
+    const sendBtn = document.getElementById('shadow-ai-send');
+    const input = document.getElementById('shadow-ai-input');
+    const messagesContainer = document.getElementById('shadow-ai-messages');
+    
+    if (!chatBtn || !chatWindow) return;
+    
+    // Toggle chat
+    chatBtn.addEventListener('click', function() {
+        chatWindow.classList.toggle('hidden');
+        chatState.isOpen = !chatWindow.classList.contains('hidden');
+        
+        if (chatState.isOpen && chatState.messages.length === 0) {
+            // Show welcome message
+            setTimeout(() => {
+                addMessage('ai', randomResponse(responses.greetings));
+            }, 300);
+        }
+        
+        if (chatState.isOpen) {
+            input?.focus();
+        }
+    });
+    
+    // Close button
+    closeBtn?.addEventListener('click', function() {
+        chatWindow.classList.add('hidden');
+        chatState.isOpen = false;
+    });
+    
+    // Send message
+    function sendMessage() {
+        const text = input?.value.trim();
+        if (!text || chatState.isTyping) return;
+        
+        // Add user message
+        addMessage('user', text);
+        input.value = '';
+        
+        // Show typing indicator
+        showTyping();
+        
+        // Process and respond
+        setTimeout(() => {
+            hideTyping();
+            const response = processMessage(text);
+            addMessage('ai', response);
+        }, 1000 + Math.random() * 1000);
+    }
+    
+    sendBtn?.addEventListener('click', sendMessage);
+    
+    input?.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            sendMessage();
+        }
+    });
+}
+
+function addMessage(type, text) {
+    const messagesContainer = document.getElementById('shadow-ai-messages');
+    if (!messagesContainer) return;
+    
+    const msg = document.createElement('div');
+    msg.className = `copilot-message ${type}`;
+    
+    // Simple markdown-like formatting
+    let formattedText = text
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\n/g, '<br>');
+    
+    msg.innerHTML = formattedText;
+    messagesContainer.appendChild(msg);
+    
+    // Scroll to bottom
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    
+    // Store message
+    chatState.messages.push({ type, text });
+}
+
+function showTyping() {
+    const messagesContainer = document.getElementById('shadow-ai-messages');
+    if (!messagesContainer) return;
+    
+    chatState.isTyping = true;
+    
+    const typingEl = document.createElement('div');
+    typingEl.className = 'copilot-message ai typing';
+    typingEl.id = 'typing-indicator';
+    typingEl.innerHTML = '<span class="typing-dots"><span></span><span></span><span></span></span>';
+    messagesContainer.appendChild(typingEl);
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+}
+
+function hideTyping() {
+    const typingEl = document.getElementById('typing-indicator');
+    typingEl?.remove();
+    chatState.isTyping = false;
+}
+
+/* =============================================================================
+   INITIALIZE
+   ============================================================================= */
+document.addEventListener('DOMContentLoaded', function() {
+    initChatbot();
+    console.log('✅ Shadow AI chatbot initialized');
 });

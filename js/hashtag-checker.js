@@ -1,54 +1,20 @@
-// Hashtag Checker JavaScript
+// =============================================================================
+// ShadowBanCheck.io - Hashtag Checker JavaScript
+// =============================================================================
 
-// Real banned/restricted hashtags database
+// Banned hashtags database
 const BANNED_HASHTAGS = {
-    // Instagram banned hashtags
-    instagram: [
-        'ass', 'assday', 'adulting', 'alone', 'attractive', 'beautyblogger',
-        'bikinibody', 'boho', 'brain', 'costumes', 'curvygirls', 'dating',
-        'desk', 'dm', 'elevator', 'eggplant', 'fitnessgirls', 'fitfam',
-        'girlsonly', 'gloves', 'graffitiigers', 'happythanksgiving', 'hardsummer',
-        'humpday', 'hustler', 'ilovemyjob', 'instamood', 'kansas', 'kissing',
-        'killingit', 'lavieenrose', 'leaves', 'like', 'likeforlike', 'milf',
-        'models', 'newyearseve', 'nasty', 'nudeart', 'overnight', 'petite',
-        'pornfood', 'popular', 'pushup', 'rate', 'saltwater', 'selfharm',
-        'sexy', 'single', 'skateboarding', 'skype', 'snap', 'stranger',
-        'snowstorm', 'streetphoto', 'sunbathing', 'supplementsthatwork',
-        'swole', 'tanlines', 'teenagers', 'tgif', 'thinspo', 'todayimwearing',
-        'twerk', 'undies', 'valentinesday', 'woman', 'workflow', 'wrongway'
-    ],
-    
-    // TikTok restricted
-    tiktok: [
-        'porn', 'sex', 'nudity', 'sexy', 'hot', 'underwear', 'lingerie',
-        'plottwist', 'xyzbca', 'foryou', 'pov', 'acne', 'weightloss',
-        'eatingdisorder', 'selfharm', 'depression', 'anxiety'
-    ],
-    
-    // Twitter/X (mostly algorithmically suppressed)
-    twitter: [
-        'covid', 'coronavirus', 'vaccine', 'election', 'fraud', 'rigged',
-        'porn', 'sex', 'nsfw', 'onlyfans'
-    ]
+    instagram: ['ass', 'assday', 'adulting', 'alone', 'attractive', 'beautyblogger', 'bikinibody', 'boho', 'brain', 'costumes', 'curvygirls', 'dating', 'desk', 'dm', 'elevator', 'eggplant', 'fitnessgirls', 'fitfam', 'girlsonly', 'gloves', 'happythanksgiving', 'hardsummer', 'humpday', 'hustler', 'ilovemyjob', 'instamood', 'kansas', 'kissing', 'killingit', 'lavieenrose', 'leaves', 'like', 'likeforlike', 'milf', 'models', 'newyearseve', 'nasty', 'nudeart', 'overnight', 'petite', 'pornfood', 'popular', 'pushup', 'rate', 'saltwater', 'selfharm', 'sexy', 'single', 'skateboarding', 'skype', 'snap', 'stranger', 'snowstorm', 'streetphoto', 'sunbathing', 'swole', 'tanlines', 'teenagers', 'tgif', 'thinspo', 'todayimwearing', 'twerk', 'undies', 'valentinesday', 'woman', 'workflow', 'wrongway'],
+    tiktok: ['porn', 'sex', 'nudity', 'sexy', 'hot', 'underwear', 'lingerie', 'plottwist', 'xyzbca', 'foryou', 'pov', 'acne', 'weightloss', 'eatingdisorder', 'selfharm', 'depression', 'anxiety'],
+    twitter: ['covid', 'coronavirus', 'vaccine', 'election', 'fraud', 'rigged', 'porn', 'sex', 'nsfw', 'onlyfans']
 };
 
-// Restricted hashtags (not banned, but suppressed)
 const RESTRICTED_HASHTAGS = {
-    instagram: [
-        'bacak', 'beautyblogger', 'books', 'boobs', 'brain', 'bra',
-        'costumes', 'dating', 'direct', 'edm', 'fishnets', 'goddess',
-        'graffitiigers', 'hipster', 'hotweather', 'ice', 'italiano',
-        'kissing', 'legs', 'master', 'models', 'mustfollow', 'parties',
-        'publicrelations', 'russian', 'saltwater', 'sexy', 'skateboarding',
-        'snap', 'southern', 'swingers', 'teens', 'thought', 'undies', 'weed'
-    ],
-    tiktok: [
-        'fyp', 'foryou', 'foryoupage', 'viral', 'xyzbca'
-    ],
+    instagram: ['bacak', 'beautyblogger', 'books', 'boobs', 'brain', 'bra', 'costumes', 'dating', 'direct', 'edm', 'fishnets', 'goddess', 'hipster', 'hotweather', 'ice', 'italiano', 'kissing', 'legs', 'master', 'models', 'mustfollow', 'parties', 'publicrelations', 'russian', 'saltwater', 'sexy', 'skateboarding', 'snap', 'southern', 'swingers', 'teens', 'thought', 'undies', 'weed'],
+    tiktok: ['fyp', 'foryou', 'foryoupage', 'viral', 'xyzbca'],
     twitter: []
 };
 
-// State
 let checksRemaining = 5;
 let currentResults = [];
 
@@ -68,285 +34,166 @@ const copySafeBtn = document.getElementById('copy-safe-btn');
 const exportBtn = document.getElementById('export-btn');
 const pricingCta = document.getElementById('pricing-cta');
 
-// Update hashtag count as user types
-hashtagInput.addEventListener('input', updateHashtagCount);
+// Initialize
+document.addEventListener('DOMContentLoaded', () => {
+    loadChecksRemaining();
+    
+    hashtagInput?.addEventListener('input', updateHashtagCount);
+    checkBtn?.addEventListener('click', checkHashtags);
+    clearBtn?.addEventListener('click', clearInput);
+    exampleBtn?.addEventListener('click', loadExample);
+    copySafeBtn?.addEventListener('click', copySafeHashtags);
+    exportBtn?.addEventListener('click', exportResults);
+});
+
+function loadChecksRemaining() {
+    const lastDate = localStorage.getItem('hashtag_last_check_date');
+    const today = new Date().toDateString();
+    
+    if (lastDate !== today) {
+        checksRemaining = 5;
+        localStorage.setItem('hashtag_checks_remaining', '5');
+        localStorage.setItem('hashtag_last_check_date', today);
+    } else {
+        checksRemaining = parseInt(localStorage.getItem('hashtag_checks_remaining') || '5');
+    }
+    
+    updateChecksDisplay();
+}
+
+function updateChecksDisplay() {
+    const el = document.getElementById('hashtag-searches-remaining');
+    if (el) {
+        el.innerHTML = checksRemaining > 0 
+            ? `${checksRemaining} / 5 available`
+            : `<span style="color: #ef4444;">0 / 5 - <a href="index.html#pricing" style="color: var(--primary);">Upgrade</a></span>`;
+    }
+    if (checksRemainingDisplay) {
+        checksRemainingDisplay.textContent = checksRemaining > 0 ? `${checksRemaining} free checks left today` : 'Out of free checks';
+    }
+    if (checkBtn) checkBtn.disabled = checksRemaining <= 0;
+}
+
+function extractHashtags(text) {
+    const cleaned = text.replace(/#/g, '').toLowerCase();
+    const hashtags = cleaned.split(/[\s,\n]+/).filter(h => h.trim().length > 0);
+    return [...new Set(hashtags)];
+}
 
 function updateHashtagCount() {
     const hashtags = extractHashtags(hashtagInput.value);
-    const count = hashtags.length;
-    hashtagCount.textContent = `${count} hashtag${count !== 1 ? 's' : ''}`;
-    
-    // Enable/disable check button
-    checkBtn.disabled = count === 0 || checksRemaining <= 0;
+    if (hashtagCount) hashtagCount.textContent = `${hashtags.length} hashtag${hashtags.length !== 1 ? 's' : ''}`;
 }
 
-// Extract hashtags from text
-function extractHashtags(text) {
-    // Remove # symbols and split by whitespace, commas, newlines
-    const cleaned = text.replace(/#/g, '').toLowerCase();
-    const hashtags = cleaned.split(/[\s,\n]+/).filter(h => h.trim().length > 0);
-    return [...new Set(hashtags)]; // Remove duplicates
-}
-
-// Check hashtags button
-checkBtn.addEventListener('click', async () => {
+function checkHashtags() {
     const hashtags = extractHashtags(hashtagInput.value);
+    if (hashtags.length === 0) { alert('Please enter at least one hashtag'); return; }
+    if (checksRemaining <= 0) { pricingCta?.classList.remove('hidden'); pricingCta?.scrollIntoView({ behavior: 'smooth' }); return; }
     
-    if (hashtags.length === 0) {
-        alert('Please enter at least one hashtag');
-        return;
-    }
-    
-    if (checksRemaining <= 0) {
-        // Show pricing CTA and scroll to it
-        pricingCta.classList.remove('hidden');
-        pricingCta.scrollIntoView({ behavior: 'smooth' });
-        return;
-    }
-    
-    // Analyze hashtags
-    currentResults = hashtags.map(tag => analyzeHashtag(tag));
-    
-    // Decrement checks
+    currentResults = hashtags.map(analyzeHashtag);
     checksRemaining--;
-    updateChecksRemaining();
-    
-    // Display results
+    localStorage.setItem('hashtag_checks_remaining', checksRemaining.toString());
+    updateChecksDisplay();
     displayResults();
-    
-    // Show pricing CTA if out of checks
-    if (checksRemaining === 0) {
-        pricingCta.classList.remove('hidden');
-    }
-    
-    // Scroll to results
-    resultsSection.scrollIntoView({ behavior: 'smooth' });
-});
+    if (checksRemaining === 0) pricingCta?.classList.remove('hidden');
+    resultsSection?.scrollIntoView({ behavior: 'smooth' });
+}
 
 function analyzeHashtag(tag) {
-    const result = {
-        tag: tag,
-        status: 'safe',
-        platforms: {
-            instagram: 'safe',
-            tiktok: 'safe',
-            twitter: 'safe'
-        },
-        message: 'This hashtag is safe to use'
-    };
+    const result = { tag, status: 'safe', platforms: { instagram: 'safe', tiktok: 'safe', twitter: 'safe' }, message: 'Safe to use' };
     
-    // Check if banned on each platform
-    if (BANNED_HASHTAGS.instagram.includes(tag)) {
-        result.platforms.instagram = 'banned';
-        result.status = 'banned';
-    } else if (RESTRICTED_HASHTAGS.instagram.includes(tag)) {
-        result.platforms.instagram = 'restricted';
-        result.status = result.status === 'banned' ? 'banned' : 'restricted';
-    }
+    if (BANNED_HASHTAGS.instagram.includes(tag)) { result.platforms.instagram = 'banned'; result.status = 'banned'; }
+    else if (RESTRICTED_HASHTAGS.instagram.includes(tag)) { result.platforms.instagram = 'restricted'; result.status = result.status === 'banned' ? 'banned' : 'restricted'; }
     
-    if (BANNED_HASHTAGS.tiktok.includes(tag)) {
-        result.platforms.tiktok = 'banned';
-        result.status = 'banned';
-    } else if (RESTRICTED_HASHTAGS.tiktok.includes(tag)) {
-        result.platforms.tiktok = 'restricted';
-        result.status = result.status === 'banned' ? 'banned' : 'restricted';
-    }
+    if (BANNED_HASHTAGS.tiktok.includes(tag)) { result.platforms.tiktok = 'banned'; result.status = 'banned'; }
+    else if (RESTRICTED_HASHTAGS.tiktok.includes(tag)) { result.platforms.tiktok = 'restricted'; result.status = result.status === 'banned' ? 'banned' : 'restricted'; }
     
-    if (BANNED_HASHTAGS.twitter.includes(tag)) {
-        result.platforms.twitter = 'banned';
-        result.status = 'banned';
-    } else if (RESTRICTED_HASHTAGS.twitter.includes(tag)) {
-        result.platforms.twitter = 'restricted';
-        result.status = result.status === 'banned' ? 'banned' : 'restricted';
-    }
+    if (BANNED_HASHTAGS.twitter.includes(tag)) { result.platforms.twitter = 'banned'; result.status = 'banned'; }
     
-    // Update message based on status
     if (result.status === 'banned') {
-        const bannedPlatforms = [];
-        if (result.platforms.instagram === 'banned') bannedPlatforms.push('Instagram');
-        if (result.platforms.tiktok === 'banned') bannedPlatforms.push('TikTok');
-        if (result.platforms.twitter === 'banned') bannedPlatforms.push('Twitter');
-        result.message = `Banned on ${bannedPlatforms.join(', ')}`;
+        const banned = [];
+        if (result.platforms.instagram === 'banned') banned.push('Instagram');
+        if (result.platforms.tiktok === 'banned') banned.push('TikTok');
+        if (result.platforms.twitter === 'banned') banned.push('Twitter');
+        result.message = `Banned on ${banned.join(', ')}`;
     } else if (result.status === 'restricted') {
-        const restrictedPlatforms = [];
-        if (result.platforms.instagram === 'restricted') restrictedPlatforms.push('Instagram');
-        if (result.platforms.tiktok === 'restricted') restrictedPlatforms.push('TikTok');
-        if (result.platforms.twitter === 'restricted') restrictedPlatforms.push('Twitter');
-        result.message = `Restricted on ${restrictedPlatforms.join(', ')}`;
+        const restricted = [];
+        if (result.platforms.instagram === 'restricted') restricted.push('Instagram');
+        if (result.platforms.tiktok === 'restricted') restricted.push('TikTok');
+        result.message = `Restricted on ${restricted.join(', ')}`;
     }
     
     return result;
 }
 
 function displayResults() {
-    // Show results section
-    resultsSection.classList.remove('hidden');
+    resultsSection?.classList.remove('hidden');
     
-    // Calculate counts
-    const safeCount = currentResults.filter(r => r.status === 'safe').length;
-    const bannedCount = currentResults.filter(r => r.status === 'banned').length;
-    const restrictedCount = currentResults.filter(r => r.status === 'restricted').length;
+    const safe = currentResults.filter(r => r.status === 'safe').length;
+    const banned = currentResults.filter(r => r.status === 'banned').length;
+    const restricted = currentResults.filter(r => r.status === 'restricted').length;
     
-    // Update summary
-    safeCountEl.textContent = safeCount;
-    bannedCountEl.textContent = bannedCount;
-    restrictedCountEl.textContent = restrictedCount;
+    if (safeCountEl) safeCountEl.textContent = safe;
+    if (bannedCountEl) bannedCountEl.textContent = banned;
+    if (restrictedCountEl) restrictedCountEl.textContent = restricted;
     
-    // Clear and populate results list
-    resultsList.innerHTML = '';
-    
-    currentResults.forEach(result => {
-        const resultItem = createResultItem(result);
-        resultsList.appendChild(resultItem);
-    });
-}
-
-function createResultItem(result) {
-    const item = document.createElement('div');
-    item.className = `result-item ${result.status}`;
-    
-    const icon = result.status === 'safe' ? '✅' : 
-                 result.status === 'banned' ? '🚫' : '⚠️';
-    
-    item.innerHTML = `
-        <div class="result-left">
-            <div class="result-icon">${icon}</div>
-            <div class="result-info">
-                <div class="result-hashtag">#${result.tag}</div>
-                <div class="result-status">${result.message}</div>
-                <div class="result-platforms">
-                    <span class="platform-status ${result.platforms.instagram}">
-                        📸 Instagram: ${result.platforms.instagram}
-                    </span>
-                    <span class="platform-status ${result.platforms.tiktok}">
-                        🎵 TikTok: ${result.platforms.tiktok}
-                    </span>
-                    <span class="platform-status ${result.platforms.twitter}">
-                        🐦 Twitter: ${result.platforms.twitter}
-                    </span>
+    if (resultsList) {
+        resultsList.innerHTML = currentResults.map(result => {
+            const icon = result.status === 'safe' ? '✅' : result.status === 'banned' ? '🚫' : '⚠️';
+            return `
+                <div class="result-item ${result.status}">
+                    <div class="result-left">
+                        <div class="result-icon">${icon}</div>
+                        <div class="result-info">
+                            <div class="result-hashtag">#${result.tag}</div>
+                            <div class="result-status">${result.message}</div>
+                            <div class="result-platforms">
+                                <span class="platform-status ${result.platforms.instagram}">📸 IG: ${result.platforms.instagram}</span>
+                                <span class="platform-status ${result.platforms.tiktok}">🎵 TT: ${result.platforms.tiktok}</span>
+                                <span class="platform-status ${result.platforms.twitter}">🐦 X: ${result.platforms.twitter}</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </div>
-        <div class="result-right">
-            <button class="alternatives-btn pro-only" disabled>
-                Alternatives (Pro)
-            </button>
-        </div>
-    `;
-    
-    return item;
-}
-
-function updateChecksRemaining() {
-    if (checksRemaining > 0) {
-        checksRemainingDisplay.textContent = `${checksRemaining} free check${checksRemaining !== 1 ? 's' : ''} left today`;
-    } else {
-        checksRemainingDisplay.textContent = 'Out of free checks';
-        checksRemainingDisplay.style.color = '#ef4444';
+            `;
+        }).join('');
     }
-    
-    // Store in localStorage
-    localStorage.setItem('hashtagChecksRemaining', checksRemaining);
-    localStorage.setItem('hashtagLastCheckDate', new Date().toDateString());
-    
-    // Disable check button if no checks remaining
+}
+
+function clearInput() {
+    if (hashtagInput) hashtagInput.value = '';
+    updateHashtagCount();
+    resultsSection?.classList.add('hidden');
+}
+
+function loadExample() {
+    if (hashtagInput) hashtagInput.value = '#fitness #motivation #gains #workout #fitfam #love #instagood #sexy #viral #fyp';
     updateHashtagCount();
 }
 
-function loadChecksRemaining() {
-    const lastCheckDate = localStorage.getItem('hashtagLastCheckDate');
-    const today = new Date().toDateString();
-    
-    if (lastCheckDate !== today) {
-        checksRemaining = 5;
-        localStorage.setItem('hashtagChecksRemaining', checksRemaining);
-        localStorage.setItem('hashtagLastCheckDate', today);
-    } else {
-        const stored = localStorage.getItem('hashtagChecksRemaining');
-        checksRemaining = stored ? parseInt(stored) : 5;
-    }
-    
-    updateChecksRemaining();
-}
-
-// Clear button
-clearBtn.addEventListener('click', () => {
-    hashtagInput.value = '';
-    updateHashtagCount();
-    resultsSection.classList.add('hidden');
-});
-
-// Example button
-exampleBtn.addEventListener('click', () => {
-    hashtagInput.value = '#fitness #motivation #gains #workout #fitfam #love #instagood #sexy';
-    updateHashtagCount();
-});
-
-// Copy safe hashtags
-copySafeBtn.addEventListener('click', () => {
-    const safeHashtags = currentResults
-        .filter(r => r.status === 'safe')
-        .map(r => '#' + r.tag)
-        .join(' ');
-    
-    if (safeHashtags) {
-        navigator.clipboard.writeText(safeHashtags).then(() => {
-            alert('Safe hashtags copied to clipboard!');
-        });
+function copySafeHashtags() {
+    const safe = currentResults.filter(r => r.status === 'safe').map(r => '#' + r.tag).join(' ');
+    if (safe) {
+        navigator.clipboard.writeText(safe).then(() => alert('Safe hashtags copied!'));
     } else {
         alert('No safe hashtags to copy.');
     }
-});
+}
 
-// Export results
-exportBtn.addEventListener('click', () => {
-    const exportText = generateExportText();
-    const blob = new Blob([exportText], { type: 'text/plain' });
+function exportResults() {
+    let text = 'HASHTAG CHECK RESULTS\n====================\n\n';
+    text += `Checked: ${new Date().toLocaleString()}\nTotal: ${currentResults.length}\n\n`;
+    
+    text += 'SAFE:\n' + currentResults.filter(r => r.status === 'safe').map(r => `#${r.tag}`).join(', ') + '\n\n';
+    text += 'BANNED:\n' + currentResults.filter(r => r.status === 'banned').map(r => `#${r.tag} (${r.message})`).join('\n') + '\n\n';
+    text += 'RESTRICTED:\n' + currentResults.filter(r => r.status === 'restricted').map(r => `#${r.tag} (${r.message})`).join('\n') + '\n\n';
+    text += '--\nGenerated by ShadowBanCheck.io';
+    
+    const blob = new Blob([text], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
     a.download = `hashtag-check-${Date.now()}.txt`;
     a.click();
     URL.revokeObjectURL(url);
-});
-
-function generateExportText() {
-    let text = 'HASHTAG SAFETY CHECK RESULTS\n';
-    text += '============================\n\n';
-    text += `Checked: ${new Date().toLocaleString()}\n`;
-    text += `Total Hashtags: ${currentResults.length}\n\n`;
-    
-    text += 'SAFE HASHTAGS:\n';
-    currentResults.filter(r => r.status === 'safe').forEach(r => {
-        text += `#${r.tag}\n`;
-    });
-    
-    text += '\nBANNED HASHTAGS:\n';
-    currentResults.filter(r => r.status === 'banned').forEach(r => {
-        text += `#${r.tag} - `;
-        const banned = [];
-        if (r.platforms.instagram === 'banned') banned.push('Instagram');
-        if (r.platforms.tiktok === 'banned') banned.push('TikTok');
-        if (r.platforms.twitter === 'banned') banned.push('Twitter');
-        text += banned.join(', ') + '\n';
-    });
-    
-    text += '\nRESTRICTED HASHTAGS:\n';
-    currentResults.filter(r => r.status === 'restricted').forEach(r => {
-        text += `#${r.tag} - `;
-        const restricted = [];
-        if (r.platforms.instagram === 'restricted') restricted.push('Instagram');
-        if (r.platforms.tiktok === 'restricted') restricted.push('TikTok');
-        if (r.platforms.twitter === 'restricted') restricted.push('Twitter');
-        text += restricted.join(', ') + '\n';
-    });
-    
-    text += '\n--\nGenerated by ShadowBanCheck.io';
-    return text;
 }
-
-// Initialize
-document.addEventListener('DOMContentLoaded', () => {
-    loadChecksRemaining();
-    updateHashtagCount();
-});

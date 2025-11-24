@@ -4,1339 +4,526 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - ShadowBanCheck.io</title>
-    <meta name="description" content="Your shadow ban monitoring command center. Track account visibility across 26+ platforms.">
-    
-    <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔍</text></svg>">
-    
-    <!-- CSS -->
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/dashboard.css">
-    <link rel="stylesheet" href="css/shadow-ai.css">
 </head>
 <body class="dashboard-body">
-    <!-- Dashboard Layout -->
     <div class="dashboard-layout">
         <!-- Sidebar -->
-        <aside class="dashboard-sidebar" id="dashboard-sidebar">
+        <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
-                <a href="index.html" class="sidebar-logo">
-                    <span class="logo-icon">🔍</span>
-                    <span class="logo-text">ShadowBanCheck</span>
-                </a>
-                <button class="sidebar-close" id="sidebar-close" aria-label="Close sidebar">×</button>
+                <a href="index.html" class="sidebar-logo">🔍 ShadowBanCheck</a>
+                <button class="sidebar-close" id="sidebar-close">×</button>
             </div>
             
             <nav class="sidebar-nav">
-                <a href="#overview" class="sidebar-link active" data-section="overview">
-                    <span class="sidebar-icon">📊</span>
-                    <span>Overview</span>
-                </a>
-                <a href="#accounts" class="sidebar-link" data-section="accounts">
-                    <span class="sidebar-icon">👥</span>
-                    <span>Monitored Accounts</span>
-                </a>
-                <a href="#tools" class="sidebar-link" data-section="tools">
-                    <span class="sidebar-icon">🔧</span>
-                    <span>Check Tools</span>
-                </a>
-                <a href="#reports" class="sidebar-link" data-section="reports">
-                    <span class="sidebar-icon">📄</span>
-                    <span>Reports</span>
-                </a>
-                <a href="#alerts" class="sidebar-link" data-section="alerts">
-                    <span class="sidebar-icon">🔔</span>
-                    <span>Alerts</span>
-                </a>
-                <a href="#settings" class="sidebar-link" data-section="settings">
-                    <span class="sidebar-icon">⚙️</span>
-                    <span>Settings</span>
-                </a>
-                <a href="#support" class="sidebar-link" data-section="support">
-                    <span class="sidebar-icon">💬</span>
-                    <span>Support</span>
-                </a>
+                <a href="#overview" class="nav-link active" data-section="overview">📊 Overview</a>
+                <a href="#accounts" class="nav-link" data-section="accounts">👥 Accounts</a>
+                <a href="#tools" class="nav-link" data-section="tools">🔧 Check Tools</a>
+                <a href="#reports" class="nav-link" data-section="reports">📄 Reports</a>
+                <a href="#alerts" class="nav-link" data-section="alerts">🔔 Alerts</a>
+                <a href="#settings" class="nav-link" data-section="settings">⚙️ Settings</a>
+                <a href="#support" class="nav-link" data-section="support">💬 Support</a>
             </nav>
             
-            <!-- Sidebar Plan Info -->
             <div class="sidebar-plan">
-                <div class="plan-badge-sidebar">
-                    <span class="plan-icon">⭐</span>
-                    <span id="sidebar-plan-name">Pro Plan</span>
+                <div class="plan-header">
+                    <span>⭐ Pro Plan</span>
+                    <a href="#settings" data-section="settings">Manage</a>
                 </div>
-                <div class="plan-usage">
-                    <div class="usage-item">
-                        <span class="usage-label">Accounts</span>
-                        <span class="usage-value" id="sidebar-accounts">8 / 15</span>
-                    </div>
-                    <div class="usage-item">
-                        <span class="usage-label">AI Questions</span>
-                        <span class="usage-value" id="sidebar-ai">7 / 10 today</span>
-                    </div>
+                <div class="plan-stats">
+                    <span>Accounts: <strong id="sidebar-accounts">8/15</strong></span>
+                    <span>AI: <strong id="sidebar-ai">7/10</strong></span>
                 </div>
-                <a href="#settings" class="btn-upgrade-sidebar" data-section="settings">Manage Plan</a>
             </div>
             
-            <!-- Sidebar Footer -->
-            <div class="sidebar-footer">
+            <div class="sidebar-user">
                 <div class="user-info">
-                    <div class="user-avatar">👤</div>
-                    <div class="user-details">
+                    <span class="user-avatar">👤</span>
+                    <div>
                         <span class="user-name" id="sidebar-user-name">John Doe</span>
                         <span class="user-email" id="sidebar-user-email">john@example.com</span>
                     </div>
                 </div>
-                <button class="btn-logout" id="logout-btn">
-                    <span>Logout</span>
-                    <span>→</span>
-                </button>
+                <button class="btn-logout" id="logout-btn">Logout</button>
             </div>
         </aside>
         
-        <!-- Main Content -->
-        <main class="dashboard-main">
-            <!-- Top Bar (Mobile) -->
-            <header class="dashboard-topbar">
-                <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle sidebar">
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                </button>
-                <div class="topbar-title">
-                    <span class="logo-icon">🔍</span>
-                    <span>Dashboard</span>
-                </div>
-                <div class="topbar-actions">
-                    <button class="topbar-btn" id="topbar-notifications" aria-label="Notifications">
-                        <span>🔔</span>
-                        <span class="notification-badge" id="notification-count">3</span>
-                    </button>
-                </div>
+        <!-- Main -->
+        <main class="main-content">
+            <header class="topbar">
+                <button class="menu-toggle" id="menu-toggle">☰</button>
+                <span class="topbar-title">Dashboard</span>
+                <button class="notif-btn" id="notif-btn">🔔</button>
             </header>
             
-            <!-- Dashboard Content -->
-            <div class="dashboard-content">
+            <div class="content-scroll">
                 
-                <!-- ============================================================
-                     SECTION: OVERVIEW
-                     ============================================================ -->
-                <section id="overview" class="dashboard-section active">
-                    <div class="section-header-dash">
+                <!-- OVERVIEW -->
+                <section id="overview" class="section active">
+                    <div class="section-top">
                         <div>
-                            <h1 class="section-title-dash">Welcome back, <span id="user-first-name">John</span>! 👋</h1>
-                            <p class="section-subtitle-dash">Here's your visibility status across all platforms</p>
-                        </div>
-                        <button class="btn-refresh" id="refresh-all-btn">
-                            <span>🔄</span>
-                            <span>Refresh All</span>
-                        </button>
-                    </div>
-                    
-                    <!-- Quick Stats -->
-                    <div class="stats-grid">
-                        <div class="stat-card stat-success">
-                            <div class="stat-icon">✅</div>
-                            <div class="stat-content">
-                                <span class="stat-number" id="stat-healthy">6</span>
-                                <span class="stat-label">Healthy Accounts</span>
-                            </div>
-                        </div>
-                        <div class="stat-card stat-warning">
-                            <div class="stat-icon">⚠️</div>
-                            <div class="stat-content">
-                                <span class="stat-number" id="stat-issues">1</span>
-                                <span class="stat-label">Potential Issues</span>
-                            </div>
-                        </div>
-                        <div class="stat-card stat-danger">
-                            <div class="stat-icon">🚫</div>
-                            <div class="stat-content">
-                                <span class="stat-number" id="stat-banned">1</span>
-                                <span class="stat-label">Restrictions Found</span>
-                            </div>
-                        </div>
-                        <div class="stat-card stat-neutral">
-                            <div class="stat-icon">📊</div>
-                            <div class="stat-content">
-                                <span class="stat-number" id="stat-total">8</span>
-                                <span class="stat-label">Total Monitored</span>
-                            </div>
+                            <h1>Welcome back, <span id="user-first-name">John</span>! 👋</h1>
+                            <p>Your visibility status across all platforms</p>
                         </div>
                     </div>
                     
-                    <!-- Quick Actions -->
-                    <div class="quick-actions-card">
-                        <h3>⚡ Quick Actions</h3>
-                        <div class="quick-actions-grid">
-                            <button class="quick-action-btn" data-action="check-all">
-                                <span class="quick-icon">🔍</span>
-                                <span>Check All Accounts</span>
-                            </button>
-                            <button class="quick-action-btn" data-action="add-account">
-                                <span class="quick-icon">➕</span>
-                                <span>Add Account</span>
-                            </button>
-                            <button class="quick-action-btn" data-action="check-hashtags">
-                                <span class="quick-icon">🏷️</span>
-                                <span>Check Hashtags</span>
-                            </button>
-                            <button class="quick-action-btn" data-action="download-report">
-                                <span class="quick-icon">📄</span>
-                                <span>Download Report</span>
-                            </button>
+                    <div class="stats-row">
+                        <div class="stat-box">
+                            <span class="stat-icon green">✓</span>
+                            <span class="stat-num" id="stat-healthy">6</span>
+                            <span class="stat-label">Healthy</span>
+                        </div>
+                        <div class="stat-box">
+                            <span class="stat-icon yellow">!</span>
+                            <span class="stat-num" id="stat-issues">1</span>
+                            <span class="stat-label">Issues</span>
+                        </div>
+                        <div class="stat-box">
+                            <span class="stat-icon red">✕</span>
+                            <span class="stat-num" id="stat-banned">1</span>
+                            <span class="stat-label">Banned</span>
+                        </div>
+                        <div class="stat-box">
+                            <span class="stat-icon blue">●</span>
+                            <span class="stat-num" id="stat-total">8</span>
+                            <span class="stat-label">Total</span>
                         </div>
                     </div>
                     
-                    <!-- Recent Alerts -->
-                    <div class="overview-grid">
-                        <div class="overview-card">
-                            <div class="card-header-dash">
+                    <div class="quick-actions">
+                        <button class="action-btn" data-action="check-all">🔍 Check All</button>
+                        <button class="action-btn" data-action="add-account">➕ Add Account</button>
+                        <button class="action-btn" data-action="check-hashtags">🏷️ Hashtags</button>
+                    </div>
+                    
+                    <div class="cards-row">
+                        <div class="card">
+                            <div class="card-header">
                                 <h3>🔔 Recent Alerts</h3>
-                                <a href="#alerts" class="card-link" data-section="alerts">View All →</a>
+                                <a href="#alerts" data-section="alerts">View All →</a>
                             </div>
-                            <div class="alerts-list" id="recent-alerts">
-                                <div class="alert-item alert-danger">
-                                    <span class="alert-icon">🚫</span>
-                                    <div class="alert-content">
-                                        <span class="alert-title">Shadow ban detected on TikTok</span>
-                                        <span class="alert-time">2 hours ago</span>
-                                    </div>
+                            <div class="alert-list">
+                                <div class="alert-item danger">
+                                    <span class="dot"></span>
+                                    <span>Shadow ban on TikTok</span>
+                                    <span class="time">2h ago</span>
                                 </div>
-                                <div class="alert-item alert-warning">
-                                    <span class="alert-icon">⚠️</span>
-                                    <div class="alert-content">
-                                        <span class="alert-title">Reduced reach on Instagram</span>
-                                        <span class="alert-time">Yesterday</span>
-                                    </div>
+                                <div class="alert-item warning">
+                                    <span class="dot"></span>
+                                    <span>Reduced reach on Instagram</span>
+                                    <span class="time">1d ago</span>
                                 </div>
-                                <div class="alert-item alert-success">
-                                    <span class="alert-icon">✅</span>
-                                    <div class="alert-content">
-                                        <span class="alert-title">Twitter account restored</span>
-                                        <span class="alert-time">3 days ago</span>
-                                    </div>
+                                <div class="alert-item success">
+                                    <span class="dot"></span>
+                                    <span>Twitter restored</span>
+                                    <span class="time">3d ago</span>
                                 </div>
                             </div>
                         </div>
                         
-                        <!-- Account Status Overview -->
-                        <div class="overview-card">
-                            <div class="card-header-dash">
-                                <h3>👥 Account Status</h3>
-                                <a href="#accounts" class="card-link" data-section="accounts">Manage →</a>
+                        <div class="card">
+                            <div class="card-header">
+                                <h3>👥 Accounts</h3>
+                                <a href="#accounts" data-section="accounts">Manage →</a>
                             </div>
-                            <div class="accounts-mini-list" id="accounts-mini">
-                                <!-- Populated by JS -->
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Usage This Month -->
-                    <div class="usage-overview-card">
-                        <h3>📈 Usage This Month</h3>
-                        <div class="usage-bars">
-                            <div class="usage-bar-item">
-                                <div class="usage-bar-header">
-                                    <span>Shadow Ban Checks</span>
-                                    <span id="usage-checks">47 / Unlimited</span>
-                                </div>
-                                <div class="usage-bar">
-                                    <div class="usage-bar-fill" style="width: 100%"></div>
-                                </div>
-                            </div>
-                            <div class="usage-bar-item">
-                                <div class="usage-bar-header">
-                                    <span>Hashtag Checks</span>
-                                    <span id="usage-hashtags">123 / Unlimited</span>
-                                </div>
-                                <div class="usage-bar">
-                                    <div class="usage-bar-fill" style="width: 100%"></div>
-                                </div>
-                            </div>
-                            <div class="usage-bar-item">
-                                <div class="usage-bar-header">
-                                    <span>AI Questions Today</span>
-                                    <span id="usage-ai">7 / 10</span>
-                                </div>
-                                <div class="usage-bar">
-                                    <div class="usage-bar-fill" style="width: 70%"></div>
-                                </div>
-                            </div>
-                            <div class="usage-bar-item">
-                                <div class="usage-bar-header">
-                                    <span>Monitored Accounts</span>
-                                    <span id="usage-accounts">8 / 15</span>
-                                </div>
-                                <div class="usage-bar">
-                                    <div class="usage-bar-fill" style="width: 53%"></div>
-                                </div>
-                            </div>
+                            <div class="mini-accounts" id="mini-accounts"></div>
                         </div>
                     </div>
                 </section>
                 
-                <!-- ============================================================
-                     SECTION: MONITORED ACCOUNTS
-                     ============================================================ -->
-                <section id="accounts" class="dashboard-section">
-                    <div class="section-header-dash">
+                <!-- ACCOUNTS -->
+                <section id="accounts" class="section">
+                    <div class="section-top">
                         <div>
-                            <h1 class="section-title-dash">Monitored Accounts</h1>
-                            <p class="section-subtitle-dash">Manage your accounts across <span id="accounts-count">8</span> of <span id="accounts-limit">15</span> slots</p>
+                            <h1>Monitored Accounts</h1>
+                            <p><span id="accounts-count">8</span> of <span id="accounts-limit">15</span> slots used</p>
                         </div>
-                        <button class="btn-primary-dash" id="add-account-btn">
-                            <span>➕</span>
-                            <span>Add Account</span>
-                        </button>
+                        <button class="btn-primary" id="add-account-btn">➕ Add Account</button>
                     </div>
                     
-                    <!-- Accounts Filter -->
-                    <div class="accounts-filter">
-                        <button class="filter-btn active" data-filter="all">All (8)</button>
-                        <button class="filter-btn" data-filter="healthy">Healthy (6)</button>
-                        <button class="filter-btn" data-filter="issues">Issues (1)</button>
-                        <button class="filter-btn" data-filter="banned">Banned (1)</button>
+                    <div class="filters">
+                        <button class="filter active" data-filter="all">All</button>
+                        <button class="filter" data-filter="healthy">Healthy</button>
+                        <button class="filter" data-filter="issues">Issues</button>
+                        <button class="filter" data-filter="banned">Banned</button>
                     </div>
                     
-                    <!-- Accounts Grid -->
-                    <div class="accounts-grid" id="accounts-grid">
-                        <!-- Account cards populated by JS -->
-                    </div>
-                    
-                    <!-- Empty State (hidden when accounts exist) -->
-                    <div class="empty-state hidden" id="accounts-empty">
-                        <span class="empty-icon">👥</span>
-                        <h3>No Accounts Yet</h3>
-                        <p>Add your first account to start monitoring for shadow bans.</p>
-                        <button class="btn-primary-dash" id="add-first-account-btn">
-                            <span>➕</span>
-                            <span>Add Your First Account</span>
-                        </button>
-                    </div>
+                    <div class="accounts-grid" id="accounts-grid"></div>
                 </section>
                 
-                <!-- ============================================================
-                     SECTION: CHECK TOOLS
-                     ============================================================ -->
-                <section id="tools" class="dashboard-section">
-                    <div class="section-header-dash">
+                <!-- TOOLS -->
+                <section id="tools" class="section">
+                    <div class="section-top">
                         <div>
-                            <h1 class="section-title-dash">Check Tools</h1>
-                            <p class="section-subtitle-dash">Unlimited checks included with your plan</p>
+                            <h1>Check Tools</h1>
+                            <p>Unlimited checks with your plan</p>
                         </div>
                     </div>
                     
-                    <!-- Tools Grid -->
-                    <div class="tools-grid">
-                        <!-- Shadow Ban Checker -->
-                        <div class="tool-card">
-                            <div class="tool-header">
-                                <span class="tool-icon">🔍</span>
-                                <div>
-                                    <h3>Shadow Ban Checker</h3>
-                                    <span class="tool-badge unlimited">Unlimited</span>
-                                </div>
-                            </div>
-                            <p class="tool-desc">Check any account or post URL for shadow ban indicators across platforms.</p>
-                            
-                            <div class="tool-form">
-                                <div class="tool-input-group">
-                                    <select id="tool-platform-select" class="tool-select">
-                                        <option value="">Select Platform</option>
-                                        <option value="instagram">📸 Instagram</option>
-                                        <option value="tiktok">🎵 TikTok</option>
-                                        <option value="twitter">🐦 Twitter/X</option>
-                                        <option value="facebook">📘 Facebook</option>
-                                        <option value="youtube">▶️ YouTube</option>
-                                        <option value="linkedin">💼 LinkedIn</option>
-                                        <option value="reddit">🤖 Reddit</option>
-                                        <option value="pinterest">📌 Pinterest</option>
-                                        <option value="threads">🧵 Threads</option>
-                                    </select>
-                                    <input type="text" id="tool-username-input" class="tool-input" placeholder="@username or post URL">
-                                </div>
-                                <button class="btn-tool-check" id="run-shadowban-check">
-                                    <span>Check Now</span>
-                                    <span>🔍</span>
-                                </button>
-                            </div>
-                            
-                            <div class="tool-recent">
-                                <span class="tool-recent-label">Recent:</span>
-                                <div class="tool-recent-items" id="recent-shadowban-checks">
-                                    <span class="recent-item">@johndoe</span>
-                                    <span class="recent-item">@mybrand</span>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Hashtag Checker -->
-                        <div class="tool-card">
-                            <div class="tool-header">
-                                <span class="tool-icon">🏷️</span>
-                                <div>
-                                    <h3>Hashtag Checker</h3>
-                                    <span class="tool-badge unlimited">Unlimited</span>
-                                </div>
-                            </div>
-                            <p class="tool-desc">Verify hashtags aren't banned or restricted before posting.</p>
-                            
-                            <div class="tool-form">
-                                <textarea id="tool-hashtag-input" class="tool-textarea" placeholder="#fitness #healthy #motivation" rows="3"></textarea>
-                                <div class="tool-input-meta">
-                                    <span id="tool-hashtag-count">0 hashtags</span>
-                                </div>
-                                <button class="btn-tool-check" id="run-hashtag-check">
-                                    <span>Check Hashtags</span>
-                                    <span>🏷️</span>
-                                </button>
-                            </div>
-                            
-                            <!-- Saved Hashtag Sets -->
-                            <div class="saved-sets">
-                                <span class="saved-sets-label">Saved Sets:</span>
-                                <div class="saved-sets-list" id="saved-hashtag-sets">
-                                    <button class="saved-set-btn" data-set="fitness">Fitness (12)</button>
-                                    <button class="saved-set-btn" data-set="food">Food (8)</button>
-                                    <button class="saved-set-btn add-set" id="add-hashtag-set">+ Save Set</button>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Post URL Analyzer -->
-                        <div class="tool-card">
-                            <div class="tool-header">
-                                <span class="tool-icon">🔗</span>
-                                <div>
-                                    <h3>Post URL Analyzer</h3>
-                                    <span class="tool-badge unlimited">Unlimited</span>
-                                </div>
-                            </div>
-                            <p class="tool-desc">Paste any social media post URL for detailed visibility analysis.</p>
-                            
-                            <div class="tool-form">
-                                <input type="url" id="tool-url-input" class="tool-input" placeholder="https://instagram.com/p/...">
-                                <button class="btn-tool-check" id="run-url-analysis">
-                                    <span>Analyze Post</span>
-                                    <span>🔗</span>
-                                </button>
-                            </div>
-                            
-                            <div class="tool-platforms-supported">
-                                <span>Supported:</span>
-                                <div class="platform-icons-mini">
-                                    <span title="Instagram">📸</span>
-                                    <span title="TikTok">🎵</span>
-                                    <span title="Twitter">🐦</span>
-                                    <span title="Facebook">📘</span>
-                                    <span title="YouTube">▶️</span>
-                                    <span title="Reddit">🤖</span>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Bulk Check -->
-                        <div class="tool-card">
-                            <div class="tool-header">
-                                <span class="tool-icon">⚡</span>
-                                <div>
-                                    <h3>Bulk Check</h3>
-                                    <span class="tool-badge pro">Pro Feature</span>
-                                </div>
-                            </div>
-                            <p class="tool-desc">Check all your monitored accounts at once with a single click.</p>
-                            
-                            <div class="tool-form">
-                                <div class="bulk-check-info">
-                                    <span class="bulk-count">8 accounts</span>
-                                    <span class="bulk-time">~2 minutes</span>
-                                </div>
-                                <button class="btn-tool-check btn-bulk" id="run-bulk-check">
-                                    <span>Check All Accounts</span>
-                                    <span>⚡</span>
-                                </button>
-                            </div>
-                            
-                            <div class="tool-last-run">
-                                <span>Last bulk check: Today at 9:32 AM</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Tool Results Area -->
-                    <div class="tool-results hidden" id="tool-results">
-                        <div class="tool-results-header">
-                            <h3 id="tool-results-title">Check Results</h3>
-                            <button class="btn-close-results" id="close-tool-results">×</button>
-                        </div>
-                        <div class="tool-results-content" id="tool-results-content">
-                            <!-- Results populated by JS -->
-                        </div>
-                    </div>
-                </section>
-                
-                <!-- ============================================================
-                     SECTION: REPORTS
-                     ============================================================ -->
-                <section id="reports" class="dashboard-section">
-                    <div class="section-header-dash">
-                        <div>
-                            <h1 class="section-title-dash">Reports</h1>
-                            <p class="section-subtitle-dash">Download and schedule detailed visibility reports</p>
-                        </div>
-                        <button class="btn-primary-dash" id="generate-report-btn">
-                            <span>📄</span>
-                            <span>Generate Report</span>
-                        </button>
-                    </div>
-                    
-                    <!-- Report Options -->
-                    <div class="reports-options">
-                        <div class="report-option-card">
-                            <div class="report-option-header">
-                                <span class="report-icon">📊</span>
-                                <h3>Full Status Report</h3>
-                            </div>
-                            <p>Complete analysis of all monitored accounts with recommendations.</p>
-                            <div class="report-formats">
-                                <button class="format-btn" data-format="pdf">📄 PDF</button>
-                                <button class="format-btn" data-format="csv">📊 CSV</button>
-                                <button class="format-btn" data-format="txt">📝 TXT</button>
-                            </div>
-                        </div>
-                        
-                        <div class="report-option-card">
-                            <div class="report-option-header">
-                                <span class="report-icon">📈</span>
-                                <h3>Historical Data</h3>
-                            </div>
-                            <p>Track visibility changes over time for trend analysis.</p>
-                            <div class="report-date-range">
-                                <select class="report-select" id="report-range">
-                                    <option value="7">Last 7 days</option>
-                                    <option value="30" selected>Last 30 days</option>
-                                    <option value="90">Last 90 days</option>
-                                    <option value="all">All time</option>
-                                </select>
-                            </div>
-                            <button class="btn-secondary-dash" id="export-history-btn">Export History</button>
-                        </div>
-                        
-                        <div class="report-option-card">
-                            <div class="report-option-header">
-                                <span class="report-icon">📅</span>
-                                <h3>Scheduled Reports</h3>
-                            </div>
-                            <p>Automatically receive reports via email on your schedule.</p>
-                            <div class="schedule-options">
-                                <label class="schedule-option">
-                                    <input type="radio" name="schedule" value="daily">
-                                    <span>Daily</span>
-                                </label>
-                                <label class="schedule-option">
-                                    <input type="radio" name="schedule" value="weekly" checked>
-                                    <span>Weekly</span>
-                                </label>
-                                <label class="schedule-option">
-                                    <input type="radio" name="schedule" value="monthly">
-                                    <span>Monthly</span>
-                                </label>
-                            </div>
-                            <button class="btn-secondary-dash" id="save-schedule-btn">Save Schedule</button>
-                        </div>
-                    </div>
-                    
-                    <!-- Recent Reports -->
-                    <div class="recent-reports">
-                        <h3>📁 Recent Reports</h3>
-                        <div class="reports-list" id="reports-list">
-                            <div class="report-item">
-                                <div class="report-item-info">
-                                    <span class="report-item-icon">📄</span>
-                                    <div>
-                                        <span class="report-item-name">Full Status Report - Nov 24, 2025</span>
-                                        <span class="report-item-meta">PDF • 2.4 MB • All accounts</span>
-                                    </div>
-                                </div>
-                                <div class="report-item-actions">
-                                    <button class="btn-icon" title="Download">⬇️</button>
-                                    <button class="btn-icon" title="View">👁️</button>
-                                    <button class="btn-icon" title="Delete">🗑️</button>
-                                </div>
-                            </div>
-                            <div class="report-item">
-                                <div class="report-item-info">
-                                    <span class="report-item-icon">📊</span>
-                                    <div>
-                                        <span class="report-item-name">Historical Data Export - Nov 20, 2025</span>
-                                        <span class="report-item-meta">CSV • 156 KB • 30 days</span>
-                                    </div>
-                                </div>
-                                <div class="report-item-actions">
-                                    <button class="btn-icon" title="Download">⬇️</button>
-                                    <button class="btn-icon" title="View">👁️</button>
-                                    <button class="btn-icon" title="Delete">🗑️</button>
-                                </div>
-                            </div>
-                            <div class="report-item">
-                                <div class="report-item-info">
-                                    <span class="report-item-icon">📄</span>
-                                    <div>
-                                        <span class="report-item-name">Weekly Summary - Nov 17, 2025</span>
-                                        <span class="report-item-meta">PDF • 1.8 MB • Scheduled</span>
-                                    </div>
-                                </div>
-                                <div class="report-item-actions">
-                                    <button class="btn-icon" title="Download">⬇️</button>
-                                    <button class="btn-icon" title="View">👁️</button>
-                                    <button class="btn-icon" title="Delete">🗑️</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-                
-                <!-- ============================================================
-                     SECTION: ALERTS & NOTIFICATIONS
-                     ============================================================ -->
-                <section id="alerts" class="dashboard-section">
-                    <div class="section-header-dash">
-                        <div>
-                            <h1 class="section-title-dash">Alerts & Notifications</h1>
-                            <p class="section-subtitle-dash">Configure how and when you want to be notified</p>
-                        </div>
-                    </div>
-                    
-                    <!-- Notification Settings -->
-                    <div class="alerts-settings">
-                        <div class="alerts-settings-card">
-                            <h3>📱 Notification Channels</h3>
-                            
-                            <div class="notification-channel">
-                                <div class="channel-info">
-                                    <span class="channel-icon">📧</span>
-                                    <div>
-                                        <span class="channel-name">Email Notifications</span>
-                                        <span class="channel-value" id="alert-email">john@example.com</span>
-                                    </div>
-                                </div>
-                                <label class="toggle-switch">
-                                    <input type="checkbox" id="email-toggle" checked>
-                                    <span class="toggle-slider"></span>
-                                </label>
-                            </div>
-                            
-                            <div class="notification-channel">
-                                <div class="channel-info">
-                                    <span class="channel-icon">📱</span>
-                                    <div>
-                                        <span class="channel-name">SMS Notifications</span>
-                                        <span class="channel-value" id="alert-phone">+1 (555) 123-4567</span>
-                                    </div>
-                                </div>
-                                <label class="toggle-switch">
-                                    <input type="checkbox" id="sms-toggle" checked>
-                                    <span class="toggle-slider"></span>
-                                </label>
-                            </div>
-                            
-                            <button class="btn-secondary-dash" id="update-contact-btn">Update Contact Info</button>
-                        </div>
-                        
-                        <div class="alerts-settings-card">
-                            <h3>🔔 Alert Triggers</h3>
-                            
-                            <div class="alert-trigger">
-                                <div class="trigger-info">
-                                    <span class="trigger-icon">🚫</span>
-                                    <span class="trigger-name">Shadow Ban Detected</span>
-                                </div>
-                                <label class="toggle-switch">
-                                    <input type="checkbox" checked>
-                                    <span class="toggle-slider"></span>
-                                </label>
-                            </div>
-                            
-                            <div class="alert-trigger">
-                                <div class="trigger-info">
-                                    <span class="trigger-icon">⚠️</span>
-                                    <span class="trigger-name">Reduced Visibility</span>
-                                </div>
-                                <label class="toggle-switch">
-                                    <input type="checkbox" checked>
-                                    <span class="toggle-slider"></span>
-                                </label>
-                            </div>
-                            
-                            <div class="alert-trigger">
-                                <div class="trigger-info">
-                                    <span class="trigger-icon">✅</span>
-                                    <span class="trigger-name">Account Restored</span>
-                                </div>
-                                <label class="toggle-switch">
-                                    <input type="checkbox" checked>
-                                    <span class="toggle-slider"></span>
-                                </label>
-                            </div>
-                            
-                            <div class="alert-trigger">
-                                <div class="trigger-info">
-                                    <span class="trigger-icon">📊</span>
-                                    <span class="trigger-name">Weekly Summary</span>
-                                </div>
-                                <label class="toggle-switch">
-                                    <input type="checkbox" checked>
-                                    <span class="toggle-slider"></span>
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Alert History -->
-                    <div class="alerts-history">
-                        <div class="alerts-history-header">
-                            <h3>📜 Alert History</h3>
-                            <select class="alerts-filter-select" id="alerts-history-filter">
-                                <option value="all">All Alerts</option>
-                                <option value="danger">Bans Only</option>
-                                <option value="warning">Warnings</option>
-                                <option value="success">Restored</option>
+                    <div class="tools-row">
+                        <div class="tool-box">
+                            <h3>🔍 Shadow Ban Check</h3>
+                            <p>Check any account for shadow ban indicators</p>
+                            <select id="tool-platform" class="input">
+                                <option value="">Platform...</option>
+                                <option value="instagram">Instagram</option>
+                                <option value="tiktok">TikTok</option>
+                                <option value="twitter">Twitter/X</option>
+                                <option value="facebook">Facebook</option>
+                                <option value="youtube">YouTube</option>
                             </select>
+                            <input type="text" id="tool-username" class="input" placeholder="@username">
+                            <button class="btn-primary" id="run-check">Check Now</button>
                         </div>
                         
-                        <div class="alerts-history-list" id="alerts-history-list">
-                            <div class="alert-history-item danger">
-                                <div class="alert-history-icon">🚫</div>
-                                <div class="alert-history-content">
-                                    <div class="alert-history-title">Shadow ban detected on TikTok</div>
-                                    <div class="alert-history-detail">@johndoe_tiktok - Content not appearing in FYP</div>
-                                    <div class="alert-history-time">Nov 24, 2025 at 2:34 PM</div>
-                                </div>
-                                <div class="alert-history-status">
-                                    <span class="status-badge active">Active</span>
-                                </div>
-                            </div>
-                            
-                            <div class="alert-history-item warning">
-                                <div class="alert-history-icon">⚠️</div>
-                                <div class="alert-history-content">
-                                    <div class="alert-history-title">Reduced reach detected on Instagram</div>
-                                    <div class="alert-history-detail">@johndoe - Hashtag visibility down 40%</div>
-                                    <div class="alert-history-time">Nov 23, 2025 at 10:15 AM</div>
-                                </div>
-                                <div class="alert-history-status">
-                                    <span class="status-badge active">Active</span>
-                                </div>
-                            </div>
-                            
-                            <div class="alert-history-item success">
-                                <div class="alert-history-icon">✅</div>
-                                <div class="alert-history-content">
-                                    <div class="alert-history-title">Twitter account fully restored</div>
-                                    <div class="alert-history-detail">@johndoe_x - All restrictions lifted</div>
-                                    <div class="alert-history-time">Nov 21, 2025 at 8:47 AM</div>
-                                </div>
-                                <div class="alert-history-status">
-                                    <span class="status-badge resolved">Resolved</span>
-                                </div>
-                            </div>
-                            
-                            <div class="alert-history-item info">
-                                <div class="alert-history-icon">📊</div>
-                                <div class="alert-history-content">
-                                    <div class="alert-history-title">Weekly summary sent</div>
-                                    <div class="alert-history-detail">All 8 accounts checked - 1 issue found</div>
-                                    <div class="alert-history-time">Nov 17, 2025 at 9:00 AM</div>
-                                </div>
-                                <div class="alert-history-status">
-                                    <span class="status-badge info">Info</span>
-                                </div>
-                            </div>
+                        <div class="tool-box">
+                            <h3>🏷️ Hashtag Check</h3>
+                            <p>Verify hashtags aren't banned</p>
+                            <select id="hashtag-platform" class="input">
+                                <option value="">Platform...</option>
+                                <option value="instagram">Instagram</option>
+                                <option value="tiktok">TikTok</option>
+                                <option value="twitter">Twitter/X</option>
+                            </select>
+                            <textarea id="hashtag-input" class="input" placeholder="#fitness #motivation" rows="2"></textarea>
+                            <button class="btn-primary" id="run-hashtag-check">Check Hashtags</button>
                         </div>
                         
-                        <button class="btn-load-more" id="load-more-alerts">Load More</button>
+                        <div class="tool-box">
+                            <h3>⚡ Bulk Check</h3>
+                            <p>Check all <span id="bulk-count">8</span> accounts at once</p>
+                            <button class="btn-primary btn-full" id="run-bulk">Check All Accounts</button>
+                        </div>
+                    </div>
+                    
+                    <div class="results-box hidden" id="results-box">
+                        <div class="results-header">
+                            <h3 id="results-title">Results</h3>
+                            <button class="btn-close" id="close-results">×</button>
+                        </div>
+                        <div id="results-content"></div>
                     </div>
                 </section>
                 
-                <!-- ============================================================
-                     SECTION: SETTINGS
-                     ============================================================ -->
-                <section id="settings" class="dashboard-section">
-                    <div class="section-header-dash">
+                <!-- REPORTS -->
+                <section id="reports" class="section">
+                    <div class="section-top">
                         <div>
-                            <h1 class="section-title-dash">Settings</h1>
-                            <p class="section-subtitle-dash">Manage your account, subscription, and preferences</p>
+                            <h1>Reports</h1>
+                            <p>Download and schedule reports</p>
                         </div>
                     </div>
                     
-                    <!-- Settings Tabs -->
-                    <div class="settings-tabs">
-                        <button class="settings-tab active" data-tab="profile">👤 Profile</button>
-                        <button class="settings-tab" data-tab="subscription">💳 Subscription</button>
-                        <button class="settings-tab" data-tab="billing">🧾 Billing</button>
-                        <button class="settings-tab" data-tab="frequency">⏱️ Check Frequency</button>
-                    </div>
-                    
-                    <!-- Profile Tab -->
-                    <div class="settings-panel active" id="panel-profile">
-                        <div class="settings-card">
-                            <h3>👤 Profile Information</h3>
-                            <div class="settings-form">
-                                <div class="form-row">
-                                    <div class="form-group-dash">
-                                        <label>First Name</label>
-                                        <input type="text" id="profile-first-name" value="John" class="settings-input">
-                                    </div>
-                                    <div class="form-group-dash">
-                                        <label>Last Name</label>
-                                        <input type="text" id="profile-last-name" value="Doe" class="settings-input">
-                                    </div>
-                                </div>
-                                <div class="form-group-dash">
-                                    <label>Email Address</label>
-                                    <input type="email" id="profile-email" value="john@example.com" class="settings-input">
-                                </div>
-                                <div class="form-group-dash">
-                                    <label>Phone Number (for SMS alerts)</label>
-                                    <input type="tel" id="profile-phone" value="+1 (555) 123-4567" class="settings-input">
-                                </div>
-                                <button class="btn-primary-dash" id="save-profile-btn">Save Changes</button>
+                    <div class="reports-row">
+                        <div class="report-box">
+                            <h3>📊 Status Report</h3>
+                            <p>Full analysis of all accounts</p>
+                            <div class="btn-row">
+                                <button class="btn-secondary">PDF</button>
+                                <button class="btn-secondary">CSV</button>
                             </div>
                         </div>
-                        
-                        <div class="settings-card">
-                            <h3>🔒 Change Password</h3>
-                            <div class="settings-form">
-                                <div class="form-group-dash">
-                                    <label>Current Password</label>
-                                    <input type="password" id="current-password" class="settings-input">
-                                </div>
-                                <div class="form-row">
-                                    <div class="form-group-dash">
-                                        <label>New Password</label>
-                                        <input type="password" id="new-password" class="settings-input">
-                                    </div>
-                                    <div class="form-group-dash">
-                                        <label>Confirm Password</label>
-                                        <input type="password" id="confirm-password" class="settings-input">
-                                    </div>
-                                </div>
-                                <button class="btn-secondary-dash" id="change-password-btn">Update Password</button>
+                        <div class="report-box">
+                            <h3>📈 History</h3>
+                            <p>Track changes over time</p>
+                            <select class="input" id="history-range">
+                                <option value="7">7 days</option>
+                                <option value="30">30 days</option>
+                                <option value="90">90 days</option>
+                            </select>
+                            <button class="btn-secondary btn-full">Export</button>
+                        </div>
+                        <div class="report-box">
+                            <h3>📅 Scheduled</h3>
+                            <p>Auto-send via email</p>
+                            <div class="radio-row">
+                                <label><input type="radio" name="sched" value="daily"> Daily</label>
+                                <label><input type="radio" name="sched" value="weekly" checked> Weekly</label>
                             </div>
+                            <button class="btn-secondary btn-full">Save</button>
                         </div>
                     </div>
                     
-                    <!-- Subscription Tab -->
-                    <div class="settings-panel" id="panel-subscription">
-                        <div class="current-plan-card">
-                            <div class="plan-header">
-                                <div class="plan-info">
-                                    <span class="plan-badge-large">⭐ Pro Plan</span>
-                                    <span class="plan-price-display">$9.99<span>/month</span></span>
-                                </div>
-                                <span class="plan-status active">Active</span>
+                    <div class="recent-section">
+                        <h3>Recent Downloads</h3>
+                        <div class="download-list">
+                            <div class="download-row">
+                                <span>📄 Status Report - Nov 24</span>
+                                <button class="btn-icon">⬇️</button>
                             </div>
-                            <div class="plan-features-display">
-                                <div class="feature-item-display">
-                                    <span>✓</span>
-                                    <span>15 monitored accounts</span>
-                                </div>
-                                <div class="feature-item-display">
-                                    <span>✓</span>
-                                    <span>10 AI questions/day</span>
-                                </div>
-                                <div class="feature-item-display">
-                                    <span>✓</span>
-                                    <span>Email + SMS alerts</span>
-                                </div>
-                                <div class="feature-item-display">
-                                    <span>✓</span>
-                                    <span>Unlimited checks</span>
-                                </div>
+                            <div class="download-row">
+                                <span>📊 History Export - Nov 20</span>
+                                <button class="btn-icon">⬇️</button>
                             </div>
-                            <div class="plan-renewal">
-                                <span>Next billing date: December 24, 2025</span>
-                            </div>
-                        </div>
-                        
-                        <h3 class="plans-heading">Change Your Plan</h3>
-                        
-                        <div class="plans-grid">
-                            <div class="plan-option-card">
-                                <div class="plan-option-header">
-                                    <h4>Starter</h4>
-                                    <span class="plan-option-price">$4.99<span>/mo</span></span>
-                                </div>
-                                <ul class="plan-option-features">
-                                    <li>5 accounts</li>
-                                    <li>3 AI questions/day</li>
-                                    <li>Daily checks</li>
-                                </ul>
-                                <button class="btn-plan-select downgrade" data-plan="starter">Downgrade</button>
-                            </div>
-                            
-                            <div class="plan-option-card current">
-                                <div class="current-badge">Current Plan</div>
-                                <div class="plan-option-header">
-                                    <h4>Pro</h4>
-                                    <span class="plan-option-price">$9.99<span>/mo</span></span>
-                                </div>
-                                <ul class="plan-option-features">
-                                    <li>15 accounts</li>
-                                    <li>10 AI questions/day</li>
-                                    <li>Every 6 hours</li>
-                                </ul>
-                                <button class="btn-plan-select" disabled>Current Plan</button>
-                            </div>
-                            
-                            <div class="plan-option-card">
-                                <div class="plan-option-header">
-                                    <h4>Premium</h4>
-                                    <span class="plan-option-price">$14.99<span>/mo</span></span>
-                                </div>
-                                <ul class="plan-option-features">
-                                    <li>50 accounts</li>
-                                    <li>25 AI questions/day</li>
-                                    <li>Hourly checks</li>
-                                </ul>
-                                <button class="btn-plan-select upgrade" data-plan="premium">Upgrade</button>
-                            </div>
-                        </div>
-                        
-                        <!-- Shadow AI Pro Add-on -->
-                        <div class="addon-section">
-                            <h3>🤖 Shadow AI Pro Add-on</h3>
-                            <p class="addon-desc">Need more AI questions? Add Shadow AI Pro for enhanced capabilities.</p>
-                            
-                            <div class="addon-options">
-                                <div class="addon-card">
-                                    <h4>AI Pro Starter</h4>
-                                    <span class="addon-price">+$9.99/mo</span>
-                                    <p>100 questions/day</p>
-                                    <button class="btn-addon" data-addon="ai-starter">Add</button>
-                                </div>
-                                <div class="addon-card">
-                                    <h4>AI Pro Power</h4>
-                                    <span class="addon-price">+$14.99/mo</span>
-                                    <p>200 questions/day</p>
-                                    <button class="btn-addon" data-addon="ai-power">Add</button>
-                                </div>
-                                <div class="addon-card">
-                                    <h4>AI Pro Unlimited</h4>
-                                    <span class="addon-price">+$19.99/mo</span>
-                                    <p>500 questions/day</p>
-                                    <button class="btn-addon" data-addon="ai-unlimited">Add</button>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Cancel Subscription -->
-                        <div class="cancel-section">
-                            <h3>Cancel Subscription</h3>
-                            <p>We're sorry to see you go. You can cancel anytime and your access will continue until the end of your billing period.</p>
-                            <button class="btn-cancel-sub" id="cancel-subscription-btn">Cancel Subscription</button>
-                        </div>
-                    </div>
-                    
-                    <!-- Billing Tab -->
-                    <div class="settings-panel" id="panel-billing">
-                        <div class="settings-card">
-                            <h3>💳 Payment Method</h3>
-                            <div class="payment-method-display">
-                                <div class="card-display">
-                                    <span class="card-icon">💳</span>
-                                    <div class="card-info">
-                                        <span class="card-type">Visa ending in 4242</span>
-                                        <span class="card-expiry">Expires 12/2026</span>
-                                    </div>
-                                </div>
-                                <button class="btn-secondary-dash" id="update-payment-btn">Update Card</button>
-                            </div>
-                        </div>
-                        
-                        <div class="settings-card">
-                            <h3>🧾 Billing History</h3>
-                            <div class="billing-history-list">
-                                <div class="billing-item">
-                                    <div class="billing-item-info">
-                                        <span class="billing-date">Nov 24, 2025</span>
-                                        <span class="billing-desc">Pro Plan - Monthly</span>
-                                    </div>
-                                    <div class="billing-item-amount">
-                                        <span class="billing-amount">$9.99</span>
-                                        <button class="btn-invoice">Invoice</button>
-                                    </div>
-                                </div>
-                                <div class="billing-item">
-                                    <div class="billing-item-info">
-                                        <span class="billing-date">Oct 24, 2025</span>
-                                        <span class="billing-desc">Pro Plan - Monthly</span>
-                                    </div>
-                                    <div class="billing-item-amount">
-                                        <span class="billing-amount">$9.99</span>
-                                        <button class="btn-invoice">Invoice</button>
-                                    </div>
-                                </div>
-                                <div class="billing-item">
-                                    <div class="billing-item-info">
-                                        <span class="billing-date">Sep 24, 2025</span>
-                                        <span class="billing-desc">Pro Plan - Monthly</span>
-                                    </div>
-                                    <div class="billing-item-amount">
-                                        <span class="billing-amount">$9.99</span>
-                                        <button class="btn-invoice">Invoice</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Check Frequency Tab -->
-                    <div class="settings-panel" id="panel-frequency">
-                        <div class="settings-card">
-                            <h3>⏱️ Check Frequency</h3>
-                            <p class="frequency-desc">Choose how often we check your monitored accounts. More frequent checks cost more.</p>
-                            
-                            <div class="frequency-options">
-                                <label class="frequency-option">
-                                    <input type="radio" name="frequency" value="daily">
-                                    <div class="frequency-content">
-                                        <div class="frequency-header">
-                                            <span class="frequency-name">Daily</span>
-                                            <span class="frequency-price">Base Price</span>
-                                        </div>
-                                        <p>Accounts checked once every 24 hours</p>
-                                    </div>
-                                </label>
-                                
-                                <label class="frequency-option selected">
-                                    <input type="radio" name="frequency" value="6hours" checked>
-                                    <div class="frequency-content">
-                                        <div class="frequency-header">
-                                            <span class="frequency-name">Every 6 Hours</span>
-                                            <span class="frequency-price">+$2/mo</span>
-                                        </div>
-                                        <p>Accounts checked 4 times per day</p>
-                                        <span class="frequency-badge current">Current</span>
-                                    </div>
-                                </label>
-                                
-                                <label class="frequency-option">
-                                    <input type="radio" name="frequency" value="hourly">
-                                    <div class="frequency-content">
-                                        <div class="frequency-header">
-                                            <span class="frequency-name">Hourly</span>
-                                            <span class="frequency-price">+$5/mo</span>
-                                        </div>
-                                        <p>Accounts checked every hour for maximum protection</p>
-                                    </div>
-                                </label>
-                            </div>
-                            
-                            <div class="frequency-summary">
-                                <div class="summary-row">
-                                    <span>Base Plan (Pro)</span>
-                                    <span>$9.99</span>
-                                </div>
-                                <div class="summary-row">
-                                    <span>Frequency Adjustment</span>
-                                    <span id="frequency-adjustment">+$2.00</span>
-                                </div>
-                                <div class="summary-row total">
-                                    <span>New Monthly Total</span>
-                                    <span id="frequency-total">$11.99</span>
-                                </div>
-                            </div>
-                            
-                            <button class="btn-primary-dash" id="save-frequency-btn">Save Frequency</button>
                         </div>
                     </div>
                 </section>
                 
-                <!-- ============================================================
-                     SECTION: SUPPORT
-                     ============================================================ -->
-                <section id="support" class="dashboard-section">
-                    <div class="section-header-dash">
+                <!-- ALERTS -->
+                <section id="alerts" class="section">
+                    <div class="section-top">
                         <div>
-                            <h1 class="section-title-dash">Support</h1>
-                            <p class="section-subtitle-dash">Get help or connect directly with the developer</p>
+                            <h1>Alerts & Notifications</h1>
+                            <p>Configure your notification preferences</p>
                         </div>
                     </div>
                     
-                    <!-- Support Options -->
-                    <div class="support-grid">
-                        <!-- Shadow AI Help -->
-                        <div class="support-card">
-                            <span class="support-icon">🤖</span>
-                            <h3>Chat with Shadow AI</h3>
-                            <p>Get instant answers about shadow bans, platform issues, and recovery strategies.</p>
-                            <button class="btn-primary-dash" id="open-ai-support">
-                                <span>Open Shadow AI</span>
-                                <span>→</span>
-                            </button>
-                            <span class="support-note">AI questions: <span id="support-ai-remaining">3</span> remaining today</span>
+                    <div class="alerts-row">
+                        <div class="alerts-box">
+                            <h3>📱 Channels</h3>
+                            <div class="toggle-row">
+                                <span>📧 Email</span>
+                                <label class="toggle"><input type="checkbox" checked><span class="slider"></span></label>
+                            </div>
+                            <div class="toggle-row">
+                                <span>📱 SMS</span>
+                                <label class="toggle"><input type="checkbox" checked><span class="slider"></span></label>
+                            </div>
                         </div>
-                        
-                        <!-- Email Support -->
-                        <div class="support-card">
-                            <span class="support-icon">📧</span>
-                            <h3>Email Support</h3>
-                            <p>Send us a message and we'll get back to you within 24 hours.</p>
-                            <a href="mailto:andrew@ghost081280.com" class="btn-secondary-dash">
-                                <span>andrew@ghost081280.com</span>
-                            </a>
-                        </div>
-                        
-                        <!-- Connect with the Dev -->
-                        <div class="support-card featured">
-                            <span class="support-icon">👨‍💻</span>
-                            <h3>Connect with the Dev</h3>
-                            <p>Reach out directly to Andrew for feedback, feature requests, or just to say hi!</p>
-                            <div class="dev-social-links">
-                                <a href="https://x.com/Ghost081280" target="_blank" rel="noopener" class="dev-social-link" title="Twitter/X">
-                                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-                                    <span>@Ghost081280</span>
-                                </a>
-                                <a href="https://www.linkedin.com/in/andrewcouch" target="_blank" rel="noopener" class="dev-social-link" title="LinkedIn">
-                                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
-                                    <span>LinkedIn</span>
-                                </a>
-                                <a href="https://github.com/Ghost081280" target="_blank" rel="noopener" class="dev-social-link" title="GitHub">
-                                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
-                                    <span>GitHub</span>
-                                </a>
+                        <div class="alerts-box">
+                            <h3>🔔 Alert Types</h3>
+                            <div class="toggle-row">
+                                <span>Shadow Ban</span>
+                                <label class="toggle"><input type="checkbox" checked><span class="slider"></span></label>
+                            </div>
+                            <div class="toggle-row">
+                                <span>Reduced Reach</span>
+                                <label class="toggle"><input type="checkbox" checked><span class="slider"></span></label>
+                            </div>
+                            <div class="toggle-row">
+                                <span>Restored</span>
+                                <label class="toggle"><input type="checkbox" checked><span class="slider"></span></label>
                             </div>
                         </div>
                     </div>
                     
-                    <!-- Contact Form -->
-                    <div class="support-form-section">
-                        <h3>📝 Send a Message</h3>
-                        <form class="support-form" id="support-form">
+                    <div class="history-section">
+                        <h3>Alert History</h3>
+                        <div class="history-list">
+                            <div class="history-item danger">
+                                <span class="dot"></span>
+                                <div class="history-text">
+                                    <strong>Shadow ban on TikTok</strong>
+                                    <span>@johndoe_tiktok • Nov 24</span>
+                                </div>
+                                <span class="badge danger">Active</span>
+                            </div>
+                            <div class="history-item warning">
+                                <span class="dot"></span>
+                                <div class="history-text">
+                                    <strong>Reduced reach on Instagram</strong>
+                                    <span>@johndoe • Nov 23</span>
+                                </div>
+                                <span class="badge warning">Active</span>
+                            </div>
+                            <div class="history-item success">
+                                <span class="dot"></span>
+                                <div class="history-text">
+                                    <strong>Twitter restored</strong>
+                                    <span>@johndoe_x • Nov 21</span>
+                                </div>
+                                <span class="badge success">Resolved</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                
+                <!-- SETTINGS -->
+                <section id="settings" class="section">
+                    <div class="section-top">
+                        <div>
+                            <h1>Settings</h1>
+                            <p>Manage account and subscription</p>
+                        </div>
+                    </div>
+                    
+                    <div class="tabs">
+                        <button class="tab active" data-tab="profile">Profile</button>
+                        <button class="tab" data-tab="subscription">Subscription</button>
+                        <button class="tab" data-tab="billing">Billing</button>
+                    </div>
+                    
+                    <div class="tab-panel active" id="panel-profile">
+                        <div class="form-card">
+                            <h3>Profile</h3>
                             <div class="form-row">
-                                <div class="form-group-dash">
-                                    <label>Your Name</label>
-                                    <input type="text" id="support-name" class="settings-input" value="John Doe" readonly>
+                                <div class="form-group">
+                                    <label>First Name</label>
+                                    <input type="text" class="input" id="profile-fname" value="John">
                                 </div>
-                                <div class="form-group-dash">
-                                    <label>Your Email</label>
-                                    <input type="email" id="support-email" class="settings-input" value="john@example.com" readonly>
+                                <div class="form-group">
+                                    <label>Last Name</label>
+                                    <input type="text" class="input" id="profile-lname" value="Doe">
                                 </div>
                             </div>
-                            <div class="form-group-dash">
-                                <label>Subject</label>
-                                <select id="support-subject" class="settings-input">
-                                    <option value="">Choose a topic...</option>
-                                    <option value="platform-suggestion">Suggest a Platform</option>
-                                    <option value="bug-report">Report a Bug</option>
-                                    <option value="feature-request">Feature Request</option>
-                                    <option value="billing">Billing Question</option>
-                                    <option value="other">Other</option>
-                                </select>
+                            <div class="form-group">
+                                <label>Email</label>
+                                <input type="email" class="input" id="profile-email" value="john@example.com">
                             </div>
-                            <div class="form-group-dash">
-                                <label>Message</label>
-                                <textarea id="support-message" class="settings-textarea" rows="5" placeholder="How can we help you?"></textarea>
+                            <button class="btn-primary">Save Changes</button>
+                        </div>
+                    </div>
+                    
+                    <div class="tab-panel" id="panel-subscription">
+                        <div class="current-plan-box">
+                            <div class="plan-top">
+                                <span class="plan-name">⭐ Pro Plan</span>
+                                <span class="plan-price">$9.99/mo</span>
                             </div>
-                            <button type="submit" class="btn-primary-dash">
-                                <span>Send Message</span>
-                                <span>→</span>
-                            </button>
+                            <p>15 accounts • 10 AI questions/day • Email + SMS alerts</p>
+                            <p class="renewal">Next billing: Dec 24, 2025</p>
+                        </div>
+                        
+                        <h3>Change Plan</h3>
+                        <div class="plans-row">
+                            <div class="plan-card">
+                                <h4>Starter</h4>
+                                <span class="price">$4.99/mo</span>
+                                <p>5 accounts</p>
+                                <button class="btn-secondary">Downgrade</button>
+                            </div>
+                            <div class="plan-card current">
+                                <h4>Pro</h4>
+                                <span class="price">$9.99/mo</span>
+                                <p>15 accounts</p>
+                                <button class="btn-secondary" disabled>Current</button>
+                            </div>
+                            <div class="plan-card">
+                                <h4>Premium</h4>
+                                <span class="price">$14.99/mo</span>
+                                <p>50 accounts</p>
+                                <button class="btn-primary">Upgrade</button>
+                            </div>
+                        </div>
+                        
+                        <button class="btn-danger" id="cancel-btn">Cancel Subscription</button>
+                    </div>
+                    
+                    <div class="tab-panel" id="panel-billing">
+                        <div class="form-card">
+                            <h3>Payment Method</h3>
+                            <div class="payment-row">
+                                <span>💳 Visa •••• 4242</span>
+                                <button class="btn-secondary">Update</button>
+                            </div>
+                        </div>
+                        <div class="form-card">
+                            <h3>History</h3>
+                            <div class="billing-row">
+                                <span>Nov 24, 2025</span>
+                                <span>$9.99</span>
+                                <button class="btn-link">Invoice</button>
+                            </div>
+                            <div class="billing-row">
+                                <span>Oct 24, 2025</span>
+                                <span>$9.99</span>
+                                <button class="btn-link">Invoice</button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                
+                <!-- SUPPORT -->
+                <section id="support" class="section">
+                    <div class="section-top">
+                        <div>
+                            <h1>Support</h1>
+                            <p>Get help or connect with the developer</p>
+                        </div>
+                    </div>
+                    
+                    <div class="support-row">
+                        <div class="support-box">
+                            <span class="big-icon">🤖</span>
+                            <h3>Shadow AI</h3>
+                            <p>Instant answers about shadow bans</p>
+                            <button class="btn-primary" id="open-ai">Open AI Chat</button>
+                        </div>
+                        <div class="support-box">
+                            <span class="big-icon">📧</span>
+                            <h3>Email</h3>
+                            <p>We respond within 24 hours</p>
+                            <a href="mailto:andrew@ghost081280.com" class="btn-secondary">andrew@ghost081280.com</a>
+                        </div>
+                        <div class="support-box highlight">
+                            <span class="big-icon">👨‍💻</span>
+                            <h3>Connect with Dev</h3>
+                            <p>Reach Andrew directly</p>
+                            <div class="social-row">
+                                <a href="https://x.com/Ghost081280" target="_blank">𝕏</a>
+                                <a href="https://linkedin.com/in/andrewcouch" target="_blank">in</a>
+                                <a href="https://github.com/Ghost081280" target="_blank">GH</a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-card">
+                        <h3>Send Message</h3>
+                        <form id="support-form">
+                            <select class="input" id="support-topic">
+                                <option value="">Select topic...</option>
+                                <option value="bug">Bug Report</option>
+                                <option value="feature">Feature Request</option>
+                                <option value="billing">Billing</option>
+                                <option value="other">Other</option>
+                            </select>
+                            <textarea class="input" id="support-msg" placeholder="How can we help?" rows="3"></textarea>
+                            <button type="submit" class="btn-primary">Send</button>
                         </form>
                     </div>
-                    
-                    <!-- FAQ Quick Links -->
-                    <div class="support-faq">
-                        <h3>❓ Frequently Asked Questions</h3>
-                        <div class="faq-links">
-                            <a href="index.html#faq" target="_blank" class="faq-link">How do probability scores work?</a>
-                            <a href="index.html#faq" target="_blank" class="faq-link">How long does it take?</a>
-                            <a href="index.html#faq" target="_blank" class="faq-link">Is my data safe?</a>
-                            <a href="index.html#faq" target="_blank" class="faq-link">Can I cancel anytime?</a>
-                            <a href="index.html#faq" target="_blank" class="faq-link">What is Shadow AI Pro?</a>
-                            <a href="index.html#faq" target="_blank" class="faq-link">Which platforms do you check?</a>
-                        </div>
-                    </div>
                 </section>
                 
-            </div>
-            
-            <!-- Dashboard Footer -->
-            <footer class="dashboard-footer">
-                <div class="footer-content-dash">
-                    <p>&copy; 2025 ShadowBanCheck.io. All rights reserved.</p>
-                    <div class="footer-links-dash">
-                        <a href="index.html" target="_blank">Home</a>
-                        <a href="index.html#faq" target="_blank">FAQ</a>
-                        <a href="#" onclick="alert('Terms coming soon!'); return false;">Terms</a>
-                        <a href="#" onclick="alert('Privacy coming soon!'); return false;">Privacy</a>
+                <!-- Footer -->
+                <footer class="footer">
+                    <div class="footer-links">
+                        <a href="index.html">Home</a>
+                        <a href="index.html#faq">FAQ</a>
+                        <a href="#">Terms</a>
+                        <a href="#">Privacy</a>
                     </div>
-                </div>
-            </footer>
+                    <span>© 2025 ShadowBanCheck.io</span>
+                </footer>
+            </div>
         </main>
     </div>
     
-    <!-- Modals -->
-    
-    <!-- Add Account Modal -->
-    <div class="modal-overlay hidden" id="add-account-modal">
-        <div class="modal-dash">
-            <div class="modal-header-dash">
-                <h2>➕ Add Account to Monitor</h2>
-                <button class="modal-close-dash" data-close-modal>&times;</button>
+    <!-- Modal -->
+    <div class="modal-overlay hidden" id="modal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 id="modal-title">Add Account</h2>
+                <button class="btn-close" id="modal-close">×</button>
             </div>
-            <div class="modal-body-dash">
-                <div class="form-group-dash">
-                    <label>Platform</label>
-                    <select id="add-account-platform" class="settings-input">
-                        <option value="">Select a platform...</option>
-                        <option value="instagram">📸 Instagram</option>
-                        <option value="tiktok">🎵 TikTok</option>
-                        <option value="twitter">🐦 Twitter/X</option>
-                        <option value="facebook">📘 Facebook</option>
-                        <option value="youtube">▶️ YouTube</option>
-                        <option value="linkedin">💼 LinkedIn</option>
-                        <option value="reddit">🤖 Reddit</option>
-                        <option value="pinterest">📌 Pinterest</option>
-                        <option value="threads">🧵 Threads</option>
-                        <option value="snapchat">👻 Snapchat</option>
-                        <option value="whatsapp">💬 WhatsApp</option>
-                        <option value="telegram">✈️ Telegram</option>
-                        <option value="discord">🎮 Discord</option>
-                        <option value="amazon">📦 Amazon</option>
-                        <option value="ebay">🏷️ eBay</option>
-                        <option value="etsy">🎨 Etsy</option>
-                    </select>
-                </div>
-                <div class="form-group-dash">
-                    <label>Username or Profile URL</label>
-                    <input type="text" id="add-account-username" class="settings-input" placeholder="@username or https://...">
-                </div>
-                <div class="form-group-dash">
-                    <label>Nickname (optional)</label>
-                    <input type="text" id="add-account-nickname" class="settings-input" placeholder="e.g., My Business Account">
-                </div>
-            </div>
-            <div class="modal-footer-dash">
-                <button class="btn-secondary-dash" data-close-modal>Cancel</button>
-                <button class="btn-primary-dash" id="confirm-add-account">Add Account</button>
-            </div>
+            <div class="modal-body" id="modal-body"></div>
+            <div class="modal-footer" id="modal-footer"></div>
         </div>
     </div>
     
-    <!-- Update Contact Modal -->
-    <div class="modal-overlay hidden" id="update-contact-modal">
-        <div class="modal-dash">
-            <div class="modal-header-dash">
-                <h2>📱 Update Contact Information</h2>
-                <button class="modal-close-dash" data-close-modal>&times;</button>
-            </div>
-            <div class="modal-body-dash">
-                <div class="form-group-dash">
-                    <label>Email Address</label>
-                    <input type="email" id="update-email" class="settings-input" value="john@example.com">
-                </div>
-                <div class="form-group-dash">
-                    <label>Phone Number (for SMS alerts)</label>
-                    <input type="tel" id="update-phone" class="settings-input" value="+1 (555) 123-4567">
-                    <span class="input-help">We'll send SMS alerts to this number when issues are detected.</span>
-                </div>
-            </div>
-            <div class="modal-footer-dash">
-                <button class="btn-secondary-dash" data-close-modal>Cancel</button>
-                <button class="btn-primary-dash" id="confirm-update-contact">Save Changes</button>
-            </div>
+    <!-- Toast -->
+    <div class="toast hidden" id="toast">
+        <span id="toast-icon">✅</span>
+        <span id="toast-message">Success</span>
+    </div>
+    
+    <!-- Shadow AI Button -->
+    <button class="ai-fab" id="ai-fab">🤖 Shadow AI</button>
+    
+    <!-- Shadow AI Chat -->
+    <div class="ai-panel hidden" id="ai-panel">
+        <div class="ai-header">
+            <span>🤖 Shadow AI</span>
+            <span class="ai-count" id="ai-count">7/10 today</span>
+            <button id="ai-close">×</button>
+        </div>
+        <div class="ai-messages" id="ai-messages"></div>
+        <div class="ai-input-row">
+            <input type="text" id="ai-input" placeholder="Ask about shadow bans...">
+            <button id="ai-send">Send</button>
         </div>
     </div>
     
-    <!-- Cancel Subscription Modal -->
-    <div class="modal-overlay hidden" id="cancel-modal">
-        <div class="modal-dash">
-            <div class="modal-header-dash">
-                <h2>😢 Cancel Subscription</h2>
-                <button class="modal-close-dash" data-close-modal>&times;</button>
-            </div>
-            <div class="modal-body-dash">
-                <p class="cancel-warning">Are you sure you want to cancel? You'll lose access to:</p>
-                <ul class="cancel-list">
-                    <li>🔍 Unlimited shadow ban checks</li>
-                    <li>🏷️ Unlimited hashtag checks</li>
-                    <li>🔔 Real-time monitoring & alerts</li>
-                    <li>🤖 Shadow AI questions</li>
-                    <li>📄 Detailed reports</li>
-                </ul>
-                <p class="cancel-note">Your access will continue until <strong>December 24, 2025</strong>.</p>
-                <div class="form-group-dash">
-                    <label>Why are you canceling? (optional)</label>
-                    <select id="cancel-reason" class="settings-input">
-                        <option value="">Select a reason...</option>
-                        <option value="too-expensive">Too expensive</option>
-                        <option value="not-using">Not using it enough</option>
-                        <option value="missing-features">Missing features I need</option>
-                        <option value="found-alternative">Found an alternative</option>
-                        <option value="temporary">Just need a break</option>
-                        <option value="other">Other</option>
-                    </select>
-                </div>
-            </div>
-            <div class="modal-footer-dash">
-                <button class="btn-primary-dash" data-close-modal>Keep My Subscription</button>
-                <button class="btn-cancel-confirm" id="confirm-cancel">Yes, Cancel</button>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Upgrade/Downgrade Confirmation Modal -->
-    <div class="modal-overlay hidden" id="plan-change-modal">
-        <div class="modal-dash">
-            <div class="modal-header-dash">
-                <h2 id="plan-change-title">Confirm Plan Change</h2>
-                <button class="modal-close-dash" data-close-modal>&times;</button>
-            </div>
-            <div class="modal-body-dash">
-                <div class="plan-change-summary" id="plan-change-summary">
-                    <!-- Populated by JS -->
-                </div>
-            </div>
-            <div class="modal-footer-dash">
-                <button class="btn-secondary-dash" data-close-modal>Cancel</button>
-                <button class="btn-primary-dash" id="confirm-plan-change">Confirm Change</button>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Toast Notification -->
-    <div class="toast-dash hidden" id="toast-dash">
-        <span class="toast-icon" id="toast-icon">✅</span>
-        <span class="toast-message" id="toast-message">Changes saved successfully!</span>
-    </div>
-    
-    <!-- Shadow AI Widget -->
-    <button id="shadow-ai-btn" class="copilot-btn">
-        <span class="copilot-emoji">🤖</span>
-        <span>Shadow AI</span>
-    </button>
-    
-    <div id="shadow-ai-chat" class="copilot-chat hidden">
-        <div class="copilot-header">
-            <div class="copilot-title">
-                <span class="copilot-emoji">🤖</span>
-                <span>Shadow AI</span>
-                <span class="ai-questions-badge" id="ai-questions-badge">7/10</span>
-            </div>
-            <button id="shadow-ai-close" class="copilot-close">&times;</button>
-        </div>
-        <div id="shadow-ai-messages" class="copilot-messages"></div>
-        <div class="copilot-input">
-            <input type="text" id="shadow-ai-input" placeholder="Ask about shadow bans...">
-            <button id="shadow-ai-send">Send</button>
-        </div>
-    </div>
-    
-    <!-- Scripts -->
-    <script src="js/main.js"></script>
     <script src="js/dashboard.js"></script>
-    <script src="js/shadow-ai.js"></script>
 </body>
 </html>

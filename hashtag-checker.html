@@ -9,6 +9,10 @@
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/shadow-ai.css">
     <style>
+        /* =============================================================================
+           SHARED STYLES - Copy these to checker.html and results.html for consistency
+           ============================================================================= */
+        
         /* How It Works - Compact (same as index.html) */
         .how-grid-compact {
             display: grid;
@@ -23,13 +27,15 @@
             border: 1px solid var(--border);
             border-radius: 0.75rem;
             padding: 1.25rem;
+            transition: all 0.3s ease;
+        }
+        .how-item-compact:hover {
+            border-color: var(--primary);
+            transform: translateY(-2px);
         }
         .how-icon-compact { font-size: 1.75rem; flex-shrink: 0; }
         .how-item-compact strong { display: block; margin-bottom: 0.25rem; }
         .how-item-compact p { color: var(--text-muted); font-size: 0.875rem; margin: 0; line-height: 1.5; }
-        @media (max-width: 768px) {
-            .how-grid-compact { grid-template-columns: 1fr; }
-        }
         
         /* Search Counter Module (same as checker.html) */
         .search-counter-module {
@@ -44,11 +50,7 @@
             max-width: 600px;
             margin: 0 auto;
         }
-        .counter-content {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
+        .counter-content { display: flex; align-items: center; gap: 1rem; }
         .counter-icon { font-size: 2rem; }
         .counter-text h3 { font-size: 1rem; margin: 0 0 0.25rem 0; }
         .counter-text p { margin: 0; color: var(--text-muted); font-size: 0.875rem; }
@@ -61,30 +63,15 @@
             font-weight: 600;
             font-size: 0.875rem;
             white-space: nowrap;
+            transition: all 0.3s ease;
         }
         .btn-counter:hover { transform: translateY(-2px); box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4); }
-        @media (max-width: 768px) {
-            .search-counter-module {
-                flex-direction: column;
-                text-align: center;
-                padding: 1.25rem;
-                gap: 1rem;
-            }
-            .counter-content {
-                flex-direction: column;
-                gap: 0.5rem;
-            }
-            .btn-counter {
-                width: 100%;
-                text-align: center;
-            }
-        }
         
         /* Data Sources - Compact (same as checker.html) */
         .data-sources-section { padding: var(--space-xl) 0; background: var(--bg-secondary); }
         .sources-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            grid-template-columns: repeat(6, 1fr);
             gap: 1rem;
             margin-top: 1.5rem;
         }
@@ -100,13 +87,24 @@
         .source-icon { font-size: 1.5rem; margin-bottom: 0.5rem; display: block; }
         .source-card h3 { font-size: 0.875rem; margin: 0 0 0.25rem 0; }
         .source-card p { color: var(--text-muted); font-size: 0.75rem; line-height: 1.4; margin: 0; }
-        @media (max-width: 768px) {
-            .sources-grid {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 0.75rem;
-            }
-            .source-card { padding: 0.875rem; }
+        
+        /* CTA Module */
+        .cta-module {
+            background: var(--card);
+            border: 2px solid var(--primary);
+            border-radius: var(--radius-xl);
+            padding: var(--space-2xl);
+            text-align: center;
+            box-shadow: 0 8px 32px rgba(99, 102, 241, 0.15);
         }
+        .cta-module h2 { font-size: 1.5rem; margin-bottom: 0.5rem; }
+        .cta-module > p { color: var(--text-muted); margin-bottom: var(--space-lg); }
+        .cta-icon-large { font-size: 3rem; display: block; margin-bottom: var(--space-md); }
+        .cta-buttons { display: flex; gap: var(--space-md); justify-content: center; flex-wrap: wrap; }
+        
+        /* =============================================================================
+           PAGE-SPECIFIC STYLES - Hashtag Checker Only
+           ============================================================================= */
         
         /* Checker Meta Row */
         .checker-meta {
@@ -121,7 +119,7 @@
             color: var(--text-muted);
         }
         #hashtag-count { color: var(--primary); font-weight: 600; }
-        .meta-dot { opacity: 0.5; }
+        .meta-dot { opacity: 0.4; }
         .meta-link {
             background: none;
             border: none;
@@ -133,55 +131,87 @@
             font-family: inherit;
         }
         .meta-link:hover { color: var(--primary-light); }
-        @media (max-width: 768px) {
-            .checker-meta { flex-wrap: wrap; gap: var(--space-xs); }
-        }
         
-        /* Results Display */
-        .results-summary {
-            display: flex;
-            gap: var(--space-md);
-            justify-content: center;
-            margin-bottom: var(--space-lg);
-            flex-wrap: wrap;
+        /* Results Section */
+        .results-section { padding: var(--space-xl) 0; background: var(--bg); }
+        .results-module {
+            background: var(--card);
+            border: 2px solid var(--primary);
+            border-radius: var(--radius-xl);
+            padding: var(--space-xl);
+            box-shadow: 0 8px 32px rgba(99, 102, 241, 0.15);
         }
-        .stat-pill {
-            padding: var(--space-xs) var(--space-md);
+        .results-header-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: var(--space-md);
+            margin-bottom: var(--space-lg);
+            padding-bottom: var(--space-lg);
+            border-bottom: 1px solid var(--border);
+        }
+        .results-title { display: flex; align-items: center; gap: var(--space-sm); }
+        .results-title h3 { font-size: 1.25rem; margin: 0; }
+        .results-summary { display: flex; gap: var(--space-sm); flex-wrap: wrap; }
+        .stat-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.5rem 1rem;
             border-radius: var(--radius-full);
             font-size: 0.875rem;
             font-weight: 600;
         }
-        .stat-pill.safe { background: rgba(16, 185, 129, 0.15); color: #10b981; }
-        .stat-pill.banned { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
-        .stat-pill.warning { background: rgba(245, 158, 11, 0.15); color: #f59e0b; }
-        .results-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: var(--space-sm);
+        .stat-badge.safe { background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); }
+        .stat-badge.banned { background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); }
+        .stat-badge.restricted { background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); }
+        
+        /* Results Grid */
+        .results-grid-wrap {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: var(--space-md);
             margin-bottom: var(--space-lg);
             max-height: 300px;
             overflow-y: auto;
-            padding: var(--space-md);
-            background: var(--bg);
-            border-radius: var(--radius-md);
         }
-        .result-tag {
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: var(--space-sm);
+        }
+        .hashtag-result {
             display: flex;
             align-items: center;
             gap: var(--space-sm);
-            padding: var(--space-sm) var(--space-md);
+            padding: 0.75rem 1rem;
             background: var(--card);
             border: 1px solid var(--border);
             border-radius: var(--radius-sm);
-            font-size: 0.875rem;
-            border-left: 3px solid var(--border);
+            border-left: 4px solid var(--border);
         }
-        .result-tag.safe { border-left-color: #10b981; }
-        .result-tag.banned { border-left-color: #ef4444; }
-        .result-tag.restricted { border-left-color: #f59e0b; }
-        .result-tag .status-icon { font-size: 1rem; }
-        .result-tag .tag-name { flex: 1; font-weight: 500; }
-        .result-tag .platforms { display: flex; gap: 2px; font-size: 0.6875rem; opacity: 0.7; }
+        .hashtag-result.safe { border-left-color: #10b981; }
+        .hashtag-result.banned { border-left-color: #ef4444; background: rgba(239, 68, 68, 0.05); }
+        .hashtag-result.restricted { border-left-color: #f59e0b; background: rgba(245, 158, 11, 0.05); }
+        .hashtag-status { font-size: 1.125rem; flex-shrink: 0; }
+        .hashtag-info { flex: 1; min-width: 0; }
+        .hashtag-name { font-weight: 600; font-size: 0.9375rem; }
+        .hashtag-reason { font-size: 0.75rem; color: var(--text-muted); margin-top: 0.125rem; }
+        .hashtag-platforms { display: flex; gap: 0.25rem; }
+        .platform-icon {
+            width: 22px; height: 22px;
+            display: flex; align-items: center; justify-content: center;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            font-size: 0.6875rem;
+        }
+        .platform-icon.banned { background: rgba(239, 68, 68, 0.15); border-color: rgba(239, 68, 68, 0.3); }
+        .platform-icon.restricted { background: rgba(245, 158, 11, 0.15); border-color: rgba(245, 158, 11, 0.3); }
+        
+        /* Results Actions */
         .results-actions {
             display: flex;
             gap: var(--space-sm);
@@ -189,51 +219,88 @@
             flex-wrap: wrap;
         }
         .btn-action {
-            padding: var(--space-sm) var(--space-md);
-            background: var(--card);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.625rem 1.25rem;
+            background: var(--bg);
             border: 1px solid var(--border);
-            border-radius: var(--radius-sm);
+            border-radius: var(--radius-md);
             color: var(--text);
-            font-size: 0.8125rem;
+            font-size: 0.875rem;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.2s ease;
             font-family: inherit;
         }
         .btn-action:hover { border-color: var(--primary); color: var(--primary); }
-        @media (max-width: 768px) {
-            .results-grid { grid-template-columns: 1fr; }
-            .results-actions { flex-direction: column; }
-            .btn-action { width: 100%; }
+        
+        /* Results CTA */
+        .results-cta {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(245, 158, 11, 0.1) 100%);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            border-radius: var(--radius-md);
+            padding: var(--space-lg);
+            margin-top: var(--space-lg);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: var(--space-lg);
+            flex-wrap: wrap;
         }
+        .results-cta-content { display: flex; align-items: center; gap: var(--space-md); }
+        .results-cta-icon { font-size: 2rem; }
+        .results-cta h4 { font-size: 1rem; margin: 0 0 0.25rem 0; color: #ef4444; }
+        .results-cta p { margin: 0; font-size: 0.875rem; color: var(--text-muted); }
+        .btn-cta-inline {
+            background: linear-gradient(135deg, var(--primary) 0%, #8b5cf6 100%);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--radius-md);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.875rem;
+            white-space: nowrap;
+            transition: all 0.3s ease;
+        }
+        .btn-cta-inline:hover { transform: translateY(-2px); box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4); }
         
         /* Trending Section */
-        .trending-section {
-            padding: var(--space-xl) 0;
-            background: var(--card);
+        .trending-section { padding: var(--space-xl) 0; background: var(--card); }
+        .trending-module {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-xl);
+            padding: var(--space-xl);
         }
-        .trending-meta {
-            text-align: center;
+        .trending-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: var(--space-md);
             margin-bottom: var(--space-lg);
         }
+        .trending-header h3 { font-size: 1.25rem; margin: 0 0 0.25rem 0; }
+        .trending-header p { color: var(--text-muted); font-size: 0.875rem; margin: 0; }
         .update-badge {
-            display: inline-block;
             font-size: 0.75rem;
             color: var(--text-muted);
-            background: var(--bg);
-            padding: var(--space-xs) var(--space-md);
+            background: var(--card);
+            padding: 0.375rem 0.75rem;
             border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
         }
         .filter-row {
             display: flex;
             justify-content: center;
-            gap: var(--space-xs);
+            gap: 0.5rem;
             margin-bottom: var(--space-lg);
             flex-wrap: wrap;
         }
         .filter-btn {
-            padding: var(--space-xs) var(--space-md);
-            background: var(--bg);
+            padding: 0.5rem 1rem;
+            background: var(--card);
             border: 1px solid var(--border);
             border-radius: var(--radius-full);
             color: var(--text-muted);
@@ -245,43 +312,48 @@
         }
         .filter-btn:hover { border-color: var(--primary); color: var(--text); }
         .filter-btn.active { background: var(--primary); border-color: var(--primary); color: white; }
-        .trending-tags {
-            display: flex;
-            flex-wrap: wrap;
-            gap: var(--space-sm);
-            justify-content: center;
-            margin-bottom: var(--space-lg);
-            max-width: 1000px;
-            margin-left: auto;
-            margin-right: auto;
+        .trending-scroll {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: var(--space-md);
+            max-height: 250px;
+            overflow-y: auto;
+            margin-bottom: var(--space-md);
         }
+        .trending-tags { display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: center; }
         .trending-tag {
             display: inline-flex;
             align-items: center;
-            gap: 0.375rem;
-            padding: 0.375rem 0.75rem;
+            gap: 0.5rem;
+            padding: 0.5rem 0.875rem;
             background: var(--bg);
             border: 1px solid var(--border);
             border-radius: var(--radius-full);
             font-size: 0.8125rem;
             color: var(--text);
             transition: all 0.2s ease;
-            cursor: default;
         }
         .trending-tag:hover { border-color: #ef4444; transform: translateY(-1px); }
-        .tag-platforms { display: flex; gap: 1px; font-size: 0.625rem; opacity: 0.7; }
-        .btn-show-more {
+        .tag-platforms { font-size: 0.625rem; opacity: 0.8; }
+        .trending-footer {
             display: flex;
             align-items: center;
-            justify-content: center;
-            gap: var(--space-sm);
-            margin: 0 auto;
-            padding: var(--space-sm) var(--space-xl);
-            background: var(--bg);
+            justify-content: space-between;
+            padding-top: var(--space-md);
+            border-top: 1px solid var(--border);
+        }
+        .trending-count { font-size: 0.8125rem; color: var(--text-muted); }
+        .btn-show-more {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: var(--card);
             border: 1px solid var(--border);
             border-radius: var(--radius-md);
             color: var(--text);
-            font-size: 0.875rem;
+            font-size: 0.8125rem;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.2s ease;
@@ -289,22 +361,55 @@
         }
         .btn-show-more:hover { border-color: var(--primary); color: var(--primary); }
         .btn-show-more.expanded .arrow { transform: rotate(180deg); }
-        .arrow { transition: transform 0.2s ease; font-size: 0.75rem; }
-        @media (max-width: 768px) {
-            .filter-row { gap: 0.25rem; }
-            .filter-btn { padding: var(--space-xs) var(--space-sm); font-size: 0.75rem; }
-            .trending-tag { font-size: 0.75rem; padding: 0.25rem 0.5rem; }
-        }
+        .arrow { transition: transform 0.2s ease; font-size: 0.625rem; }
         
         /* Loading State */
         .btn-analyze.loading .btn-text { display: none; }
         .btn-analyze.loading::before { content: 'Analyzing...'; }
         .btn-analyze.loading .btn-icon { animation: spin 1s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
+        
+        /* Scrollbar */
+        .results-grid-wrap::-webkit-scrollbar,
+        .trending-scroll::-webkit-scrollbar { width: 6px; }
+        .results-grid-wrap::-webkit-scrollbar-track,
+        .trending-scroll::-webkit-scrollbar-track { background: var(--bg); border-radius: 3px; }
+        .results-grid-wrap::-webkit-scrollbar-thumb,
+        .trending-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+        .results-grid-wrap::-webkit-scrollbar-thumb:hover,
+        .trending-scroll::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+        
+        /* Mobile */
+        @media (max-width: 768px) {
+            .how-grid-compact { grid-template-columns: 1fr; }
+            .sources-grid { grid-template-columns: repeat(3, 1fr); }
+            .search-counter-module {
+                flex-direction: column;
+                text-align: center;
+                padding: 1.25rem;
+                gap: 1rem;
+            }
+            .counter-content { flex-direction: column; gap: 0.5rem; }
+            .btn-counter { width: 100%; text-align: center; }
+            .checker-meta { flex-wrap: wrap; gap: var(--space-xs); }
+            .results-header-row { flex-direction: column; align-items: flex-start; }
+            .results-grid { grid-template-columns: 1fr; }
+            .results-actions { flex-direction: column; }
+            .btn-action { width: 100%; justify-content: center; }
+            .results-cta { flex-direction: column; text-align: center; }
+            .results-cta-content { flex-direction: column; }
+            .trending-header { flex-direction: column; }
+            .filter-btn { padding: 0.375rem 0.75rem; font-size: 0.75rem; }
+            .cta-buttons { flex-direction: column; }
+            .cta-buttons a { width: 100%; }
+        }
+        @media (max-width: 500px) {
+            .sources-grid { grid-template-columns: repeat(2, 1fr); }
+        }
     </style>
 </head>
 <body>
-    <!-- Header (same as all pages) -->
+    <!-- Header -->
     <header class="header">
         <div class="container">
             <div class="logo">
@@ -321,10 +426,10 @@
     </header>
 
     <!-- Hero -->
-    <section class="hero" style="padding: var(--space-xl) 0 var(--space-lg);">
+    <section class="hero" style="padding: var(--space-2xl) 0 var(--space-xl);">
         <div class="container">
             <div class="hero-badge">🚫 Banned Hashtag Checker</div>
-            <h1 class="hero-title" style="font-size: clamp(2rem, 4vw, 3rem);">Are Your Hashtags Banned?</h1>
+            <h1 class="hero-title">Are Your Hashtags Banned?</h1>
             <p class="hero-subtitle">Paste your hashtags below. Our AI checks if they're banned, restricted, or safe across all major platforms.</p>
             
             <!-- Hashtag Checker Card -->
@@ -365,25 +470,44 @@
                         <button type="button" class="meta-link" id="clear-btn">Clear</button>
                     </div>
                 </div>
-                
-                <!-- Results Area (Hidden Initially) -->
-                <div class="post-results" id="results-section" style="display: none;">
-                    <div class="result-header">
-                        <span class="result-icon">📊</span>
-                        <h3>Analysis Complete</h3>
-                    </div>
-                    <div class="result-content" id="results-content"></div>
-                </div>
-            </div>
-
-            <!-- Counter -->
-            <div class="hero-divider">
-                <span>🎯 <strong id="hashtag-searches-remaining">5 / 5</strong> free checks today • <a href="index.html#pricing">Unlock unlimited →</a></span>
             </div>
         </div>
     </section>
 
-    <!-- Search Counter - Below Hero -->
+    <!-- Results Section (Hidden Initially) -->
+    <section class="results-section" id="results-section" style="display: none;">
+        <div class="container">
+            <div class="results-module">
+                <div class="results-header-row">
+                    <div class="results-title">
+                        <span style="font-size: 1.5rem;">📊</span>
+                        <h3>Analysis Complete</h3>
+                    </div>
+                    <div class="results-summary" id="results-summary"></div>
+                </div>
+                <div class="results-grid-wrap">
+                    <div class="results-grid" id="results-grid"></div>
+                </div>
+                <div class="results-actions">
+                    <button class="btn-action" onclick="copySafeHashtags()"><span>📋</span> Copy Safe Only</button>
+                    <button class="btn-action" onclick="exportResults()"><span>📥</span> Export Results</button>
+                    <button class="btn-action" onclick="checkAgain()"><span>🔄</span> New Check</button>
+                </div>
+                <div class="results-cta" id="results-cta" style="display: none;">
+                    <div class="results-cta-content">
+                        <span class="results-cta-icon">🚨</span>
+                        <div>
+                            <h4>Banned Hashtags Detected!</h4>
+                            <p>Get AI-powered suggestions for safe alternatives</p>
+                        </div>
+                    </div>
+                    <a href="index.html#shadow-ai-pro" class="btn-cta-inline">Get Shadow AI Pro →</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Search Counter -->
     <section style="padding: var(--space-lg) 0;">
         <div class="container">
             <div class="search-counter-module">
@@ -394,7 +518,7 @@
                         <p id="searches-display">5 / 5 checks available today</p>
                     </div>
                 </div>
-                <a href="index.html#pricing" class="btn-counter">Unlock More Checks</a>
+                <a href="index.html#pricing" class="btn-counter">Unlock Unlimited</a>
             </div>
         </div>
     </section>
@@ -432,30 +556,36 @@
     <!-- Trending Banned Hashtags -->
     <section class="trending-section">
         <div class="container">
-            <h2 class="section-title">🔥 Trending Banned Hashtags</h2>
-            <p class="section-desc">Top 100 currently banned or restricted hashtags across platforms</p>
-            
-            <div class="trending-meta">
-                <span class="update-badge">🔄 Updated: <strong id="trending-date">November 24, 2025</strong></span>
+            <div class="trending-module">
+                <div class="trending-header">
+                    <div>
+                        <h3>🔥 Trending Banned Hashtags</h3>
+                        <p>Top 100 currently banned or restricted hashtags</p>
+                    </div>
+                    <span class="update-badge">🔄 Updated: <span id="trending-date">Nov 24, 2025</span></span>
+                </div>
+                <div class="filter-row">
+                    <button class="filter-btn active" data-platform="all">All Platforms</button>
+                    <button class="filter-btn" data-platform="instagram">📸 Instagram</button>
+                    <button class="filter-btn" data-platform="tiktok">🎵 TikTok</button>
+                    <button class="filter-btn" data-platform="twitter">🐦 Twitter/X</button>
+                    <button class="filter-btn" data-platform="facebook">📘 Facebook</button>
+                </div>
+                <div class="trending-scroll">
+                    <div class="trending-tags" id="trending-grid"></div>
+                </div>
+                <div class="trending-footer">
+                    <span class="trending-count" id="trending-count">Showing 30 of 100</span>
+                    <button class="btn-show-more" id="show-more-trending">
+                        <span class="show-text">Show All</span>
+                        <span class="arrow">▼</span>
+                    </button>
+                </div>
             </div>
-            
-            <div class="filter-row">
-                <button class="filter-btn active" data-platform="all">All</button>
-                <button class="filter-btn" data-platform="instagram">📸 Instagram</button>
-                <button class="filter-btn" data-platform="tiktok">🎵 TikTok</button>
-                <button class="filter-btn" data-platform="twitter">🐦 Twitter</button>
-                <button class="filter-btn" data-platform="facebook">📘 Facebook</button>
-            </div>
-            
-            <div class="trending-tags" id="trending-grid"></div>
-            
-            <button class="btn-show-more" id="show-more-trending">
-                Show All 100 <span class="arrow">▼</span>
-            </button>
         </div>
     </section>
 
-    <!-- Data Sources - Compact (same as checker.html) -->
+    <!-- Data Sources -->
     <section class="data-sources-section">
         <div class="container">
             <h2 class="section-title">Our Data Sources</h2>
@@ -474,24 +604,24 @@
     <!-- CTA -->
     <section class="cta" style="padding: var(--space-xl) 0;">
         <div class="container">
-            <h2 style="font-size: 1.75rem;">Need More Hashtag Checks?</h2>
-            <p>Unlock unlimited checks + shadow ban monitoring across all 26 platforms</p>
-            <div class="cta-btns">
-                <a href="index.html#pricing" class="btn btn-large">View Plans →</a>
-                <a href="checker.html" class="btn-ghost-light">Try Shadow Ban Checker</a>
+            <div class="cta-module">
+                <span class="cta-icon-large">🔍</span>
+                <h2>Think You Might Be Shadow Banned?</h2>
+                <p>Check your full account status across 26 platforms with our Shadow Ban Checker</p>
+                <div class="cta-buttons">
+                    <a href="checker.html" class="btn btn-large">Try Shadow Ban Checker →</a>
+                    <a href="index.html#pricing" class="btn-ghost-light">View All Plans</a>
+                </div>
             </div>
         </div>
     </section>
 
-    <!-- Footer (same as all pages) -->
+    <!-- Footer -->
     <footer class="footer">
         <div class="container">
             <div class="footer-grid">
                 <div class="footer-brand">
-                    <div class="logo">
-                        <span class="logo-emoji">🔍</span>
-                        <span>ShadowBanCheck.io</span>
-                    </div>
+                    <div class="logo"><span class="logo-emoji">🔍</span><span>ShadowBanCheck.io</span></div>
                     <p>Protecting visibility for influencers, politicians, and online sellers worldwide.</p>
                 </div>
                 <div class="footer-col">
@@ -507,9 +637,7 @@
                 </div>
                 <div class="footer-col">
                     <h4>Developers</h4>
-                    <a href="#" onclick="alert('API documentation coming soon for developers!'); return false;">
-                        API Access <span class="coming-soon-tiny">Coming Soon</span>
-                    </a>
+                    <a href="#" onclick="alert('API documentation coming soon!'); return false;">API Access <span class="coming-soon-tiny">Soon</span></a>
                     <a href="https://github.com/Ghost081280" target="_blank">GitHub</a>
                 </div>
             </div>
@@ -524,18 +652,11 @@
         </div>
     </footer>
 
-    <!-- Shadow AI Widget -->
-    <button id="shadow-ai-btn" class="copilot-btn">
-        <span class="copilot-emoji">🤖</span>
-        <span>Shadow AI</span>
-    </button>
-
+    <!-- Shadow AI -->
+    <button id="shadow-ai-btn" class="copilot-btn"><span class="copilot-emoji">🤖</span><span>Shadow AI</span></button>
     <div id="shadow-ai-chat" class="copilot-chat hidden">
         <div class="copilot-header">
-            <div class="copilot-title">
-                <span class="copilot-emoji">🤖</span>
-                <span>Shadow AI</span>
-            </div>
+            <div class="copilot-title"><span class="copilot-emoji">🤖</span><span>Shadow AI</span></div>
             <button id="shadow-ai-close" class="copilot-close">&times;</button>
         </div>
         <div id="shadow-ai-messages" class="copilot-messages"></div>

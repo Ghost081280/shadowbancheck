@@ -253,6 +253,12 @@
     gap: var(--space-sm);
 }
 
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-sm);
+}
+
 .form-group {
     display: flex;
     flex-direction: column;
@@ -265,22 +271,9 @@
     color: var(--text-secondary);
 }
 
-.input-wrapper {
-    position: relative;
-    display: flex;
-    align-items: center;
-}
-
-.input-icon {
-    position: absolute;
-    left: var(--space-sm);
-    font-size: 0.9rem;
-    pointer-events: none;
-}
-
-.input-wrapper input {
+.form-group input {
     width: 100%;
-    padding: var(--space-sm) var(--space-sm) var(--space-sm) calc(var(--space-sm) + 24px);
+    padding: var(--space-sm);
     background: var(--bg-tertiary);
     border: 2px solid var(--border);
     border-radius: var(--radius-md);
@@ -289,14 +282,24 @@
     transition: all var(--transition-fast);
 }
 
-.input-wrapper input:focus {
+.form-group input:focus {
     outline: none;
     border-color: var(--primary);
     background: var(--bg-secondary);
 }
 
-.input-wrapper input::placeholder {
+.form-group input::placeholder {
     color: var(--text-muted);
+}
+
+.password-input-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.password-input-wrap input {
+    padding-right: 40px;
 }
 
 .toggle-password {
@@ -304,7 +307,7 @@
     right: var(--space-sm);
     background: transparent;
     border: none;
-    font-size: 0.9rem;
+    font-size: 0.875rem;
     cursor: pointer;
     opacity: 0.6;
     transition: opacity var(--transition-fast);
@@ -407,7 +410,13 @@
     transition: all var(--transition-base);
     position: relative;
     overflow: hidden;
-    margin-top: var(--space-xs);
+}
+
+/* Mobile: Stack fields vertically */
+@media (max-width: 500px) {
+    .form-row {
+        grid-template-columns: 1fr;
+    }
 }
 
 .btn-login:hover:not(:disabled) {

@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="css/results.css">
 </head>
 <body>
-    <!-- Header - MATCHES INDEX -->
+    <!-- Header -->
     <header class="header">
         <div class="container">
             <div class="logo">
@@ -54,20 +54,46 @@
             <!-- Actions -->
             <div class="actions">
                 <a href="checker.html" class="btn-secondary">Run Another Check</a>
-                <button id="share-results" class="btn-secondary">Share Results</button>
                 <button id="download-report" class="btn-secondary">Download Report</button>
             </div>
 
-            <!-- Simple Upgrade CTA -->
-            <div class="upgrade-cta">
-                <h3>🎯 Need More Checks?</h3>
-                <p>You've used your free daily checks. Upgrade for unlimited access and advanced features.</p>
-                <a href="index.html#pricing" class="btn-hero">View All Pricing Plans</a>
+            <!-- Share Results Section -->
+            <section class="share-results-section">
+                <h3>📢 Share Your Results</h3>
+                <p>Let others know you checked your account!</p>
+                <div class="share-buttons-results">
+                    <button class="btn-share-result" id="share-twitter-results">
+                        <span class="share-icon">𝕏</span>
+                        <span>Share on X</span>
+                    </button>
+                    <button class="btn-share-result" id="share-facebook-results">
+                        <span class="share-icon">f</span>
+                        <span>Share on Facebook</span>
+                    </button>
+                    <button class="btn-share-result" id="share-telegram-results">
+                        <span class="share-icon">✈️</span>
+                        <span>Share on Telegram</span>
+                    </button>
+                    <button class="btn-share-result" id="share-linkedin-results">
+                        <span class="share-icon">in</span>
+                        <span>Share on LinkedIn</span>
+                    </button>
+                </div>
+            </section>
+
+            <!-- Upgrade CTA Module -->
+            <div class="upgrade-cta-module">
+                <div class="upgrade-icon">🎯</div>
+                <div class="upgrade-content">
+                    <h3>Need More Checks?</h3>
+                    <p>You've used your free daily checks. Upgrade for unlimited access and advanced features.</p>
+                    <a href="index.html#pricing" class="btn-upgrade">View All Pricing Plans →</a>
+                </div>
             </div>
         </div>
     </main>
 
-    <!-- Footer - EXACT COPY FROM INDEX -->
+    <!-- Footer -->
     <footer class="footer">
         <div class="container">
             <div class="footer-grid">
@@ -87,7 +113,7 @@
                 <div class="footer-col">
                     <h4>Tools</h4>
                     <a href="checker.html">Shadow Ban Checker</a>
-                    <a href="hashtag-checker.html">Hashtag Checker</a>
+                    <a href="hashtag-checker.html">Banned Hashtags Checker</a>
                 </div>
                 <div class="footer-col">
                     <h4>Developers</h4>
@@ -133,6 +159,37 @@
         function showCookiePolicy() {
             alert('Cookie Policy\n\nWe use cookies to:\n• Remember your preferences\n• Analyze site traffic and usage\n• Improve your experience\n• Track free AI questions (3 per day)\n\nBy using ShadowBanCheck.io, you consent to our use of cookies.');
         }
+        
+        // Share functionality
+        document.addEventListener('DOMContentLoaded', () => {
+            const resultsData = JSON.parse(localStorage.getItem('checkResults') || '{}');
+            const platform = resultsData.platform || 'Twitter/X';
+            const username = resultsData.username || 'your account';
+            const probability = resultsData.probability || 0;
+            
+            const shareText = `I just checked my ${username} for shadow bans on ${platform}! Got a ${probability}% probability score with detailed analysis. Check yours free: https://shadowbancheck.io`;
+            const shareUrl = 'https://shadowbancheck.io';
+            
+            // Twitter/X
+            document.getElementById('share-twitter-results')?.addEventListener('click', () => {
+                window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}`, '_blank');
+            });
+            
+            // Facebook
+            document.getElementById('share-facebook-results')?.addEventListener('click', () => {
+                window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}&quote=${encodeURIComponent(shareText)}`, '_blank');
+            });
+            
+            // Telegram
+            document.getElementById('share-telegram-results')?.addEventListener('click', () => {
+                window.open(`https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`, '_blank');
+            });
+            
+            // LinkedIn
+            document.getElementById('share-linkedin-results')?.addEventListener('click', () => {
+                window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`, '_blank');
+            });
+        });
     </script>
     <script src="js/shadow-ai.js"></script>
     <script src="js/results.js"></script>

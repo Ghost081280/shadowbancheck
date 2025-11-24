@@ -9,6 +9,140 @@
     <!-- CSS -->
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/shadow-ai.css">
+    <style>
+        /* Option Card Footer - Center links */
+        .option-card-footer {
+            margin-top: auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.75rem;
+            padding-top: 1rem;
+        }
+        .option-card {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* How It Works - Compact */
+        .how-grid-compact {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+        }
+        .how-item-compact {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 0.75rem;
+            padding: 1.25rem;
+        }
+        .how-icon-compact { font-size: 1.75rem; flex-shrink: 0; }
+        .how-item-compact strong { display: block; margin-bottom: 0.25rem; }
+        .how-item-compact p { color: var(--text-muted); font-size: 0.875rem; margin: 0; line-height: 1.5; }
+        @media (max-width: 768px) {
+            .how-grid-compact { grid-template-columns: 1fr; }
+        }
+        
+        /* Made for You - Compact */
+        .audience-grid-compact {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        .audience-card-compact {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 0.75rem;
+            padding: 1.25rem;
+        }
+        .audience-icon-compact { font-size: 1.75rem; flex-shrink: 0; }
+        .audience-card-compact strong { display: block; margin-bottom: 0.25rem; }
+        .audience-card-compact p { color: var(--text-muted); font-size: 0.875rem; margin: 0 0 0.5rem 0; line-height: 1.5; }
+        .audience-link { color: var(--primary); font-size: 0.875rem; font-weight: 600; text-decoration: none; }
+        .audience-link:hover { text-decoration: underline; }
+        .audience-footer-compact { text-align: center; color: var(--text-muted); font-size: 0.875rem; }
+        @media (max-width: 768px) {
+            .audience-grid-compact { grid-template-columns: 1fr; }
+        }
+        
+        /* Spotlight CTA - Inline */
+        .spotlight-cta-inline {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+        
+        /* Pricing - Compact */
+        .pricing-grid-compact {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        .price-card-compact {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            text-align: center;
+            position: relative;
+        }
+        .price-card-compact.featured {
+            border-color: var(--primary);
+            box-shadow: 0 0 20px rgba(99, 102, 241, 0.2);
+        }
+        .price-card-compact .card-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-bottom: 0.25rem;
+        }
+        .price-card-compact h3 { margin: 0 0 0.5rem 0; }
+        .price-compact { margin-bottom: 0.25rem; }
+        .price-compact .amount { font-size: 2rem; font-weight: 700; }
+        .price-compact .period { color: var(--text-muted); font-size: 0.875rem; }
+        .price-subtitle-compact { color: var(--text-muted); font-size: 0.875rem; margin-bottom: 1rem; }
+        .price-features-compact {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 1rem 0;
+            text-align: left;
+            font-size: 0.875rem;
+        }
+        .price-features-compact li {
+            padding: 0.375rem 0;
+            border-bottom: 1px solid var(--border);
+        }
+        .price-features-compact li:last-child { border-bottom: none; }
+        .btn-price-compact {
+            display: block;
+            padding: 0.75rem 1.5rem;
+            background: var(--card);
+            border: 2px solid var(--border);
+            border-radius: 0.5rem;
+            color: var(--text);
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        .btn-price-compact:hover { border-color: var(--primary); }
+        .btn-price-compact.primary {
+            background: linear-gradient(135deg, var(--primary) 0%, #8b5cf6 100%);
+            border-color: transparent;
+            color: white;
+        }
+        .pricing-note { text-align: center; color: var(--text-muted); font-size: 0.875rem; margin-top: 1rem; }
+        @media (max-width: 768px) {
+            .pricing-grid-compact { grid-template-columns: 1fr; }
+        }
+    </style>
 </head>
 <body>
     <!-- Header -->
@@ -85,16 +219,20 @@
                     <div class="option-icon">🔍</div>
                     <h3>Quick Check</h3>
                     <p>Single platform verification</p>
-                    <span class="option-tag free">Free - 3/day</span>
-                    <a href="checker.html" class="btn-option">Check Now →</a>
+                    <div class="option-card-footer">
+                        <span class="option-tag free">Free - 3/day</span>
+                        <a href="checker.html" class="btn-option">Check Now →</a>
+                    </div>
                 </div>
 
                 <div class="option-card">
                     <div class="option-icon">🚫</div>
                     <h3>Banned Hashtags</h3>
                     <p>Verify banned hashtags</p>
-                    <span class="option-tag free">Free - 5/day</span>
-                    <a href="hashtag-checker.html" class="btn-option">Check Hashtags →</a>
+                    <div class="option-card-footer">
+                        <span class="option-tag free">Free - 5/day</span>
+                        <a href="hashtag-checker.html" class="btn-option">Check Hashtags →</a>
+                    </div>
                 </div>
 
                 <div class="option-card featured">
@@ -102,68 +240,79 @@
                     <div class="option-icon">🤖</div>
                     <h3>Shadow AI Pro</h3>
                     <p>AI investigation + monitoring</p>
-                    <span class="option-tag pro">From $9.99/mo</span>
-                    <a href="#shadow-ai-pro" class="btn-option btn-option-featured">Learn More →</a>
+                    <div class="option-card-footer">
+                        <span class="option-tag pro">From $9.99/mo</span>
+                        <a href="#shadow-ai-pro" class="btn-option btn-option-featured">Learn More →</a>
+                    </div>
                 </div>
             </div>
         </div>
     </section>
 
     <!-- How It Works -->
-    <section class="how-it-works">
+    <section class="how-it-works" style="padding: var(--space-xl) 0;">
         <div class="container">
             <h2 class="section-title">How It Works</h2>
-            <p class="section-desc">We use advanced technology to give you accurate shadow ban detection</p>
-            
-            <div class="how-grid">
-                <div class="how-item">
-                    <div class="how-icon">🤖</div>
-                    <h3>AI-Powered Analysis</h3>
-                    <p>Our AI scans the web, searches multiple online sources (platform data, third-party tools, user reports), and analyzes 10+ engagement factors to detect shadow bans even when platforms won't tell you.</p>
+            <div class="how-grid-compact">
+                <div class="how-item-compact">
+                    <span class="how-icon-compact">🤖</span>
+                    <div>
+                        <strong>AI-Powered Analysis</strong>
+                        <p>Our AI scans multiple sources and analyzes 10+ factors to detect shadow bans.</p>
+                    </div>
                 </div>
-                
-                <div class="how-item">
-                    <div class="how-icon">🔌</div>
-                    <h3>Platform APIs</h3>
-                    <p>APIs (Application Programming Interfaces) let us talk directly to social platforms to check your account status, visibility, and reach in real-time. Think of it as a direct line to verify what's happening with your account.</p>
+                <div class="how-item-compact">
+                    <span class="how-icon-compact">🔌</span>
+                    <div>
+                        <strong>Platform APIs</strong>
+                        <p>Direct integration with platforms for real-time account status checks.</p>
+                    </div>
                 </div>
-                
-                <div class="how-item">
-                    <div class="how-icon">📊</div>
-                    <h3>Real-Time Monitoring</h3>
-                    <p>We continuously check your accounts at your chosen frequency (daily, every 6 hours, or hourly) and alert you instantly via text or email if we detect any issues—so you can act fast.</p>
+                <div class="how-item-compact">
+                    <span class="how-icon-compact">📊</span>
+                    <div>
+                        <strong>Real-Time Monitoring</strong>
+                        <p>Continuous checks with instant alerts via text or email.</p>
+                    </div>
                 </div>
             </div>
         </div>
     </section>
 
     <!-- Target Audience -->
-    <section class="audience-section">
+    <section class="audience-section" style="padding: var(--space-xl) 0;">
         <div class="container">
             <h2 class="section-title">Made for You</h2>
-            <p class="section-desc">Whether you're an influencer growing your brand, a politician reaching voters, or an entrepreneur selling online—shadow bans kill your reach. We arm you with the knowledge to detect and fix it.</p>
+            <p class="section-desc">Shadow bans kill your reach. We help you detect and fix it.</p>
             
-            <div class="audience-grid">
-                <div class="audience-card">
-                    <div class="audience-icon">📱</div>
-                    <h3>Influencers & Creators</h3>
-                    <p>Your engagement dropped overnight? Posts not showing in search? We check if Instagram, TikTok, or Twitter is limiting your reach—and show you how to recover.</p>
+            <div class="audience-grid-compact">
+                <div class="audience-card-compact">
+                    <span class="audience-icon-compact">📱</span>
+                    <div>
+                        <strong>Influencers & Creators</strong>
+                        <p>Engagement dropped? Posts not showing? We check if platforms are limiting your reach.</p>
+                        <a href="#pricing" class="audience-link">Get Started →</a>
+                    </div>
                 </div>
-                
-                <div class="audience-card">
-                    <div class="audience-icon">🗳️</div>
-                    <h3>Politicians & Officials</h3>
-                    <p>Your message needs to reach voters. We verify your visibility on X, Facebook, and other platforms where elections are won—ensuring your voice isn't silenced.</p>
+                <div class="audience-card-compact">
+                    <span class="audience-icon-compact">🗳️</span>
+                    <div>
+                        <strong>Politicians & Officials</strong>
+                        <p>Your message needs to reach voters. We verify your visibility on all platforms.</p>
+                        <a href="#pricing" class="audience-link">Get Started →</a>
+                    </div>
                 </div>
-                
-                <div class="audience-card">
-                    <div class="audience-icon">💰</div>
-                    <h3>Online Sellers</h3>
-                    <p>Sales down? Product posts hidden? We check if platforms are suppressing your content—so you can fix it and get back to making money.</p>
+                <div class="audience-card-compact">
+                    <span class="audience-icon-compact">💰</span>
+                    <div>
+                        <strong>Online Sellers</strong>
+                        <p>Sales down? Products hidden? We check if platforms are suppressing your content.</p>
+                        <a href="#pricing" class="audience-link">Get Started →</a>
+                    </div>
                 </div>
             </div>
             
-            <p class="audience-footer">Also trusted by streamers, podcasters, marketers, and anyone who relies on visibility to succeed.</p>
+            <p class="audience-footer-compact">Also trusted by streamers, podcasters, marketers, and anyone who relies on visibility.</p>
         </div>
     </section>
 
@@ -236,7 +385,7 @@
                         </div>
                     </div>
 
-                    <div class="spotlight-cta">
+                    <div class="spotlight-cta-inline">
                         <a href="#shadow-ai-pro" class="btn btn-large">See Shadow AI Pro Plans</a>
                         <button id="try-ai-btn" class="btn-ghost">Try Free (3 questions/day)</button>
                     </div>
@@ -498,71 +647,63 @@
     </section>
 
     <!-- Pricing -->
-    <section id="pricing" class="pricing">
+    <section id="pricing" class="pricing" style="padding: var(--space-xl) 0;">
         <div class="container">
             <h2 class="section-title">Simple, Transparent Pricing</h2>
-            <p class="section-desc">Pay for what you need. All plans include all features.</p>
+            <p class="section-desc">All plans include hashtag checker access + all features.</p>
 
-            <div class="pricing-grid">
-                <div class="price-card">
+            <div class="pricing-grid-compact">
+                <div class="price-card-compact">
                     <div class="card-label">For Individuals</div>
                     <h3>Starter</h3>
-                    <div class="price">
-                        <span class="amount">$4.99</span>
-                        <span class="period">/month</span>
+                    <div class="price-compact">
+                        <span class="amount">$4.99</span><span class="period">/mo</span>
                     </div>
-                    <div class="price-subtitle">Monitor Up To 5 Accounts</div>
-                    <ul>
+                    <p class="price-subtitle-compact">Up to 5 accounts</p>
+                    <ul class="price-features-compact">
                         <li>✓ Any 5 platforms/accounts</li>
                         <li>✓ Text + Email alerts</li>
-                        <li>✓ Instant shadowban detection</li>
+                        <li>✓ Hashtag checker access</li>
                         <li>✓ Recovery recommendations</li>
-                        <li>✓ Historical tracking</li>
-                        <li>✓ <strong>3 free AI questions/day</strong></li>
+                        <li>✓ 3 AI questions/day</li>
                     </ul>
-                    <a href="#" class="btn-price">Start 7-Day Trial</a>
-                    <p class="trial-note">Credit card required • Cancel anytime</p>
+                    <a href="#" class="btn-price-compact">Start 7-Day Trial</a>
                 </div>
 
-                <div class="price-card featured">
+                <div class="price-card-compact featured">
                     <h3>Pro</h3>
-                    <div class="price">
-                        <span class="amount">$9.99</span>
-                        <span class="period">/month</span>
+                    <div class="price-compact">
+                        <span class="amount">$9.99</span><span class="period">/mo</span>
                     </div>
-                    <div class="price-subtitle">Monitor Up To 15 Accounts</div>
-                    <ul>
+                    <p class="price-subtitle-compact">Up to 15 accounts</p>
+                    <ul class="price-features-compact">
                         <li>✓ Any 15 platforms/accounts</li>
                         <li>✓ Text + Email alerts</li>
-                        <li>✓ Instant shadowban detection</li>
+                        <li>✓ Hashtag checker access</li>
                         <li>✓ Recovery recommendations</li>
-                        <li>✓ Historical tracking</li>
-                        <li>✓ <strong>10 AI questions/day</strong></li>
+                        <li>✓ 10 AI questions/day</li>
                     </ul>
-                    <a href="#" class="btn-price primary">Start 7-Day Trial</a>
-                    <p class="trial-note">Credit card required • Cancel anytime</p>
+                    <a href="#" class="btn-price-compact primary">Start 7-Day Trial</a>
                 </div>
 
-                <div class="price-card">
-                    <div class="card-label">For Power Users</div>
+                <div class="price-card-compact">
+                    <div class="card-label">Power Users</div>
                     <h3>Premium</h3>
-                    <div class="price">
-                        <span class="amount">$14.99</span>
-                        <span class="period">/month</span>
+                    <div class="price-compact">
+                        <span class="amount">$14.99</span><span class="period">/mo</span>
                     </div>
-                    <div class="price-subtitle">Monitor Up To 50 Accounts</div>
-                    <ul>
+                    <p class="price-subtitle-compact">Up to 50 accounts</p>
+                    <ul class="price-features-compact">
                         <li>✓ Any 50 platforms/accounts</li>
                         <li>✓ Text + Email alerts</li>
-                        <li>✓ Instant shadowban detection</li>
+                        <li>✓ Hashtag checker access</li>
                         <li>✓ Recovery recommendations</li>
-                        <li>✓ Historical tracking</li>
-                        <li>✓ <strong>25 AI questions/day</strong></li>
+                        <li>✓ 25 AI questions/day</li>
                     </ul>
-                    <a href="#" class="btn-price">Start 7-Day Trial</a>
-                    <p class="trial-note">Credit card required • Cancel anytime</p>
+                    <a href="#" class="btn-price-compact">Start 7-Day Trial</a>
                 </div>
             </div>
+            <p class="pricing-note">Credit card required • Cancel anytime</p>
 
             <!-- Pricing Extras - Compact -->
             <div class="pricing-extras">

@@ -50,117 +50,95 @@ const platformData = {
 document.addEventListener('DOMContentLoaded', () => {
     loadChecksCounter();
     setupPlatformClicks();
+    setupFormSubmissions();
 });
+
+// Setup form submissions
+function setupFormSubmissions() {
+    // Twitter form
+    const twitterForm = document.getElementById('twitter-form');
+    if (twitterForm) {
+        twitterForm.addEventListener('submit', (e) => handleFormSubmit(e, 'twitter', 'twitter-username'));
+    }
+    
+    // Reddit form
+    const redditForm = document.getElementById('reddit-form');
+    if (redditForm) {
+        redditForm.addEventListener('submit', (e) => handleFormSubmit(e, 'reddit', 'reddit-username'));
+    }
+    
+    // Email form
+    const emailForm = document.getElementById('email-form');
+    if (emailForm) {
+        emailForm.addEventListener('submit', (e) => handleFormSubmit(e, 'email', 'email-input'));
+    }
+}
 
 // Setup platform click handlers
 function setupPlatformClicks() {
-    const platforms = document.querySelectorAll('.platform-item.clickable');
+    const platforms = document.querySelectorAll('.platform-option');
     
     platforms.forEach(platform => {
         platform.addEventListener('click', () => {
             const platformId = platform.dataset.platform;
-            const badge = platform.querySelector('.badge');
             
-            // Check if platform is live
-            if (badge && badge.classList.contains('live')) {
-                openCheckModal(platformId);
-            } else {
-                alert(`${platform.textContent.trim()} is coming soon! We're adding new platforms regularly. Check back soon or try Twitter, Reddit, or Email checking.`);
+            // Check if platform is disabled
+            if (platform.disabled) {
+                const platformName = platform.querySelector('.platform-name').textContent;
+                alert(`${platformName} is coming soon! We're adding new platforms regularly. Check back soon or try Twitter, Reddit, or Email checking.`);
+                return;
             }
+            
+            // Show the form for this platform
+            showPlatformForm(platformId);
         });
     });
 }
 
-// Open check modal
-function openCheckModal(platformId) {
-    selectedPlatform = platformId;
-    const platform = platformData[platformId];
+// Show platform form
+function showPlatformForm(platformId) {
+    // Hide all forms
+    document.querySelectorAll('.platform-form').forEach(form => {
+        form.classList.remove('active');
+    });
     
-    if (!platform) {
-        alert('Platform not yet configured. Coming soon!');
-        return;
+    // Show selected form
+    const selectedForm = document.getElementById(`${platformId}-form`);
+    if (selectedForm) {
+        selectedForm.classList.add('active');
+        
+        // Update active state on platform buttons
+        document.querySelectorAll('.platform-option').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        document.querySelector(`[data-platform="${platformId}"]`).classList.add('active');
+        
+        // Scroll to form
+        selectedForm.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        
+        // Focus input after scroll
+        setTimeout(() => {
+            const input = selectedForm.querySelector('input');
+            if (input) input.focus();
+        }, 500);
     }
-    
-    // Build modal form
-    const modalContainer = document.getElementById('modal-form-container');
-    modalContainer.innerHTML = `
-        <div class="check-form">
-            <div class="check-header">
-                <span class="check-icon">${platform.icon}</span>
-                <h2>${platform.name} Check</h2>
-            </div>
-            
-            <p class="check-description">Enter your ${platform.inputLabel.toLowerCase()} to check for shadow bans</p>
-            
-            <form id="check-form">
-                <div class="form-group">
-                    <label for="check-input">${platform.inputLabel}</label>
-                    <input 
-                        type="text" 
-                        id="check-input" 
-                        placeholder="${platform.inputPlaceholder}"
-                        required
-                        autocomplete="off"
-                    >
-                    <span class="input-hint">${platform.inputHint}</span>
-                </div>
-                
-                <div class="checks-info">
-                    <h4>What we'll check:</h4>
-                    <ul>
-                        ${platform.checks.map(check => `<li>${check}</li>`).join('')}
-                    </ul>
-                </div>
-                
-                <button type="submit" class="btn-submit">
-                    <span class="btn-text">Check ${platform.name} Status</span>
-                    <span class="btn-icon">→</span>
-                </button>
-            </form>
-            
-            <div class="modal-footer-note">
-                <span class="counter-icon">✨</span>
-                <span><strong>${checksRemaining}</strong> free checks remaining today</span>
-            </div>
-        </div>
-    `;
-    
-    // Show modal
-    document.getElementById('check-modal').classList.remove('hidden');
-    document.body.style.overflow = 'hidden';
-    
-    // Focus input
-    setTimeout(() => {
-        document.getElementById('check-input').focus();
-    }, 100);
-    
-    // Setup form submit
-    document.getElementById('check-form').addEventListener('submit', handleCheckSubmit);
 }
 
-// Close check modal
-function closeCheckModal() {
-    document.getElementById('check-modal').classList.add('hidden');
-    document.body.style.overflow = '';
-    selectedPlatform = null;
-}
-
-// Handle check form submit
-async function handleCheckSubmit(e) {
+// Handle form submission
+async function handleFormSubmit(e, platform, inputId) {
     e.preventDefault();
     
     // Check if user has checks remaining
     if (checksRemaining <= 0) {
-        closeCheckModal();
         alert('You\'ve used all 3 free checks for today! Upgrade to Pro for unlimited checks.');
         window.location.href = 'index.html#pricing';
         return;
     }
     
-    const input = document.getElementById('check-input').value.trim();
+    const input = document.getElementById(inputId).value.trim();
     if (!input) return;
     
-    const submitBtn = document.querySelector('#check-form .btn-submit');
+    const submitBtn = e.target.querySelector('.btn-submit');
     const btnText = submitBtn.querySelector('.btn-text');
     const originalText = btnText.textContent;
     
@@ -171,7 +149,7 @@ async function handleCheckSubmit(e) {
     
     try {
         // Simulate API call
-        const results = await simulateCheck(selectedPlatform, input);
+        const results = await simulateCheck(platform, input);
         
         // Decrement checks
         checksRemaining--;
@@ -336,18 +314,3 @@ function loadChecksCounter() {
     
     updateChecksCounter();
 }
-
-// Close modal on escape key
-document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') {
-        closeCheckModal();
-    }
-});
-
-// Close modal when clicking on modal background (not content)
-document.addEventListener('click', (e) => {
-    const modal = document.getElementById('check-modal');
-    if (e.target === modal) {
-        closeCheckModal();
-    }
-});

@@ -156,6 +156,12 @@ button, input, textarea, select {
     color: inherit;
 }
 
+/* Ensure buttons are tappable on mobile */
+button, a, .btn, [role="button"] {
+    -webkit-tap-highlight-color: rgba(99, 102, 241, 0.2);
+    touch-action: manipulation;
+}
+
 a {
     color: var(--primary-light);
     text-decoration: none;
@@ -550,7 +556,7 @@ strong, b {
 .nav-overlay {
     display: none;
     position: fixed;
-    top: 0;
+    top: 70px; /* Below header */
     left: 0;
     right: 0;
     bottom: 0;
@@ -558,28 +564,34 @@ strong, b {
     backdrop-filter: blur(4px);
     z-index: var(--z-overlay);
     opacity: 0;
+    pointer-events: none;
     transition: opacity var(--transition-base);
 }
 
 .nav-overlay.active {
     opacity: 1;
+    pointer-events: auto;
 }
 
 /* Mobile Nav Slide-out */
 .nav-mobile {
     display: none;
     position: fixed;
-    top: 0;
+    top: 70px; /* Below header */
     right: 0;
     width: 280px;
     max-width: 85vw;
-    height: 100vh;
+    height: calc(100vh - 70px - 100px); /* Full height minus header and bottom space for chatbot */
+    max-height: calc(100vh - 170px);
     background: var(--bg-secondary);
     border-left: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    border-bottom-left-radius: var(--radius-xl);
     z-index: calc(var(--z-overlay) + 1);
     transform: translateX(100%);
     transition: transform var(--transition-base);
     overflow-y: auto;
+    box-shadow: var(--shadow-xl);
 }
 
 .nav-mobile.active {
@@ -587,11 +599,7 @@ strong, b {
 }
 
 .nav-mobile-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: var(--space-md) var(--space-lg);
-    border-bottom: 1px solid var(--border);
+    display: none; /* Not needed since slider is below main header */
 }
 
 .nav-mobile-close {

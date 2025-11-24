@@ -1,31 +1,124 @@
-// Results Page JavaScript
+// Results Page JavaScript - DEBUG VERSION
 
 let checkResults = null;
 
 // Load and display results
 function loadResults() {
-    console.log('🔍 Loading results...');
+    console.log('======================');
+    console.log('🔍 RESULTS PAGE LOADED');
+    console.log('======================');
+    
+    // Check if localStorage is available
+    if (typeof(Storage) === "undefined") {
+        console.error('❌ localStorage not supported!');
+        alert('Your browser does not support localStorage. Please use a modern browser.');
+        return;
+    }
+    
+    console.log('✅ localStorage is supported');
+    
+    // List ALL localStorage keys
+    console.log('📋 All localStorage keys:');
+    for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        const value = localStorage.getItem(key);
+        console.log(`   ${key}:`, value.substring(0, 100) + '...');
+    }
     
     // Get results from localStorage
     const resultsData = localStorage.getItem('checkResults');
     
+    console.log('📦 Looking for key: "checkResults"');
     console.log('📦 Raw data from localStorage:', resultsData);
     
     if (!resultsData) {
-        console.error('❌ No results found in localStorage');
-        alert('No check results found. Please run a check first.');
-        window.location.href = 'checker.html';
+        console.error('❌ NO RESULTS FOUND!');
+        console.log('⚠️ This means either:');
+        console.log('   1. You visited results.html directly (without running a check)');
+        console.log('   2. The checker page did not save data');
+        console.log('   3. localStorage was cleared');
+        console.log('');
+        console.log('💡 TESTING: Creating dummy data...');
+        
+        // Create test data
+        const testData = {
+            platform: 'twitter',
+            identifier: 'testuser',
+            timestamp: new Date().toISOString(),
+            status: 'clean',
+            checks: {
+                searchBan: {
+                    status: 'passed',
+                    description: 'Your tweets appear in search results'
+                },
+                searchSuggestion: {
+                    status: 'passed',
+                    description: 'Your profile appears in search suggestions'
+                },
+                ghostBan: {
+                    status: 'passed',
+                    description: 'Your replies are visible to others'
+                },
+                replyDeboosting: {
+                    status: 'passed',
+                    description: 'Your replies are not being suppressed'
+                }
+            },
+            details: {
+                accountAge: '2 years',
+                followers: '1,234',
+                lastTweet: '2 hours ago',
+                engagementRate: 'Normal'
+            }
+        };
+        
+        console.log('📝 Test data created:', testData);
+        console.log('');
+        console.log('🚨 SHOWING TEST RESULTS (not real data)');
+        console.log('   To run a real check, go to checker.html first!');
+        
+        checkResults = testData;
+        displayResults();
+        
+        // Show warning banner
+        showTestWarning();
+        
         return;
     }
     
     try {
         checkResults = JSON.parse(resultsData);
-        console.log('✅ Parsed results:', checkResults);
+        console.log('✅ Successfully parsed results:', checkResults);
+        console.log('   Platform:', checkResults.platform);
+        console.log('   Identifier:', checkResults.identifier);
+        console.log('   Status:', checkResults.status);
         displayResults();
     } catch (error) {
         console.error('❌ Failed to parse results:', error);
-        alert('Error loading results. Please try again.');
-        window.location.href = 'checker.html';
+        console.error('   Raw data was:', resultsData);
+        alert('Error loading results. Data is corrupted. Please try again.');
+        setTimeout(() => {
+            window.location.href = 'checker.html';
+        }, 2000);
+    }
+}
+
+function showTestWarning() {
+    const main = document.querySelector('.main');
+    if (main) {
+        const warning = document.createElement('div');
+        warning.style.cssText = `
+            background: #f59e0b;
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 0.75rem;
+            margin-bottom: 2rem;
+            text-align: center;
+            font-weight: 600;
+            border: 2px solid #d97706;
+        `;
+        warning.innerHTML = '⚠️ SHOWING TEST DATA - This is not a real check result. Go to checker.html to run a real check!';
+        main.insertBefore(warning, main.firstChild);
     }
 }
 
@@ -52,6 +145,11 @@ function displayResults() {
 
 function displayHeader() {
     const headerEl = document.getElementById('results-header');
+    if (!headerEl) {
+        console.error('❌ Could not find #results-header element!');
+        return;
+    }
+    
     const platformEmoji = getPlatformEmoji(checkResults.platform);
     const platformName = getPlatformName(checkResults.platform);
     
@@ -67,10 +165,16 @@ function displayHeader() {
             <span>Checked: ${new Date(checkResults.timestamp).toLocaleString()}</span>
         </div>
     `;
+    console.log('✅ Header displayed');
 }
 
 function displayOverallStatus() {
     const statusEl = document.getElementById('overall-status');
+    if (!statusEl) {
+        console.error('❌ Could not find #overall-status element!');
+        return;
+    }
+    
     const status = checkResults.status;
     
     let icon, title, description;
@@ -98,10 +202,16 @@ function displayOverallStatus() {
         <h2 class="status-title ${status}">${title}</h2>
         <p class="status-description">${description}</p>
     `;
+    console.log('✅ Overall status displayed');
 }
 
 function displayDetailedChecks() {
     const checksGrid = document.getElementById('checks-grid');
+    if (!checksGrid) {
+        console.error('❌ Could not find #checks-grid element!');
+        return;
+    }
+    
     checksGrid.innerHTML = '';
     
     if (!checkResults.checks) {
@@ -109,12 +219,13 @@ function displayDetailedChecks() {
         return;
     }
     
-    console.log('📊 Displaying checks:', checkResults.checks);
+    console.log('📊 Displaying checks:', Object.keys(checkResults.checks));
     
     for (const [checkName, checkData] of Object.entries(checkResults.checks)) {
         const checkCard = createCheckCard(checkName, checkData);
         checksGrid.appendChild(checkCard);
     }
+    console.log('✅ Detailed checks displayed');
 }
 
 function createCheckCard(checkName, checkData) {
@@ -154,6 +265,10 @@ function formatCheckName(name) {
 
 function displayAccountDetails() {
     const detailsEl = document.getElementById('account-details');
+    if (!detailsEl) {
+        console.error('❌ Could not find #account-details element!');
+        return;
+    }
     
     if (!checkResults.details) {
         console.log('ℹ️ No account details found');
@@ -161,7 +276,7 @@ function displayAccountDetails() {
         return;
     }
     
-    console.log('📋 Displaying account details:', checkResults.details);
+    console.log('📋 Displaying account details:', Object.keys(checkResults.details));
     
     const detailsGrid = document.createElement('div');
     detailsGrid.className = 'details-grid';
@@ -178,10 +293,16 @@ function displayAccountDetails() {
     
     detailsEl.innerHTML = '<h3>Account Details</h3>';
     detailsEl.appendChild(detailsGrid);
+    console.log('✅ Account details displayed');
 }
 
 function displayRecommendations() {
     const recommendationsContent = document.getElementById('recommendations-content');
+    if (!recommendationsContent) {
+        console.error('❌ Could not find #recommendations-content element!');
+        return;
+    }
+    
     const recommendations = generateRecommendations();
     
     console.log('💡 Displaying recommendations:', recommendations.length);
@@ -197,6 +318,7 @@ function displayRecommendations() {
         `;
         recommendationsContent.appendChild(recItem);
     });
+    console.log('✅ Recommendations displayed');
 }
 
 function generateRecommendations() {
@@ -370,6 +492,6 @@ function generateReportText() {
 
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('🚀 Results page loaded');
+    console.log('🚀 Results page loaded - starting debug mode');
     loadResults();
 });

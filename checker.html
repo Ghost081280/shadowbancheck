@@ -34,26 +34,23 @@
         <div class="container">
             <div class="section-header">
                 <h2 class="section-title">Select Platform to Check</h2>
-                <p class="section-desc">Click any platform to start your shadow ban check</p>
             </div>
             
             <div class="platform-grid" id="platform-grid">
+                <!-- Platforms loaded dynamically from platformData via checker.js -->
             </div>
         </div>
     </section>
 
-    <!-- Search Counter - Moved After Platform Grid -->
-    <section class="section" style="padding-top: 0;">
+    <!-- Search Status Bar - Redesigned -->
+    <section class="section" style="padding-top: var(--space-md);">
         <div class="container">
-            <div class="search-counter">
-                <div class="counter-content">
-                    <span class="counter-icon">🎯</span>
-                    <div class="counter-text">
-                        <h3>Free Searches Today</h3>
-                        <p id="searches-remaining">3 / 3 available</p>
-                    </div>
+            <div class="search-status-bar">
+                <div class="status-left">
+                    <span class="status-icon">🎯</span>
+                    <span class="status-text">Free searches today: <strong id="searches-remaining">3/3</strong></span>
                 </div>
-                <a href="index.html#pricing" class="btn-counter">Unlock More Searches</a>
+                <a href="index.html#pricing" class="status-cta">Unlock Unlimited →</a>
             </div>
         </div>
     </section>
@@ -145,7 +142,7 @@
                     <div class="method-card">
                         <span class="method-icon">🤖</span>
                         <h4>AI Probability Scoring</h4>
-                        <p>Our machine learning model processes 50+ data points to calculate a probability score. Even if platforms hide the truth, our AI can detect suppression patterns with 92% accuracy.</p>
+                        <p>Our machine learning model processes 10+ data points to calculate a probability score. Even if platforms hide the truth, our AI can detect suppression patterns with 92% accuracy.</p>
                         <div class="method-details">
                             <strong>Factors analyzed:</strong>
                             <ul>
@@ -200,7 +197,7 @@
                 <div class="source-card reveal">
                     <span class="source-icon">🤖</span>
                     <h4>AI Detection</h4>
-                    <p>ML model trained on 50+ factors for 92% accuracy</p>
+                    <p>ML model trained on 10+ factors for 92% accuracy</p>
                 </div>
                 <div class="source-card reveal">
                     <span class="source-icon">🔍</span>

@@ -29,8 +29,21 @@
         </div>
     </section>
 
-    <!-- Search Counter -->
-    <section class="section">
+    <!-- Platform Grid -->
+    <section class="platforms-checker section">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Select Platform to Check</h2>
+                <p class="section-desc">Click any platform to start your shadow ban check</p>
+            </div>
+            
+            <div class="platform-grid" id="platform-grid">
+            </div>
+        </div>
+    </section>
+
+    <!-- Search Counter - Moved After Platform Grid -->
+    <section class="section" style="padding-top: 0;">
         <div class="container">
             <div class="search-counter">
                 <div class="counter-content">
@@ -40,160 +53,20 @@
                         <p id="searches-remaining">3 / 3 available</p>
                     </div>
                 </div>
-                <a href="index.html#pricing" class="btn-counter">Unlock Unlimited</a>
+                <a href="index.html#pricing" class="btn-counter">Unlock More Searches</a>
             </div>
         </div>
     </section>
 
-    <!-- Platform Grid -->
-    <section class="platforms-checker section">
-        <div class="container">
-            <div class="section-header">
-                <h2 class="section-title">Select Platform to Check</h2>
-                <p class="section-desc">Click any platform to start your shadow ban check</p>
-            </div>
-            
-            <div class="platform-grid">
-                <div class="platform-item" data-platform="twitter">
-                    <span class="platform-icon">🐦</span>
-                    <span class="platform-name">Twitter / X</span>
-                    <span class="badge badge-live">Live</span>
-                </div>
-                <div class="platform-item" data-platform="instagram">
-                    <span class="platform-icon">📸</span>
-                    <span class="platform-name">Instagram</span>
-                    <span class="badge badge-soon">Soon</span>
-                </div>
-                <div class="platform-item" data-platform="tiktok">
-                    <span class="platform-icon">🎵</span>
-                    <span class="platform-name">TikTok</span>
-                    <span class="badge badge-soon">Soon</span>
-                </div>
-                <div class="platform-item" data-platform="facebook">
-                    <span class="platform-icon">📘</span>
-                    <span class="platform-name">Facebook</span>
-                    <span class="badge badge-soon">Soon</span>
-                </div>
-                <div class="platform-item" data-platform="reddit">
-                    <span class="platform-icon">🤖</span>
-                    <span class="platform-name">Reddit</span>
-                    <span class="badge badge-live">Live</span>
-                </div>
-                <div class="platform-item" data-platform="linkedin">
-                    <span class="platform-icon">💼</span>
-                    <span class="platform-name">LinkedIn</span>
-                    <span class="badge badge-soon">Soon</span>
-                </div>
-                <div class="platform-item" data-platform="threads">
-                    <span class="platform-icon">🧵</span>
-                    <span class="platform-name">Threads</span>
-                    <span class="badge badge-soon">Soon</span>
-                </div>
-                <div class="platform-item" data-platform="bluesky">
-                    <span class="platform-icon">🦋</span>
-                    <span class="platform-name">Bluesky</span>
-                    <span class="badge badge-soon">Soon</span>
-                </div>
-                <div class="platform-item" data-platform="youtube">
-                    <span class="platform-icon">📺</span>
-                    <span class="platform-name">YouTube</span>
-                    <span class="badge badge-soon">Soon</span>
-                </div>
-                <div class="platform-item" data-platform="pinterest">
-                    <span class="platform-icon">📌</span>
-                    <span class="platform-name">Pinterest</span>
-                    <span class="badge badge-soon">Soon</span>
-                </div>
-                <div class="platform-item" data-platform="discord">
-                    <span class="platform-icon">🎮</span>
-                    <span class="platform-name">Discord</span>
-                    <span class="badge badge-soon">Soon</span>
-                </div>
-                <div class="platform-item" data-platform="twitch">
-                    <span class="platform-icon">🟣</span>
-                    <span class="platform-name">Twitch</span>
-                    <span class="badge badge-soon">Soon</span>
-                </div>
-                <div class="platform-item" data-platform="kick">
-                    <span class="platform-icon">⚡</span>
-                    <span class="platform-name">Kick</span>
-                    <span class="badge badge-soon">Soon</span>
-                </div>
-                <div class="platform-item" data-platform="snapchat">
-                    <span class="platform-icon">👻</span>
-                    <span class="platform-name">Snapchat</span>
-                    <span class="badge badge-soon">Soon</span>
-                </div>
-                <div class="platform-item" data-platform="truth">
-                    <span class="platform-icon">🇺🇸</span>
-                    <span class="platform-name">Truth Social</span>
-                    <span class="badge badge-soon">Soon</span>
-                </div>
-                <div class="platform-item" data-platform="rumble">
-                    <span class="platform-icon">📹</span>
-                    <span class="platform-name">Rumble</span>
-                    <span class="badge badge-soon">Soon</span>
-                </div>
-                <div class="platform-item" data-platform="telegram">
-                    <span class="platform-icon">✈️</span>
-                    <span class="platform-name">Telegram</span>
-                    <span class="badge badge-soon">Soon</span>
-                </div>
-                <div class="platform-item" data-platform="etsy">
-                    <span class="platform-icon">🛍️</span>
-                    <span class="platform-name">Etsy</span>
-                    <span class="badge badge-soon">Soon</span>
-                </div>
-                <div class="platform-item" data-platform="amazon">
-                    <span class="platform-icon">📦</span>
-                    <span class="platform-name">Amazon</span>
-                    <span class="badge badge-soon">Soon</span>
-                </div>
-                <div class="platform-item" data-platform="ebay">
-                    <span class="platform-icon">🏷️</span>
-                    <span class="platform-name">eBay</span>
-                    <span class="badge badge-soon">Soon</span>
-                </div>
-                <div class="platform-item" data-platform="email">
-                    <span class="platform-icon">📧</span>
-                    <span class="platform-name">Email</span>
-                    <span class="badge badge-live">Live</span>
-                </div>
-                <div class="platform-item" data-platform="phone">
-                    <span class="platform-icon">📱</span>
-                    <span class="platform-name">Phone</span>
-                    <span class="badge badge-soon">Soon</span>
-                </div>
-                <div class="platform-item" data-platform="domain">
-                    <span class="platform-icon">🌐</span>
-                    <span class="platform-name">Domain</span>
-                    <span class="badge badge-soon">Soon</span>
-                </div>
-                <div class="platform-item" data-platform="ip">
-                    <span class="platform-icon">🖥️</span>
-                    <span class="platform-name">IP Address</span>
-                    <span class="badge badge-soon">Soon</span>
-                </div>
-                <div class="platform-item" data-platform="google">
-                    <span class="platform-icon">📍</span>
-                    <span class="platform-name">Google Business</span>
-                    <span class="badge badge-soon">Soon</span>
-                </div>
-                <div class="platform-item" data-platform="website">
-                    <span class="platform-icon">🔗</span>
-                    <span class="platform-name">Website</span>
-                    <span class="badge badge-soon">Soon</span>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- How It Works - Compact -->
-    <section class="section section-alt how-compact">
+    <!-- How It Works - Enhanced -->
+    <section class="section section-alt how-works-section">
         <div class="container">
             <div class="section-header">
                 <h2 class="section-title">How It Works</h2>
+                <p class="section-desc">Our comprehensive shadow ban detection system</p>
             </div>
+            
+            <!-- Quick Steps -->
             <div class="how-grid">
                 <div class="how-item reveal">
                     <span class="how-icon">1️⃣</span>
@@ -213,7 +86,83 @@
                     <span class="how-icon">3️⃣</span>
                     <div class="how-content">
                         <h4>Get Results</h4>
-                        <p>Results in 60 seconds</p>
+                        <p>Probability score in 60 seconds</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Detailed Methodology -->
+            <div class="methodology-section reveal">
+                <h3 class="methodology-title">Our Detection Engine</h3>
+                <p class="methodology-intro">Platforms rarely admit to shadow banning. That's why we built a proprietary detection system that analyzes dozens of signals to calculate an accurate probability score—even when platforms won't tell you the truth.</p>
+                
+                <div class="methodology-grid">
+                    <div class="method-card">
+                        <span class="method-icon">🔌</span>
+                        <h4>Platform API Analysis</h4>
+                        <p>We query official APIs (Twitter/X API v2, Reddit API, Email RBLs) to fetch real-time account status, engagement metrics, and visibility flags. This gives us direct data on reach patterns and content suppression.</p>
+                        <div class="method-details">
+                            <strong>What we check:</strong>
+                            <ul>
+                                <li>Account suspension status</li>
+                                <li>Content visibility flags</li>
+                                <li>Engagement rate baselines</li>
+                                <li>Quality filter status (Twitter QFD)</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="method-card">
+                        <span class="method-icon">🌐</span>
+                        <h4>Web Scraping & Search Tests</h4>
+                        <p>Our automated system performs live searches across platforms to verify if your content appears where it should. We test logged-in vs. logged-out visibility, hashtag reach, and explore page presence.</p>
+                        <div class="method-details">
+                            <strong>What we test:</strong>
+                            <ul>
+                                <li>Hashtag search results placement</li>
+                                <li>Chronological feed appearance</li>
+                                <li>Explore/FYP eligibility</li>
+                                <li>Incognito mode visibility</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="method-card">
+                        <span class="method-icon">📊</span>
+                        <h4>Historical Pattern Analysis</h4>
+                        <p>We maintain a database of millions of accounts and track visibility patterns over time. By comparing your metrics to historical norms, we can detect anomalies that indicate shadow banning.</p>
+                        <div class="method-details">
+                            <strong>What we compare:</strong>
+                            <ul>
+                                <li>Engagement drop-off speed</li>
+                                <li>Follower-to-reach ratios</li>
+                                <li>Content decay rates</li>
+                                <li>Platform algorithm changes</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="method-card">
+                        <span class="method-icon">🤖</span>
+                        <h4>AI Probability Scoring</h4>
+                        <p>Our machine learning model processes 50+ data points to calculate a probability score. Even if platforms hide the truth, our AI can detect suppression patterns with 92% accuracy.</p>
+                        <div class="method-details">
+                            <strong>Factors analyzed:</strong>
+                            <ul>
+                                <li>10+ visibility metrics</li>
+                                <li>Engagement velocity trends</li>
+                                <li>Content filter triggers</li>
+                                <li>Spam pattern detection</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="citation-info">
+                    <span class="citation-icon">📄</span>
+                    <div class="citation-content">
+                        <h4>Full Citation Support</h4>
+                        <p>Every result includes detailed citations showing exactly where our data came from—API responses, search test results, historical comparisons, and algorithmic calculations. You'll never wonder if we "made it up."</p>
                     </div>
                 </div>
             </div>
@@ -225,38 +174,38 @@
         <div class="container">
             <div class="section-header">
                 <h2 class="section-title">Our Data Sources</h2>
-                <p class="section-desc">We analyze multiple data points for accurate probability scores</p>
+                <p class="section-desc">Multi-layered analysis for maximum accuracy</p>
             </div>
             <div class="sources-grid">
                 <div class="source-card reveal">
                     <span class="source-icon">🔌</span>
                     <h4>Platform APIs</h4>
-                    <p>Direct real-time status</p>
+                    <p>Official API data from Twitter/X, Reddit, and email reputation services</p>
                 </div>
                 <div class="source-card reveal">
                     <span class="source-icon">🌐</span>
-                    <h4>Web Search</h4>
-                    <p>AI-powered analysis</p>
+                    <h4>Live Search Tests</h4>
+                    <p>Real-time visibility checks across search and feed systems</p>
                 </div>
                 <div class="source-card reveal">
                     <span class="source-icon">📊</span>
-                    <h4>Public Data</h4>
-                    <p>Historical records</p>
+                    <h4>Historical Database</h4>
+                    <p>Millions of accounts tracked for baseline comparisons</p>
                 </div>
                 <div class="source-card reveal">
                     <span class="source-icon">👥</span>
-                    <h4>User Reports</h4>
-                    <p>Community verified</p>
+                    <h4>Community Reports</h4>
+                    <p>User-verified shadow ban patterns and recovery timelines</p>
                 </div>
                 <div class="source-card reveal">
                     <span class="source-icon">🤖</span>
-                    <h4>AI Analysis</h4>
-                    <p>10+ factor detection</p>
+                    <h4>AI Detection</h4>
+                    <p>ML model trained on 50+ factors for 92% accuracy</p>
                 </div>
                 <div class="source-card reveal">
-                    <span class="source-icon">📈</span>
-                    <h4>Trend Data</h4>
-                    <p>Pattern recognition</p>
+                    <span class="source-icon">🔍</span>
+                    <h4>Third-Party APIs</h4>
+                    <p>Integration with shadowban.eu, hisubway, and RBL services</p>
                 </div>
             </div>
         </div>
@@ -278,6 +227,7 @@
 
     <!-- Platform Modal -->
     <div id="platform-modal" class="modal hidden">
+        <div class="modal-overlay"></div>
         <div class="modal-content">
             <button class="modal-close">&times;</button>
             <div id="modal-body"></div>

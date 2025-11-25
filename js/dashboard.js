@@ -530,7 +530,7 @@ function initLiveChat() {
 }
 
 function checkAdminStatus() {
-    const indicator = document.getElementById('admin-status-indicator');
+    const indicator = document.getElementById('admin-status-dot');
     const statusText = document.getElementById('admin-status-text');
     const miniChat = document.getElementById('mini-chat');
     const chatOffline = document.getElementById('chat-offline');

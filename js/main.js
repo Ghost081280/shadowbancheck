@@ -1,6 +1,8 @@
 /* =============================================================================
    MAIN.JS - SHARED FUNCTIONALITY
    All global functionality for ShadowBanCheck.io
+   
+   NOTE: Demo chat animation moved to shadow-ai.js
    ============================================================================= */
 
 /* =============================================================================
@@ -64,37 +66,36 @@ const platformData = [
         ]
     },
     
-    // COMING SOON - Social Media
+    // COMING SOON - Social Media (13)
     { name: 'Instagram', icon: '📸', category: 'social', status: 'soon' },
     { name: 'TikTok', icon: '🎵', category: 'social', status: 'soon' },
     { name: 'Facebook', icon: '📘', category: 'social', status: 'soon' },
     { name: 'LinkedIn', icon: '💼', category: 'social', status: 'soon' },
-    { name: 'YouTube', icon: '▶️', category: 'social', status: 'soon' },
+    { name: 'YouTube', icon: '📺', category: 'social', status: 'soon' },
     { name: 'Pinterest', icon: '📌', category: 'social', status: 'soon' },
     { name: 'Snapchat', icon: '👻', category: 'social', status: 'soon' },
     { name: 'Threads', icon: '🧵', category: 'social', status: 'soon' },
     { name: 'Bluesky', icon: '🦋', category: 'social', status: 'soon' },
-    { name: 'Mastodon', icon: '🐘', category: 'social', status: 'soon' },
-    { name: 'Rumble', icon: '📹', category: 'social', status: 'soon' },
     { name: 'Truth Social', icon: '🗽', category: 'social', status: 'soon' },
-    { name: 'Kick', icon: '🎯', category: 'social', status: 'soon' },
-    { name: 'Quora', icon: '❓', category: 'social', status: 'soon' },
+    { name: 'Rumble', icon: '📹', category: 'social', status: 'soon' },
+    { name: 'Kick', icon: '⚡', category: 'social', status: 'soon' },
     
-    // COMING SOON - Messaging
-    { name: 'WhatsApp', icon: '💬', category: 'messaging', status: 'soon' },
+    // COMING SOON - Messaging (2)
     { name: 'Telegram', icon: '✈️', category: 'messaging', status: 'soon' },
     { name: 'Discord', icon: '🎮', category: 'messaging', status: 'soon' },
     
-    // COMING SOON - E-Commerce
+    // COMING SOON - E-Commerce (3)
     { name: 'Amazon', icon: '📦', category: 'ecommerce', status: 'soon' },
     { name: 'eBay', icon: '🏷️', category: 'ecommerce', status: 'soon' },
-    { name: 'Etsy', icon: '🎨', category: 'ecommerce', status: 'soon' },
-    { name: 'Shopify', icon: '🛒', category: 'ecommerce', status: 'soon' },
+    { name: 'Etsy', icon: '🛍️', category: 'ecommerce', status: 'soon' },
     
-    // COMING SOON - Other
-    { name: 'Google', icon: '🔍', category: 'other', status: 'soon' },
-    { name: 'Bing', icon: '🌐', category: 'other', status: 'soon' },
-    { name: 'Twitch', icon: '📺', category: 'other', status: 'soon' }
+    // COMING SOON - Other (5)
+    { name: 'Twitch', icon: '🟣', category: 'other', status: 'soon' },
+    { name: 'Phone', icon: '📱', category: 'other', status: 'soon' },
+    { name: 'Domain', icon: '🌐', category: 'other', status: 'soon' },
+    { name: 'IP Address', icon: '🖥️', category: 'other', status: 'soon' },
+    { name: 'Google Business', icon: '📍', category: 'other', status: 'soon' },
+    { name: 'Website', icon: '🔗', category: 'other', status: 'soon' }
 ];
 
 // Export for use in other files
@@ -379,6 +380,36 @@ function openPlatformModal(platform) {
 /* =============================================================================
    POST CHECKER - DEMO RESULTS
    ============================================================================= */
+const POST_CHECK_STORAGE_KEY = 'shadowban_last_post_check';
+
+function canCheckPost() {
+    const lastCheck = localStorage.getItem(POST_CHECK_STORAGE_KEY);
+    if (!lastCheck) return true;
+    
+    const lastCheckTime = new Date(lastCheck);
+    const now = new Date();
+    const hoursSince = (now - lastCheckTime) / (1000 * 60 * 60);
+    
+    return hoursSince >= 24;
+}
+
+function getTimeUntilNextCheck() {
+    const lastCheck = localStorage.getItem(POST_CHECK_STORAGE_KEY);
+    if (!lastCheck) return null;
+    
+    const lastCheckTime = new Date(lastCheck);
+    const nextCheckTime = new Date(lastCheckTime.getTime() + (24 * 60 * 60 * 1000));
+    const now = new Date();
+    const msUntil = nextCheckTime - now;
+    
+    if (msUntil <= 0) return null;
+    
+    const hours = Math.floor(msUntil / (1000 * 60 * 60));
+    const minutes = Math.floor((msUntil % (1000 * 60 * 60)) / (1000 * 60));
+    
+    return { hours, minutes };
+}
+
 function initPostChecker() {
     const form = document.getElementById('post-checker-form');
     const input = document.getElementById('post-url-input');
@@ -403,28 +434,94 @@ function initPostChecker() {
             return;
         }
         
+        // Check if user can scan (1 per 24 hours for free)
+        if (!canCheckPost()) {
+            const timeLeft = getTimeUntilNextCheck();
+            if (timeLeft) {
+                showLimitModal(timeLeft);
+                return;
+            }
+        }
+        
         // Detect platform from URL
-        const platform = detectPlatform(url);
+        const platform = detectPlatformFromUrl(url);
+        const platformKey = platform.toLowerCase().replace(/\s+/g, '-').replace(/\//g, '-');
         
-        // Show loading state
-        button.classList.add('loading');
-        button.disabled = true;
-        
-        // Simulate analysis (demo)
-        setTimeout(() => {
-            button.classList.remove('loading');
-            button.disabled = false;
-            
-            // Generate demo results
-            showDemoResults(platform, url);
-        }, 2000);
+        // Redirect to checker page with platform parameter
+        window.location.href = `checker.html?platform=${platformKey}&from=post-checker`;
     });
     
-    // Check another button
+    // Check another button - should show limit if already used
     checkAnotherBtn?.addEventListener('click', function() {
+        if (!canCheckPost()) {
+            const timeLeft = getTimeUntilNextCheck();
+            if (timeLeft) {
+                showLimitModal(timeLeft);
+                return;
+            }
+        }
         resultsSection?.classList.add('hidden');
         input.value = '';
         input.focus();
+    });
+}
+
+function detectPlatformFromUrl(url) {
+    const urlLower = url.toLowerCase();
+    
+    if (urlLower.includes('twitter.com') || urlLower.includes('x.com')) return 'Twitter/X';
+    if (urlLower.includes('reddit.com')) return 'Reddit';
+    if (urlLower.includes('instagram.com')) return 'Instagram';
+    if (urlLower.includes('tiktok.com')) return 'TikTok';
+    if (urlLower.includes('facebook.com')) return 'Facebook';
+    if (urlLower.includes('youtube.com')) return 'YouTube';
+    
+    return 'Twitter/X'; // Default
+}
+
+function showLimitModal(timeLeft) {
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.innerHTML = `
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <button class="modal-close">&times;</button>
+            <div class="modal-icon">⏰</div>
+            <h3 class="modal-title">Free Limit Reached</h3>
+            <div class="modal-body">
+                <p class="modal-intro">You've used your <strong>1 free post check</strong> for today!</p>
+                <p>Next free check available in: <strong>${timeLeft.hours}h ${timeLeft.minutes}m</strong></p>
+                <hr style="border: none; border-top: 1px solid var(--border); margin: var(--space-lg) 0;">
+                <h4 style="margin-bottom: var(--space-md);">Want unlimited checks?</h4>
+                <p style="margin-bottom: var(--space-md);">Upgrade to a Pro plan for unlimited post analysis, account monitoring, and instant alerts.</p>
+            </div>
+            <div class="modal-footer">
+                <a href="#pricing" class="btn btn-primary btn-lg" onclick="this.closest('.modal').remove(); document.body.style.overflow = '';">View Pricing →</a>
+                <button class="btn btn-ghost" onclick="this.closest('.modal').remove(); document.body.style.overflow = '';">Maybe Later</button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    document.body.style.overflow = 'hidden';
+    
+    // Close handlers
+    const closeBtn = modal.querySelector('.modal-close');
+    const overlay = modal.querySelector('.modal-overlay');
+    
+    function closeModal() {
+        modal.remove();
+        document.body.style.overflow = '';
+    }
+    
+    closeBtn?.addEventListener('click', closeModal);
+    overlay?.addEventListener('click', closeModal);
+    
+    document.addEventListener('keydown', function escHandler(e) {
+        if (e.key === 'Escape') {
+            closeModal();
+            document.removeEventListener('keydown', escHandler);
+        }
     });
 }
 
@@ -552,145 +649,6 @@ function generateDemoFactors(platformName, score) {
     }
     
     return factors;
-}
-
-/* =============================================================================
-   DEMO CHAT ANIMATION - TYPEWRITER EFFECT
-   ============================================================================= */
-function initDemoChatAnimation() {
-    const demoChat = document.getElementById('demo-chat-messages');
-    if (!demoChat) return;
-    
-    let hasPlayed = false;
-    
-    const chatSequence = [
-        { 
-            type: 'ai', 
-            text: "👋 Hi! I'm Shadow AI, your personal shadow ban detective.",
-            delay: 500
-        },
-        { 
-            type: 'ai', 
-            text: "I can check if you're being suppressed on Twitter/X, Reddit, Instagram, TikTok, and 22+ other platforms.",
-            delay: 1500
-        },
-        { 
-            type: 'ai', 
-            text: "I analyze engagement patterns, visibility signals, and platform-specific indicators to give you a probability score.",
-            delay: 1500
-        },
-        { 
-            type: 'ai', 
-            text: "Would you like to learn more about our Pro subscription? 🚀",
-            delay: 1500
-        },
-        { 
-            type: 'user', 
-            text: "Yes, tell me more!",
-            delay: 2000,
-            clickable: true
-        },
-        { 
-            type: 'ai', 
-            text: "Great choice! With Shadow AI Pro you get:",
-            delay: 1000
-        },
-        { 
-            type: 'ai', 
-            text: "✓ 100 AI questions/day\n✓ Live platform checks\n✓ Recovery strategies\n✓ 24/7 availability",
-            delay: 1200
-        },
-        { 
-            type: 'ai', 
-            text: '👉 <a href="#pricing">View pricing plans</a> to get started with a 7-day free trial!',
-            delay: 1500
-        }
-    ];
-    
-    let currentIndex = 0;
-    let isAnimating = false;
-    
-    function showTypingIndicator() {
-        const typing = document.createElement('div');
-        typing.className = 'typing-indicator';
-        typing.innerHTML = '<span></span><span></span><span></span>';
-        demoChat.appendChild(typing);
-        demoChat.scrollTop = demoChat.scrollHeight;
-        return typing;
-    }
-    
-    function addMessage(message) {
-        const msgEl = document.createElement('div');
-        msgEl.className = `demo-msg ${message.type}`;
-        
-        if (message.type === 'ai') {
-            // For AI messages, use innerHTML to support links and formatting
-            msgEl.innerHTML = message.text.replace(/\n/g, '<br>');
-        } else {
-            msgEl.textContent = message.text;
-        }
-        
-        if (message.clickable) {
-            msgEl.style.cursor = 'pointer';
-            msgEl.title = 'Click to continue';
-        }
-        
-        demoChat.appendChild(msgEl);
-        demoChat.scrollTop = demoChat.scrollHeight;
-        
-        return msgEl;
-    }
-    
-    function playNextMessage() {
-        if (currentIndex >= chatSequence.length) {
-            isAnimating = false;
-            return;
-        }
-        
-        const message = chatSequence[currentIndex];
-        currentIndex++;
-        
-        if (message.type === 'ai') {
-            // Show typing indicator for AI messages
-            const typing = showTypingIndicator();
-            
-            setTimeout(() => {
-                typing.remove();
-                addMessage(message);
-                
-                setTimeout(playNextMessage, message.delay || 1000);
-            }, 800 + Math.random() * 400);
-        } else {
-            // User messages appear after a delay
-            setTimeout(() => {
-                addMessage(message);
-                setTimeout(playNextMessage, message.delay || 1000);
-            }, message.delay || 1000);
-        }
-    }
-    
-    function startAnimation() {
-        if (hasPlayed || isAnimating) return;
-        
-        hasPlayed = true;
-        isAnimating = true;
-        demoChat.innerHTML = '';
-        currentIndex = 0;
-        
-        setTimeout(playNextMessage, 500);
-    }
-    
-    // Start animation when visible
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting && !hasPlayed) {
-                startAnimation();
-                observer.unobserve(entry.target);
-            }
-        });
-    }, { threshold: 0.5 });
-    
-    observer.observe(demoChat);
 }
 
 /* =============================================================================
@@ -909,6 +867,7 @@ function initCookiePopup() {
    SHADOW AI BUTTON HANDLERS - Handled by shadow-ai.js
    ============================================================================= */
 // Note: Shadow AI buttons (#try-ai-btn, #open-shadow-ai) are handled by shadow-ai.js
+// Note: Demo chat animation is handled by shadow-ai.js
 
 /* =============================================================================
    INITIALIZE ALL
@@ -928,9 +887,8 @@ document.addEventListener('DOMContentLoaded', function() {
     initFAQAccordion();
     initSocialShare();
     initCookiePopup();
-    initDemoChatAnimation();
     
-    // Shadow AI buttons handled by shadow-ai.js
+    // Demo chat animation handled by shadow-ai.js
     
     // Update search counter display
     updateSearchCounterDisplay();

@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔧 Debug - ShadowBanCheck.io</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a0f;
+            color: #fff;
+            padding: 2rem;
+            line-height: 1.6;
+        }
+        h1 { margin-bottom: 1rem; color: #6366f1; }
+        h2 { margin: 2rem 0 1rem; color: #a855f7; font-size: 1.25rem; }
+        .status { 
+            padding: 1rem; 
+            margin: 0.5rem 0; 
+            border-radius: 8px; 
+            font-family: monospace;
+            font-size: 0.9rem;
+        }
+        .ok { background: rgba(34, 197, 94, 0.2); border: 1px solid #22c55e; }
+        .error { background: rgba(239, 68, 68, 0.2); border: 1px solid #ef4444; }
+        .warning { background: rgba(234, 179, 8, 0.2); border: 1px solid #eab308; }
+        .info { background: rgba(99, 102, 241, 0.2); border: 1px solid #6366f1; }
+        pre { 
+            background: #1a1a24; 
+            padding: 1rem; 
+            border-radius: 8px; 
+            overflow-x: auto;
+            margin: 1rem 0;
+            font-size: 0.85rem;
+        }
+        button {
+            background: #6366f1;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin: 0.5rem 0.5rem 0.5rem 0;
+        }
+        button:hover { background: #818cf8; }
+        .file-list { margin: 1rem 0; }
+        .file-item { 
+            display: flex; 
+            align-items: center; 
+            gap: 0.5rem; 
+            padding: 0.5rem;
+            background: #12121a;
+            margin: 0.25rem 0;
+            border-radius: 4px;
+        }
+        .file-item.loaded { border-left: 3px solid #22c55e; }
+        .file-item.failed { border-left: 3px solid #ef4444; }
+        .file-item.checking { border-left: 3px solid #eab308; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Dashboard Debug Tool</h1>
+    <p>This page checks if all your files are loading correctly.</p>
+
+    <h2>📄 CSS Files</h2>
+    <div id="css-status" class="file-list">Checking...</div>
+
+    <h2>⚡ JavaScript Files</h2>
+    <div id="js-status" class="file-list">Checking...</div>
+
+    <h2>🔍 Console Errors</h2>
+    <div id="console-errors">
+        <p class="status info">Open browser DevTools (F12) → Console tab to see errors</p>
+    </div>
+
+    <h2>🧪 Quick Tests</h2>
+    <button onclick="testCSS()">Test CSS Loading</button>
+    <button onclick="testJS()">Test JS Loading</button>
+    <button onclick="checkVariables()">Check Global Variables</button>
+    <button onclick="window.location.href='dashboard.html'">Go to Dashboard</button>
+    <button onclick="window.location.href='admin-dashboard.html'">Go to Admin</button>
+
+    <h2>📊 Results</h2>
+    <pre id="results">Click a test button above...</pre>
+
+    <h2>🛠️ Common Fixes</h2>
+    <div class="status info">
+        <strong>White screen / broken layout usually means:</strong><br><br>
+        1. <strong>Missing CSS file</strong> - Check if main.css or dashboard.css exists<br>
+        2. <strong>JS error stopping execution</strong> - Check console for red errors<br>
+        3. <strong>Wrong file path</strong> - CSS/JS path doesn't match folder structure<br>
+        4. <strong>Syntax error in JS</strong> - One bad character can break everything<br>
+        5. <strong>File got truncated</strong> - File didn't save completely
+    </div>
+
+    <script>
+        // Files to check
+        const cssFiles = [
+            'css/main.css',
+            'css/dashboard.css',
+            'css/shadow-ai-dashboard.css',
+            'css/admin-dashboard.css'
+        ];
+
+        const jsFiles = [
+            'js/main.js',
+            'js/dashboard.js',
+            'js/shadow-ai-dashboard.js',
+            'js/shadow-ai-admin.js',
+            'js/admin-dashboard.js',
+            'js/stripe-billing.js',
+            'js/login.js'
+        ];
+
+        // Check if file exists
+        async function checkFile(path) {
+            try {
+                const response = await fetch(path, { method: 'HEAD' });
+                return response.ok;
+            } catch (e) {
+                return false;
+            }
+        }
+
+        // Check CSS files
+        async function checkCSSFiles() {
+            const container = document.getElementById('css-status');
+            container.innerHTML = '';
+            
+            for (const file of cssFiles) {
+                const exists = await checkFile(file);
+                const div = document.createElement('div');
+                div.className = `file-item ${exists ? 'loaded' : 'failed'}`;
+                div.innerHTML = `${exists ? '✅' : '❌'} ${file} ${exists ? '- Found' : '- NOT FOUND'}`;
+                container.appendChild(div);
+            }
+        }
+
+        // Check JS files
+        async function checkJSFiles() {
+            const container = document.getElementById('js-status');
+            container.innerHTML = '';
+            
+            for (const file of jsFiles) {
+                const exists = await checkFile(file);
+                const div = document.createElement('div');
+                div.className = `file-item ${exists ? 'loaded' : 'failed'}`;
+                div.innerHTML = `${exists ? '✅' : '❌'} ${file} ${exists ? '- Found' : '- NOT FOUND'}`;
+                container.appendChild(div);
+            }
+        }
+
+        // Test CSS loading
+        function testCSS() {
+            const results = [];
+            
+            // Check computed styles
+            const testDiv = document.createElement('div');
+            testDiv.style.cssText = 'position:absolute;visibility:hidden;';
+            testDiv.className = 'test-element';
+            document.body.appendChild(testDiv);
+            
+            // Check if CSS variables are defined
+            const root = getComputedStyle(document.documentElement);
+            const vars = ['--bg', '--card', '--primary', '--text', '--border'];
+            
+            results.push('CSS Variable Check:');
+            vars.forEach(v => {
+                const value = root.getPropertyValue(v).trim();
+                results.push(`  ${v}: ${value || 'NOT DEFINED'}`);
+            });
+            
+            // Check loaded stylesheets
+            results.push('\nLoaded Stylesheets:');
+            Array.from(document.styleSheets).forEach((sheet, i) => {
+                try {
+                    results.push(`  ${i + 1}. ${sheet.href || 'inline'}`);
+                } catch (e) {
+                    results.push(`  ${i + 1}. (cross-origin blocked)`);
+                }
+            });
+            
+            document.body.removeChild(testDiv);
+            document.getElementById('results').textContent = results.join('\n');
+        }
+
+        // Test JS loading
+        function testJS() {
+            const results = [];
+            
+            results.push('Global Objects Check:');
+            results.push(`  window.platformData: ${typeof window.platformData !== 'undefined' ? '✅ Defined' : '❌ NOT DEFINED'}`);
+            results.push(`  window.userData: ${typeof window.userData !== 'undefined' ? '✅ Defined' : '❌ NOT DEFINED'}`);
+            results.push(`  window.ShadowAI: ${typeof window.ShadowAI !== 'undefined' ? '✅ Defined' : '❌ NOT DEFINED'}`);
+            results.push(`  window.StripeBilling: ${typeof window.StripeBilling !== 'undefined' ? '✅ Defined' : '❌ NOT DEFINED'}`);
+            
+            results.push('\nFunction Check:');
+            results.push(`  navigateTo: ${typeof window.navigateTo === 'function' ? '✅ Defined' : '❌ NOT DEFINED'}`);
+            results.push(`  showToast: ${typeof window.showToast === 'function' ? '✅ Defined' : '❌ NOT DEFINED'}`);
+            
+            document.getElementById('results').textContent = results.join('\n');
+        }
+
+        // Check global variables
+        function checkVariables() {
+            const results = [];
+            
+            results.push('=== DETAILED VARIABLE CHECK ===\n');
+            
+            // Check userData
+            if (window.userData) {
+                results.push('userData:');
+                results.push(JSON.stringify(window.userData, null, 2));
+            } else {
+                results.push('userData: ❌ NOT DEFINED');
+                results.push('  → This means dashboard.js may not have loaded');
+            }
+            
+            results.push('\n---\n');
+            
+            // Check platformData
+            if (window.platformData) {
+                results.push(`platformData: ✅ Defined (${window.platformData.length} platforms)`);
+            } else {
+                results.push('platformData: ❌ NOT DEFINED');
+                results.push('  → This means main.js may not have loaded');
+            }
+            
+            results.push('\n---\n');
+            
+            // Check ShadowAI
+            if (window.ShadowAI) {
+                results.push('ShadowAI: ✅ Defined');
+                results.push(`  Methods: ${Object.keys(window.ShadowAI).join(', ')}`);
+            } else {
+                results.push('ShadowAI: ❌ NOT DEFINED');
+                results.push('  → shadow-ai-dashboard.js may not have loaded');
+            }
+            
+            document.getElementById('results').textContent = results.join('\n');
+        }
+
+        // Run checks on load
+        checkCSSFiles();
+        checkJSFiles();
+
+        // Capture console errors
+        const originalError = console.error;
+        const errors = [];
+        console.error = function(...args) {
+            errors.push(args.join(' '));
+            originalError.apply(console, args);
+            
+            const container = document.getElementById('console-errors');
+            container.innerHTML = errors.map(e => 
+                `<div class="status error">${e}</div>`
+            ).join('');
+        };
+    </script>
+</body>
+</html>

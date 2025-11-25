@@ -4,114 +4,121 @@
    ============================================================================= */
 
 /* =============================================================================
-   SEARCH COUNTER MODULE (shared with checker)
+   HASHTAG CHECKER CARD - WIDE WITH PURPLE GLOW
+   Matches index.html post-checker-card styling
    ============================================================================= */
-.search-counter {
-    max-width: 600px;
-    margin: 0 auto var(--space-2xl);
+.hashtag-checker-card {
+    max-width: 800px;
+    margin: 0 auto;
     background: var(--gradient-card);
-    border: 2px solid var(--border);
-    border-radius: var(--radius-xl);
-    padding: var(--space-lg);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--space-lg);
+    border: 2px solid var(--primary);
+    border-radius: var(--radius-2xl);
+    padding: var(--space-xl);
+    box-shadow: var(--shadow-glow-lg);
+    position: relative;
 }
 
-.counter-content {
+/* Info Button - Top Right */
+.hashtag-checker-card .checker-info-btn {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(99, 102, 241, 0.15);
+    border: 2px solid rgba(99, 102, 241, 0.4);
+    border-radius: 50%;
+    color: var(--primary-light);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    flex-shrink: 0;
+    position: absolute;
+    top: var(--space-md);
+    right: var(--space-md);
+    z-index: 10;
+}
+
+.hashtag-checker-card .checker-info-btn:hover {
+    background: rgba(99, 102, 241, 0.25);
+    border-color: var(--primary);
+    transform: scale(1.08);
+    box-shadow: 0 0 16px rgba(99, 102, 241, 0.4);
+}
+
+.hashtag-checker-card .checker-info-btn svg {
+    flex-shrink: 0;
+    width: 26px;
+    height: 26px;
+}
+
+/* Checker Header */
+.hashtag-checker-card .checker-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--space-md);
+    margin-bottom: var(--space-lg);
+    padding-right: var(--space-3xl);
+}
+
+.hashtag-checker-card .checker-header-content {
     display: flex;
     align-items: center;
     gap: var(--space-md);
+    flex: 1;
+    text-align: left;
 }
 
-.counter-icon {
-    font-size: 1.75rem;
+.hashtag-checker-card .checker-icon {
+    font-size: 2.5rem;
+    flex-shrink: 0;
 }
 
-.counter-text h3 {
-    font-size: 0.9375rem;
+.hashtag-checker-card .checker-header-content > div {
+    flex: 1;
+}
+
+.hashtag-checker-card .checker-header h3 {
+    font-size: 1.25rem;
     margin-bottom: var(--space-2xs);
 }
 
-.counter-text p {
+.hashtag-checker-card .checker-header p {
     color: var(--text-muted);
-    font-size: 0.8125rem;
+    font-size: 0.875rem;
     margin: 0;
 }
 
-.btn-counter {
-    background: var(--gradient-primary);
-    color: white;
-    padding: var(--space-sm) var(--space-md);
-    border-radius: var(--radius-md);
-    font-weight: 600;
-    font-size: 0.8125rem;
-    white-space: nowrap;
-    transition: all var(--transition-base);
-    text-decoration: none;
-    box-shadow: var(--shadow-sm);
-}
-
-.btn-counter:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
-    color: white;
-}
-
-/* =============================================================================
-   CHECKER FORM CARD
-   ============================================================================= */
-.checker-form-card {
-    background: var(--card);
-    border: 2px solid var(--border);
-    border-radius: var(--radius-xl);
-    padding: var(--space-xl);
-    max-width: 700px;
-    margin: 0 auto;
-}
-
-.checker-form-card h2 {
-    font-size: 1.5rem;
-    margin-bottom: var(--space-sm);
-    text-align: center;
-}
-
-.form-help {
-    color: var(--text-muted);
-    font-size: 0.875rem;
-    margin-bottom: var(--space-lg);
-    text-align: center;
-}
-
-.input-group {
+/* Input Group */
+.hashtag-checker-card .input-group {
     margin-bottom: var(--space-md);
 }
 
-#hashtag-input {
+.hashtag-checker-card #hashtag-input {
     width: 100%;
     min-height: 120px;
-    padding: var(--space-md);
-    background: var(--bg);
+    padding: var(--space-md) var(--space-lg);
+    background: var(--card);
     border: 2px solid var(--border);
     border-radius: var(--radius-lg);
     color: var(--text);
     font-size: 1rem;
     font-family: inherit;
     resize: vertical;
-    transition: border-color var(--transition-fast);
+    transition: all var(--transition-fast);
 }
 
-#hashtag-input:focus {
+.hashtag-checker-card #hashtag-input:focus {
     outline: none;
     border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
 }
 
-#hashtag-input::placeholder {
+.hashtag-checker-card #hashtag-input::placeholder {
     color: var(--text-muted);
 }
 
-.input-meta {
+.hashtag-checker-card .input-meta {
     display: flex;
     justify-content: space-between;
     margin-top: var(--space-xs);
@@ -119,7 +126,8 @@
     color: var(--text-muted);
 }
 
-.btn-check-hashtags {
+/* Check Button */
+.hashtag-checker-card .btn-check-hashtags {
     width: 100%;
     display: flex;
     align-items: center;
@@ -129,26 +137,45 @@
     background: var(--gradient-primary);
     color: white;
     border: none;
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-lg);
     font-size: 1rem;
     font-weight: 700;
     cursor: pointer;
     transition: all var(--transition-base);
     margin-bottom: var(--space-md);
-    box-shadow: var(--shadow-md);
+    box-shadow: var(--shadow-md), 0 0 20px rgba(99, 102, 241, 0.3);
+    min-height: 56px;
 }
 
-.btn-check-hashtags:hover:not(:disabled) {
+.hashtag-checker-card .btn-check-hashtags:hover:not(:disabled) {
     transform: translateY(-2px);
-    box-shadow: var(--shadow-lg);
+    box-shadow: var(--shadow-lg), 0 0 30px rgba(99, 102, 241, 0.5);
 }
 
-.btn-check-hashtags:disabled {
+.hashtag-checker-card .btn-check-hashtags:disabled {
     opacity: 0.5;
     cursor: not-allowed;
 }
 
-.quick-actions {
+/* Checker Features */
+.hashtag-checker-card .checker-features {
+    display: flex;
+    gap: var(--space-lg);
+    justify-content: center;
+    flex-wrap: wrap;
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    margin-bottom: var(--space-md);
+}
+
+.hashtag-checker-card .checker-features span {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2xs);
+}
+
+/* Quick Actions */
+.hashtag-checker-card .quick-actions {
     display: flex;
     gap: var(--space-xl);
     justify-content: center;
@@ -328,7 +355,7 @@
 }
 
 /* =============================================================================
-   PLATFORM-SPECIFIC BANNED HASHTAGS (RESTORED)
+   PLATFORM-SPECIFIC BANNED HASHTAGS - DAILY TRENDING
    ============================================================================= */
 .platform-hashtags-section {
     padding: var(--space-2xl) 0;
@@ -436,20 +463,24 @@
     color: var(--warning);
 }
 
-/* Legend */
+/* Legend - Enhanced */
 .banned-legend {
     display: flex;
     gap: var(--space-xl);
     justify-content: center;
     flex-wrap: wrap;
+    margin-top: var(--space-xl);
+    padding-top: var(--space-lg);
+    border-top: 1px solid var(--border);
 }
 
 .legend-item {
     display: flex;
     align-items: center;
     gap: var(--space-xs);
-    color: var(--text-muted);
-    font-size: 0.8125rem;
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    font-weight: 500;
 }
 
 .legend-dot {
@@ -461,42 +492,233 @@
 .legend-dot.banned { background: var(--danger); }
 .legend-dot.restricted { background: var(--warning); }
 
-/* =============================================================================
-   TRENDING BANNED HASHTAGS (Quick View)
-   ============================================================================= */
-.trending-section {
-    padding: var(--space-2xl) 0;
+.legend-desc {
+    color: var(--text-muted);
+    font-weight: 400;
 }
 
-.trending-grid {
+/* =============================================================================
+   HOW IT WORKS - MATCHING CHECKER PAGE STYLE
+   ============================================================================= */
+.how-works-section {
+    background: var(--bg-secondary);
+}
+
+/* Quick Steps Grid */
+.how-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-lg);
+    margin-bottom: var(--space-3xl);
+}
+
+.how-item {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-lg);
     display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-sm);
-    justify-content: center;
+    align-items: center;
+    gap: var(--space-md);
+    transition: all var(--transition-base);
+}
+
+.how-item:hover {
+    border-color: var(--primary);
+    transform: translateY(-2px);
+}
+
+.how-icon {
+    font-size: 2rem;
+    flex-shrink: 0;
+}
+
+.how-content h4 {
+    font-size: 1rem;
+    margin-bottom: var(--space-xs);
+}
+
+.how-content p {
+    color: var(--text-muted);
+    font-size: 0.875rem;
+    margin: 0;
+}
+
+/* Methodology Section - Matching checker.css */
+.methodology-section {
+    margin-top: var(--space-3xl);
+    padding: var(--space-2xl);
+    background: var(--card);
+    border: 2px solid var(--border);
+    border-radius: var(--radius-2xl);
+}
+
+.methodology-title {
+    font-size: 1.75rem;
+    text-align: center;
+    margin-bottom: var(--space-md);
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.methodology-intro {
+    text-align: center;
+    color: var(--text-secondary);
+    font-size: 1.0625rem;
+    line-height: 1.7;
+    max-width: 900px;
+    margin: 0 auto var(--space-2xl);
+}
+
+.methodology-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-lg);
+    margin-bottom: var(--space-xl);
+}
+
+.method-card {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    padding: var(--space-xl);
+    transition: all var(--transition-base);
+}
+
+.method-card:hover {
+    border-color: var(--primary);
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-glow-md);
+}
+
+.method-icon {
+    font-size: 2.5rem;
+    display: block;
     margin-bottom: var(--space-md);
 }
 
+.method-card h4 {
+    font-size: 1.125rem;
+    margin-bottom: var(--space-sm);
+    color: var(--text);
+}
+
+.method-card > p {
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin-bottom: var(--space-md);
+}
+
+.method-details {
+    background: var(--bg-secondary);
+    border-radius: var(--radius-md);
+    padding: var(--space-md);
+    margin-top: var(--space-md);
+}
+
+.method-details strong {
+    display: block;
+    color: var(--primary-light);
+    font-size: 0.8125rem;
+    margin-bottom: var(--space-sm);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.method-details ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.method-details li {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    padding: var(--space-2xs) 0;
+    padding-left: var(--space-md);
+    position: relative;
+}
+
+.method-details li:before {
+    content: "•";
+    position: absolute;
+    left: 0;
+    color: var(--primary);
+}
+
+.citation-info {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-md);
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(168, 85, 247, 0.1) 100%);
+    border: 1px solid rgba(99, 102, 241, 0.3);
+    border-radius: var(--radius-lg);
+    padding: var(--space-lg);
+}
+
+.citation-icon {
+    font-size: 2rem;
+    flex-shrink: 0;
+}
+
+.citation-content h4 {
+    font-size: 1rem;
+    margin-bottom: var(--space-sm);
+    color: var(--primary-light);
+}
+
+.citation-content p {
+    color: var(--text-secondary);
+    font-size: 0.9375rem;
+    margin: 0 0 var(--space-sm) 0;
+    line-height: 1.6;
+}
+
+.citation-content p:last-child {
+    margin-bottom: 0;
+}
+
 /* =============================================================================
-   HOW IT WORKS (Compact)
+   DATA SOURCES GRID
    ============================================================================= */
-.how-compact .how-grid {
+.sources-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
     gap: var(--space-md);
 }
 
-.how-compact .how-item {
+.source-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
     padding: var(--space-md);
+    text-align: center;
+    transition: all var(--transition-base);
 }
 
-.how-compact .how-icon {
+.source-card:hover {
+    border-color: var(--primary);
+    transform: translateY(-2px);
+}
+
+.source-icon {
     font-size: 1.5rem;
+    margin-bottom: var(--space-xs);
+    display: block;
 }
 
-.how-compact .how-content h4 {
-    font-size: 0.9375rem;
-}
-
-.how-compact .how-content p {
+.source-card h4 {
     font-size: 0.8125rem;
+    margin-bottom: var(--space-2xs);
+}
+
+.source-card p {
+    color: var(--text-muted);
+    font-size: 0.6875rem;
+    margin: 0;
+    line-height: 1.4;
 }
 
 /* =============================================================================
@@ -553,72 +775,53 @@
 }
 
 /* =============================================================================
-   UPGRADE CTA SECTION
-   ============================================================================= */
-.upgrade-cta-section {
-    padding: var(--space-2xl) 0;
-}
-
-.upgrade-cta-card {
-    background: var(--gradient-card);
-    border: 2px solid var(--primary);
-    border-radius: var(--radius-xl);
-    padding: var(--space-xl);
-    text-align: center;
-    max-width: 600px;
-    margin: 0 auto;
-}
-
-.upgrade-cta-icon {
-    font-size: 3rem;
-    margin-bottom: var(--space-md);
-}
-
-.upgrade-cta-card h3 {
-    font-size: 1.5rem;
-    margin-bottom: var(--space-sm);
-}
-
-.upgrade-cta-card > p {
-    color: var(--text-muted);
-    margin-bottom: var(--space-lg);
-}
-
-.btn-upgrade-cta {
-    display: inline-block;
-    background: var(--gradient-primary);
-    color: white;
-    padding: var(--space-md) var(--space-xl);
-    border-radius: var(--radius-md);
-    font-weight: 700;
-    font-size: 1.125rem;
-    transition: all var(--transition-base);
-    text-decoration: none;
-    box-shadow: var(--shadow-md);
-}
-
-.btn-upgrade-cta:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-lg);
-    color: white;
-}
-
-/* =============================================================================
    RESPONSIVE - HASHTAG CHECKER PAGE
    ============================================================================= */
+@media (max-width: 1024px) {
+    .sources-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    
+    .methodology-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
 @media (max-width: 768px) {
-    .search-counter {
+    .hashtag-checker-card {
+        padding: var(--space-lg);
+    }
+    
+    .hashtag-checker-card .checker-info-btn {
+        width: 44px;
+        height: 44px;
+        top: var(--space-sm);
+        right: var(--space-sm);
+    }
+    
+    .hashtag-checker-card .checker-info-btn svg {
+        width: 22px;
+        height: 22px;
+    }
+    
+    .hashtag-checker-card .checker-header {
+        flex-direction: column;
+        padding-right: 0;
+    }
+    
+    .hashtag-checker-card .checker-header-content {
         flex-direction: column;
         text-align: center;
-        gap: var(--space-md);
+        width: 100%;
     }
     
-    .counter-content {
+    .hashtag-checker-card .checker-features {
         flex-direction: column;
+        gap: var(--space-sm);
     }
     
-    .checker-form-card {
-        padding: var(--space-lg);
+    .how-grid {
+        grid-template-columns: 1fr;
     }
     
     .results-summary {
@@ -662,4 +865,54 @@
     .btn-results {
         width: 100%;
     }
+    
+    .sources-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .methodology-section {
+        padding: var(--space-lg);
+    }
+    
+    .methodology-title {
+        font-size: 1.5rem;
+    }
+    
+    .methodology-intro {
+        font-size: 1rem;
+    }
+    
+    .citation-info {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .banned-legend {
+        flex-direction: column;
+        align-items: center;
+        gap: var(--space-sm);
+    }
+    
+    .legend-item {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .sources-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+    
+    .method-card {
+        padding: var(--space-lg);
+    }
+}
+
+/* =============================================================================
+   ANIMATION KEYFRAMES
+   ============================================================================= */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
 }

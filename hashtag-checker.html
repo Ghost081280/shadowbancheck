@@ -82,27 +82,34 @@
     <!-- Results Section (Hidden initially) -->
     <section id="results-section" class="results-section hidden">
         <div class="container">
-            <div class="results-header">
+            <!-- Compact Summary Bar -->
+            <div class="results-summary-bar">
                 <h2>📊 Results</h2>
-                <div class="results-summary">
-                    <div class="summary-stat safe">
-                        <span class="stat-number" id="safe-count">0</span>
-                        <span class="stat-label">Safe</span>
+                <div class="summary-stats">
+                    <div class="summary-stat-inline safe">
+                        <span class="stat-icon">✅</span>
+                        <span class="stat-count" id="safe-count">0</span>
+                        <span class="stat-label-inline">Safe</span>
                     </div>
-                    <div class="summary-stat banned">
-                        <span class="stat-number" id="banned-count">0</span>
-                        <span class="stat-label">Banned</span>
+                    <div class="summary-stat-inline banned">
+                        <span class="stat-icon">🚫</span>
+                        <span class="stat-count" id="banned-count">0</span>
+                        <span class="stat-label-inline">Banned</span>
                     </div>
-                    <div class="summary-stat warning">
-                        <span class="stat-number" id="restricted-count">0</span>
-                        <span class="stat-label">Restricted</span>
+                    <div class="summary-stat-inline restricted">
+                        <span class="stat-icon">⚠️</span>
+                        <span class="stat-count" id="restricted-count">0</span>
+                        <span class="stat-label-inline">Restricted</span>
                     </div>
                 </div>
             </div>
+            
+            <!-- Compact Hashtag Grid -->
             <div id="results-list" class="results-list"></div>
+            
             <div class="results-actions">
-                <button id="copy-safe-btn" class="btn-results">Copy Safe Hashtags</button>
-                <button id="export-btn" class="btn-results">Export Results</button>
+                <button id="copy-safe-btn" class="btn-results">📋 Copy Safe Hashtags</button>
+                <button id="export-btn" class="btn-results">📥 Export Results</button>
             </div>
         </div>
     </section>

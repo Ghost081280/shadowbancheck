@@ -155,7 +155,7 @@ function getDemoDataForPlatform(platform) {
    LOAD AND DISPLAY RESULTS
    ============================================================================= */
 function loadResults() {
-    // Try demo data first
+    // Try demo data first (for URL params like ?demo=twitter)
     if (loadDemoData()) {
         return;
     }
@@ -164,7 +164,22 @@ function loadResults() {
     const storedData = sessionStorage.getItem('shadowban_results');
     
     if (!storedData) {
-        // No results - redirect to checker
+        // No results - AUTO-LOAD DEMO DATA for editing/preview
+        console.log('No stored results, loading Twitter demo for preview');
+        const twitterDemo = getDemoDataForPlatform('twitter');
+        if (twitterDemo) {
+            displayResults(twitterDemo);
+            // Show notice at top
+            const resultsHeader = document.getElementById('results-header');
+            if (resultsHeader) {
+                const notice = document.createElement('div');
+                notice.style.cssText = 'background: rgba(99, 102, 241, 0.1); border: 1px solid var(--primary); border-radius: 8px; padding: 12px 16px; margin-bottom: 24px; text-align: center; font-size: 0.875rem; color: var(--text-secondary);';
+                notice.innerHTML = '📊 <strong>Demo Data Loaded</strong> - This is sample data for Twitter/X. Try other platforms: <a href="?demo=reddit" style="color: var(--primary-light); margin: 0 8px;">Reddit</a> | <a href="?demo=email" style="color: var(--primary-light); margin: 0 8px;">Email</a>';
+                resultsHeader.parentNode.insertBefore(notice, resultsHeader);
+            }
+            return;
+        }
+        // Fallback: redirect to checker if demo fails
         window.location.href = 'checker.html';
         return;
     }

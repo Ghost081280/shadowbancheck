@@ -44,51 +44,43 @@
             <!-- Actions -->
             <div class="results-actions">
                 <a href="checker.html" class="btn-action">🔍 Check Another Platform</a>
+                <button id="share-results-btn" class="btn-action">📤 Share Results</button>
                 <button id="download-report" class="btn-action">📄 Download Report</button>
             </div>
-
-            <!-- Compact Monitoring CTA -->
-            <section class="monitoring-cta-compact">
-                <div class="monitoring-cta-content">
-                    <span class="monitoring-icon">⚡</span>
-                    <div class="monitoring-text">
-                        <h3>Want 24/7 monitoring & instant alerts?</h3>
-                        <p>Upgrade for unlimited checks, real-time notifications, and recovery strategies</p>
-                    </div>
-                    <a href="index.html#pricing" class="monitoring-cta-btn">View Plans →</a>
-                </div>
-            </section>
-
-            <!-- Share Results - Match Index Page Style -->
-            <section class="share-section section">
-                <div class="container">
-                    <div class="section-header">
-                        <h2 class="section-title">📢 Spread the Word</h2>
-                        <p class="section-desc">Let others know they can check their accounts too!</p>
-                    </div>
-                    
-                    <div class="share-buttons">
-                        <button class="btn-share" id="share-twitter">
-                            <span class="share-icon">𝕏</span>
-                            <span>Share on X</span>
-                        </button>
-                        <button class="btn-share" id="share-facebook">
-                            <span class="share-icon">f</span>
-                            <span>Share on Facebook</span>
-                        </button>
-                        <button class="btn-share" id="share-telegram">
-                            <span class="share-icon">✈️</span>
-                            <span>Share on Telegram</span>
-                        </button>
-                        <button class="btn-share" id="share-linkedin">
-                            <span class="share-icon">in</span>
-                            <span>Share on LinkedIn</span>
-                        </button>
-                    </div>
-                </div>
-            </section>
         </div>
     </main>
+
+    <!-- Share Modal -->
+    <div id="share-modal" class="modal hidden">
+        <div class="modal-overlay"></div>
+        <div class="modal-content" style="max-width: 400px;">
+            <button class="modal-close">&times;</button>
+            <div class="modal-platform-check">
+                <span class="modal-platform-icon">📤</span>
+                <h3>Share Your Results</h3>
+                <p style="margin-bottom: var(--space-lg);">Invite others to check their accounts!</p>
+                
+                <div style="display: flex; flex-direction: column; gap: var(--space-sm);">
+                    <button class="btn btn-primary btn-full" id="share-modal-twitter">
+                        <span>𝕏</span>
+                        <span>Share on X</span>
+                    </button>
+                    <button class="btn btn-secondary btn-full" id="share-modal-facebook">
+                        <span>f</span>
+                        <span>Share on Facebook</span>
+                    </button>
+                    <button class="btn btn-secondary btn-full" id="share-modal-telegram">
+                        <span>✈️</span>
+                        <span>Share on Telegram</span>
+                    </button>
+                    <button class="btn btn-secondary btn-full" id="share-modal-linkedin">
+                        <span>in</span>
+                        <span>Share on LinkedIn</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Cross-Promote: Hashtag Checker - Match Checker Page Style -->
     <section class="section section-alt">

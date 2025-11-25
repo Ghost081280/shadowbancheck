@@ -15,20 +15,18 @@
     
     <!-- CSS -->
     <link rel="stylesheet" href="css/main.css">
-    <link rel="stylesheet" href="css/shadow-ai.css">
 </head>
 <body>
     <!-- ===================================
-         SHARED COMPONENTS
-         Header, Mobile Nav, Footer loaded by shared-components.js
+         HEADER - Loaded by shared-components.js
          =================================== -->
 
     <!-- Hero Section -->
     <section class="hero">
         <div class="container">
-            <div class="hero-badge">🔍 Find Out If You're Shadow Banned</div>
+            <div class="hero-badge">🔍 Free Shadow Ban Detection</div>
             <h1 class="hero-title"><span class="text-gradient">Is Your Post Shadow Banned?</span></h1>
-            <p class="hero-subtitle">Paste any social media post URL below. Our AI analyzes engagement, visibility, and 10+ factors to give you a probability score of what's really happening.</p>
+            <p class="hero-subtitle">Paste your social media post URL below. Our AI analyzes engagement, visibility, and 10+ factors to give you a probability score.</p>
             
             <!-- Post URL Checker - Primary Feature -->
             <div class="post-checker">
@@ -37,10 +35,10 @@
                         <span class="checker-icon">🔗</span>
                         <div>
                             <h3>Instant Post Analysis</h3>
-                            <p>Works with Twitter, Instagram, TikTok, Reddit, YouTube</p>
+                            <p>Works with Twitter/X, Reddit, and more coming soon</p>
                         </div>
                     </div>
-                    <div class="checker-form">
+                    <form class="checker-form" id="post-checker-form">
                         <input 
                             type="url" 
                             id="post-url-input"
@@ -48,101 +46,97 @@
                             placeholder="https://twitter.com/username/status/123456789..."
                             aria-label="Enter post URL"
                         >
-                        <button class="btn-analyze" id="analyze-post-btn">
+                        <button type="submit" class="btn-analyze" id="analyze-post-btn">
                             <span class="btn-text">Analyze Post</span>
-                            <span>🔍</span>
+                            <span class="btn-icon">🔍</span>
                         </button>
-                    </div>
+                    </form>
                     <div class="checker-features">
-                        <span>✓ Probability score in 60 seconds</span>
+                        <span>✓ Results in 60 seconds</span>
                         <span>✓ First check FREE</span>
                         <span>✓ AI-powered analysis</span>
                     </div>
                 </div>
                 
                 <!-- Results Area (Hidden Initially) -->
-                <div class="post-results hidden" id="post-results"></div>
+                <div class="post-results hidden" id="post-results">
+                    <div class="results-card">
+                        <div class="results-header">
+                            <span class="results-icon" id="results-icon">📊</span>
+                            <div>
+                                <h3 id="results-title">Analysis Complete</h3>
+                                <p id="results-platform">Platform detected: Twitter/X</p>
+                            </div>
+                        </div>
+                        
+                        <div class="results-score">
+                            <div class="score-circle" id="score-circle">
+                                <span class="score-value" id="score-value">23%</span>
+                                <span class="score-label">Shadow Ban Probability</span>
+                            </div>
+                        </div>
+                        
+                        <div class="results-factors">
+                            <h4>Factors Analyzed:</h4>
+                            <ul id="factors-list">
+                                <li class="factor-good"><span>✓</span> Post appears in hashtag searches</li>
+                                <li class="factor-good"><span>✓</span> Profile visible to logged-out users</li>
+                                <li class="factor-good"><span>✓</span> Replies visible in threads</li>
+                                <li class="factor-warning"><span>⚠</span> Lower than expected engagement rate</li>
+                                <li class="factor-good"><span>✓</span> No quality filter restrictions detected</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="results-cta">
+                            <p>Want continuous monitoring & instant alerts?</p>
+                            <a href="#pricing" class="btn btn-primary">Get Full Protection →</a>
+                            <button class="btn btn-ghost" id="check-another-btn">Check Another Post</button>
+                        </div>
+                    </div>
+                </div>
             </div>
             
             <div class="hero-divider">
                 <span>Or check by username / hashtag</span>
             </div>
             
-            <!-- Three Options -->
-            <div class="hero-options">
-                <div class="option-card reveal">
-                    <div class="option-icon">🔍</div>
-                    <h3>Quick Check</h3>
-                    <p>Single platform verification for your account</p>
-                    <div class="option-footer">
+            <!-- Two Options - Horizontal Cards -->
+            <div class="hero-options-compact">
+                <a href="checker.html" class="option-card-horizontal reveal">
+                    <span class="option-icon">🔍</span>
+                    <div class="option-content">
+                        <h3>Quick Account Check</h3>
+                        <p>Verify if your account is shadow banned on any platform</p>
+                    </div>
+                    <div class="option-meta">
                         <span class="option-tag free">Free • 3/day</span>
-                        <a href="checker.html" class="option-link">Check Now →</a>
+                        <span class="option-arrow">→</span>
                     </div>
-                </div>
+                </a>
                 
-                <div class="option-card reveal">
-                    <div class="option-icon">🚫</div>
-                    <h3>Banned Hashtags</h3>
-                    <p>Verify hashtags before posting</p>
-                    <div class="option-footer">
+                <a href="hashtag-checker.html" class="option-card-horizontal reveal">
+                    <span class="option-icon">🚫</span>
+                    <div class="option-content">
+                        <h3>Banned Hashtag Checker</h3>
+                        <p>Verify hashtags before posting to avoid reach penalties</p>
+                    </div>
+                    <div class="option-meta">
                         <span class="option-tag free">Free • 5/day</span>
-                        <a href="hashtag-checker.html" class="option-link">Check Hashtags →</a>
+                        <span class="option-arrow">→</span>
                     </div>
-                </div>
-                
-                <div class="option-card featured reveal">
-                    <div class="option-badge">Most Popular</div>
-                    <div class="option-icon">🤖</div>
-                    <h3>Shadow AI Pro</h3>
-                    <p>AI investigation + monitoring</p>
-                    <div class="option-footer">
-                        <span class="option-tag pro">From $9.99/mo</span>
-                        <a href="#shadow-ai-pro" class="option-link">Learn More →</a>
-                    </div>
-                </div>
+                </a>
             </div>
         </div>
     </section>
 
-    <!-- How It Works -->
-    <section class="section section-alt" id="how-it-works">
-        <div class="container">
-            <div class="section-header">
-                <h2 class="section-title">How It Works</h2>
-            </div>
-            <div class="how-grid">
-                <div class="how-item reveal">
-                    <span class="how-icon">🤖</span>
-                    <div class="how-content">
-                        <h4>AI-Powered Analysis</h4>
-                        <p>Our AI scans multiple sources and analyzes 10+ factors to detect shadow bans.</p>
-                    </div>
-                </div>
-                <div class="how-item reveal">
-                    <span class="how-icon">🔌</span>
-                    <div class="how-content">
-                        <h4>Platform APIs</h4>
-                        <p>Direct integration with platforms for real-time account status checks.</p>
-                    </div>
-                </div>
-                <div class="how-item reveal">
-                    <span class="how-icon">📊</span>
-                    <div class="how-content">
-                        <h4>Real-Time Monitoring</h4>
-                        <p>Continuous checks with instant alerts via text or email.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Target Audience -->
-    <section class="section">
+    <!-- Made for You + How It Works Combined -->
+    <section class="section section-alt" id="who-we-help">
         <div class="container">
             <div class="section-header">
                 <h2 class="section-title">Made for You</h2>
                 <p class="section-desc">Shadow bans kill your reach. We help you detect and fix it.</p>
             </div>
+            
             <div class="audience-grid">
                 <div class="audience-card reveal">
                     <span class="audience-icon">📱</span>
@@ -169,41 +163,58 @@
                     </div>
                 </div>
             </div>
+            
             <p class="audience-footer">Also trusted by streamers, podcasters, marketers, and anyone who relies on visibility.</p>
+            
+            <!-- How It Works - Inline Strip -->
+            <div class="how-strip">
+                <div class="how-strip-item">
+                    <span class="how-strip-icon">🤖</span>
+                    <div>
+                        <strong>AI-Powered Analysis</strong>
+                        <span>Scans 10+ factors to detect shadow bans</span>
+                    </div>
+                </div>
+                <div class="how-strip-item">
+                    <span class="how-strip-icon">🔌</span>
+                    <div>
+                        <strong>Platform APIs</strong>
+                        <span>Real-time account status checks</span>
+                    </div>
+                </div>
+                <div class="how-strip-item">
+                    <span class="how-strip-icon">📊</span>
+                    <div>
+                        <strong>Instant Alerts</strong>
+                        <span>Text or email notifications</span>
+                    </div>
+                </div>
+            </div>
         </div>
     </section>
 
-    <!-- Trust Badges -->
-    <section class="trust-section">
+    <!-- Trust Strip - No Cards -->
+    <section class="trust-strip">
         <div class="container">
-            <div class="trust-grid">
-                <div class="trust-item">
-                    <span class="trust-icon">🔒</span>
-                    <div>
-                        <strong>SSL Encrypted</strong>
-                        <span>Your data is secure</span>
-                    </div>
+            <div class="trust-items">
+                <div class="trust-item-inline">
+                    <span>🔒</span>
+                    <span>SSL Encrypted</span>
                 </div>
-                <div class="trust-item">
-                    <span class="trust-icon">⚡</span>
-                    <div>
-                        <strong>60-Second Results</strong>
-                        <span>Instant verification</span>
-                    </div>
+                <div class="trust-divider">•</div>
+                <div class="trust-item-inline">
+                    <span>⚡</span>
+                    <span>60-Second Results</span>
                 </div>
-                <div class="trust-item">
-                    <span class="trust-icon">💰</span>
-                    <div>
-                        <strong>Cancel Anytime</strong>
-                        <span>No contracts</span>
-                    </div>
+                <div class="trust-divider">•</div>
+                <div class="trust-item-inline">
+                    <span>💰</span>
+                    <span>Cancel Anytime</span>
                 </div>
-                <div class="trust-item">
-                    <span class="trust-icon">🎯</span>
-                    <div>
-                        <strong>AI-Powered</strong>
-                        <span>Probability scores</span>
-                    </div>
+                <div class="trust-divider">•</div>
+                <div class="trust-item-inline">
+                    <span>🎯</span>
+                    <span>AI-Powered</span>
                 </div>
             </div>
         </div>
@@ -253,8 +264,11 @@
                         <div class="demo-header">
                             <span>🤖</span>
                             <span>Shadow AI Pro</span>
+                            <span class="demo-status">● Online</span>
                         </div>
-                        <div class="demo-messages" id="demo-chat-messages"></div>
+                        <div class="demo-messages" id="demo-chat-messages">
+                            <!-- Chat messages injected by JS -->
+                        </div>
                     </div>
                 </div>
             </div>
@@ -266,7 +280,7 @@
         <div class="container">
             <div class="section-header">
                 <h2 class="section-title">We Check 26 Platforms</h2>
-                <p class="section-desc">And we're constantly adding more based on your requests!</p>
+                <p class="section-desc">Click any platform to see what we check for</p>
             </div>
             <div class="platform-grid" id="platform-grid">
                 <!-- Platforms injected via JS -->
@@ -303,6 +317,7 @@
                 </div>
                 
                 <div class="price-card featured reveal">
+                    <span class="price-badge">Most Popular</span>
                     <h3>Pro</h3>
                     <div class="price-amount">
                         <span class="currency">$</span>
@@ -340,32 +355,30 @@
                 </div>
             </div>
             
-            <p class="pricing-note">Credit card required • Cancel anytime</p>
+            <p class="pricing-note">Credit card required • Cancel anytime • 7-day free trial</p>
             
-            <!-- Pricing Extras -->
+            <!-- Pricing Extras - Enhanced Styling -->
             <div class="pricing-extras">
-                <div class="extra-card reveal">
+                <div class="extra-card glow reveal">
                     <span class="extra-icon">🔄</span>
                     <h4>Check Frequency</h4>
-                    <p>Choose how often we monitor: Daily, Every 6 Hours, or Hourly. More frequent = higher cost.</p>
-                    <span class="extra-note">💡 Change anytime in your dashboard</span>
+                    <p>Choose how often we monitor: Daily, Every 6 Hours, or Hourly.</p>
+                    <span class="extra-note">💡 Adjust anytime in your dashboard</span>
                 </div>
                 
-                <div class="extra-card reveal">
+                <div class="extra-card glow reveal">
                     <span class="extra-icon">🤖</span>
                     <h4>Want More AI?</h4>
-                    <p>Add Shadow AI Pro for 100 questions/day at +$9.99/mo</p>
-                    <div class="extra-actions">
-                        <a href="#shadow-ai-pro" class="btn-extra btn-extra-primary">Learn More</a>
-                        <button class="btn-extra btn-extra-ghost" onclick="alert('Contact us!')">Unlimited?</button>
-                    </div>
+                    <p>Add Shadow AI Pro for 100 questions/day</p>
+                    <div class="extra-price">+$9.99/mo</div>
+                    <a href="#shadow-ai-pro" class="btn-extra btn-extra-primary">Learn More</a>
                 </div>
                 
-                <div class="extra-card reveal">
+                <div class="extra-card glow featured reveal">
                     <span class="extra-badge">🏢 Enterprise</span>
                     <span class="extra-icon">🏢</span>
                     <h4>Multiple Accounts?</h4>
-                    <p>Custom pricing for agencies. Bulk features, team dashboards, dedicated support.</p>
+                    <p>Custom pricing for agencies with bulk features & dedicated support.</p>
                     <button class="btn-extra btn-extra-primary" onclick="alert('Contact sales!')">Contact Sales</button>
                 </div>
             </div>
@@ -504,7 +517,7 @@
         </div>
     </section>
 
-    <!-- FAQ -->
+    <!-- FAQ - Two Columns -->
     <section class="faq-section section-alt" id="faq">
         <div class="container">
             <div class="section-header">
@@ -512,84 +525,88 @@
                 <p class="section-desc">Everything you need to know about shadow ban detection</p>
             </div>
             
-            <div class="faq-accordion">
-                <div class="faq-item">
-                    <button class="faq-question">
-                        🎯 How do probability scores work?
-                        <span class="faq-toggle">+</span>
-                    </button>
-                    <div class="faq-answer">
-                        <p>When platforms don't clearly state if you're shadow banned, our AI searches multiple online sources (platform data, third-party tools, user reports, engagement patterns) and analyzes 10+ factors to give you a confidence percentage. For example: "78% probability of shadow ban based on 12 factors."</p>
+            <div class="faq-grid">
+                <div class="faq-column">
+                    <div class="faq-item">
+                        <button class="faq-question">
+                            🎯 How do probability scores work?
+                            <span class="faq-toggle">+</span>
+                        </button>
+                        <div class="faq-answer">
+                            <p>When platforms don't clearly state if you're shadow banned, our AI analyzes multiple factors including engagement patterns, visibility in searches, hashtag reach, and profile accessibility. We combine these signals to give you a confidence percentage—for example: "78% probability of shadow ban based on 12 factors analyzed." This helps you understand the likelihood even when platforms aren't transparent about restrictions.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="faq-item">
+                        <button class="faq-question">
+                            ⚡ How long does it take?
+                            <span class="faq-toggle">+</span>
+                        </button>
+                        <div class="faq-answer">
+                            <p>Most checks complete in 60 seconds or less. Our AI performs real-time analysis across multiple data points. Shadow AI Pro users get instant conversational results, while free users can use the post URL checker for quick probability scores. More comprehensive account audits may take 2-3 minutes as we check additional factors.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="faq-item">
+                        <button class="faq-question">
+                            🔒 Is my data safe?
+                            <span class="faq-toggle">+</span>
+                        </button>
+                        <div class="faq-answer">
+                            <p>Absolutely! We take privacy seriously. We only store your email and account identifiers needed for monitoring. We <strong>never</strong> ask for or store your platform passwords. All checks are performed in real-time through official APIs and public data. Everything is SSL encrypted, and we don't permanently store your post content or sensitive personal data.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="faq-item">
+                        <button class="faq-question">
+                            💰 Can I cancel anytime?
+                            <span class="faq-toggle">+</span>
+                        </button>
+                        <div class="faq-answer">
+                            <p>Yes! All plans are month-to-month with absolutely no contracts or commitments. Cancel anytime with one click from your dashboard—no questions asked, no hidden fees. Your 7-day free trial requires a credit card to prevent abuse, but you won't be charged if you cancel before the trial ends.</p>
+                        </div>
                     </div>
                 </div>
                 
-                <div class="faq-item">
-                    <button class="faq-question">
-                        ⚡ How long does it take?
-                        <span class="faq-toggle">+</span>
-                    </button>
-                    <div class="faq-answer">
-                        <p>Most checks complete in 60 seconds or less. Shadow AI Pro users get instant results through our AI chatbot. Free users can use the post URL checker which provides quick probability scores.</p>
+                <div class="faq-column">
+                    <div class="faq-item">
+                        <button class="faq-question">
+                            🤖 What is Shadow AI Pro?
+                            <span class="faq-toggle">+</span>
+                        </button>
+                        <div class="faq-answer">
+                            <p>Shadow AI Pro is our AI-powered assistant that gives you instant answers about shadow bans, probability scores based on multiple data points, and personalized recovery strategies. Think of it as having a social media expert available 24/7. Get 100 questions per day for $9.99/mo—perfect for creators, marketers, and anyone who needs ongoing shadow ban intelligence.</p>
+                        </div>
                     </div>
-                </div>
-                
-                <div class="faq-item">
-                    <button class="faq-question">
-                        🔒 Is my data safe?
-                        <span class="faq-toggle">+</span>
-                    </button>
-                    <div class="faq-answer">
-                        <p>Absolutely! We only store your email and account info for monitoring. We never save your platform passwords. All checks are done in real-time, SSL encrypted, and we don't permanently store your post content or sensitive data.</p>
+                    
+                    <div class="faq-item">
+                        <button class="faq-question">
+                            📊 Which platforms do you check?
+                            <span class="faq-toggle">+</span>
+                        </button>
+                        <div class="faq-answer">
+                            <p>We currently support 26 platforms including Twitter/X, Instagram, TikTok, Facebook, Reddit, LinkedIn, YouTube, Snapchat, Pinterest, Telegram, and more. Twitter/X, Reddit, and Email verification are fully live now, with other platforms rolling out continuously. <a href="#platforms">See the full list</a> and click any platform to see exactly what we check for.</p>
+                        </div>
                     </div>
-                </div>
-                
-                <div class="faq-item">
-                    <button class="faq-question">
-                        💰 Can I cancel anytime?
-                        <span class="faq-toggle">+</span>
-                    </button>
-                    <div class="faq-answer">
-                        <p>Yes! All plans are month-to-month with no contracts. Cancel anytime with one click, no questions asked. Your 7-day free trial requires a credit card, but you won't be charged if you cancel before the trial ends.</p>
+                    
+                    <div class="faq-item">
+                        <button class="faq-question">
+                            💳 Why credit card for trial?
+                            <span class="faq-toggle">+</span>
+                        </button>
+                        <div class="faq-answer">
+                            <p>We require a credit card for the 7-day free trial to prevent abuse and ensure serious users get priority access to our systems. You won't be charged during the trial period. If you love the service, your subscription continues automatically. Cancel anytime before the trial ends to avoid any charges—it's completely risk-free.</p>
+                        </div>
                     </div>
-                </div>
-                
-                <div class="faq-item">
-                    <button class="faq-question">
-                        🤖 What is Shadow AI Pro?
-                        <span class="faq-toggle">+</span>
-                    </button>
-                    <div class="faq-answer">
-                        <p>Shadow AI Pro is our AI-powered chatbot that gives you instant answers, probability scores based on multiple data points, and personalized recovery strategies. Get 100 questions per day for $9.99/mo. Perfect for frequent checkers who need AI-powered insights.</p>
-                    </div>
-                </div>
-                
-                <div class="faq-item">
-                    <button class="faq-question">
-                        📊 Which platforms do you check?
-                        <span class="faq-toggle">+</span>
-                    </button>
-                    <div class="faq-answer">
-                        <p>We currently check 26 platforms including Twitter/X, Instagram, TikTok, Facebook, Reddit, LinkedIn, YouTube, Snapchat, Pinterest, Telegram, and more. We're constantly adding new platforms based on user requests. <a href="#platforms">See the full list</a></p>
-                    </div>
-                </div>
-                
-                <div class="faq-item">
-                    <button class="faq-question">
-                        💳 Why credit card for trial?
-                        <span class="faq-toggle">+</span>
-                    </button>
-                    <div class="faq-answer">
-                        <p>We require a credit card for the 7-day free trial to prevent abuse. You won't be charged during the trial period. If you love the service, your subscription continues at $9.99/mo after 7 days. Cancel anytime before the trial ends to avoid charges.</p>
-                    </div>
-                </div>
-                
-                <div class="faq-item">
-                    <button class="faq-question">
-                        📈 How do monitoring plans work?
-                        <span class="faq-toggle">+</span>
-                    </button>
-                    <div class="faq-answer">
-                        <p>All monitoring plans include ALL features (alerts, recovery tips, historical tracking). You pay based on how many accounts you want to monitor. Starter monitors 5 accounts daily, Pro monitors 15 accounts every 6 hours, and Premium monitors 50 accounts hourly.</p>
+                    
+                    <div class="faq-item">
+                        <button class="faq-question">
+                            📈 How do monitoring plans work?
+                            <span class="faq-toggle">+</span>
+                        </button>
+                        <div class="faq-answer">
+                            <p>All monitoring plans include every feature—alerts, recovery tips, historical tracking, and AI assistance. You simply choose how many accounts to monitor: Starter covers 5 accounts with daily checks, Pro covers 15 accounts with checks every 6 hours, and Premium covers 50 accounts with hourly monitoring. Upgrade or downgrade anytime from your dashboard.</p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -626,7 +643,7 @@
                         <div class="contact-method">
                             <span class="method-icon">👤</span>
                             <div>
-                                <strong>Connect with the Founder</strong>
+                                <strong>Connect with the Dev</strong>
                                 <p>Reach out directly to Andrew on social media</p>
                                 <div class="social-links">
                                     <a href="https://x.com/Ghost081280" target="_blank" rel="noopener" class="social-link" title="Twitter/X">
@@ -690,9 +707,23 @@
 
     <!-- Platform Modal -->
     <div id="platform-modal" class="modal hidden">
+        <div class="modal-overlay"></div>
         <div class="modal-content">
             <button class="modal-close">&times;</button>
-            <div id="modal-body"></div>
+            <div class="modal-icon" id="modal-icon">🐦</div>
+            <h3 class="modal-title" id="modal-title">Check Twitter/X</h3>
+            <p class="modal-status" id="modal-status">
+                <span class="status-badge live">● Live</span>
+            </p>
+            <div class="modal-body" id="modal-body">
+                <h4>What We Check:</h4>
+                <ul class="check-list" id="modal-checks">
+                    <!-- Populated by JS -->
+                </ul>
+            </div>
+            <div class="modal-footer">
+                <a href="checker.html" id="modal-cta" class="btn btn-primary btn-lg">Check Twitter/X →</a>
+            </div>
         </div>
     </div>
 
@@ -711,12 +742,14 @@
         </div>
     </div>
 
+    <!-- Toast Notification -->
+    <div id="toast" class="toast"></div>
+
     <!-- Back to Top Button -->
     <button id="back-to-top" class="back-to-top" aria-label="Back to top">↑</button>
 
     <!-- Scripts -->
     <script src="js/shared-components.js"></script>
     <script src="js/main.js"></script>
-    <script src="js/shadow-ai.js"></script>
 </body>
 </html>

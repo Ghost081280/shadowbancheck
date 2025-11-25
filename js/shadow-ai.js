@@ -1,36 +1,125 @@
-/* =============================================================================
-   SHADOW AI CHATBOT - Website Version v2.2
-   ShadowBanCheck.io - Premium Copilot Experience
-   
-   CREATES WIDGET DYNAMICALLY (like dashboard version)
-   INCLUDES:
-   - Floating chat button with glow & tooltip
-   - Chat widget
-   - Demo chat animation (spotlight section)
-   ============================================================================= */
+/**
+ * =============================================================================
+ * SHADOW AI - UNIFIED CHATBOT v3.0
+ * ShadowBanCheck.io - Website & Dashboard (Identical Behavior)
+ * 
+ * Features:
+ * - Question counter (3 free/day for website, configurable for dashboard)
+ * - Dynamic widget creation
+ * - Keyboard handler for mobile
+ * - Demo chat animation
+ * - Responsive design support
+ * =============================================================================
+ */
 
 (function() {
     'use strict';
     
-    // State
-    let isOpen = false;
-    let conversationHistory = [];
-    let hasShownWelcome = false;
+    // ==========================================================================
+    // CONFIGURATION
+    // ==========================================================================
+    const CONFIG = {
+        // Detect if we're on dashboard
+        isDashboard: window.location.pathname.includes('dashboard'),
+        
+        // Question limits
+        freeQuestionsPerDay: 3,
+        proQuestionsPerDay: 10,
+        
+        // Storage keys
+        storageKey: 'shadowAI_questions',
+        
+        // Title based on context
+        get title() {
+            return this.isDashboard ? 'Shadow AI Pro' : 'Shadow AI';
+        },
+        
+        // Tooltip text
+        get tooltip() {
+            return this.isDashboard ? 'Ask Shadow AI Pro' : 'Ask Shadow AI';
+        },
+        
+        // Questions per day based on context
+        get dailyLimit() {
+            return this.isDashboard ? this.proQuestionsPerDay : this.freeQuestionsPerDay;
+        }
+    };
     
-    /* =========================================================================
-       INITIALIZE
-       ========================================================================= */
-    function init() {
-        createWidget();
-        initTooltipScroll();
-        initDemoChatAnimation();
-        initExternalTriggers();
-        console.log('✅ Shadow AI Chatbot v2.2 initialized');
+    // State
+    let conversationHistory = [];
+    let isTyping = false;
+    let questionsUsed = 0;
+    
+    // ==========================================================================
+    // QUESTION TRACKING
+    // ==========================================================================
+    function getQuestionData() {
+        try {
+            const data = localStorage.getItem(CONFIG.storageKey);
+            if (data) {
+                const parsed = JSON.parse(data);
+                // Check if it's a new day
+                const today = new Date().toDateString();
+                if (parsed.date !== today) {
+                    // Reset for new day
+                    return { date: today, count: 0 };
+                }
+                return parsed;
+            }
+        } catch (e) {
+            console.warn('Could not read question data:', e);
+        }
+        return { date: new Date().toDateString(), count: 0 };
     }
     
-    /* =========================================================================
-       CREATE WIDGET DYNAMICALLY
-       ========================================================================= */
+    function saveQuestionData(count) {
+        try {
+            localStorage.setItem(CONFIG.storageKey, JSON.stringify({
+                date: new Date().toDateString(),
+                count: count
+            }));
+        } catch (e) {
+            console.warn('Could not save question data:', e);
+        }
+    }
+    
+    function updateUsageCounter() {
+        const usage = document.getElementById('shadow-ai-usage');
+        if (usage) {
+            const data = getQuestionData();
+            questionsUsed = data.count;
+            usage.textContent = `${questionsUsed}/${CONFIG.dailyLimit} today`;
+        }
+    }
+    
+    function canAskQuestion() {
+        const data = getQuestionData();
+        return data.count < CONFIG.dailyLimit;
+    }
+    
+    function incrementQuestionCount() {
+        const data = getQuestionData();
+        data.count++;
+        saveQuestionData(data.count);
+        updateUsageCounter();
+    }
+    
+    // ==========================================================================
+    // INITIALIZE
+    // ==========================================================================
+    function init() {
+        console.log(`🤖 Shadow AI v3.0 Initializing (${CONFIG.isDashboard ? 'Dashboard' : 'Website'})...`);
+        
+        createWidget();
+        initDemoChat();
+        initExternalTriggers();
+        
+        console.log('✅ Shadow AI initialized');
+    }
+    
+    // ==========================================================================
+    // CREATE WIDGET DYNAMICALLY
+    // ==========================================================================
     function createWidget() {
         const widget = document.createElement('div');
         widget.className = 'shadow-ai-container';
@@ -41,29 +130,30 @@
             <div class="shadow-ai-glow"></div>
             
             <!-- Tooltip -->
-            <div class="shadow-ai-tooltip">Ask Shadow AI</div>
+            <div class="shadow-ai-tooltip">${CONFIG.tooltip}</div>
             
             <!-- Floating Button -->
-            <button class="copilot-btn" id="shadow-ai-btn" aria-label="Open Shadow AI Chat">
+            <button class="copilot-btn" id="shadow-ai-btn">
                 <span class="copilot-emoji">🤖</span>
             </button>
             
             <!-- Chat Window -->
-            <div class="copilot-chat hidden" id="shadow-ai-chat" role="dialog" aria-label="Shadow AI Chat">
-                <!-- Header: Title left, Status + Close right -->
+            <div class="copilot-chat hidden" id="shadow-ai-chat">
+                <!-- Header -->
                 <div class="copilot-header">
                     <div class="copilot-header-left">
                         <span class="copilot-header-emoji">🤖</span>
                         <div class="copilot-header-text">
-                            <h3>Shadow AI</h3>
+                            <h3>${CONFIG.title}</h3>
+                            <p class="copilot-usage" id="shadow-ai-usage">0/${CONFIG.dailyLimit} today</p>
                         </div>
                     </div>
                     <div class="copilot-header-right">
-                        <p class="copilot-status">
+                        <span class="copilot-status">
                             <span class="copilot-status-dot online"></span>
-                            <span class="copilot-status-text">Online</span>
-                        </p>
-                        <button class="copilot-close" aria-label="Close chat">&times;</button>
+                            Online
+                        </span>
+                        <button class="copilot-close" id="shadow-ai-close">×</button>
                     </div>
                 </div>
                 
@@ -86,114 +176,135 @@
         
         document.body.appendChild(widget);
         
-        // Show container with animation
+        // Show widget after small delay
         setTimeout(() => {
             widget.classList.add('ready');
         }, 500);
         
         // Bind events
         bindEvents();
+        
+        // Update usage counter
+        updateUsageCounter();
+        
+        // Initialize keyboard handler
+        initKeyboardHandler();
     }
     
-    /* =========================================================================
-       BIND EVENTS
-       ========================================================================= */
+    // ==========================================================================
+    // EVENT BINDING
+    // ==========================================================================
     function bindEvents() {
-        const container = document.getElementById('shadow-ai-container');
+        // Toggle button
         const btn = document.getElementById('shadow-ai-btn');
-        const chat = document.getElementById('shadow-ai-chat');
-        const closeBtn = container.querySelector('.copilot-close');
-        const input = document.getElementById('shadow-ai-input');
-        const sendBtn = document.getElementById('shadow-ai-send');
-        
-        // Toggle chat
-        btn.addEventListener('click', toggleChat);
+        btn?.addEventListener('click', toggleChat);
         
         // Close button
-        closeBtn.addEventListener('click', closeChat);
+        const closeBtn = document.getElementById('shadow-ai-close');
+        closeBtn?.addEventListener('click', closeChat);
         
-        // Send message
-        sendBtn.addEventListener('click', sendMessage);
+        // Send button
+        const sendBtn = document.getElementById('shadow-ai-send');
+        sendBtn?.addEventListener('click', sendMessage);
         
-        // Enter key
-        input.addEventListener('keypress', (e) => {
+        // Input enter key
+        const input = document.getElementById('shadow-ai-input');
+        input?.addEventListener('keypress', (e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
                 sendMessage();
             }
         });
         
-        // Escape key to close
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && isOpen) {
-                closeChat();
+        // Scroll-based tooltip hiding
+        let scrollTimeout;
+        window.addEventListener('scroll', () => {
+            const tooltip = document.querySelector('.shadow-ai-tooltip');
+            if (tooltip) {
+                tooltip.classList.add('scrolled');
+                clearTimeout(scrollTimeout);
+                scrollTimeout = setTimeout(() => {
+                    tooltip.classList.remove('scrolled');
+                }, 2000);
             }
-        });
-        
-        // Prevent body scroll when chat is open on mobile
-        chat.addEventListener('touchmove', (e) => {
-            e.stopPropagation();
         }, { passive: true });
-        
-        // Handle keyboard on mobile
-        input.addEventListener('focus', () => {
-            setTimeout(() => {
-                chat.classList.add('keyboard-visible');
-            }, 300);
-        });
-        
-        input.addEventListener('blur', () => {
-            chat.classList.remove('keyboard-visible');
-        });
     }
     
-    /* =========================================================================
-       TOGGLE/OPEN/CLOSE CHAT
-       ========================================================================= */
+    // ==========================================================================
+    // CHAT TOGGLE
+    // ==========================================================================
     function toggleChat() {
-        isOpen ? closeChat() : openChat();
+        const chat = document.getElementById('shadow-ai-chat');
+        const container = document.getElementById('shadow-ai-container');
+        
+        if (chat?.classList.contains('hidden')) {
+            openChat();
+        } else {
+            closeChat();
+        }
     }
     
     function openChat() {
-        isOpen = true;
-        const container = document.getElementById('shadow-ai-container');
         const chat = document.getElementById('shadow-ai-chat');
-        const input = document.getElementById('shadow-ai-input');
+        const container = document.getElementById('shadow-ai-container');
+        const messagesContainer = document.getElementById('shadow-ai-messages');
         
-        chat.classList.remove('hidden');
-        chat.classList.add('active');
-        container.classList.add('chatbot-active');
+        chat?.classList.remove('hidden');
+        chat?.classList.add('active');
+        container?.classList.add('chat-open');
         
-        if (!hasShownWelcome) {
-            showWelcomeMessage();
-            hasShownWelcome = true;
+        // Add welcome message if empty
+        if (messagesContainer && messagesContainer.children.length === 0) {
+            addWelcomeMessage();
         }
         
-        setTimeout(() => input?.focus(), 300);
+        // Focus input
+        setTimeout(() => {
+            document.getElementById('shadow-ai-input')?.focus();
+        }, 300);
     }
     
     function closeChat() {
-        isOpen = false;
-        const container = document.getElementById('shadow-ai-container');
         const chat = document.getElementById('shadow-ai-chat');
+        const container = document.getElementById('shadow-ai-container');
+        const input = document.getElementById('shadow-ai-input');
         
-        chat.classList.remove('active');
-        chat.classList.add('hidden');
-        container.classList.remove('chatbot-active');
+        chat?.classList.add('hidden');
+        chat?.classList.remove('active');
+        chat?.classList.remove('keyboard-visible');
+        container?.classList.remove('chat-open');
+        
+        // Blur input to close keyboard
+        input?.blur();
+        
+        // Show tooltip after close
+        showTooltipAfterClose();
     }
     
-    /* =========================================================================
-       WELCOME MESSAGE
-       ========================================================================= */
-    function showWelcomeMessage() {
-        setTimeout(() => {
-            addMessage("👋 Hi! I'm Shadow AI, your personal shadow ban detective. I can help you understand shadow banning, check your accounts, and provide recovery strategies. What would you like to know?", 'assistant');
-        }, 500);
+    function showTooltipAfterClose() {
+        const tooltip = document.querySelector('.shadow-ai-tooltip');
+        if (tooltip) {
+            tooltip.classList.remove('scrolled');
+            setTimeout(() => {
+                tooltip.style.opacity = '1';
+            }, 300);
+        }
     }
     
-    /* =========================================================================
-       SEND MESSAGE
-       ========================================================================= */
+    // ==========================================================================
+    // WELCOME MESSAGE
+    // ==========================================================================
+    function addWelcomeMessage() {
+        const greeting = CONFIG.isDashboard 
+            ? "👋 Welcome back! I'm Shadow AI Pro, your dedicated shadow ban assistant. How can I help you today?"
+            : "👋 Hi! I'm Shadow AI, your personal shadow ban detective. I can help you understand shadow banning, check your accounts, and provide recovery strategies. What would you like to know?";
+        
+        addMessage(greeting, 'assistant');
+    }
+    
+    // ==========================================================================
+    // SEND MESSAGE
+    // ==========================================================================
     function sendMessage() {
         const input = document.getElementById('shadow-ai-input');
         const message = input?.value?.trim();
@@ -204,28 +315,48 @@
             return;
         }
         
+        // Check question limit
+        if (!canAskQuestion()) {
+            showLimitReachedMessage();
+            return;
+        }
+        
+        if (isTyping) return;
+        
         // Add user message
         addMessage(message, 'user');
         input.value = '';
+        
+        // Increment counter
+        incrementQuestionCount();
         
         // Add to history
         conversationHistory.push({ role: 'user', content: message });
         
         // Show typing indicator
         showTypingIndicator();
+        isTyping = true;
         
-        // Simulate AI response (replace with actual API call)
+        // Disable input
+        input.disabled = true;
+        document.getElementById('shadow-ai-send').disabled = true;
+        
+        // Generate response (simulate for now)
         setTimeout(() => {
             hideTypingIndicator();
             const response = generateResponse(message);
             addMessage(response, 'assistant');
             conversationHistory.push({ role: 'assistant', content: response });
+            
+            input.disabled = false;
+            document.getElementById('shadow-ai-send').disabled = false;
+            isTyping = false;
         }, 1000 + Math.random() * 1000);
     }
     
-    /* =========================================================================
-       ADD MESSAGE TO CHAT
-       ========================================================================= */
+    // ==========================================================================
+    // MESSAGE HANDLING
+    // ==========================================================================
     function addMessage(text, role) {
         const messagesContainer = document.getElementById('shadow-ai-messages');
         if (!messagesContainer) return;
@@ -233,7 +364,6 @@
         const messageDiv = document.createElement('div');
         messageDiv.className = `chat-message ${role}-message`;
         
-        // Only show avatar for AI messages
         if (role === 'assistant') {
             messageDiv.innerHTML = `
                 <div class="message-content">
@@ -244,7 +374,7 @@
         } else {
             messageDiv.innerHTML = `
                 <div class="message-content">
-                    <div class="message-text">${formatMessage(text)}</div>
+                    <div class="message-text">${escapeHtml(text)}</div>
                 </div>
             `;
         }
@@ -259,9 +389,15 @@
             .replace(/\n/g, '<br>');
     }
     
-    /* =========================================================================
-       TYPING INDICATOR
-       ========================================================================= */
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+    
+    // ==========================================================================
+    // TYPING INDICATOR
+    // ==========================================================================
     function showTypingIndicator() {
         const messagesContainer = document.getElementById('shadow-ai-messages');
         if (!messagesContainer) return;
@@ -288,113 +424,132 @@
         typing?.remove();
     }
     
-    /* =========================================================================
-       GENERATE RESPONSE (Demo - replace with actual AI)
-       ========================================================================= */
+    // ==========================================================================
+    // LIMIT REACHED MESSAGE
+    // ==========================================================================
+    function showLimitReachedMessage() {
+        const messagesContainer = document.getElementById('shadow-ai-messages');
+        if (!messagesContainer) return;
+        
+        // Check if already showing
+        if (messagesContainer.querySelector('.limit-reached-message')) return;
+        
+        const limitDiv = document.createElement('div');
+        limitDiv.className = 'limit-reached-message';
+        limitDiv.innerHTML = `
+            <h4>🚫 Daily Limit Reached</h4>
+            <p>You've used all ${CONFIG.dailyLimit} free questions for today. Upgrade to Shadow AI Pro for more!</p>
+            <a href="#shadow-ai-pro">Get Shadow AI Pro →</a>
+        `;
+        
+        messagesContainer.appendChild(limitDiv);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+    
+    // ==========================================================================
+    // RESPONSE GENERATION (Placeholder - replace with API)
+    // ==========================================================================
     function generateResponse(message) {
-        const lowerMsg = message.toLowerCase();
+        const lower = message.toLowerCase();
         
-        if (lowerMsg.includes('shadow ban') || lowerMsg.includes('shadowban')) {
-            return "A shadow ban is when a platform secretly limits your content's visibility without notifying you. Your posts appear normal to you, but others can't see them in feeds, searches, or recommendations. Would you like me to check a specific platform for you?";
+        if (lower.includes('shadow ban') || lower.includes('shadowban')) {
+            return "Shadow banning is when a platform limits your content's visibility without notifying you. Your posts appear normal to you, but others can't see them in searches, feeds, or recommendations. I can help you check if you're affected!";
         }
         
-        if (lowerMsg.includes('twitter') || lowerMsg.includes('x.com')) {
-            return "For Twitter/X, I can check for: search suggestion bans, reply deboosting, ghost bans, and quality filter restrictions. Want me to analyze your account? Just share your username or a post URL!";
+        if (lower.includes('check') || lower.includes('test')) {
+            return "To check for a shadow ban, I analyze multiple factors including:\n\n✓ Search visibility\n✓ Engagement patterns\n✓ Hashtag reach\n✓ Profile accessibility\n\nWould you like me to check a specific platform for you?";
         }
         
-        if (lowerMsg.includes('instagram')) {
-            return "Instagram shadow bans typically affect hashtag visibility and Explore page reach. Common triggers include: banned hashtags, aggressive engagement, and rapid following/unfollowing. Would you like tips on how to check if you're affected?";
+        if (lower.includes('twitter') || lower.includes('x.com')) {
+            return "For Twitter/X shadow bans, I check:\n\n• Search suggestion ban\n• Search ban\n• Ghost ban (replies hidden)\n• Reply deboosting\n\nPaste your Twitter username or post URL and I'll analyze it!";
         }
         
-        if (lowerMsg.includes('tiktok')) {
-            return "TikTok shadow bans usually result in videos getting 0 views on the For You Page. This can be caused by: community guideline violations, copyrighted content, or spam-like behavior. Shall I explain how to detect and recover from a TikTok shadow ban?";
+        if (lower.includes('instagram') || lower.includes('tiktok')) {
+            return "I can help with Instagram and TikTok shadow ban detection! Common signs include:\n\n• Sudden engagement drop\n• Hashtags not working\n• Content not showing in Explore/For You\n\nWant me to explain how to check your account?";
         }
         
-        if (lowerMsg.includes('reddit')) {
-            return "Reddit shadow bans make your posts and comments invisible to everyone except you. I can check if your Reddit account is shadowbanned. Just share your username and I'll analyze your visibility!";
+        if (lower.includes('fix') || lower.includes('recover')) {
+            return "Here are general recovery strategies:\n\n1. **Take a break** - Stop posting for 24-48 hours\n2. **Review content** - Remove anything potentially violating guidelines\n3. **Avoid spam behavior** - Don't mass-like, follow, or use bots\n4. **Diversify hashtags** - Don't use the same ones repeatedly\n5. **Engage authentically** - Focus on genuine interactions\n\nWant platform-specific advice?";
         }
         
-        if (lowerMsg.includes('price') || lowerMsg.includes('cost') || lowerMsg.includes('subscription')) {
-            return "Our Shadow AI Pro subscription is **$4.99/month** and includes:\n\n• 100 AI questions per day\n• Live platform checks\n• Recovery strategies\n• Priority support\n\nWe also offer a **7-day free trial**! Check out our pricing section for more details.";
+        if (lower.includes('pro') || lower.includes('upgrade') || lower.includes('premium')) {
+            return "**Shadow AI Pro** gives you:\n\n✓ 100 AI questions/day\n✓ Live platform checks\n✓ Personalized recovery strategies\n✓ 24/7 availability\n\nStart your 7-day free trial at just $9.99/mo!";
         }
         
-        if (lowerMsg.includes('help') || lowerMsg.includes('what can you do')) {
-            return "I can help you with:\n\n• **Checking** if you're shadow banned\n• **Explaining** how shadow bans work\n• **Recovery** strategies for each platform\n• **Prevention** tips to avoid future bans\n\nWhich platform are you concerned about?";
-        }
-        
-        return "I'd be happy to help with that! I specialize in shadow ban detection and recovery across 26+ platforms including Twitter/X, Instagram, TikTok, Reddit, and more. What specific platform or issue would you like to discuss?";
+        return "I understand you're concerned about your online visibility. As a Pro user, I can provide detailed analysis of your accounts and personalized recovery strategies. What specific platform or issue would you like to discuss?";
     }
     
-    /* =========================================================================
-       TOOLTIP SCROLL BEHAVIOR
-       ========================================================================= */
-    function initTooltipScroll() {
-        let scrollTimeout;
+    // ==========================================================================
+    // KEYBOARD HANDLER
+    // ==========================================================================
+    function initKeyboardHandler() {
+        const input = document.getElementById('shadow-ai-input');
+        const chat = document.getElementById('shadow-ai-chat');
         
-        window.addEventListener('scroll', () => {
-            const tooltip = document.querySelector('.shadow-ai-tooltip');
-            if (!tooltip) return;
+        if (!input || !chat) return;
+        
+        // Focus handler
+        input.addEventListener('focus', () => {
+            // Only apply keyboard class in landscape mobile
+            if (window.innerWidth <= 926 && window.innerHeight <= 500 && 
+                window.matchMedia('(orientation: landscape)').matches) {
+                chat.classList.add('keyboard-visible');
+            }
+        });
+        
+        // Blur handler
+        input.addEventListener('blur', () => {
+            setTimeout(() => {
+                chat.classList.remove('keyboard-visible');
+            }, 100);
+        });
+        
+        // Orientation change
+        window.addEventListener('orientationchange', () => {
+            setTimeout(() => {
+                chat.classList.remove('keyboard-visible');
+                if (document.activeElement === input) {
+                    input.blur();
+                }
+            }, 300);
+        });
+        
+        // Resize handler
+        let lastHeight = window.innerHeight;
+        let lastOrientation = window.matchMedia('(orientation: landscape)').matches;
+        
+        window.addEventListener('resize', () => {
+            const currentOrientation = window.matchMedia('(orientation: landscape)').matches;
             
-            tooltip.classList.add('scrolled');
+            if (currentOrientation !== lastOrientation) {
+                chat.classList.remove('keyboard-visible');
+                if (document.activeElement === input) {
+                    input.blur();
+                }
+            }
             
-            clearTimeout(scrollTimeout);
-            scrollTimeout = setTimeout(() => {
-                tooltip.classList.remove('scrolled');
-            }, 2000);
+            lastHeight = window.innerHeight;
+            lastOrientation = currentOrientation;
         }, { passive: true });
+        
+        console.log('✅ Keyboard handler initialized');
     }
     
-    /* =========================================================================
-       DEMO CHAT ANIMATION (Spotlight Section)
-       ========================================================================= */
-    function initDemoChatAnimation() {
+    // ==========================================================================
+    // DEMO CHAT ANIMATION
+    // ==========================================================================
+    function initDemoChat() {
         const demoChat = document.getElementById('demo-chat-messages');
         if (!demoChat) return;
         
         let hasPlayed = false;
         
         const chatSequence = [
-            { 
-                type: 'ai', 
-                text: "👋 Hi! I'm Shadow AI, your personal shadow ban detective.",
-                delay: 500
-            },
-            { 
-                type: 'ai', 
-                text: "I can check if you're being suppressed on Twitter/X, Reddit, Instagram, TikTok, and 22+ other platforms.",
-                delay: 1500
-            },
-            { 
-                type: 'ai', 
-                text: "I analyze engagement patterns, visibility signals, and platform-specific indicators to give you a probability score.",
-                delay: 1500
-            },
-            { 
-                type: 'ai', 
-                text: "Would you like to learn more about our Pro subscription? 🚀",
-                delay: 1500
-            },
-            { 
-                type: 'user', 
-                text: "Yes, tell me more!",
-                delay: 2000,
-                clickable: true
-            },
-            { 
-                type: 'ai', 
-                text: "Great choice! With Shadow AI Pro you get:",
-                delay: 1000
-            },
-            { 
-                type: 'ai', 
-                text: "✓ 100 AI questions/day\n✓ Live platform checks\n✓ Recovery strategies\n✓ 24/7 availability",
-                delay: 1200
-            },
-            { 
-                type: 'ai', 
-                text: '👉 <a href="#pricing">View pricing plans</a> to get started with a 7-day free trial!',
-                delay: 1500
-            }
+            { type: 'user', text: "Am I shadow banned on Twitter?", delay: 1500 },
+            { type: 'ai', text: "I can check that for you! What's your Twitter username?", delay: 2000 },
+            { type: 'user', text: "@myusername", delay: 1500 },
+            { type: 'ai', text: "I'm analyzing your account now...", delay: 1500 },
+            { type: 'ai', text: "✓ Search visibility: Normal\n✓ Reply visibility: Normal\n✓ Profile access: Public\n\n**Result:** No shadow ban detected! Your account appears healthy.", delay: 2000 }
         ];
         
         let currentIndex = 0;
@@ -403,8 +558,9 @@
         function showDemoTypingIndicator() {
             const typing = document.createElement('div');
             typing.className = 'demo-typing-indicator';
+            typing.style.cssText = 'display:flex !important;flex-direction:row !important;gap:12px !important;align-items:flex-start !important;';
             typing.innerHTML = `
-                <div class="demo-avatar">🤖</div>
+                <div class="demo-avatar" style="width:36px;height:36px;min-width:36px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#a855f7);display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;">🤖</div>
                 <div class="demo-dots">
                     <span></span><span></span><span></span>
                 </div>
@@ -419,24 +575,17 @@
             msgEl.className = `demo-msg ${message.type}`;
             
             if (message.type === 'ai') {
-                // AI messages with avatar
                 msgEl.innerHTML = `
-                    <div class="demo-avatar">🤖</div>
-                    <div class="demo-text">${message.text.replace(/\n/g, '<br>')}</div>
+                    <div class="demo-avatar" style="width:36px;height:36px;min-width:36px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#a855f7);display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;box-shadow:0 4px 12px rgba(99,102,241,0.3);">🤖</div>
+                    <div class="demo-text" style="flex:1;padding:6px 0;line-height:1.6;">${message.text.replace(/\n/g, '<br>')}</div>
                 `;
+                msgEl.style.cssText = 'display:flex !important;flex-direction:row !important;gap:12px !important;align-items:flex-start !important;background:transparent !important;padding:0 !important;';
             } else {
-                // User messages - just text, no avatar
                 msgEl.textContent = message.text;
-            }
-            
-            if (message.clickable) {
-                msgEl.style.cursor = 'pointer';
-                msgEl.title = 'Click to continue';
             }
             
             demoChat.appendChild(msgEl);
             demoChat.scrollTop = demoChat.scrollHeight;
-            
             return msgEl;
         }
         
@@ -450,17 +599,13 @@
             currentIndex++;
             
             if (message.type === 'ai') {
-                // Show typing indicator for AI messages
                 const typing = showDemoTypingIndicator();
-                
                 setTimeout(() => {
                     typing.remove();
                     addDemoMessage(message);
-                    
                     setTimeout(playNextMessage, message.delay || 1000);
                 }, 800 + Math.random() * 400);
             } else {
-                // User messages appear after a delay
                 setTimeout(() => {
                     addDemoMessage(message);
                     setTimeout(playNextMessage, message.delay || 1000);
@@ -470,16 +615,14 @@
         
         function startAnimation() {
             if (hasPlayed || isAnimating) return;
-            
             hasPlayed = true;
             isAnimating = true;
             demoChat.innerHTML = '';
             currentIndex = 0;
-            
             setTimeout(playNextMessage, 500);
         }
         
-        // Start animation when visible
+        // Start when visible
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting && !hasPlayed) {
@@ -492,9 +635,9 @@
         observer.observe(demoChat);
     }
     
-    /* =========================================================================
-       EXTERNAL TRIGGERS (buttons that open Shadow AI)
-       ========================================================================= */
+    // ==========================================================================
+    // EXTERNAL TRIGGERS
+    // ==========================================================================
     function initExternalTriggers() {
         // Try AI button in spotlight section
         const tryAiBtn = document.getElementById('try-ai-btn');
@@ -511,9 +654,9 @@
         });
     }
     
-    /* =========================================================================
-       INIT ON DOM READY
-       ========================================================================= */
+    // ==========================================================================
+    // INIT ON DOM READY
+    // ==========================================================================
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', init);
     } else {

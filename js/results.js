@@ -44,16 +44,16 @@ function getDemoDataForPlatform(platform) {
                         citation: 'Third-party QFD detection API'
                     },
                     {
-                        name: 'Hashtag Reach',
-                        description: 'Posts appear in hashtag search results',
-                        status: 'passed',
-                        citation: 'Hashtag search crawl + API comparison'
-                    },
-                    {
                         name: 'Engagement Rate',
                         description: 'Engagement aligns with historical baseline',
                         status: 'passed',
                         citation: 'Historical baseline comparison'
+                    },
+                    {
+                        name: 'Account Status',
+                        description: 'No flags or restrictions detected on account',
+                        status: 'passed',
+                        citation: 'Twitter/X API v2 user lookup'
                     }
                 ],
                 recommendations: [

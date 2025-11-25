@@ -1,136 +1,203 @@
 /* =============================================================================
-   SHADOW AI CHATBOT - Website Version v2.1
+   SHADOW AI CHATBOT - Website Version v2.2
    ShadowBanCheck.io - Premium Copilot Experience
    
+   CREATES WIDGET DYNAMICALLY (like dashboard version)
    INCLUDES:
-   - Floating chat button & widget
+   - Floating chat button with glow & tooltip
+   - Chat widget
    - Demo chat animation (spotlight section)
    ============================================================================= */
 
-/* =============================================================================
-   SERVICE STATUS - Default to Online
-   ============================================================================= */
-const serviceStatus = {
-    online: true,
-    message: ''
-};
-
-/* =============================================================================
-   UPDATE STATUS DISPLAY
-   ============================================================================= */
-function updateStatus(online = true) {
-    serviceStatus.online = online;
-    const statusDot = document.querySelector('.copilot-status-dot');
-    const statusText = document.querySelector('.copilot-status-text');
+(function() {
+    'use strict';
     
-    if (statusDot) {
-        if (online) {
-            statusDot.classList.add('online');
-        } else {
-            statusDot.classList.remove('online');
-        }
-    }
-    
-    if (statusText) {
-        statusText.textContent = online ? 'Online' : 'Offline';
-    }
-}
-
-/* =============================================================================
-   INITIALIZE SHADOW AI CHATBOT
-   ============================================================================= */
-function initShadowAI() {
-    // Load the widget HTML
-    loadChatWidget();
-    
-    // Initialize tooltip scroll behavior
-    initTooltipScroll();
-    
-    // Initialize demo chat animation
-    initDemoChatAnimation();
-}
-
-/* =============================================================================
-   LOAD CHAT WIDGET
-   ============================================================================= */
-async function loadChatWidget() {
-    const container = document.querySelector('.shadow-ai-container');
-    if (!container) return;
-    
-    try {
-        // Try to load widget HTML
-        const response = await fetch('shared/shadow-ai-widget.html');
-        if (response.ok) {
-            const widgetHTML = await response.text();
-            
-            // Insert widget HTML after the button
-            const btn = container.querySelector('.copilot-btn');
-            if (btn) {
-                btn.insertAdjacentHTML('afterend', widgetHTML);
-            }
-        }
-    } catch (e) {
-        console.log('Widget HTML not found, using inline fallback');
-    }
-    
-    // Initialize chat functionality
-    initChatFunctionality();
-    
-    // Show container after small delay
-    setTimeout(() => {
-        container.classList.add('ready');
-    }, 500);
-}
-
-/* =============================================================================
-   INITIALIZE CHAT FUNCTIONALITY
-   ============================================================================= */
-function initChatFunctionality() {
-    const container = document.querySelector('.shadow-ai-container');
-    const btn = container?.querySelector('.copilot-btn');
-    const chat = document.querySelector('.copilot-chat');
-    const closeBtn = document.querySelector('.copilot-close');
-    const input = document.querySelector('.copilot-input-area input');
-    const sendBtn = document.querySelector('.copilot-send');
-    const messagesContainer = document.querySelector('.copilot-messages');
-    
-    if (!btn || !chat) return;
-    
+    // State
     let isOpen = false;
     let conversationHistory = [];
     let hasShownWelcome = false;
     
-    // Toggle chat
-    function toggleChat() {
-        isOpen = !isOpen;
-        chat.classList.toggle('active', isOpen);
-        container.classList.toggle('chatbot-active', isOpen);
-        
-        if (isOpen) {
-            if (!hasShownWelcome) {
-                showWelcomeMessage();
-                hasShownWelcome = true;
-            }
-            setTimeout(() => input?.focus(), 300);
-        }
+    /* =========================================================================
+       INITIALIZE
+       ========================================================================= */
+    function init() {
+        createWidget();
+        initTooltipScroll();
+        initDemoChatAnimation();
+        initExternalTriggers();
+        console.log('✅ Shadow AI Chatbot v2.2 initialized');
     }
     
-    // Close chat
+    /* =========================================================================
+       CREATE WIDGET DYNAMICALLY
+       ========================================================================= */
+    function createWidget() {
+        const widget = document.createElement('div');
+        widget.className = 'shadow-ai-container';
+        widget.id = 'shadow-ai-container';
+        
+        widget.innerHTML = `
+            <!-- Glow Effect -->
+            <div class="shadow-ai-glow"></div>
+            
+            <!-- Tooltip -->
+            <div class="shadow-ai-tooltip">Ask Shadow AI</div>
+            
+            <!-- Floating Button -->
+            <button class="copilot-btn" id="shadow-ai-btn" aria-label="Open Shadow AI Chat">
+                <span class="copilot-emoji">🤖</span>
+            </button>
+            
+            <!-- Chat Window -->
+            <div class="copilot-chat hidden" id="shadow-ai-chat" role="dialog" aria-label="Shadow AI Chat">
+                <!-- Header: Title left, Status + Close right -->
+                <div class="copilot-header">
+                    <div class="copilot-header-left">
+                        <span class="copilot-header-emoji">🤖</span>
+                        <div class="copilot-header-text">
+                            <h3>Shadow AI</h3>
+                        </div>
+                    </div>
+                    <div class="copilot-header-right">
+                        <p class="copilot-status">
+                            <span class="copilot-status-dot online"></span>
+                            <span class="copilot-status-text">Online</span>
+                        </p>
+                        <button class="copilot-close" aria-label="Close chat">&times;</button>
+                    </div>
+                </div>
+                
+                <!-- Messages -->
+                <div class="copilot-messages" id="shadow-ai-messages">
+                    <!-- Messages injected here -->
+                </div>
+                
+                <!-- Input -->
+                <div class="copilot-input-area">
+                    <input type="text" 
+                           id="shadow-ai-input" 
+                           placeholder="Ask about shadow bans..." 
+                           autocomplete="off"
+                           enterkeyhint="send">
+                    <button class="copilot-send" id="shadow-ai-send">Send</button>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(widget);
+        
+        // Show container with animation
+        setTimeout(() => {
+            widget.classList.add('ready');
+        }, 500);
+        
+        // Bind events
+        bindEvents();
+    }
+    
+    /* =========================================================================
+       BIND EVENTS
+       ========================================================================= */
+    function bindEvents() {
+        const container = document.getElementById('shadow-ai-container');
+        const btn = document.getElementById('shadow-ai-btn');
+        const chat = document.getElementById('shadow-ai-chat');
+        const closeBtn = container.querySelector('.copilot-close');
+        const input = document.getElementById('shadow-ai-input');
+        const sendBtn = document.getElementById('shadow-ai-send');
+        
+        // Toggle chat
+        btn.addEventListener('click', toggleChat);
+        
+        // Close button
+        closeBtn.addEventListener('click', closeChat);
+        
+        // Send message
+        sendBtn.addEventListener('click', sendMessage);
+        
+        // Enter key
+        input.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+        
+        // Escape key to close
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && isOpen) {
+                closeChat();
+            }
+        });
+        
+        // Prevent body scroll when chat is open on mobile
+        chat.addEventListener('touchmove', (e) => {
+            e.stopPropagation();
+        }, { passive: true });
+        
+        // Handle keyboard on mobile
+        input.addEventListener('focus', () => {
+            setTimeout(() => {
+                chat.classList.add('keyboard-visible');
+            }, 300);
+        });
+        
+        input.addEventListener('blur', () => {
+            chat.classList.remove('keyboard-visible');
+        });
+    }
+    
+    /* =========================================================================
+       TOGGLE/OPEN/CLOSE CHAT
+       ========================================================================= */
+    function toggleChat() {
+        isOpen ? closeChat() : openChat();
+    }
+    
+    function openChat() {
+        isOpen = true;
+        const container = document.getElementById('shadow-ai-container');
+        const chat = document.getElementById('shadow-ai-chat');
+        const input = document.getElementById('shadow-ai-input');
+        
+        chat.classList.remove('hidden');
+        chat.classList.add('active');
+        container.classList.add('chatbot-active');
+        
+        if (!hasShownWelcome) {
+            showWelcomeMessage();
+            hasShownWelcome = true;
+        }
+        
+        setTimeout(() => input?.focus(), 300);
+    }
+    
     function closeChat() {
         isOpen = false;
+        const container = document.getElementById('shadow-ai-container');
+        const chat = document.getElementById('shadow-ai-chat');
+        
         chat.classList.remove('active');
+        chat.classList.add('hidden');
         container.classList.remove('chatbot-active');
     }
     
-    // Button click
-    btn.addEventListener('click', toggleChat);
+    /* =========================================================================
+       WELCOME MESSAGE
+       ========================================================================= */
+    function showWelcomeMessage() {
+        setTimeout(() => {
+            addMessage("👋 Hi! I'm Shadow AI, your personal shadow ban detective. I can help you understand shadow banning, check your accounts, and provide recovery strategies. What would you like to know?", 'assistant');
+        }, 500);
+    }
     
-    // Close button
-    closeBtn?.addEventListener('click', closeChat);
-    
-    // Send message
+    /* =========================================================================
+       SEND MESSAGE
+       ========================================================================= */
     function sendMessage() {
+        const input = document.getElementById('shadow-ai-input');
         const message = input?.value?.trim();
+        
         if (!message) {
             input?.classList.add('blink-empty');
             setTimeout(() => input?.classList.remove('blink-empty'), 1200);
@@ -156,55 +223,47 @@ function initChatFunctionality() {
         }, 1000 + Math.random() * 1000);
     }
     
-    // Send button click
-    sendBtn?.addEventListener('click', sendMessage);
-    
-    // Enter key
-    input?.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            sendMessage();
-        }
-    });
-    
-    // Welcome message - always use main message since we default to online
-    function showWelcomeMessage() {
-        const welcomeMsg = "👋 Hi! I'm Shadow AI, your personal shadow ban detective. I can help you understand shadow banning, check your accounts, and provide recovery strategies. What would you like to know?";
-        
-        setTimeout(() => {
-            addMessage(welcomeMsg, 'assistant');
-        }, 500);
-    }
-    
-    // Add message to chat
+    /* =========================================================================
+       ADD MESSAGE TO CHAT
+       ========================================================================= */
     function addMessage(text, role) {
+        const messagesContainer = document.getElementById('shadow-ai-messages');
         if (!messagesContainer) return;
         
         const messageDiv = document.createElement('div');
         messageDiv.className = `chat-message ${role}-message`;
         
-        const avatar = role === 'assistant' ? '🤖' : '👤';
-        
-        messageDiv.innerHTML = `
-            <div class="message-content">
-                <div class="message-avatar">${avatar}</div>
-                <div class="message-text">${formatMessage(text)}</div>
-            </div>
-        `;
+        // Only show avatar for AI messages
+        if (role === 'assistant') {
+            messageDiv.innerHTML = `
+                <div class="message-content">
+                    <div class="message-avatar">🤖</div>
+                    <div class="message-text">${formatMessage(text)}</div>
+                </div>
+            `;
+        } else {
+            messageDiv.innerHTML = `
+                <div class="message-content">
+                    <div class="message-text">${formatMessage(text)}</div>
+                </div>
+            `;
+        }
         
         messagesContainer.appendChild(messageDiv);
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
     }
     
-    // Format message (convert markdown-like syntax)
     function formatMessage(text) {
         return text
             .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
             .replace(/\n/g, '<br>');
     }
     
-    // Show typing indicator
+    /* =========================================================================
+       TYPING INDICATOR
+       ========================================================================= */
     function showTypingIndicator() {
+        const messagesContainer = document.getElementById('shadow-ai-messages');
         if (!messagesContainer) return;
         
         const typingDiv = document.createElement('div');
@@ -224,13 +283,14 @@ function initChatFunctionality() {
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
     }
     
-    // Hide typing indicator
     function hideTypingIndicator() {
-        const typing = messagesContainer?.querySelector('.typing-indicator');
+        const typing = document.querySelector('.typing-indicator');
         typing?.remove();
     }
     
-    // Generate response (demo - replace with actual AI)
+    /* =========================================================================
+       GENERATE RESPONSE (Demo - replace with actual AI)
+       ========================================================================= */
     function generateResponse(message) {
         const lowerMsg = message.toLowerCase();
         
@@ -265,219 +325,199 @@ function initChatFunctionality() {
         return "I'd be happy to help with that! I specialize in shadow ban detection and recovery across 26+ platforms including Twitter/X, Instagram, TikTok, Reddit, and more. What specific platform or issue would you like to discuss?";
     }
     
-    // Set status to online by default
-    updateStatus(true);
-    
-    // Escape key to close
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && isOpen) {
-            closeChat();
-        }
-    });
-    
-    // Prevent body scroll when chat is open on mobile
-    chat.addEventListener('touchmove', (e) => {
-        e.stopPropagation();
-    }, { passive: true });
-    
-    // Handle keyboard on mobile
-    if (input) {
-        input.addEventListener('focus', () => {
-            setTimeout(() => {
-                chat.classList.add('keyboard-visible');
-            }, 300);
-        });
+    /* =========================================================================
+       TOOLTIP SCROLL BEHAVIOR
+       ========================================================================= */
+    function initTooltipScroll() {
+        let scrollTimeout;
         
-        input.addEventListener('blur', () => {
-            chat.classList.remove('keyboard-visible');
-        });
-    }
-}
-
-/* =============================================================================
-   TOOLTIP SCROLL BEHAVIOR
-   ============================================================================= */
-function initTooltipScroll() {
-    const tooltip = document.querySelector('.shadow-ai-tooltip');
-    if (!tooltip) return;
-    
-    let scrollTimeout;
-    
-    window.addEventListener('scroll', () => {
-        tooltip.classList.add('scrolled');
-        
-        clearTimeout(scrollTimeout);
-        scrollTimeout = setTimeout(() => {
-            tooltip.classList.remove('scrolled');
-        }, 2000);
-    }, { passive: true });
-}
-
-/* =============================================================================
-   DEMO CHAT ANIMATION - TYPEWRITER EFFECT (Spotlight Section)
-   ============================================================================= */
-function initDemoChatAnimation() {
-    const demoChat = document.getElementById('demo-chat-messages');
-    if (!demoChat) return;
-    
-    let hasPlayed = false;
-    
-    const chatSequence = [
-        { 
-            type: 'ai', 
-            text: "👋 Hi! I'm Shadow AI, your personal shadow ban detective.",
-            delay: 500
-        },
-        { 
-            type: 'ai', 
-            text: "I can check if you're being suppressed on Twitter/X, Reddit, Instagram, TikTok, and 22+ other platforms.",
-            delay: 1500
-        },
-        { 
-            type: 'ai', 
-            text: "I analyze engagement patterns, visibility signals, and platform-specific indicators to give you a probability score.",
-            delay: 1500
-        },
-        { 
-            type: 'ai', 
-            text: "Would you like to learn more about our Pro subscription? 🚀",
-            delay: 1500
-        },
-        { 
-            type: 'user', 
-            text: "Yes, tell me more!",
-            delay: 2000,
-            clickable: true
-        },
-        { 
-            type: 'ai', 
-            text: "Great choice! With Shadow AI Pro you get:",
-            delay: 1000
-        },
-        { 
-            type: 'ai', 
-            text: "✓ 100 AI questions/day\n✓ Live platform checks\n✓ Recovery strategies\n✓ 24/7 availability",
-            delay: 1200
-        },
-        { 
-            type: 'ai', 
-            text: '👉 <a href="#pricing">View pricing plans</a> to get started with a 7-day free trial!',
-            delay: 1500
-        }
-    ];
-    
-    let currentIndex = 0;
-    let isAnimating = false;
-    
-    function showTypingIndicator() {
-        const typing = document.createElement('div');
-        typing.className = 'demo-typing-indicator';
-        typing.innerHTML = '<span></span><span></span><span></span>';
-        demoChat.appendChild(typing);
-        demoChat.scrollTop = demoChat.scrollHeight;
-        return typing;
-    }
-    
-    function addMessage(message) {
-        const msgEl = document.createElement('div');
-        msgEl.className = `demo-msg ${message.type}`;
-        
-        if (message.type === 'ai') {
-            // For AI messages, use innerHTML to support links and formatting
-            msgEl.innerHTML = message.text.replace(/\n/g, '<br>');
-        } else {
-            msgEl.textContent = message.text;
-        }
-        
-        if (message.clickable) {
-            msgEl.style.cursor = 'pointer';
-            msgEl.title = 'Click to continue';
-        }
-        
-        demoChat.appendChild(msgEl);
-        demoChat.scrollTop = demoChat.scrollHeight;
-        
-        return msgEl;
-    }
-    
-    function playNextMessage() {
-        if (currentIndex >= chatSequence.length) {
-            isAnimating = false;
-            return;
-        }
-        
-        const message = chatSequence[currentIndex];
-        currentIndex++;
-        
-        if (message.type === 'ai') {
-            // Show typing indicator for AI messages
-            const typing = showTypingIndicator();
+        window.addEventListener('scroll', () => {
+            const tooltip = document.querySelector('.shadow-ai-tooltip');
+            if (!tooltip) return;
             
-            setTimeout(() => {
-                typing.remove();
-                addMessage(message);
-                
-                setTimeout(playNextMessage, message.delay || 1000);
-            }, 800 + Math.random() * 400);
-        } else {
-            // User messages appear after a delay
-            setTimeout(() => {
-                addMessage(message);
-                setTimeout(playNextMessage, message.delay || 1000);
-            }, message.delay || 1000);
-        }
+            tooltip.classList.add('scrolled');
+            
+            clearTimeout(scrollTimeout);
+            scrollTimeout = setTimeout(() => {
+                tooltip.classList.remove('scrolled');
+            }, 2000);
+        }, { passive: true });
     }
     
-    function startAnimation() {
-        if (hasPlayed || isAnimating) return;
+    /* =========================================================================
+       DEMO CHAT ANIMATION (Spotlight Section)
+       ========================================================================= */
+    function initDemoChatAnimation() {
+        const demoChat = document.getElementById('demo-chat-messages');
+        if (!demoChat) return;
         
-        hasPlayed = true;
-        isAnimating = true;
-        demoChat.innerHTML = '';
-        currentIndex = 0;
+        let hasPlayed = false;
         
-        setTimeout(playNextMessage, 500);
-    }
-    
-    // Start animation when visible
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting && !hasPlayed) {
-                startAnimation();
-                observer.unobserve(entry.target);
+        const chatSequence = [
+            { 
+                type: 'ai', 
+                text: "👋 Hi! I'm Shadow AI, your personal shadow ban detective.",
+                delay: 500
+            },
+            { 
+                type: 'ai', 
+                text: "I can check if you're being suppressed on Twitter/X, Reddit, Instagram, TikTok, and 22+ other platforms.",
+                delay: 1500
+            },
+            { 
+                type: 'ai', 
+                text: "I analyze engagement patterns, visibility signals, and platform-specific indicators to give you a probability score.",
+                delay: 1500
+            },
+            { 
+                type: 'ai', 
+                text: "Would you like to learn more about our Pro subscription? 🚀",
+                delay: 1500
+            },
+            { 
+                type: 'user', 
+                text: "Yes, tell me more!",
+                delay: 2000,
+                clickable: true
+            },
+            { 
+                type: 'ai', 
+                text: "Great choice! With Shadow AI Pro you get:",
+                delay: 1000
+            },
+            { 
+                type: 'ai', 
+                text: "✓ 100 AI questions/day\n✓ Live platform checks\n✓ Recovery strategies\n✓ 24/7 availability",
+                delay: 1200
+            },
+            { 
+                type: 'ai', 
+                text: '👉 <a href="#pricing">View pricing plans</a> to get started with a 7-day free trial!',
+                delay: 1500
             }
+        ];
+        
+        let currentIndex = 0;
+        let isAnimating = false;
+        
+        function showDemoTypingIndicator() {
+            const typing = document.createElement('div');
+            typing.className = 'demo-typing-indicator';
+            typing.innerHTML = `
+                <div class="demo-avatar">🤖</div>
+                <div class="demo-dots">
+                    <span></span><span></span><span></span>
+                </div>
+            `;
+            demoChat.appendChild(typing);
+            demoChat.scrollTop = demoChat.scrollHeight;
+            return typing;
+        }
+        
+        function addDemoMessage(message) {
+            const msgEl = document.createElement('div');
+            msgEl.className = `demo-msg ${message.type}`;
+            
+            if (message.type === 'ai') {
+                // AI messages with avatar
+                msgEl.innerHTML = `
+                    <div class="demo-avatar">🤖</div>
+                    <div class="demo-text">${message.text.replace(/\n/g, '<br>')}</div>
+                `;
+            } else {
+                // User messages - just text, no avatar
+                msgEl.textContent = message.text;
+            }
+            
+            if (message.clickable) {
+                msgEl.style.cursor = 'pointer';
+                msgEl.title = 'Click to continue';
+            }
+            
+            demoChat.appendChild(msgEl);
+            demoChat.scrollTop = demoChat.scrollHeight;
+            
+            return msgEl;
+        }
+        
+        function playNextMessage() {
+            if (currentIndex >= chatSequence.length) {
+                isAnimating = false;
+                return;
+            }
+            
+            const message = chatSequence[currentIndex];
+            currentIndex++;
+            
+            if (message.type === 'ai') {
+                // Show typing indicator for AI messages
+                const typing = showDemoTypingIndicator();
+                
+                setTimeout(() => {
+                    typing.remove();
+                    addDemoMessage(message);
+                    
+                    setTimeout(playNextMessage, message.delay || 1000);
+                }, 800 + Math.random() * 400);
+            } else {
+                // User messages appear after a delay
+                setTimeout(() => {
+                    addDemoMessage(message);
+                    setTimeout(playNextMessage, message.delay || 1000);
+                }, message.delay || 1000);
+            }
+        }
+        
+        function startAnimation() {
+            if (hasPlayed || isAnimating) return;
+            
+            hasPlayed = true;
+            isAnimating = true;
+            demoChat.innerHTML = '';
+            currentIndex = 0;
+            
+            setTimeout(playNextMessage, 500);
+        }
+        
+        // Start animation when visible
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting && !hasPlayed) {
+                    startAnimation();
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.5 });
+        
+        observer.observe(demoChat);
+    }
+    
+    /* =========================================================================
+       EXTERNAL TRIGGERS (buttons that open Shadow AI)
+       ========================================================================= */
+    function initExternalTriggers() {
+        // Try AI button in spotlight section
+        const tryAiBtn = document.getElementById('try-ai-btn');
+        tryAiBtn?.addEventListener('click', (e) => {
+            e.preventDefault();
+            openChat();
         });
-    }, { threshold: 0.5 });
+        
+        // Open Shadow AI button
+        const openBtn = document.getElementById('open-shadow-ai');
+        openBtn?.addEventListener('click', (e) => {
+            e.preventDefault();
+            openChat();
+        });
+    }
     
-    observer.observe(demoChat);
-}
-
-/* =============================================================================
-   HANDLE EXTERNAL TRIGGERS (buttons that open Shadow AI)
-   ============================================================================= */
-function initExternalTriggers() {
-    // Try AI button in spotlight section
-    const tryAiBtn = document.getElementById('try-ai-btn');
-    tryAiBtn?.addEventListener('click', (e) => {
-        e.preventDefault();
-        const btn = document.querySelector('.copilot-btn');
-        btn?.click();
-    });
+    /* =========================================================================
+       INIT ON DOM READY
+       ========================================================================= */
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
     
-    // Open Shadow AI button
-    const openBtn = document.getElementById('open-shadow-ai');
-    openBtn?.addEventListener('click', (e) => {
-        e.preventDefault();
-        const btn = document.querySelector('.copilot-btn');
-        btn?.click();
-    });
-}
-
-/* =============================================================================
-   INITIALIZE ON DOM READY
-   ============================================================================= */
-document.addEventListener('DOMContentLoaded', function() {
-    initShadowAI();
-    initExternalTriggers();
-    console.log('✅ Shadow AI Chatbot v2.1 initialized');
-});
+})();

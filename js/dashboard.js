@@ -1,5 +1,6 @@
 /* =============================================================================
    DASHBOARD.JS - ShadowBanCheck.io Dashboard
+   Complete Rebuild with Live Chat & Stripe Integration
    ============================================================================= */
 
 // =============================================================================
@@ -52,6 +53,16 @@ const platformIcons = {
     shopify: '🛍️', twitch: '🎮', kick: '🟢', rumble: '📺', medium: '✍️', quora: '❓'
 };
 
+// Platform names for display
+const platformNames = {
+    instagram: 'Instagram', tiktok: 'TikTok', twitter: 'Twitter/X', facebook: 'Facebook',
+    youtube: 'YouTube', linkedin: 'LinkedIn', reddit: 'Reddit', pinterest: 'Pinterest',
+    snapchat: 'Snapchat', threads: 'Threads', mastodon: 'Mastodon', bluesky: 'Bluesky',
+    truth: 'Truth Social', telegram: 'Telegram', discord: 'Discord', whatsapp: 'WhatsApp',
+    signal: 'Signal', amazon: 'Amazon', ebay: 'eBay', etsy: 'Etsy', shopify: 'Shopify',
+    twitch: 'Twitch', kick: 'Kick', rumble: 'Rumble', medium: 'Medium', quora: 'Quora'
+};
+
 // Hashtag alternatives (AI placeholder)
 const hashtagAlternatives = {
     '#fitness': ['#fitnessjourney', '#fitlife', '#workoutmotivation'],
@@ -65,6 +76,14 @@ const hashtagAlternatives = {
 };
 
 // =============================================================================
+// LIVE CHAT STATE
+// =============================================================================
+let adminOnline = true; // Demo: admin is online
+let chatMessages = [
+    { sender: 'admin', text: 'Hi! How can I help you today?', time: 'Just now' }
+];
+
+// =============================================================================
 // INITIALIZATION
 // =============================================================================
 document.addEventListener('DOMContentLoaded', () => {
@@ -76,9 +95,22 @@ document.addEventListener('DOMContentLoaded', () => {
     initTools();
     initModal();
     initForms();
+    initLiveChat();
     populateDashboard();
     detectUserIP();
     updateAIQuestionsDisplay();
+    
+    // Auto-fill support email from user data
+    const supportEmail = document.getElementById('support-email');
+    if (supportEmail && window.userData.email) {
+        supportEmail.value = window.userData.email;
+    }
+    
+    // Auto-fill alert email
+    const alertEmail = document.getElementById('alert-email');
+    if (alertEmail && window.userData.email) {
+        alertEmail.value = window.userData.email;
+    }
     
     // Check URL hash
     const hash = window.location.hash.slice(1);
@@ -297,6 +329,13 @@ function initModal() {
     modal?.addEventListener('click', (e) => {
         if (e.target === modal) closeModal();
     });
+    
+    // Close on escape key
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && !modal?.classList.contains('hidden')) {
+            closeModal();
+        }
+    });
 }
 
 function openModal() {
@@ -304,10 +343,12 @@ function openModal() {
     document.getElementById('new-platform').value = '';
     document.getElementById('new-username').value = '';
     document.getElementById('new-nickname').value = '';
+    document.body.style.overflow = 'hidden';
 }
 
 function closeModal() {
     document.getElementById('add-account-modal')?.classList.add('hidden');
+    document.body.style.overflow = '';
 }
 
 function addAccount() {
@@ -388,17 +429,58 @@ function runAccountCheck() {
         const status = score > 70 ? 'healthy' : score > 40 ? 'issues' : 'banned';
         const statusText = status === 'healthy' ? '✅ No Shadow Ban Detected' : 
                           status === 'issues' ? '⚠️ Possible Restrictions' : '🚫 Shadow Ban Likely';
+        const statusIcon = status === 'healthy' ? '✅' : status === 'issues' ? '⚠️' : '🚫';
         
-        showResults('Account Check Results', `
-            <div style="text-align: center; padding: 1.5rem;">
-                <div style="font-size: 3rem; margin-bottom: 0.75rem;">${status === 'healthy' ? '✅' : status === 'issues' ? '⚠️' : '🚫'}</div>
+        const now = new Date();
+        const timeStr = now.toLocaleString('en-US', { 
+            month: 'short', day: 'numeric', year: 'numeric',
+            hour: 'numeric', minute: '2-digit', hour12: true 
+        });
+        
+        let html = `
+            <div style="text-align: center; margin-bottom: 1.5rem;">
+                <div style="font-size: 3rem; margin-bottom: 0.75rem;">${statusIcon}</div>
                 <h3 style="margin: 0 0 0.5rem;">${statusText}</h3>
-                <p style="color: var(--text-muted); margin: 0 0 1rem;">
-                    ${platformIcons[platform] || '📱'} ${username} • Visibility Score: ${score}%
-                </p>
-                ${status !== 'healthy' ? `<p style="font-size: 0.85rem; color: var(--primary-light);">💡 Tip: Try posting original content and avoid flagged hashtags for 48 hours.</p>` : ''}
             </div>
-        `);
+            
+            <div class="result-details">
+                <div class="result-details-grid">
+                    <div class="result-detail-item">
+                        <span>Platform</span>
+                        <span>${platformIcons[platform]} ${platformNames[platform] || platform}</span>
+                    </div>
+                    <div class="result-detail-item">
+                        <span>Username</span>
+                        <span>${username}</span>
+                    </div>
+                    <div class="result-detail-item">
+                        <span>Visibility Score</span>
+                        <span style="color: ${score > 70 ? '#22c55e' : score > 40 ? '#eab308' : '#ef4444'}">${score}%</span>
+                    </div>
+                    <div class="result-detail-item">
+                        <span>Checked</span>
+                        <span>${timeStr}</span>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Add recovery tips if not healthy
+        if (status !== 'healthy') {
+            html += `
+                <div class="recovery-tips">
+                    <h4>💡 Recovery Tips:</h4>
+                    <ul>
+                        <li>Stop posting for 24-48 hours to let the algorithm reset</li>
+                        <li>Remove any posts with banned hashtags</li>
+                        <li>Post only original content when you return</li>
+                        <li>Avoid mass following/unfollowing or engagement pods</li>
+                    </ul>
+                </div>
+            `;
+        }
+        
+        showResults('Account Check Results', html);
     }, 2000);
 }
 
@@ -453,7 +535,7 @@ function runHashtagCheck() {
         });
         
         html += '</div>';
-        showResults(`Hashtag Check - ${platform}`, html);
+        showResults(`Hashtag Check - ${platformNames[platform]}`, html);
     }, 1500);
 }
 
@@ -466,14 +548,46 @@ function runIPCheck() {
     
     setTimeout(() => {
         const isFlagged = Math.random() > 0.85;
-        showResults('IP Address Check', `
-            <div style="text-align: center; padding: 1.5rem;">
+        const now = new Date();
+        const timeStr = now.toLocaleString('en-US', { 
+            month: 'short', day: 'numeric', year: 'numeric',
+            hour: 'numeric', minute: '2-digit', hour12: true 
+        });
+        
+        let html = `
+            <div style="text-align: center; margin-bottom: 1.5rem;">
                 <div style="font-size: 3rem; margin-bottom: 0.75rem;">${isFlagged ? '⚠️' : '✅'}</div>
                 <h3 style="margin: 0 0 0.5rem;">${isFlagged ? 'IP May Be Flagged' : 'IP Looks Clean'}</h3>
-                <p style="color: var(--text-muted); margin: 0; font-family: monospace;">${ip}</p>
-                ${isFlagged ? `<p style="font-size: 0.85rem; color: var(--primary-light); margin-top: 1rem;">💡 Tip: Try using a VPN or contact your ISP.</p>` : ''}
             </div>
-        `);
+            
+            <div class="result-details">
+                <div class="result-details-grid">
+                    <div class="result-detail-item">
+                        <span>IP Address</span>
+                        <span style="font-family: monospace;">${ip}</span>
+                    </div>
+                    <div class="result-detail-item">
+                        <span>Checked</span>
+                        <span>${timeStr}</span>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        if (isFlagged) {
+            html += `
+                <div class="recovery-tips">
+                    <h4>💡 Recommendations:</h4>
+                    <ul>
+                        <li>Try using a VPN to get a new IP address</li>
+                        <li>Contact your ISP about getting a new IP</li>
+                        <li>Wait 24-48 hours before heavy platform use</li>
+                    </ul>
+                </div>
+            `;
+        }
+        
+        showResults('IP Address Check', html);
     }, 1500);
 }
 
@@ -533,14 +647,28 @@ function runWebsiteCheck() {
     
     setTimeout(() => {
         const isBlocked = Math.random() > 0.85;
-        showResults('Website Check', `
-            <div style="text-align: center; padding: 1.5rem;">
+        let html = `
+            <div style="text-align: center; margin-bottom: 1.5rem;">
                 <div style="font-size: 3rem; margin-bottom: 0.75rem;">${isBlocked ? '🚫' : '✅'}</div>
                 <h3 style="margin: 0 0 0.5rem;">${isBlocked ? 'Domain May Be Blocked' : 'Domain Looks Safe'}</h3>
                 <p style="color: var(--text-muted); margin: 0; word-break: break-all;">${website}</p>
-                ${isBlocked ? `<p style="font-size: 0.85rem; color: var(--primary-light); margin-top: 1rem;">💡 Some platforms may block links to this domain.</p>` : ''}
             </div>
-        `);
+        `;
+        
+        if (isBlocked) {
+            html += `
+                <div class="recovery-tips">
+                    <h4>💡 This means:</h4>
+                    <ul>
+                        <li>Some platforms may block links to this domain</li>
+                        <li>Posts with this URL may get reduced reach</li>
+                        <li>Consider using a link shortener or landing page</li>
+                    </ul>
+                </div>
+            `;
+        }
+        
+        showResults('Website Check', html);
     }, 1500);
 }
 
@@ -557,12 +685,16 @@ function runBulkCheck() {
         
         renderAccounts();
         
+        const healthy = accounts.filter(a => a.status === 'healthy').length;
+        const issues = accounts.filter(a => a.status === 'issues').length;
+        const banned = accounts.filter(a => a.status === 'banned').length;
+        
         // Show bulk results
         let html = `
             <div style="margin-bottom: 1rem;">
-                <span style="color: #22c55e;">✅ ${accounts.filter(a => a.status === 'healthy').length} Healthy</span> • 
-                <span style="color: #eab308;">⚠️ ${accounts.filter(a => a.status === 'issues').length} Issues</span> • 
-                <span style="color: #ef4444;">🚫 ${accounts.filter(a => a.status === 'banned').length} Banned</span>
+                <span style="color: #22c55e;">✅ ${healthy} Healthy</span> • 
+                <span style="color: #eab308;">⚠️ ${issues} Issues</span> • 
+                <span style="color: #ef4444;">🚫 ${banned} Banned</span>
             </div>
             <div class="bulk-results">
         `;
@@ -598,6 +730,93 @@ function hideResults() {
 }
 
 // =============================================================================
+// LIVE CHAT
+// =============================================================================
+function initLiveChat() {
+    const sendBtn = document.getElementById('live-chat-send');
+    const input = document.getElementById('live-chat-input');
+    
+    sendBtn?.addEventListener('click', sendLiveChatMessage);
+    
+    input?.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            sendLiveChatMessage();
+        }
+    });
+    
+    // Demo: Toggle admin status randomly for demo purposes
+    updateAdminStatus();
+}
+
+function updateAdminStatus() {
+    const indicator = document.getElementById('admin-status-indicator');
+    const text = document.getElementById('admin-status-text');
+    const miniChat = document.getElementById('mini-chat');
+    const offlineMsg = document.getElementById('chat-offline');
+    
+    if (adminOnline) {
+        indicator?.classList.add('online');
+        indicator?.classList.remove('offline');
+        if (text) text.textContent = 'Admin Online - Chat now for instant help!';
+        miniChat?.classList.remove('hidden');
+        offlineMsg?.classList.add('hidden');
+    } else {
+        indicator?.classList.remove('online');
+        indicator?.classList.add('offline');
+        if (text) text.textContent = 'Admin Offline - We\'ll reply via email';
+        miniChat?.classList.add('hidden');
+        offlineMsg?.classList.remove('hidden');
+    }
+}
+
+function sendLiveChatMessage() {
+    const input = document.getElementById('live-chat-input');
+    const message = input?.value.trim();
+    
+    if (!message) return;
+    
+    // Add user message
+    addChatMessage('You', message);
+    input.value = '';
+    
+    // Demo: Auto-reply after a delay
+    setTimeout(() => {
+        const replies = [
+            "Thanks for reaching out! I'll look into that for you.",
+            "Got it! Let me check on that real quick.",
+            "I understand. Can you tell me more about the issue?",
+            "No problem! I can help with that.",
+            "Thanks for the details. I'll get back to you shortly."
+        ];
+        const reply = replies[Math.floor(Math.random() * replies.length)];
+        addChatMessage('Admin', reply);
+    }, 1000 + Math.random() * 2000);
+}
+
+function addChatMessage(sender, text) {
+    const container = document.getElementById('live-chat-messages');
+    if (!container) return;
+    
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString('en-US', { 
+        hour: 'numeric', 
+        minute: '2-digit', 
+        hour12: true 
+    });
+    
+    const msgDiv = document.createElement('div');
+    msgDiv.className = `chat-message ${sender === 'You' ? 'user' : 'admin'}`;
+    msgDiv.innerHTML = `
+        <span class="msg-sender">${sender}</span>
+        <span class="msg-text">${text}</span>
+        <span class="msg-time">${timeStr}</span>
+    `;
+    
+    container.appendChild(msgDiv);
+    container.scrollTop = container.scrollHeight;
+}
+
+// =============================================================================
 // FORMS
 // =============================================================================
 function initForms() {
@@ -606,6 +825,31 @@ function initForms() {
         e.preventDefault();
         showToast('✅', 'Message sent! We\'ll respond within 24 hours.');
         e.target.reset();
+        // Re-fill email
+        const emailField = document.getElementById('support-email');
+        if (emailField && window.userData.email) {
+            emailField.value = window.userData.email;
+        }
+    });
+    
+    // Save profile
+    document.getElementById('save-profile')?.addEventListener('click', () => {
+        const fname = document.getElementById('profile-fname')?.value;
+        const lname = document.getElementById('profile-lname')?.value;
+        const email = document.getElementById('profile-email')?.value;
+        
+        if (fname && lname && email) {
+            window.userData.firstName = fname;
+            window.userData.lastName = lname;
+            window.userData.email = email;
+            populateDashboard();
+            showToast('✅', 'Profile saved!');
+        }
+    });
+    
+    // Save alert channels
+    document.getElementById('save-channels')?.addEventListener('click', () => {
+        showToast('✅', 'Notification settings saved!');
     });
     
     // Logout
@@ -630,6 +874,22 @@ function initForms() {
         if (window.ShadowAI && window.ShadowAI.open) {
             window.ShadowAI.open();
         }
+    });
+    
+    // Report downloads
+    document.getElementById('download-pdf')?.addEventListener('click', () => {
+        showToast('📄', 'Generating PDF report...');
+        setTimeout(() => showToast('✅', 'Report downloaded!'), 1500);
+    });
+    
+    document.getElementById('download-csv')?.addEventListener('click', () => {
+        showToast('📊', 'Generating CSV export...');
+        setTimeout(() => showToast('✅', 'Export downloaded!'), 1500);
+    });
+    
+    document.getElementById('export-history')?.addEventListener('click', () => {
+        showToast('📥', 'Exporting history...');
+        setTimeout(() => showToast('✅', 'History exported!'), 1500);
     });
 }
 

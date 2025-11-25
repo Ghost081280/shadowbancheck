@@ -9,6 +9,9 @@ function buildPlatformGrid() {
     const grid = document.getElementById('platform-grid');
     if (!grid || !window.platformData) return;
     
+    // CRITICAL: Clear existing platforms first to prevent duplicates
+    grid.innerHTML = '';
+    
     const platforms = window.platformData;
     
     platforms.forEach(platform => {

@@ -1,9 +1,11 @@
 /* =============================================================================
-   SHADOW AI ADMIN - Unlocked Research Tool
+   SHADOW AI ADMIN - Unlocked Research Tool v2.0
    ShadowBanCheck.io - Admin Dashboard AI Assistant
    
    This version has NO limits - designed for admin use as a research tool
    to help answer customer questions quickly.
+   
+   Uses the same CSS as website/dashboard chatbot (shadow-ai.css)
    ============================================================================= */
 
 (function() {
@@ -27,16 +29,8 @@ function getRemainingQuestions() {
     return '∞';
 }
 
-function getPlanName() {
-    return 'Admin';
-}
-
-function getPlanLimit() {
-    return '∞';
-}
-
 // ============================================
-// WIDGET HTML
+// WIDGET HTML - Uses same classes as main shadow-ai.css
 // ============================================
 function createWidget() {
     console.log('🔮 Creating Admin Shadow AI widget...');
@@ -47,12 +41,12 @@ function createWidget() {
     }
     
     const widgetHTML = `
-        <div class="shadow-ai-container ready">
+        <div class="shadow-ai-container ready" id="shadow-ai-container">
             <div class="shadow-ai-glow"></div>
+            <div class="shadow-ai-tooltip">Research Tool 🔮</div>
             <button id="shadow-ai-btn" class="copilot-btn" aria-label="Open Shadow AI Research Tool">
                 <span class="copilot-emoji">🔮</span>
             </button>
-            <div class="shadow-ai-tooltip">Research Tool</div>
         </div>
 
         <div id="shadow-ai-chat" class="copilot-chat hidden">
@@ -60,25 +54,87 @@ function createWidget() {
                 <div class="copilot-header-left">
                     <span class="copilot-header-emoji">🔮</span>
                     <div class="copilot-header-text">
-                        <h3>Shadow AI <span style="font-size: 0.7em; opacity: 0.7;">Admin</span></h3>
-                        <p class="copilot-status">
-                            <span class="copilot-status-dot" style="background: #a855f7;"></span>
-                            <span id="shadow-ai-counter">Unlimited Access</span>
-                        </p>
+                        <h3>Shadow AI <span style="font-size: 0.7em; opacity: 0.8; background: var(--accent); padding: 2px 6px; border-radius: 4px; margin-left: 4px;">ADMIN</span></h3>
+                        <p class="copilot-usage" id="shadow-ai-usage">∞ Unlimited Access</p>
                     </div>
                 </div>
-                <button id="shadow-ai-close" class="copilot-close" aria-label="Close chat">×</button>
+                <div class="copilot-header-right">
+                    <span class="copilot-status">
+                        <span class="copilot-status-dot online" style="background: #a855f7;"></span>
+                        Research Mode
+                    </span>
+                    <button id="shadow-ai-close" class="copilot-close" aria-label="Close chat">×</button>
+                </div>
             </div>
             <div id="shadow-ai-messages" class="copilot-messages"></div>
             <div class="copilot-input-area">
-                <input type="text" id="shadow-ai-input" placeholder="Research any shadow ban question..." autocomplete="off">
+                <input type="text" id="shadow-ai-input" placeholder="Research any shadow ban question..." autocomplete="off" enterkeyhint="send">
                 <button id="shadow-ai-send" class="copilot-send">Ask</button>
             </div>
         </div>
     `;
     
     document.body.insertAdjacentHTML('beforeend', widgetHTML);
+    
+    // Bind events after creation
+    bindEvents();
+    
     console.log('✅ Admin Shadow AI widget created');
+}
+
+// ============================================
+// EVENT BINDING
+// ============================================
+function bindEvents() {
+    const btn = document.getElementById('shadow-ai-btn');
+    const closeBtn = document.getElementById('shadow-ai-close');
+    const sendBtn = document.getElementById('shadow-ai-send');
+    const input = document.getElementById('shadow-ai-input');
+    
+    if (btn) {
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            toggleChat();
+        });
+    }
+    
+    if (closeBtn) {
+        closeBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            closeChat();
+        });
+    }
+    
+    if (sendBtn) {
+        sendBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            sendMessage();
+        });
+    }
+    
+    if (input) {
+        input.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+    }
+    
+    // Scroll-based tooltip hiding
+    let scrollTimeout;
+    window.addEventListener('scroll', () => {
+        const tooltip = document.querySelector('.shadow-ai-tooltip');
+        if (tooltip) {
+            tooltip.classList.add('scrolled');
+            clearTimeout(scrollTimeout);
+            scrollTimeout = setTimeout(() => {
+                tooltip.classList.remove('scrolled');
+            }, 2000);
+        }
+    }, { passive: true });
 }
 
 // ============================================
@@ -86,15 +142,14 @@ function createWidget() {
 // ============================================
 function openChat() {
     const chat = document.getElementById('shadow-ai-chat');
-    const tooltip = document.querySelector('.shadow-ai-tooltip');
+    const container = document.getElementById('shadow-ai-container');
     
     if (!chat) return;
     
     chat.classList.remove('hidden');
     chat.classList.add('active');
+    container?.classList.add('chat-open');
     chatOpen = true;
-    
-    if (tooltip) tooltip.style.opacity = '0';
     
     setTimeout(() => {
         document.getElementById('shadow-ai-input')?.focus();
@@ -108,15 +163,14 @@ function openChat() {
 
 function closeChat() {
     const chat = document.getElementById('shadow-ai-chat');
-    const tooltip = document.querySelector('.shadow-ai-tooltip');
+    const container = document.getElementById('shadow-ai-container');
     
     if (!chat) return;
     
     chat.classList.remove('active');
     chat.classList.add('hidden');
+    container?.classList.remove('chat-open');
     chatOpen = false;
-    
-    if (tooltip) tooltip.style.opacity = '1';
 }
 
 function toggleChat() {
@@ -128,35 +182,40 @@ function toggleChat() {
 }
 
 // ============================================
-// MESSAGES
+// MESSAGES - Using same structure as main chatbot
 // ============================================
-function addMessage(content, type = 'ai', isHTML = false) {
+function addMessage(content, type = 'assistant', isHTML = false) {
     const container = document.getElementById('shadow-ai-messages');
     if (!container) return;
     
     const msgDiv = document.createElement('div');
-    msgDiv.className = `copilot-message ${type}`;
+    msgDiv.className = `chat-message ${type}-message`;
     
-    const avatar = document.createElement('span');
-    avatar.className = 'message-avatar';
-    avatar.textContent = type === 'user' ? '👤' : '🔮';
-    
-    const bubble = document.createElement('div');
-    bubble.className = 'message-bubble';
-    
-    if (isHTML) {
-        bubble.innerHTML = content;
+    if (type === 'assistant') {
+        msgDiv.innerHTML = `
+            <div class="message-content">
+                <div class="message-avatar">🔮</div>
+                <div class="message-text">${isHTML ? content : escapeHtml(content)}</div>
+            </div>
+        `;
     } else {
-        bubble.textContent = content;
+        msgDiv.innerHTML = `
+            <div class="message-content">
+                <div class="message-text">${escapeHtml(content)}</div>
+            </div>
+        `;
     }
     
-    msgDiv.appendChild(avatar);
-    msgDiv.appendChild(bubble);
     container.appendChild(msgDiv);
-    
     container.scrollTop = container.scrollHeight;
     
-    return bubble;
+    return msgDiv;
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
 }
 
 function showTypingIndicator() {
@@ -164,11 +223,11 @@ function showTypingIndicator() {
     if (!container) return null;
     
     const typingDiv = document.createElement('div');
-    typingDiv.className = 'copilot-message ai typing-message';
+    typingDiv.className = 'chat-message assistant-message typing-indicator';
     typingDiv.innerHTML = `
-        <span class="message-avatar">🔮</span>
-        <div class="message-bubble">
-            <div class="typing-indicator">
+        <div class="message-content">
+            <div class="message-avatar">🔮</div>
+            <div class="typing-dots">
                 <span></span>
                 <span></span>
                 <span></span>
@@ -193,7 +252,7 @@ function showWelcomeMessage() {
         <strong>Shadow AI Research Tool 🔮</strong><br><br>
         Hey Andrew! I'm here to help you research answers for customer questions.<br><br>
         <strong>Quick commands:</strong>
-        <ul style="margin: 0.5rem 0; padding-left: 1.25rem;">
+        <ul style="margin: 0.5rem 0; padding-left: 1.25rem; list-style: disc;">
             <li><strong>"shadow ban [platform]"</strong> - Get platform-specific info</li>
             <li><strong>"recovery tips"</strong> - General recovery strategies</li>
             <li><strong>"hashtag [topic]"</strong> - Hashtag safety info</li>
@@ -207,7 +266,7 @@ function showWelcomeMessage() {
     
     setTimeout(() => {
         removeTypingIndicator(typing);
-        addMessage(welcomeHTML, 'ai', true);
+        addMessage(welcomeHTML, 'assistant', true);
     }, 500);
 }
 
@@ -220,8 +279,8 @@ function sendMessage() {
     
     const message = input.value.trim();
     if (!message) {
-        input.classList.add('blink');
-        setTimeout(() => input.classList.remove('blink'), 300);
+        input.classList.add('blink-empty');
+        setTimeout(() => input.classList.remove('blink-empty'), 300);
         return;
     }
     
@@ -233,14 +292,22 @@ function sendMessage() {
     isTyping = true;
     const typing = showTypingIndicator();
     
+    // Disable input while typing
+    input.disabled = true;
+    document.getElementById('shadow-ai-send').disabled = true;
+    
     setTimeout(() => {
         removeTypingIndicator(typing);
         isTyping = false;
         
         const response = getAIResponse(message);
-        addMessage(response, 'ai', true);
+        addMessage(response, 'assistant', true);
         
         conversationHistory.push({ role: 'assistant', content: response });
+        
+        input.disabled = false;
+        document.getElementById('shadow-ai-send').disabled = false;
+        input.focus();
     }, 800 + Math.random() * 800);
 }
 
@@ -255,7 +322,7 @@ function getAIResponse(message) {
         return `<strong>Instagram Shadow Ban - Research Summary 📸</strong><br><br>
         <strong>What it is:</strong> Instagram limits content visibility without notification. Posts won't appear in hashtag feeds, Explore, or Reels tab for non-followers.<br><br>
         <strong>Common causes:</strong>
-        <ul style="margin: 0.5rem 0; padding-left: 1.25rem;">
+        <ul style="margin: 0.5rem 0; padding-left: 1.25rem; list-style: disc;">
             <li>Using banned/restricted hashtags</li>
             <li>Excessive actions (likes, follows, comments)</li>
             <li>Third-party app access</li>
@@ -278,7 +345,7 @@ function getAIResponse(message) {
         return `<strong>TikTok Shadow Ban - Research Summary 🎵</strong><br><br>
         <strong>What it is:</strong> TikTok restricts video distribution - content gets 0 views or won't appear on FYP.<br><br>
         <strong>Common causes:</strong>
-        <ul style="margin: 0.5rem 0; padding-left: 1.25rem;">
+        <ul style="margin: 0.5rem 0; padding-left: 1.25rem; list-style: disc;">
             <li>Community guideline violations</li>
             <li>Copyright/music issues</li>
             <li>Spam behavior (mass liking/following)</li>
@@ -302,14 +369,14 @@ function getAIResponse(message) {
     if (msg.includes('twitter') || msg.includes('x.com') || msg.includes(' x ')) {
         return `<strong>Twitter/X Shadow Ban - Research Summary 🐦</strong><br><br>
         <strong>Types of restrictions:</strong>
-        <ul style="margin: 0.5rem 0; padding-left: 1.25rem;">
+        <ul style="margin: 0.5rem 0; padding-left: 1.25rem; list-style: disc;">
             <li><strong>Search Ban:</strong> Tweets don't appear in search results</li>
             <li><strong>Search Suggestion Ban:</strong> Account doesn't appear in search</li>
             <li><strong>Reply Deboosting:</strong> Replies hidden behind "Show more"</li>
             <li><strong>Ghost Ban:</strong> Tweets invisible to non-followers</li>
         </ul>
         <strong>Common causes:</strong>
-        <ul style="margin: 0.5rem 0; padding-left: 1.25rem;">
+        <ul style="margin: 0.5rem 0; padding-left: 1.25rem; list-style: disc;">
             <li>Aggressive/harassing behavior</li>
             <li>Spam patterns (identical tweets)</li>
             <li>New account + high activity</li>
@@ -324,14 +391,14 @@ function getAIResponse(message) {
     if (msg.includes('youtube')) {
         return `<strong>YouTube Visibility Issues - Research Summary 📺</strong><br><br>
         <strong>Note:</strong> YouTube doesn't technically "shadow ban" but they can:<br>
-        <ul style="margin: 0.5rem 0; padding-left: 1.25rem;">
+        <ul style="margin: 0.5rem 0; padding-left: 1.25rem; list-style: disc;">
             <li><strong>Demonetize:</strong> Remove ads from specific videos</li>
             <li><strong>Age-restrict:</strong> Limit who can view</li>
             <li><strong>Limited ads:</strong> Yellow $ icon</li>
             <li><strong>Not recommend:</strong> Excluded from suggestions/browse</li>
         </ul>
         <strong>Causes for reduced visibility:</strong>
-        <ul style="margin: 0.5rem 0; padding-left: 1.25rem;">
+        <ul style="margin: 0.5rem 0; padding-left: 1.25rem; list-style: disc;">
             <li>Controversial/sensitive topics</li>
             <li>Misleading metadata</li>
             <li>Reused content</li>
@@ -339,7 +406,7 @@ function getAIResponse(message) {
             <li>Community guideline strikes</li>
         </ul>
         <strong>What to tell customers:</strong>
-        <ul style="margin: 0.5rem 0; padding-left: 1.25rem;">
+        <ul style="margin: 0.5rem 0; padding-left: 1.25rem; list-style: disc;">
             <li>Check YouTube Studio analytics for "Limited" labels</li>
             <li>Request human review for demonetized videos</li>
             <li>Avoid click-bait titles/thumbnails</li>
@@ -351,7 +418,7 @@ function getAIResponse(message) {
         return `<strong>Facebook Reach Issues - Research Summary 👤</strong><br><br>
         <strong>What happens:</strong> Posts get limited distribution in Feed, may not reach followers.<br><br>
         <strong>Common causes:</strong>
-        <ul style="margin: 0.5rem 0; padding-left: 1.25rem;">
+        <ul style="margin: 0.5rem 0; padding-left: 1.25rem; list-style: disc;">
             <li>Engagement bait ("Like if you agree")</li>
             <li>Misinformation flags from fact-checkers</li>
             <li>External links (FB prefers native content)</li>
@@ -359,12 +426,12 @@ function getAIResponse(message) {
             <li>Reported content</li>
         </ul>
         <strong>Page vs Profile:</strong>
-        <ul style="margin: 0.5rem 0; padding-left: 1.25rem;">
+        <ul style="margin: 0.5rem 0; padding-left: 1.25rem; list-style: disc;">
             <li><strong>Pages:</strong> Check Page Quality tab for restrictions</li>
             <li><strong>Profiles:</strong> Less transparent - check Support Inbox</li>
         </ul>
         <strong>Recovery tips:</strong>
-        <ul style="margin: 0.5rem 0; padding-left: 1.25rem;">
+        <ul style="margin: 0.5rem 0; padding-left: 1.25rem; list-style: disc;">
             <li>Post more video content (especially Live)</li>
             <li>Avoid external links</li>
             <li>Encourage meaningful comments</li>
@@ -376,7 +443,7 @@ function getAIResponse(message) {
         return `<strong>LinkedIn Visibility Issues - Research Summary 💼</strong><br><br>
         <strong>What happens:</strong> Posts get limited reach, may not appear in connections' feeds.<br><br>
         <strong>Common causes:</strong>
-        <ul style="margin: 0.5rem 0; padding-left: 1.25rem;">
+        <ul style="margin: 0.5rem 0; padding-left: 1.25rem; list-style: disc;">
             <li>External links in posts (LinkedIn deprioritizes)</li>
             <li>Editing posts after publishing</li>
             <li>Using banned/flagged hashtags</li>
@@ -384,12 +451,37 @@ function getAIResponse(message) {
             <li>Low engagement on recent posts</li>
         </ul>
         <strong>Tips for customers:</strong>
-        <ul style="margin: 0.5rem 0; padding-left: 1.25rem;">
+        <ul style="margin: 0.5rem 0; padding-left: 1.25rem; list-style: disc;">
             <li>Put links in comments, not post body</li>
             <li>Don't edit within first hour</li>
             <li>Use 3-5 relevant hashtags max</li>
             <li>Engage with comments quickly</li>
             <li>Post during business hours</li>
+        </ul>`;
+    }
+    
+    if (msg.includes('reddit')) {
+        return `<strong>Reddit Shadow Ban - Research Summary 🔴</strong><br><br>
+        <strong>What it is:</strong> Reddit shadow bans are site-wide account restrictions. Your posts/comments are only visible to you.<br><br>
+        <strong>How to check:</strong>
+        <ul style="margin: 0.5rem 0; padding-left: 1.25rem; list-style: disc;">
+            <li>Log out and view your profile</li>
+            <li>Use r/ShadowBan to post and check</li>
+            <li>Check at reddit.com/user/[username]/about.json</li>
+        </ul>
+        <strong>Common causes:</strong>
+        <ul style="margin: 0.5rem 0; padding-left: 1.25rem; list-style: disc;">
+            <li>Self-promotion without participation</li>
+            <li>Vote manipulation</li>
+            <li>Brigading other subreddits</li>
+            <li>Ban evasion</li>
+            <li>Spammy behavior patterns</li>
+        </ul>
+        <strong>Recovery:</strong>
+        <ul style="margin: 0.5rem 0; padding-left: 1.25rem; list-style: disc;">
+            <li>Submit appeal at reddit.com/appeals</li>
+            <li>Be polite and honest in appeal</li>
+            <li>If denied, only option is new account</li>
         </ul>`;
     }
     
@@ -418,13 +510,13 @@ function getAIResponse(message) {
     if (msg.includes('hashtag')) {
         return `<strong>Hashtag Best Practices 🏷️</strong><br><br>
         <strong>What to avoid:</strong>
-        <ul style="margin: 0.5rem 0; padding-left: 1.25rem;">
+        <ul style="margin: 0.5rem 0; padding-left: 1.25rem; list-style: disc;">
             <li>🚫 Banned tags: #adulting, #sexy, #beautyblogger, #followforfollow</li>
             <li>⚠️ Risky tags: #viral, #fyp, #explorepage (overused, low value)</li>
             <li>⚠️ Very large tags: >10M posts (too competitive)</li>
         </ul>
         <strong>What works:</strong>
-        <ul style="margin: 0.5rem 0; padding-left: 1.25rem;">
+        <ul style="margin: 0.5rem 0; padding-left: 1.25rem; list-style: disc;">
             <li>✅ Niche-specific tags (10K-500K posts)</li>
             <li>✅ Mix of sizes: 2 small, 2 medium, 1 large</li>
             <li>✅ Rotate hashtags between posts</li>
@@ -445,7 +537,7 @@ function getAIResponse(message) {
         <strong>✅ Restored (Green):</strong><br>
         Account visibility returned to normal. The restriction has been lifted and content should now reach the full audience again.<br><br>
         <strong>What to tell customers:</strong>
-        <ul style="margin: 0.5rem 0; padding-left: 1.25rem;">
+        <ul style="margin: 0.5rem 0; padding-left: 1.25rem; list-style: disc;">
             <li>Red = Take immediate action, follow recovery steps</li>
             <li>Yellow = Monitor closely, reduce activity slightly</li>
             <li>Green = Good news! Resume normal posting</li>
@@ -456,22 +548,23 @@ function getAIResponse(message) {
     if (msg.includes('help') || msg.includes('what can')) {
         return `<strong>Research Tool Commands 🔮</strong><br><br>
         <strong>Platform info:</strong>
-        <ul style="margin: 0.5rem 0; padding-left: 1.25rem;">
+        <ul style="margin: 0.5rem 0; padding-left: 1.25rem; list-style: disc;">
             <li>"instagram shadow ban"</li>
             <li>"tiktok shadow ban"</li>
             <li>"twitter shadow ban"</li>
             <li>"youtube visibility"</li>
             <li>"facebook reach"</li>
             <li>"linkedin visibility"</li>
+            <li>"reddit shadow ban"</li>
         </ul>
         <strong>General topics:</strong>
-        <ul style="margin: 0.5rem 0; padding-left: 1.25rem;">
+        <ul style="margin: 0.5rem 0; padding-left: 1.25rem; list-style: disc;">
             <li>"recovery tips"</li>
             <li>"hashtag best practices"</li>
             <li>"explain alerts"</li>
         </ul>
         <strong>Customer scenarios:</strong>
-        <ul style="margin: 0.5rem 0; padding-left: 1.25rem;">
+        <ul style="margin: 0.5rem 0; padding-left: 1.25rem; list-style: disc;">
             <li>"customer says [issue]"</li>
             <li>"how to explain [topic]"</li>
         </ul>
@@ -495,13 +588,32 @@ function getAIResponse(message) {
         <strong>Need specific platform info?</strong> Ask me about the platform they're having issues with.`;
     }
     
+    // Pricing / plans
+    if (msg.includes('pricing') || msg.includes('plan') || msg.includes('price')) {
+        return `<strong>ShadowBanCheck.io Pricing 💰</strong><br><br>
+        <strong>Monitoring Plans:</strong>
+        <ul style="margin: 0.5rem 0; padding-left: 1.25rem; list-style: disc;">
+            <li><strong>Starter:</strong> $4.99/mo - 5 accounts, 3 AI/day</li>
+            <li><strong>Pro:</strong> $9.99/mo - 15 accounts, 10 AI/day</li>
+            <li><strong>Premium:</strong> $14.99/mo - 50 accounts, 25 AI/day</li>
+        </ul>
+        <strong>AI Pro Add-on:</strong> +$9.99/mo for 100 AI questions/day<br><br>
+        <strong>All plans include:</strong>
+        <ul style="margin: 0.5rem 0; padding-left: 1.25rem; list-style: disc;">
+            <li>Text + Email alerts</li>
+            <li>Hashtag checker access</li>
+            <li>Recovery recommendations</li>
+            <li>7-day free trial</li>
+        </ul>`;
+    }
+    
     // Default - helpful suggestions
     return `<strong>Research Assistant Ready 🔮</strong><br><br>
     I can help you research answers for customer questions. Try asking about:<br><br>
-    <strong>Platforms:</strong> Instagram, TikTok, Twitter, YouTube, Facebook, LinkedIn<br>
-    <strong>Topics:</strong> Shadow bans, recovery tips, hashtag safety, alert explanations<br><br>
+    <strong>Platforms:</strong> Instagram, TikTok, Twitter, YouTube, Facebook, LinkedIn, Reddit<br>
+    <strong>Topics:</strong> Shadow bans, recovery tips, hashtag safety, alert explanations, pricing<br><br>
     <strong>Example queries:</strong>
-    <ul style="margin: 0.5rem 0; padding-left: 1.25rem;">
+    <ul style="margin: 0.5rem 0; padding-left: 1.25rem; list-style: disc;">
         <li>"Instagram shadow ban causes"</li>
         <li>"How to explain reduced reach to customer"</li>
         <li>"TikTok recovery steps"</li>
@@ -509,21 +621,6 @@ function getAIResponse(message) {
     </ul>
     <br>
     <em>What would you like to research?</em>`;
-}
-
-// ============================================
-// KEYBOARD HANDLER
-// ============================================
-function initKeyboardHandler() {
-    const input = document.getElementById('shadow-ai-input');
-    if (!input) return;
-    
-    input.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            sendMessage();
-        }
-    });
 }
 
 // ============================================
@@ -548,40 +645,12 @@ function initScrollIsolation() {
 // INITIALIZATION
 // ============================================
 function initializeAdminAI() {
-    console.log('🔮 Shadow AI Admin Tool Initializing...');
+    console.log('🔮 Shadow AI Admin Tool v2.0 Initializing...');
     
     createWidget();
-    
-    const btn = document.getElementById('shadow-ai-btn');
-    const closeBtn = document.getElementById('shadow-ai-close');
-    const sendBtn = document.getElementById('shadow-ai-send');
-    
-    if (btn) {
-        btn.addEventListener('click', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            toggleChat();
-        });
-    }
-    
-    if (closeBtn) {
-        closeBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            closeChat();
-        });
-    }
-    
-    if (sendBtn) {
-        sendBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            sendMessage();
-        });
-    }
-    
-    initKeyboardHandler();
     initScrollIsolation();
     
+    // Export API for external use
     window.ShadowAI = {
         open: openChat,
         close: closeChat,

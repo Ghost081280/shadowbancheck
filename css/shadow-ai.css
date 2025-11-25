@@ -1,7 +1,12 @@
 /* =============================================================================
-   SHADOW AI CHATBOT COMPONENT - v2.0 PREMIUM EDITION
+   SHADOW AI CHATBOT COMPONENT - v2.1
    ShadowBanCheck.io - Premium Copilot Experience
    Uses main.css variables
+   
+   INCLUDES:
+   - Floating chat button & tooltip
+   - Chat window styles
+   - Demo chat preview (spotlight section)
    ============================================================================= */
 
 /* =============================================================================
@@ -184,7 +189,7 @@
 }
 
 /* =============================================================================
-   CHAT HEADER
+   CHAT HEADER - Title left, Status + Close on right
    ============================================================================= */
 .copilot-header {
     display: flex;
@@ -216,6 +221,13 @@
     margin: 0;
 }
 
+/* Right side: Status + Close button */
+.copilot-header-right {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
 .copilot-status {
     font-size: 0.8rem;
     color: rgba(255, 255, 255, 0.9);
@@ -235,7 +247,7 @@
 }
 
 .copilot-status-dot.online {
-    background: var(--success);
+    background: var(--success, #22c55e);
 }
 
 @keyframes pulse-dot {
@@ -320,7 +332,7 @@
 }
 
 /* =============================================================================
-   MESSAGE BUBBLES
+   MESSAGE BUBBLES - AI messages float (no background), User keeps bubble
    ============================================================================= */
 .chat-message {
     display: flex;
@@ -375,12 +387,13 @@
     font-size: 1.25rem;
 }
 
-.message-text {
-    background: rgba(99, 102, 241, 0.2);
-    padding: 0.75rem 1rem;
-    border-radius: var(--radius-xl);
+/* AI Messages - Floating text, no background */
+.assistant-message .message-text {
+    background: transparent;
+    padding: 0.5rem 0;
+    border-radius: 0;
     font-size: 0.9rem;
-    line-height: 1.5;
+    line-height: 1.6;
     color: var(--text-secondary);
     word-wrap: break-word;
     overflow-wrap: break-word;
@@ -388,9 +401,18 @@
     contain: layout style;
 }
 
+/* User Messages - Keep purple gradient bubble */
 .user-message .message-text {
     background: var(--gradient-primary);
+    padding: 0.75rem 1rem;
+    border-radius: var(--radius-xl);
+    font-size: 0.9rem;
+    line-height: 1.5;
     color: white;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    min-width: 0;
+    contain: layout style;
 }
 
 .message-text strong {
@@ -421,14 +443,14 @@
 }
 
 /* =============================================================================
-   TYPING INDICATOR
+   TYPING INDICATOR - Floating dots (no background box)
    ============================================================================= */
 .typing-indicator .typing-dots {
     display: flex;
     gap: 4px;
-    padding: 0.75rem 1rem;
-    background: rgba(99, 102, 241, 0.2);
-    border-radius: var(--radius-xl);
+    padding: 0.5rem 0;
+    background: transparent;
+    border-radius: 0;
 }
 
 .typing-dots span {
@@ -560,6 +582,134 @@
 }
 
 /* =============================================================================
+   DEMO CHAT - Spotlight Section Preview
+   ============================================================================= */
+.demo-chat {
+    background: var(--bg);
+    border: 2px solid var(--border);
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+    max-width: 420px;
+    margin: 0 auto;
+    box-shadow: var(--shadow-lg);
+}
+
+.demo-header {
+    background: var(--gradient-primary);
+    color: white;
+    padding: var(--space-md) var(--space-lg);
+    display: flex;
+    gap: var(--space-sm);
+    align-items: center;
+    font-weight: 600;
+}
+
+.demo-status {
+    margin-left: auto;
+    font-size: 0.75rem;
+    font-weight: 400;
+    opacity: 0.9;
+}
+
+.demo-messages {
+    padding: var(--space-lg);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+    height: 320px;
+    max-height: 320px;
+    overflow-y: auto;
+    scroll-behavior: smooth;
+}
+
+/* Custom scrollbar for demo chat */
+.demo-messages::-webkit-scrollbar {
+    width: 6px;
+}
+
+.demo-messages::-webkit-scrollbar-track {
+    background: var(--bg-secondary);
+    border-radius: 3px;
+}
+
+.demo-messages::-webkit-scrollbar-thumb {
+    background: var(--border-light);
+    border-radius: 3px;
+}
+
+.demo-messages::-webkit-scrollbar-thumb:hover {
+    background: var(--primary);
+}
+
+/* Demo message bubbles */
+.demo-msg {
+    max-width: 85%;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    animation: fadeInUp 0.3s ease;
+}
+
+/* User messages - Keep purple bubble */
+.demo-msg.user {
+    padding: var(--space-sm) var(--space-md);
+    border-radius: var(--radius-lg);
+    background: var(--gradient-primary);
+    color: white;
+    margin-left: auto;
+    border-bottom-right-radius: var(--space-2xs);
+    cursor: pointer;
+    transition: transform var(--transition-fast);
+}
+
+.demo-msg.user:hover {
+    transform: scale(1.02);
+}
+
+/* AI messages - Floating text, no background box */
+.demo-msg.ai {
+    background: transparent;
+    padding: var(--space-xs) 0;
+    border: none;
+    border-radius: 0;
+    color: var(--text-secondary);
+}
+
+.demo-msg.ai a {
+    color: var(--primary-light);
+    text-decoration: underline;
+}
+
+/* Demo typing indicator - Floating dots, no box */
+.demo-typing-indicator {
+    display: flex;
+    gap: 4px;
+    padding: var(--space-xs) 0;
+    width: fit-content;
+}
+
+.demo-typing-indicator span {
+    width: 8px;
+    height: 8px;
+    background: var(--primary-light);
+    border-radius: 50%;
+    animation: typingBounce 1.4s infinite;
+}
+
+.demo-typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+.demo-typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* =============================================================================
    MOBILE PORTRAIT - Chat window between nav and button
    ============================================================================= */
 @media (max-width: 768px) {
@@ -620,7 +770,8 @@
         padding: 1rem;
     }
     
-    .message-text {
+    .assistant-message .message-text,
+    .user-message .message-text {
         font-size: 0.9rem;
     }
     
@@ -634,6 +785,11 @@
         min-width: 70px;
         height: 42px;
         font-size: 0.9rem;
+    }
+    
+    /* Demo Chat Mobile */
+    .demo-chat {
+        max-width: 100%;
     }
 }
 
@@ -730,8 +886,12 @@
         font-size: 0.8rem !important;
     }
     
-    .message-text {
+    .assistant-message .message-text,
+    .user-message .message-text {
         font-size: 0.85rem !important;
+    }
+    
+    .user-message .message-text {
         padding: 0.625rem 0.875rem !important;
     }
     
@@ -792,12 +952,14 @@
     .copilot-chat,
     .chat-message,
     .copilot-btn,
-    .shadow-ai-glow {
+    .shadow-ai-glow,
+    .demo-msg {
         animation: none;
         transition: none;
     }
     
-    .typing-dots span {
+    .typing-dots span,
+    .demo-typing-indicator span {
         animation: none;
         opacity: 0.7;
     }

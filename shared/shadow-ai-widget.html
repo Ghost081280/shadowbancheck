@@ -1,38 +1,34 @@
-<!-- ===================================
-     SHADOW AI WIDGET - v2.0 PREMIUM
-     ShadowBanCheck.io - Shared Component
-     Loaded dynamically by shadow-ai.js
-     =================================== -->
-
-<!-- Shadow AI Button Container -->
-<div class="shadow-ai-container">
-    <div class="shadow-ai-glow"></div>
-    <button id="shadow-ai-btn" class="copilot-btn" aria-label="Open Shadow AI Assistant">
-        <span class="copilot-emoji">🤖</span>
-    </button>
-    <div class="shadow-ai-tooltip">Ask Shadow AI</div>
-</div>
-
-<!-- Shadow AI Chat Window -->
-<div id="shadow-ai-chat" class="copilot-chat hidden">
+<!-- Shadow AI Chat Widget - v2.1 -->
+<div class="copilot-chat hidden" id="shadow-ai-chat" role="dialog" aria-label="Shadow AI Chat">
+    <!-- Header: Title left, Status + Close right -->
     <div class="copilot-header">
         <div class="copilot-header-left">
             <span class="copilot-header-emoji">🤖</span>
             <div class="copilot-header-text">
                 <h3>Shadow AI</h3>
-                <p class="copilot-status">
-                    <span class="copilot-status-dot"></span>
-                    Connecting...
-                </p>
             </div>
         </div>
-        <button id="shadow-ai-close" class="copilot-close" aria-label="Close chat">×</button>
+        <div class="copilot-header-right">
+            <p class="copilot-status">
+                <span class="copilot-status-dot online"></span>
+                <span class="copilot-status-text">Online</span>
+            </p>
+            <button class="copilot-close" aria-label="Close chat">&times;</button>
+        </div>
     </div>
-    <div id="shadow-ai-messages" class="copilot-messages">
-        <!-- Messages dynamically added by shadow-ai.js -->
+    
+    <!-- Messages -->
+    <div class="copilot-messages" id="shadow-ai-messages">
+        <!-- Messages injected here -->
     </div>
+    
+    <!-- Input -->
     <div class="copilot-input-area">
-        <input type="text" id="shadow-ai-input" placeholder="Ask about shadow bans..." autocomplete="off">
-        <button id="shadow-ai-send" class="copilot-send">Send</button>
+        <input type="text" 
+               id="shadow-ai-input" 
+               placeholder="Ask about shadow bans..." 
+               autocomplete="off"
+               enterkeyhint="send">
+        <button class="copilot-send" id="shadow-ai-send">Send</button>
     </div>
 </div>

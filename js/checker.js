@@ -582,13 +582,21 @@ function checkUrlParams() {
 /* =============================================================================
    INITIALIZE
    ============================================================================= */
+let gridBuilt = false; // Prevent double initialization
+
 document.addEventListener('DOMContentLoaded', function() {
     // Build platform grid from shared data
-    if (window.platformData) {
+    if (window.platformData && !gridBuilt) {
         buildPlatformGrid();
-    } else {
+        gridBuilt = true;
+    } else if (!window.platformData) {
         // Wait for shared data to load
-        document.addEventListener('sharedComponentsLoaded', buildPlatformGrid);
+        document.addEventListener('sharedComponentsLoaded', function() {
+            if (!gridBuilt) {
+                buildPlatformGrid();
+                gridBuilt = true;
+            }
+        });
     }
     
     // Update search counter

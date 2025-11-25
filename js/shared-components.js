@@ -125,6 +125,33 @@ function initializeMobileNav() {
 }
 
 // ============================================
+// HIDE HOME LINK ON HOME PAGE
+// ============================================
+function hideHomeOnHomePage() {
+    // Get current page filename
+    const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+    
+    // Check if we're on index.html or root
+    const isHomePage = currentPage === 'index.html' || currentPage === '' || currentPage === '/';
+    
+    if (isHomePage) {
+        // Hide desktop home link
+        const desktopHomeLink = document.getElementById('nav-home-link');
+        if (desktopHomeLink) {
+            desktopHomeLink.style.display = 'none';
+            console.log('✅ Hidden desktop Home link (on home page)');
+        }
+        
+        // Hide mobile home link
+        const mobileHomeLink = document.getElementById('nav-mobile-home-link');
+        if (mobileHomeLink) {
+            mobileHomeLink.style.display = 'none';
+            console.log('✅ Hidden mobile Home link (on home page)');
+        }
+    }
+}
+
+// ============================================
 // COOKIE POLICY FUNCTION
 // ============================================
 window.showCookiePolicy = function() {
@@ -144,6 +171,9 @@ async function initializeSharedComponents() {
     
     // Initialize mobile nav after components are loaded
     initializeMobileNav();
+    
+    // Hide home link if on home page
+    hideHomeOnHomePage();
     
     // Dispatch event for other scripts to know components are ready
     document.dispatchEvent(new CustomEvent('sharedComponentsLoaded'));

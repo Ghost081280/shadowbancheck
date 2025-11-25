@@ -3,9 +3,163 @@
    ============================================================================= */
 
 /* =============================================================================
+   DEMO DATA - FOR TESTING/EDITING
+   ============================================================================= */
+function loadDemoData() {
+    // Check if URL has ?demo=platform parameter
+    const urlParams = new URLSearchParams(window.location.search);
+    const demoParam = urlParams.get('demo');
+    
+    if (demoParam) {
+        const demoData = getDemoDataForPlatform(demoParam);
+        if (demoData) {
+            displayResults(demoData);
+            return true;
+        }
+    }
+    return false;
+}
+
+function getDemoDataForPlatform(platform) {
+    const demos = {
+        'twitter': {
+            platform: 'Twitter/X',
+            identifier: '@elonmusk',
+            timestamp: Date.now(),
+            results: {
+                probability: 23,
+                status: 'clean',
+                statusText: 'No Shadow Ban Detected',
+                checks: [
+                    {
+                        name: 'Search Visibility',
+                        description: 'Account appears in search results normally',
+                        status: 'passed',
+                        citation: 'Twitter/X API v2 search endpoint'
+                    },
+                    {
+                        name: 'Reply Visibility (QFD)',
+                        description: 'Replies visible without quality filter restrictions',
+                        status: 'passed',
+                        citation: 'Third-party QFD detection API'
+                    },
+                    {
+                        name: 'Hashtag Reach',
+                        description: 'Posts appear in hashtag search results',
+                        status: 'passed',
+                        citation: 'Hashtag search crawl + API comparison'
+                    },
+                    {
+                        name: 'Engagement Rate',
+                        description: 'Engagement aligns with historical baseline',
+                        status: 'passed',
+                        citation: 'Historical baseline comparison'
+                    }
+                ],
+                recommendations: [
+                    { text: 'Your account is performing well. Continue posting quality content.', type: 'success' },
+                    { text: 'Monitor engagement trends to catch any future issues early.', type: 'info' },
+                    { text: 'Set up monitoring alerts to get notified of any changes.', type: 'info' }
+                ]
+            }
+        },
+        'reddit': {
+            platform: 'Reddit',
+            identifier: 'u/spez',
+            timestamp: Date.now(),
+            results: {
+                probability: 8,
+                status: 'clean',
+                statusText: 'No Shadow Ban Detected',
+                checks: [
+                    {
+                        name: 'Site-wide Shadowban',
+                        description: 'Account is not shadow banned site-wide',
+                        status: 'passed',
+                        citation: 'Reddit API + /r/ShadowBan verification'
+                    },
+                    {
+                        name: 'Subreddit Bans',
+                        description: 'No active subreddit-specific bans detected',
+                        status: 'passed',
+                        citation: 'Subreddit API queries'
+                    },
+                    {
+                        name: 'Post Visibility',
+                        description: 'Recent posts visible in subreddit feeds',
+                        status: 'passed',
+                        citation: 'New post crawl test'
+                    },
+                    {
+                        name: 'Karma Status',
+                        description: 'Karma accumulation functioning normally',
+                        status: 'passed',
+                        citation: 'Reddit API user endpoint'
+                    }
+                ],
+                recommendations: [
+                    { text: 'Your Reddit account is in excellent standing.', type: 'success' },
+                    { text: 'Continue following community guidelines to maintain good status.', type: 'info' },
+                    { text: 'Review subreddit-specific rules before posting to avoid issues.', type: 'info' }
+                ]
+            }
+        },
+        'email': {
+            platform: 'Email',
+            identifier: 'contact@example.com',
+            timestamp: Date.now(),
+            results: {
+                probability: 72,
+                status: 'warning',
+                statusText: 'Potential Issues Detected',
+                checks: [
+                    {
+                        name: 'Blacklist Status',
+                        description: 'Domain found on 2 minor blacklists',
+                        status: 'warning',
+                        citation: 'Spamhaus ZEN + SURBL multi query'
+                    },
+                    {
+                        name: 'IP Reputation',
+                        description: 'Sending IP has moderate reputation score',
+                        status: 'warning',
+                        citation: 'Sender Score + Talos Intelligence'
+                    },
+                    {
+                        name: 'Authentication Setup',
+                        description: 'SPF and DKIM configured, DMARC missing',
+                        status: 'warning',
+                        citation: 'DNS TXT record lookup'
+                    },
+                    {
+                        name: 'Deliverability',
+                        description: 'Estimated 68% inbox delivery rate',
+                        status: 'warning',
+                        citation: 'GlockApps deliverability test'
+                    }
+                ],
+                recommendations: [
+                    { text: 'Request removal from detected blacklists through their removal portals.', type: 'warning' },
+                    { text: 'Add DMARC record to improve email authentication: v=DMARC1; p=quarantine', type: 'warning' },
+                    { text: 'Monitor your sender reputation weekly to catch issues early.', type: 'info' },
+                    { text: 'Consider using a dedicated sending IP with proper warm-up.', type: 'info' }
+                ]
+            }
+        }
+    };
+    
+    return demos[platform.toLowerCase()];
+}
+
+/* =============================================================================
    LOAD AND DISPLAY RESULTS
    ============================================================================= */
 function loadResults() {
+    // Try demo data first
+    if (loadDemoData()) {
+        return;
+    }
+    
     // Get results from sessionStorage
     const storedData = sessionStorage.getItem('shadowban_results');
     
@@ -193,7 +347,11 @@ DETAILED CHECKS
 
 function initShareButtons() {
     const storedData = sessionStorage.getItem('shadowban_results');
-    if (!storedData) return;
+    if (!storedData) {
+        // Use generic share messages if no data
+        setupGenericShare();
+        return;
+    }
     
     const data = JSON.parse(storedData);
     const status = data.results.status;
@@ -207,6 +365,15 @@ function initShareButtons() {
         ? `⚠️ My ${platform} account has a ${score}% visibility score - some potential issues detected. Check your account at`
         : `🚫 My ${platform} account has a ${score}% visibility score - restrictions detected. Check your account at`;
     
+    setupShare(shareText);
+}
+
+function setupGenericShare() {
+    const shareText = 'Check if your social media accounts are shadow banned with AI-powered detection:';
+    setupShare(shareText);
+}
+
+function setupShare(shareText) {
     const shareUrl = window.location.origin;
     const encodedText = encodeURIComponent(shareText);
     const encodedUrl = encodeURIComponent(shareUrl);

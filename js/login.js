@@ -3,8 +3,13 @@
    ============================================================================= */
 
 // =============================================================================
-// DEMO CREDENTIALS - REMOVE AFTER TESTING
+// CREDENTIALS
 // =============================================================================
+const ADMIN_CREDENTIALS = {
+    email: 'admin',
+    password: 'admin'
+};
+
 const DEMO_CREDENTIALS = {
     email: 'demo@test.com',
     password: 'password123'
@@ -42,35 +47,57 @@ function initLoginForm() {
         // Simulate API delay
         await delay(1500);
         
-        // Validate credentials
-        if (validateCredentials(email, password)) {
-            // Success!
+        // Check if admin
+        const isAdmin = validateAdmin(email, password);
+        
+        // Check if regular user
+        const isValidUser = validateCredentials(email, password);
+        
+        if (isAdmin) {
+            // Admin login!
+            showToast('👑', 'Welcome back, Admin! Redirecting...');
+            
+            // Store admin session
+            const storage = remember ? localStorage : sessionStorage;
+            storage.setItem('shadowban_session', JSON.stringify({
+                email: email,
+                loggedIn: true,
+                isAdmin: true,
+                timestamp: Date.now()
+            }));
+            
+            // Redirect to ADMIN dashboard
+            await delay(1000);
+            window.location.href = 'admin-dashboard.html';
+            
+        } else if (isValidUser) {
+            // Regular user login
             showToast('✅', 'Login successful! Redirecting...');
             
-            // Store session (for demo purposes)
-            if (remember) {
-                localStorage.setItem('shadowban_session', JSON.stringify({
-                    email: email,
-                    loggedIn: true,
-                    timestamp: Date.now()
-                }));
-            } else {
-                sessionStorage.setItem('shadowban_session', JSON.stringify({
-                    email: email,
-                    loggedIn: true,
-                    timestamp: Date.now()
-                }));
-            }
+            // Store user session
+            const storage = remember ? localStorage : sessionStorage;
+            storage.setItem('shadowban_session', JSON.stringify({
+                email: email,
+                loggedIn: true,
+                isAdmin: false,
+                timestamp: Date.now()
+            }));
             
-            // Redirect to dashboard
+            // Redirect to USER dashboard
             await delay(1000);
             window.location.href = 'dashboard.html';
+            
         } else {
             // Failed
             setLoading(false);
             showError('Invalid email or password. Please try again.');
         }
     });
+}
+
+function validateAdmin(email, password) {
+    return email.toLowerCase() === ADMIN_CREDENTIALS.email.toLowerCase() && 
+           password === ADMIN_CREDENTIALS.password;
 }
 
 function validateCredentials(email, password) {
@@ -125,11 +152,6 @@ function initGoogleSignIn() {
         // - Supabase Auth
         // - Google Identity Services
         // - etc.
-        
-        // Example Firebase integration:
-        // const provider = new firebase.auth.GoogleAuthProvider();
-        // const result = await firebase.auth().signInWithPopup(provider);
-        // const user = result.user;
     });
 }
 
@@ -180,12 +202,6 @@ function initForgotPassword() {
         
         // Show success message
         showToast('✅', 'Password reset link sent! Check your email.');
-        
-        // In production, you would call your API:
-        // await fetch('/api/auth/forgot-password', {
-        //     method: 'POST',
-        //     body: JSON.stringify({ email })
-        // });
     });
 }
 
@@ -274,9 +290,12 @@ function delay(ms) {
         try {
             const data = JSON.parse(session);
             if (data.loggedIn) {
-                // User is already logged in, redirect to dashboard
-                // Uncomment the line below to auto-redirect logged-in users
-                // window.location.href = 'dashboard.html';
+                // Redirect based on role
+                if (data.isAdmin) {
+                    window.location.href = 'admin-dashboard.html';
+                } else {
+                    window.location.href = 'dashboard.html';
+                }
             }
         } catch (e) {
             // Invalid session, clear it

@@ -309,8 +309,93 @@ function initActions() {
     const downloadBtn = document.getElementById('download-report');
     downloadBtn?.addEventListener('click', downloadReport);
     
-    // Share buttons
-    initShareButtons();
+    // Share button opens modal
+    const shareBtn = document.getElementById('share-results-btn');
+    shareBtn?.addEventListener('click', openShareModal);
+    
+    // Share modal buttons
+    initShareModal();
+}
+
+function openShareModal() {
+    const modal = document.getElementById('share-modal');
+    if (modal) {
+        modal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+        setupModalCloseHandlers(modal);
+    }
+}
+
+function setupModalCloseHandlers(modal) {
+    const closeBtn = modal.querySelector('.modal-close');
+    const overlay = modal.querySelector('.modal-overlay');
+    
+    const closeModal = () => {
+        modal.classList.add('hidden');
+        document.body.style.overflow = '';
+    };
+    
+    closeBtn?.addEventListener('click', closeModal);
+    overlay?.addEventListener('click', closeModal);
+    
+    document.addEventListener('keydown', function escHandler(e) {
+        if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
+            closeModal();
+            document.removeEventListener('keydown', escHandler);
+        }
+    });
+}
+
+function initShareModal() {
+    const storedData = sessionStorage.getItem('shadowban_results');
+    
+    let shareText, platform, score, status;
+    
+    if (storedData) {
+        const data = JSON.parse(storedData);
+        status = data.results.status;
+        score = data.results.probability;
+        platform = data.platform;
+        
+        // Create share message with platform and score
+        shareText = status === 'clean'
+            ? `✅ Just checked my ${platform} account for shadow bans - got a ${score}% visibility score! Check yours free at`
+            : status === 'warning'
+            ? `⚠️ My ${platform} account has a ${score}% visibility score - some potential issues detected. Check your account free at`
+            : `🚫 My ${platform} account has a ${score}% visibility score - restrictions detected. Check your account free at`;
+    } else {
+        // Generic share message
+        shareText = '🔍 Just checked my social media for shadow bans! Check yours free at';
+    }
+    
+    const shareUrl = window.location.origin;
+    const encodedText = encodeURIComponent(shareText);
+    const encodedUrl = encodeURIComponent(shareUrl);
+    
+    // Wire up modal share buttons
+    document.getElementById('share-modal-twitter')?.addEventListener('click', function() {
+        window.open(`https://twitter.com/intent/tweet?text=${encodedText}&url=${encodedUrl}`, '_blank', 'width=600,height=400');
+        document.getElementById('share-modal').classList.add('hidden');
+        document.body.style.overflow = '';
+    });
+    
+    document.getElementById('share-modal-facebook')?.addEventListener('click', function() {
+        window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}&quote=${encodedText}`, '_blank', 'width=600,height=400');
+        document.getElementById('share-modal').classList.add('hidden');
+        document.body.style.overflow = '';
+    });
+    
+    document.getElementById('share-modal-telegram')?.addEventListener('click', function() {
+        window.open(`https://t.me/share/url?url=${encodedUrl}&text=${encodedText}`, '_blank', 'width=600,height=400');
+        document.getElementById('share-modal').classList.add('hidden');
+        document.body.style.overflow = '';
+    });
+    
+    document.getElementById('share-modal-linkedin')?.addEventListener('click', function() {
+        window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`, '_blank', 'width=600,height=400');
+        document.getElementById('share-modal').classList.add('hidden');
+        document.body.style.overflow = '';
+    });
 }
 
 function downloadReport() {
@@ -358,60 +443,6 @@ DETAILED CHECKS
     a.download = `shadowban-report-${platform.toLowerCase().replace(/\s+/g, '-')}-${Date.now()}.txt`;
     a.click();
     URL.revokeObjectURL(url);
-}
-
-function initShareButtons() {
-    const storedData = sessionStorage.getItem('shadowban_results');
-    if (!storedData) {
-        // Use generic share messages if no data
-        setupGenericShare();
-        return;
-    }
-    
-    const data = JSON.parse(storedData);
-    const status = data.results.status;
-    const score = data.results.probability;
-    const platform = data.platform;
-    
-    // Create share messages with platform and score
-    const shareText = status === 'clean'
-        ? `✅ Just checked my ${platform} account for shadow bans - got a ${score}% visibility score! Check yours at`
-        : status === 'warning'
-        ? `⚠️ My ${platform} account has a ${score}% visibility score - some potential issues detected. Check your account at`
-        : `🚫 My ${platform} account has a ${score}% visibility score - restrictions detected. Check your account at`;
-    
-    setupShare(shareText);
-}
-
-function setupGenericShare() {
-    const shareText = 'Check if your social media accounts are shadow banned with AI-powered detection:';
-    setupShare(shareText);
-}
-
-function setupShare(shareText) {
-    const shareUrl = window.location.origin;
-    const encodedText = encodeURIComponent(shareText);
-    const encodedUrl = encodeURIComponent(shareUrl);
-    
-    // Twitter/X
-    document.getElementById('share-twitter')?.addEventListener('click', function() {
-        window.open(`https://twitter.com/intent/tweet?text=${encodedText}&url=${encodedUrl}`, '_blank', 'width=600,height=400');
-    });
-    
-    // Facebook
-    document.getElementById('share-facebook')?.addEventListener('click', function() {
-        window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}&quote=${encodedText}`, '_blank', 'width=600,height=400');
-    });
-    
-    // Telegram
-    document.getElementById('share-telegram')?.addEventListener('click', function() {
-        window.open(`https://t.me/share/url?url=${encodedUrl}&text=${encodedText}`, '_blank', 'width=600,height=400');
-    });
-    
-    // LinkedIn
-    document.getElementById('share-linkedin')?.addEventListener('click', function() {
-        window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`, '_blank', 'width=600,height=400');
-    });
 }
 
 /* =============================================================================

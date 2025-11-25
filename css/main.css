@@ -340,9 +340,9 @@ strong, b {
 .btn-nav {
     background: var(--gradient-primary);
     color: white !important;
-    padding: var(--space-xs) var(--space-md);
+    padding: var(--space-sm) var(--space-lg);
     font-size: 0.875rem;
-    min-height: 40px;
+    min-height: 44px;
 }
 
 /* Login Button */
@@ -350,9 +350,9 @@ strong, b {
     background: transparent;
     color: var(--text-secondary);
     border: 2px solid var(--border);
-    padding: var(--space-xs) var(--space-md);
+    padding: var(--space-sm) var(--space-lg);
     font-size: 0.875rem;
-    min-height: 40px;
+    min-height: 44px;
     border-radius: var(--radius-md);
     font-weight: 600;
     transition: all var(--transition-base);
@@ -491,7 +491,7 @@ strong, b {
     background: rgba(10, 15, 26, 0.9);
     backdrop-filter: blur(12px);
     border-bottom: 1px solid var(--border);
-    padding: var(--space-sm) 0;
+    padding: var(--space-md) 0;
 }
 
 .header.scrolled {

@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/dashboard.css">
     <link rel="stylesheet" href="css/shadow-ai.css">
+    <link rel="stylesheet" href="css/shadow-ai-dashboard.css">
 </head>
 <body class="dashboard-body">
     <!-- Auth Check - Redirect if not logged in -->
@@ -49,12 +50,12 @@
             
             <div class="sidebar-plan">
                 <div class="plan-header">
-                    <span>⭐ Pro Plan</span>
+                    <span id="sidebar-plan-name">⭐ Pro Plan</span>
                     <a href="#settings" data-section="settings">Manage</a>
                 </div>
                 <div class="plan-stats">
                     <span>Accounts: <strong id="sidebar-accounts">8/15</strong></span>
-                    <span>AI: <strong id="sidebar-ai">7/10</strong></span>
+                    <span>AI: <strong id="sidebar-ai">0/10</strong></span>
                 </div>
             </div>
             
@@ -92,23 +93,31 @@
                     <div class="stats-row">
                         <div class="stat-box">
                             <span class="stat-icon green">✓</span>
-                            <span class="stat-num" id="stat-healthy">6</span>
-                            <span class="stat-label">Healthy</span>
+                            <div>
+                                <span class="stat-num" id="stat-healthy">6</span>
+                                <span class="stat-label">Healthy</span>
+                            </div>
                         </div>
                         <div class="stat-box">
                             <span class="stat-icon yellow">!</span>
-                            <span class="stat-num" id="stat-issues">1</span>
-                            <span class="stat-label">Issues</span>
+                            <div>
+                                <span class="stat-num" id="stat-issues">1</span>
+                                <span class="stat-label">Issues</span>
+                            </div>
                         </div>
                         <div class="stat-box">
                             <span class="stat-icon red">✕</span>
-                            <span class="stat-num" id="stat-banned">1</span>
-                            <span class="stat-label">Banned</span>
+                            <div>
+                                <span class="stat-num" id="stat-banned">1</span>
+                                <span class="stat-label">Banned</span>
+                            </div>
                         </div>
                         <div class="stat-box">
                             <span class="stat-icon blue">●</span>
-                            <span class="stat-num" id="stat-total">8</span>
-                            <span class="stat-label">Total</span>
+                            <div>
+                                <span class="stat-num" id="stat-total">8</span>
+                                <span class="stat-label">Total</span>
+                            </div>
                         </div>
                     </div>
                     
@@ -116,6 +125,7 @@
                         <button class="action-btn" data-action="check-all">🔍 Check All</button>
                         <button class="action-btn" data-action="add-account">➕ Add Account</button>
                         <button class="action-btn" data-action="check-hashtags">🏷️ Hashtags</button>
+                        <button class="action-btn" data-action="ask-ai">🤖 Ask Shadow AI</button>
                     </div>
                     
                     <div class="cards-row">
@@ -464,10 +474,10 @@
                     <div class="tab-panel" id="panel-subscription">
                         <div class="current-plan-box">
                             <div class="plan-top">
-                                <span class="plan-name">⭐ Pro Plan</span>
-                                <span class="plan-price">$9.99/mo</span>
+                                <span class="plan-name" id="current-plan-name">⭐ Pro Plan</span>
+                                <span class="plan-price" id="current-plan-price">$9.99/mo</span>
                             </div>
-                            <p>15 accounts • 10 AI questions/day • Email + SMS alerts</p>
+                            <p id="current-plan-features">15 accounts • 10 AI questions/day • Email + SMS alerts</p>
                             <p class="renewal">Next billing: Dec 24, 2025</p>
                         </div>
                         
@@ -476,24 +486,34 @@
                             <div class="plan-card">
                                 <h4>Starter</h4>
                                 <span class="price">$4.99/mo</span>
-                                <p>5 accounts</p>
+                                <p>5 accounts • 3 AI/day</p>
                                 <button class="btn-secondary">Downgrade</button>
                             </div>
                             <div class="plan-card current">
                                 <h4>Pro</h4>
                                 <span class="price">$9.99/mo</span>
-                                <p>15 accounts</p>
+                                <p>15 accounts • 10 AI/day</p>
                                 <button class="btn-secondary" disabled>Current</button>
                             </div>
                             <div class="plan-card">
                                 <h4>Premium</h4>
                                 <span class="price">$14.99/mo</span>
-                                <p>50 accounts</p>
+                                <p>50 accounts • 25 AI/day</p>
                                 <button class="btn-primary">Upgrade</button>
                             </div>
                         </div>
                         
-                        <button class="btn-danger" id="cancel-btn">Cancel Subscription</button>
+                        <!-- AI Add-on -->
+                        <div class="form-card" style="margin-top: 1.5rem;">
+                            <h3>🤖 AI Pro Add-on</h3>
+                            <p style="color: var(--text-muted); margin-bottom: 1rem;">Need more AI questions? Add 100/day to any plan.</p>
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <span style="font-size: 1.25rem; font-weight: 700; color: var(--primary-light);">+$9.99/mo</span>
+                                <button class="btn-primary">Add AI Pro</button>
+                            </div>
+                        </div>
+                        
+                        <button class="btn-danger" id="cancel-btn" style="margin-top: 1.5rem;">Cancel Subscription</button>
                     </div>
                     
                     <div class="tab-panel" id="panel-billing">
@@ -530,10 +550,11 @@
                     </div>
                     
                     <div class="support-row">
-                        <div class="support-box">
+                        <div class="support-box highlight">
                             <span class="big-icon">🤖</span>
                             <h3>Shadow AI</h3>
                             <p>Instant answers about shadow bans</p>
+                            <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.75rem;" id="ai-questions-left">10 questions/day remaining</p>
                             <button class="btn-primary" id="open-ai">Open AI Chat</button>
                         </div>
                         <div class="support-box">
@@ -542,7 +563,7 @@
                             <p>We respond within 24 hours</p>
                             <a href="mailto:andrew@ghost081280.com" class="btn-secondary">andrew@ghost081280.com</a>
                         </div>
-                        <div class="support-box highlight">
+                        <div class="support-box">
                             <span class="big-icon">👨‍💻</span>
                             <h3>Connect with Dev</h3>
                             <p>Reach Andrew directly</p>
@@ -656,9 +677,11 @@
         <span id="toast-message">Success</span>
     </div>
     
-    <!-- Shadow AI Widget - Loaded dynamically by shadow-ai.js -->
+    <!-- Shadow AI Chatbot - Dashboard version with limits -->
+    <!-- Widget created dynamically by shadow-ai-dashboard.js -->
     
+    <!-- Scripts: dashboard.js MUST load first to set userData -->
     <script src="js/dashboard.js"></script>
-    <script src="js/shadow-ai.js"></script>
+    <script src="js/shadow-ai-dashboard.js"></script>
 </body>
 </html>

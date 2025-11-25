@@ -199,39 +199,46 @@ function displayResults(results) {
     const counts = { safe: 0, banned: 0, restricted: 0 };
     results.forEach(r => counts[r.status]++);
     
-    // Update summary
+    // Update summary counts
     if (safeCount) safeCount.textContent = counts.safe;
     if (bannedCount) bannedCount.textContent = counts.banned;
     if (restrictedCount) restrictedCount.textContent = counts.restricted;
     
-    // Build results list
+    // Build results grid - compact items
     resultsList.innerHTML = '';
     
-    results.forEach(result => {
+    // Sort: banned first, then restricted, then safe
+    const sortedResults = [...results].sort((a, b) => {
+        const order = { banned: 0, restricted: 1, safe: 2 };
+        return order[a.status] - order[b.status];
+    });
+    
+    sortedResults.forEach(result => {
         const item = document.createElement('div');
         item.className = `result-item ${result.status}`;
         
         const icon = result.status === 'safe' ? '✅' : 
                      result.status === 'banned' ? '🚫' : '⚠️';
         
-        const statusText = result.status === 'safe' ? 'Safe to use' :
-                          result.status === 'banned' ? 'Banned on some platforms' :
-                          'Restricted on some platforms';
-        
-        // Build platform status badges
+        // Build compact platform badges (only show non-safe platforms)
         let platformBadges = '';
-        Object.entries(result.platforms).forEach(([platform, status]) => {
-            if (status !== 'safe') {
-                const platformName = platform.charAt(0).toUpperCase() + platform.slice(1);
-                platformBadges += `<span class="platform-status ${status}">${platformName}: ${status}</span>`;
-            }
-        });
+        const flaggedPlatforms = Object.entries(result.platforms)
+            .filter(([_, status]) => status !== 'safe')
+            .slice(0, 3); // Limit to 3 for compactness
+        
+        if (flaggedPlatforms.length > 0) {
+            platformBadges = flaggedPlatforms
+                .map(([platform, status]) => {
+                    const shortName = platform.slice(0, 2).toUpperCase();
+                    return `<span class="platform-status ${status}" title="${platform}: ${status}">${shortName}</span>`;
+                })
+                .join('');
+        }
         
         item.innerHTML = `
             <span class="result-icon">${icon}</span>
             <div class="result-info">
                 <div class="result-hashtag">${result.hashtag}</div>
-                <div class="result-status">${statusText}</div>
                 ${platformBadges ? `<div class="result-platforms">${platformBadges}</div>` : ''}
             </div>
         `;
@@ -242,7 +249,7 @@ function displayResults(results) {
     // Show results section
     resultsSection.classList.remove('hidden');
     
-    // Scroll to results
+    // Scroll to results smoothly
     resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 

@@ -442,23 +442,11 @@ function initPostChecker() {
         }
         
         // Detect platform from URL
-        const platform = detectPlatform(url);
+        const platform = detectPlatformFromUrl(url);
+        const platformKey = platform.toLowerCase().replace(/\s+/g, '-').replace(/\//g, '-');
         
-        // Show loading state
-        button.classList.add('loading');
-        button.disabled = true;
-        
-        // Simulate analysis (demo)
-        setTimeout(() => {
-            button.classList.remove('loading');
-            button.disabled = false;
-            
-            // Mark as checked
-            localStorage.setItem(POST_CHECK_STORAGE_KEY, new Date().toISOString());
-            
-            // Generate demo results
-            showDemoResults(platform, url);
-        }, 2000);
+        // Redirect to checker page with platform parameter
+        window.location.href = `checker.html?platform=${platformKey}&from=post-checker`;
     });
     
     // Check another button - should show limit if already used
@@ -474,6 +462,19 @@ function initPostChecker() {
         input.value = '';
         input.focus();
     });
+}
+
+function detectPlatformFromUrl(url) {
+    const urlLower = url.toLowerCase();
+    
+    if (urlLower.includes('twitter.com') || urlLower.includes('x.com')) return 'Twitter/X';
+    if (urlLower.includes('reddit.com')) return 'Reddit';
+    if (urlLower.includes('instagram.com')) return 'Instagram';
+    if (urlLower.includes('tiktok.com')) return 'TikTok';
+    if (urlLower.includes('facebook.com')) return 'Facebook';
+    if (urlLower.includes('youtube.com')) return 'YouTube';
+    
+    return 'Twitter/X'; // Default
 }
 
 function showLimitModal(timeLeft) {

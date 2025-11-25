@@ -1,690 +1,1046 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - ShadowBanCheck.io</title>
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔍</text></svg>">
-    <link rel="stylesheet" href="css/main.css">
-    <link rel="stylesheet" href="css/dashboard.css">
-    <link rel="stylesheet" href="css/shadow-ai.css">
-    <link rel="stylesheet" href="css/shadow-ai-dashboard.css">
-</head>
-<body class="dashboard-body">
-    <!-- Auth Check - Redirect if not logged in -->
-    <script>
-        (function() {
-            const session = localStorage.getItem('shadowban_session') || sessionStorage.getItem('shadowban_session');
-            if (!session) {
-                window.location.href = 'login.html';
+/* =============================================================================
+   MAIN.JS - SHARED FUNCTIONALITY
+   All global functionality for ShadowBanCheck.io
+   ============================================================================= */
+
+/* =============================================================================
+   PLATFORM DATA - SINGLE SOURCE OF TRUTH
+   Status: 'live' = Twitter/X, Reddit, Email | 'soon' = everything else
+   ============================================================================= */
+const platformData = [
+    // LIVE Platforms (3)
+    { 
+        name: 'Twitter/X', 
+        icon: '🐦', 
+        category: 'social', 
+        status: 'live',
+        checks: [
+            'Search suggestion ban (account hidden from search)',
+            'Reply deboosting (replies hidden behind "Show more")',
+            'Ghost ban (tweets invisible to others)',
+            'Search ban (tweets hidden from search results)',
+            'Quality Filter Detection (QFD) status',
+            'Sensitive media flags on profile',
+            'Age-restricted content warnings',
+            'Engagement rate analysis vs. followers',
+            'Hashtag visibility in trends',
+            'Profile accessibility from logged-out view'
+        ]
+    },
+    { 
+        name: 'Reddit', 
+        icon: '🤖', 
+        category: 'social', 
+        status: 'live',
+        checks: [
+            'Shadowban status (posts/comments invisible)',
+            'Subreddit-specific bans detection',
+            'Karma threshold restrictions',
+            'Account age restrictions',
+            'Spam filter triggering',
+            'AutoModerator removal patterns',
+            'Post visibility in subreddit listings',
+            'Comment visibility in threads',
+            'Profile page accessibility',
+            'Cross-posting restrictions'
+        ]
+    },
+    { 
+        name: 'Email', 
+        icon: '📧', 
+        category: 'other', 
+        status: 'live',
+        checks: [
+            'Domain blacklist status (Spamhaus, SURBL)',
+            'IP reputation score',
+            'DKIM/SPF/DMARC configuration',
+            'Email deliverability rate',
+            'Spam folder placement probability',
+            'Bounce rate analysis',
+            'Sender reputation score',
+            'Content spam trigger analysis',
+            'Gmail/Outlook/Yahoo inbox placement',
+            'Unsubscribe compliance status'
+        ]
+    },
+    
+    // COMING SOON - Social Media (13)
+    { name: 'Instagram', icon: '📸', category: 'social', status: 'soon' },
+    { name: 'TikTok', icon: '🎵', category: 'social', status: 'soon' },
+    { name: 'Facebook', icon: '📘', category: 'social', status: 'soon' },
+    { name: 'LinkedIn', icon: '💼', category: 'social', status: 'soon' },
+    { name: 'YouTube', icon: '📺', category: 'social', status: 'soon' },
+    { name: 'Pinterest', icon: '📌', category: 'social', status: 'soon' },
+    { name: 'Snapchat', icon: '👻', category: 'social', status: 'soon' },
+    { name: 'Threads', icon: '🧵', category: 'social', status: 'soon' },
+    { name: 'Bluesky', icon: '🦋', category: 'social', status: 'soon' },
+    { name: 'Truth Social', icon: '🗽', category: 'social', status: 'soon' },
+    { name: 'Rumble', icon: '📹', category: 'social', status: 'soon' },
+    { name: 'Kick', icon: '⚡', category: 'social', status: 'soon' },
+    
+    // COMING SOON - Messaging (2)
+    { name: 'Telegram', icon: '✈️', category: 'messaging', status: 'soon' },
+    { name: 'Discord', icon: '🎮', category: 'messaging', status: 'soon' },
+    
+    // COMING SOON - E-Commerce (3)
+    { name: 'Amazon', icon: '📦', category: 'ecommerce', status: 'soon' },
+    { name: 'eBay', icon: '🏷️', category: 'ecommerce', status: 'soon' },
+    { name: 'Etsy', icon: '🛍️', category: 'ecommerce', status: 'soon' },
+    
+    // COMING SOON - Other (5)
+    { name: 'Twitch', icon: '🟣', category: 'other', status: 'soon' },
+    { name: 'Phone', icon: '📱', category: 'other', status: 'soon' },
+    { name: 'Domain', icon: '🌐', category: 'other', status: 'soon' },
+    { name: 'IP Address', icon: '🖥️', category: 'other', status: 'soon' },
+    { name: 'Google Business', icon: '📍', category: 'other', status: 'soon' },
+    { name: 'Website', icon: '🔗', category: 'other', status: 'soon' }
+];
+
+// Export for use in other files
+window.platformData = platformData;
+
+/* =============================================================================
+   MOBILE NAVIGATION
+   ============================================================================= */
+function initMobileNav() {
+    const navToggle = document.getElementById('nav-toggle');
+    const navClose = document.getElementById('nav-close');
+    const navOverlay = document.getElementById('nav-overlay');
+    const navMobile = document.getElementById('nav-mobile');
+    
+    if (!navToggle || !navMobile) return;
+    
+    function openNav() {
+        navMobile.classList.add('active');
+        navOverlay?.classList.add('active');
+        document.body.classList.add('nav-open');
+        navToggle.classList.add('active');
+        navToggle.setAttribute('aria-expanded', 'true');
+    }
+    
+    function closeNav() {
+        navMobile.classList.remove('active');
+        navOverlay?.classList.remove('active');
+        document.body.classList.remove('nav-open');
+        navToggle.classList.remove('active');
+        navToggle.setAttribute('aria-expanded', 'false');
+    }
+    
+    // Toggle button
+    navToggle.addEventListener('click', function() {
+        if (navMobile.classList.contains('active')) {
+            closeNav();
+        } else {
+            openNav();
+        }
+    });
+    
+    // Close button
+    navClose?.addEventListener('click', closeNav);
+    
+    // Overlay click
+    navOverlay?.addEventListener('click', closeNav);
+    
+    // Close on link click
+    const navLinks = navMobile.querySelectorAll('a');
+    navLinks.forEach(link => {
+        link.addEventListener('click', closeNav);
+    });
+    
+    // Close on escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && navMobile.classList.contains('active')) {
+            closeNav();
+        }
+    });
+    
+    // Close on resize to desktop
+    window.addEventListener('resize', function() {
+        if (window.innerWidth > 768 && navMobile.classList.contains('active')) {
+            closeNav();
+        }
+    });
+}
+
+/* =============================================================================
+   BACK TO TOP BUTTON
+   ============================================================================= */
+function initBackToTop() {
+    const backToTopBtn = document.getElementById('back-to-top');
+    if (!backToTopBtn) return;
+    
+    function toggleBackToTop() {
+        if (window.scrollY > 300) {
+            backToTopBtn.classList.add('visible');
+        } else {
+            backToTopBtn.classList.remove('visible');
+        }
+    }
+    
+    backToTopBtn.addEventListener('click', function() {
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
+    });
+    
+    window.addEventListener('scroll', toggleBackToTop, { passive: true });
+    toggleBackToTop();
+}
+
+/* =============================================================================
+   SCROLL REVEAL ANIMATIONS
+   ============================================================================= */
+function initScrollReveal() {
+    const revealElements = document.querySelectorAll('.reveal');
+    if (revealElements.length === 0) return;
+    
+    const observerOptions = {
+        root: null,
+        rootMargin: '0px 0px -50px 0px',
+        threshold: 0.1
+    };
+    
+    const observer = new IntersectionObserver(function(entries) {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('revealed');
+                observer.unobserve(entry.target);
+            }
+        });
+    }, observerOptions);
+    
+    revealElements.forEach(el => observer.observe(el));
+}
+
+/* =============================================================================
+   PLATFORM GRID INJECTION
+   ============================================================================= */
+function initPlatformGrid() {
+    const platformGrid = document.getElementById('platform-grid');
+    if (!platformGrid) return;
+    
+    platformGrid.innerHTML = '';
+    
+    // Sort: live platforms first, then alphabetically
+    const sortedPlatforms = [...platformData].sort((a, b) => {
+        if (a.status === 'live' && b.status !== 'live') return -1;
+        if (a.status !== 'live' && b.status === 'live') return 1;
+        return a.name.localeCompare(b.name);
+    });
+    
+    sortedPlatforms.forEach(platform => {
+        const item = document.createElement('div');
+        item.className = 'platform-item';
+        item.dataset.platform = platform.name.toLowerCase().replace(/[^a-z0-9]/g, '');
+        item.dataset.status = platform.status;
+        
+        const statusBadge = platform.status === 'live' 
+            ? '<span class="platform-badge live">Live</span>'
+            : '<span class="platform-badge soon">Soon</span>';
+        
+        item.innerHTML = `
+            <span class="platform-icon">${platform.icon}</span>
+            <span class="platform-name">${platform.name}</span>
+            ${statusBadge}
+        `;
+        
+        item.addEventListener('click', function() {
+            openPlatformModal(platform);
+        });
+        
+        platformGrid.appendChild(item);
+    });
+}
+
+/* =============================================================================
+   PLATFORM MODAL
+   ============================================================================= */
+function initCheckerInfoModal() {
+    const infoBtn = document.getElementById('checker-info-btn');
+    const modal = document.getElementById('checker-info-modal');
+    
+    if (!infoBtn || !modal) return;
+    
+    infoBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        openCheckerInfoModal();
+    });
+    
+    function openCheckerInfoModal() {
+        modal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+        
+        // Close handlers
+        const closeBtn = modal.querySelector('.modal-close');
+        const overlay = modal.querySelector('.modal-overlay');
+        
+        function closeModal() {
+            modal.classList.add('hidden');
+            document.body.style.overflow = '';
+        }
+        
+        closeBtn?.addEventListener('click', closeModal, { once: true });
+        overlay?.addEventListener('click', closeModal, { once: true });
+        
+        // ESC key
+        const escHandler = function(e) {
+            if (e.key === 'Escape') {
+                closeModal();
+                document.removeEventListener('keydown', escHandler);
+            }
+        };
+        document.addEventListener('keydown', escHandler);
+    }
+}
+
+function openPlatformModal(platform) {
+    const modal = document.getElementById('platform-modal');
+    if (!modal) return;
+    
+    // Update modal content
+    const modalIcon = document.getElementById('modal-icon');
+    const modalTitle = document.getElementById('modal-title');
+    const modalStatus = document.getElementById('modal-status');
+    const modalBody = document.getElementById('modal-body');
+    const modalCta = document.getElementById('modal-cta');
+    
+    if (modalIcon) modalIcon.textContent = platform.icon;
+    if (modalTitle) modalTitle.textContent = `Check ${platform.name}`;
+    
+    // Update status badge
+    if (modalStatus) {
+        if (platform.status === 'live') {
+            modalStatus.innerHTML = '<span class="status-badge live">● Live</span>';
+        } else {
+            modalStatus.innerHTML = '<span class="status-badge soon">● Coming Soon</span>';
+        }
+    }
+    
+    // Update body content
+    if (modalBody) {
+        if (platform.status === 'live' && platform.checks) {
+            modalBody.className = 'modal-body';
+            modalBody.innerHTML = `
+                <h4>What We Check:</h4>
+                <ul class="check-list" id="modal-checks">
+                    ${platform.checks.map(check => `<li>${check}</li>`).join('')}
+                </ul>
+            `;
+        } else {
+            modalBody.className = 'modal-body coming-soon';
+            modalBody.innerHTML = `
+                <p>We're working hard to add ${platform.name} support!</p>
+                <p style="margin-top: var(--space-md);">Want to be notified when it's ready? Sign up for our newsletter or check back soon.</p>
+            `;
+        }
+    }
+    
+    // Update CTA button
+    if (modalCta) {
+        if (platform.status === 'live') {
+            const platformSlug = platform.name.toLowerCase().replace(/[^a-z0-9]/g, '');
+            modalCta.href = `checker.html?platform=${platformSlug}`;
+            modalCta.textContent = `Check ${platform.name} →`;
+            modalCta.style.display = 'block';
+        } else {
+            modalCta.style.display = 'none';
+        }
+    }
+    
+    // Show modal
+    modal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+    
+    // Close handlers
+    const closeBtn = modal.querySelector('.modal-close');
+    const overlay = modal.querySelector('.modal-overlay');
+    
+    function closeModal() {
+        modal.classList.add('hidden');
+        document.body.style.overflow = '';
+    }
+    
+    closeBtn?.addEventListener('click', closeModal);
+    overlay?.addEventListener('click', closeModal);
+    
+    // ESC key
+    const escHandler = function(e) {
+        if (e.key === 'Escape') {
+            closeModal();
+            document.removeEventListener('keydown', escHandler);
+        }
+    };
+    document.addEventListener('keydown', escHandler);
+}
+
+/* =============================================================================
+   POST CHECKER - DEMO RESULTS
+   ============================================================================= */
+const POST_CHECK_STORAGE_KEY = 'shadowban_last_post_check';
+
+function canCheckPost() {
+    const lastCheck = localStorage.getItem(POST_CHECK_STORAGE_KEY);
+    if (!lastCheck) return true;
+    
+    const lastCheckTime = new Date(lastCheck);
+    const now = new Date();
+    const hoursSince = (now - lastCheckTime) / (1000 * 60 * 60);
+    
+    return hoursSince >= 24;
+}
+
+function getTimeUntilNextCheck() {
+    const lastCheck = localStorage.getItem(POST_CHECK_STORAGE_KEY);
+    if (!lastCheck) return null;
+    
+    const lastCheckTime = new Date(lastCheck);
+    const nextCheckTime = new Date(lastCheckTime.getTime() + (24 * 60 * 60 * 1000));
+    const now = new Date();
+    const msUntil = nextCheckTime - now;
+    
+    if (msUntil <= 0) return null;
+    
+    const hours = Math.floor(msUntil / (1000 * 60 * 60));
+    const minutes = Math.floor((msUntil % (1000 * 60 * 60)) / (1000 * 60));
+    
+    return { hours, minutes };
+}
+
+function initPostChecker() {
+    const form = document.getElementById('post-checker-form');
+    const input = document.getElementById('post-url-input');
+    const button = document.getElementById('analyze-post-btn');
+    const resultsSection = document.getElementById('post-results');
+    const checkAnotherBtn = document.getElementById('check-another-btn');
+    
+    if (!form || !input || !button) return;
+    
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const url = input.value.trim();
+        if (!url) {
+            showToast('Please enter a post URL');
+            return;
+        }
+        
+        // Validate URL format
+        if (!isValidUrl(url)) {
+            showToast('Please enter a valid URL');
+            return;
+        }
+        
+        // Check if user can scan (1 per 24 hours for free)
+        if (!canCheckPost()) {
+            const timeLeft = getTimeUntilNextCheck();
+            if (timeLeft) {
+                showLimitModal(timeLeft);
                 return;
             }
-            try {
-                const data = JSON.parse(session);
-                if (!data.loggedIn) {
-                    window.location.href = 'login.html';
-                }
-            } catch (e) {
-                window.location.href = 'login.html';
-            }
-        })();
-    </script>
-
-    <div class="dashboard-layout">
-        <!-- Sidebar -->
-        <aside class="sidebar" id="sidebar">
-            <div class="sidebar-header">
-                <a href="index.html" class="sidebar-logo">🔍 ShadowBanCheck</a>
-                <button class="sidebar-close" id="sidebar-close">×</button>
-            </div>
-            
-            <nav class="sidebar-nav">
-                <a href="#overview" class="nav-link active" data-section="overview">📊 Overview</a>
-                <a href="#accounts" class="nav-link" data-section="accounts">👥 Accounts</a>
-                <a href="#tools" class="nav-link" data-section="tools">🔧 Check Tools</a>
-                <a href="#reports" class="nav-link" data-section="reports">📄 Reports</a>
-                <a href="#alerts" class="nav-link" data-section="alerts">🔔 Alerts</a>
-                <a href="#settings" class="nav-link" data-section="settings">⚙️ Settings</a>
-                <a href="#support" class="nav-link" data-section="support">💬 Support</a>
-            </nav>
-            
-            <div class="sidebar-plan">
-                <div class="plan-header">
-                    <span id="sidebar-plan-name">⭐ Pro Plan</span>
-                    <a href="#settings" data-section="settings">Manage</a>
-                </div>
-                <div class="plan-stats">
-                    <span>Accounts: <strong id="sidebar-accounts">8/15</strong></span>
-                    <span>AI: <strong id="sidebar-ai">0/10</strong></span>
-                </div>
-            </div>
-            
-            <div class="sidebar-user">
-                <div class="user-info">
-                    <span class="user-avatar">👤</span>
-                    <div>
-                        <span class="user-name" id="sidebar-user-name">John Doe</span>
-                        <span class="user-email" id="sidebar-user-email">john@example.com</span>
-                    </div>
-                </div>
-                <button class="btn-logout" id="logout-btn">Logout</button>
-            </div>
-        </aside>
+        }
         
-        <!-- Main -->
-        <main class="main-content">
-            <header class="topbar">
-                <button class="menu-toggle" id="menu-toggle">☰</button>
-                <span class="topbar-title">Dashboard</span>
-                <button class="notif-btn" id="notif-btn">🔔</button>
-            </header>
+        // Detect platform from URL
+        const platform = detectPlatform(url);
+        
+        // Show loading state
+        button.classList.add('loading');
+        button.disabled = true;
+        
+        // Simulate analysis (demo)
+        setTimeout(() => {
+            button.classList.remove('loading');
+            button.disabled = false;
             
-            <div class="content-scroll">
-                
-                <!-- OVERVIEW -->
-                <section id="overview" class="section active">
-                    <div class="section-top">
-                        <div>
-                            <h1>Welcome back, <span id="user-first-name">John</span>! 👋</h1>
-                            <p>Your visibility status across all platforms</p>
-                        </div>
-                    </div>
-                    
-                    <div class="stats-row">
-                        <div class="stat-box">
-                            <span class="stat-icon green">✓</span>
-                            <div>
-                                <span class="stat-num" id="stat-healthy">6</span>
-                                <span class="stat-label">Healthy</span>
-                            </div>
-                        </div>
-                        <div class="stat-box">
-                            <span class="stat-icon yellow">!</span>
-                            <div>
-                                <span class="stat-num" id="stat-issues">1</span>
-                                <span class="stat-label">Issues</span>
-                            </div>
-                        </div>
-                        <div class="stat-box">
-                            <span class="stat-icon red">✕</span>
-                            <div>
-                                <span class="stat-num" id="stat-banned">1</span>
-                                <span class="stat-label">Banned</span>
-                            </div>
-                        </div>
-                        <div class="stat-box">
-                            <span class="stat-icon blue">●</span>
-                            <div>
-                                <span class="stat-num" id="stat-total">8</span>
-                                <span class="stat-label">Total</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="quick-actions">
-                        <button class="action-btn" data-action="check-all">🔍 Check All</button>
-                        <button class="action-btn" data-action="add-account">➕ Add Account</button>
-                        <button class="action-btn" data-action="check-hashtags">🏷️ Hashtags</button>
-                        <button class="action-btn" data-action="ask-ai">🤖 Ask Shadow AI</button>
-                    </div>
-                    
-                    <div class="cards-row">
-                        <div class="card">
-                            <div class="card-header">
-                                <h3>🔔 Recent Alerts</h3>
-                                <a href="#alerts" data-section="alerts">View All →</a>
-                            </div>
-                            <div class="alert-list">
-                                <div class="alert-item danger">
-                                    <span class="dot"></span>
-                                    <span>Shadow ban on TikTok</span>
-                                    <span class="time">2h ago</span>
-                                </div>
-                                <div class="alert-item warning">
-                                    <span class="dot"></span>
-                                    <span>Reduced reach on Instagram</span>
-                                    <span class="time">1d ago</span>
-                                </div>
-                                <div class="alert-item success">
-                                    <span class="dot"></span>
-                                    <span>Twitter restored</span>
-                                    <span class="time">3d ago</span>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="card">
-                            <div class="card-header">
-                                <h3>👥 Accounts</h3>
-                                <a href="#accounts" data-section="accounts">Manage →</a>
-                            </div>
-                            <div class="mini-accounts" id="mini-accounts"></div>
-                        </div>
-                    </div>
-                </section>
-                
-                <!-- ACCOUNTS -->
-                <section id="accounts" class="section">
-                    <div class="section-top">
-                        <div>
-                            <h1>Monitored Accounts</h1>
-                            <p><span id="accounts-count">8</span> of <span id="accounts-limit">15</span> slots used</p>
-                        </div>
-                        <button class="btn-primary" id="add-account-btn">➕ Add Account</button>
-                    </div>
-                    
-                    <div class="filters">
-                        <button class="filter active" data-filter="all">All</button>
-                        <button class="filter" data-filter="healthy">Healthy</button>
-                        <button class="filter" data-filter="issues">Issues</button>
-                        <button class="filter" data-filter="banned">Banned</button>
-                    </div>
-                    
-                    <div class="accounts-grid" id="accounts-grid"></div>
-                </section>
-                
-                <!-- TOOLS -->
-                <section id="tools" class="section">
-                    <div class="section-top">
-                        <div>
-                            <h1>Check Tools</h1>
-                            <p>Check accounts, hashtags, IP, email, phone & websites across 26 platforms</p>
-                        </div>
-                    </div>
-                    
-                    <div class="tools-grid">
-                        <!-- Account Check -->
-                        <div class="tool-box">
-                            <h3>🔍 Account Check</h3>
-                            <p>Check any username for shadow ban</p>
-                            <select id="tool-platform" class="input">
-                                <option value="">Select Platform...</option>
-                                <optgroup label="Social Media">
-                                    <option value="twitter">Twitter/X</option>
-                                    <option value="instagram">Instagram</option>
-                                    <option value="tiktok">TikTok</option>
-                                    <option value="facebook">Facebook</option>
-                                    <option value="youtube">YouTube</option>
-                                    <option value="linkedin">LinkedIn</option>
-                                    <option value="reddit">Reddit</option>
-                                    <option value="pinterest">Pinterest</option>
-                                    <option value="snapchat">Snapchat</option>
-                                    <option value="threads">Threads</option>
-                                    <option value="mastodon">Mastodon</option>
-                                    <option value="bluesky">Bluesky</option>
-                                    <option value="truth">Truth Social</option>
-                                </optgroup>
-                                <optgroup label="Messaging">
-                                    <option value="telegram">Telegram</option>
-                                    <option value="discord">Discord</option>
-                                    <option value="whatsapp">WhatsApp</option>
-                                    <option value="signal">Signal</option>
-                                </optgroup>
-                                <optgroup label="E-commerce">
-                                    <option value="amazon">Amazon</option>
-                                    <option value="ebay">eBay</option>
-                                    <option value="etsy">Etsy</option>
-                                    <option value="shopify">Shopify</option>
-                                </optgroup>
-                                <optgroup label="Streaming">
-                                    <option value="twitch">Twitch</option>
-                                    <option value="kick">Kick</option>
-                                    <option value="rumble">Rumble</option>
-                                </optgroup>
-                                <optgroup label="Other">
-                                    <option value="medium">Medium</option>
-                                    <option value="quora">Quora</option>
-                                </optgroup>
-                            </select>
-                            <input type="text" id="tool-username" class="input" placeholder="@username or profile URL">
-                            <button class="btn-primary" id="run-check">Check Now</button>
-                        </div>
-                        
-                        <!-- Hashtag Check -->
-                        <div class="tool-box">
-                            <h3>🏷️ Hashtag Check</h3>
-                            <p>Verify hashtags aren't banned</p>
-                            <select id="hashtag-platform" class="input">
-                                <option value="">Select Platform...</option>
-                                <option value="instagram">Instagram</option>
-                                <option value="tiktok">TikTok</option>
-                                <option value="twitter">Twitter/X</option>
-                                <option value="facebook">Facebook</option>
-                                <option value="youtube">YouTube</option>
-                            </select>
-                            <textarea id="hashtag-input" class="input" placeholder="#fitness #motivation #health" rows="2"></textarea>
-                            <button class="btn-primary" id="run-hashtag-check">Check Hashtags</button>
-                        </div>
-                        
-                        <!-- IP Check -->
-                        <div class="tool-box">
-                            <h3>🌐 IP Address Check</h3>
-                            <p>Check if your IP is flagged</p>
-                            <div class="ip-display">
-                                <span>Your IP:</span>
-                                <strong id="user-ip">Loading...</strong>
-                            </div>
-                            <input type="text" id="custom-ip" class="input" placeholder="Or enter custom IP...">
-                            <button class="btn-primary" id="run-ip-check">Check IP</button>
-                        </div>
-                        
-                        <!-- Email Check -->
-                        <div class="tool-box">
-                            <h3>📧 Email Check</h3>
-                            <p>Check if email is blacklisted</p>
-                            <input type="email" id="check-email" class="input" placeholder="you@example.com">
-                            <button class="btn-primary" id="run-email-check">Check Email</button>
-                        </div>
-                        
-                        <!-- Phone Check -->
-                        <div class="tool-box">
-                            <h3>📱 Phone Check</h3>
-                            <p>Check if phone number is flagged</p>
-                            <input type="tel" id="check-phone" class="input" placeholder="+1 555 123 4567">
-                            <button class="btn-primary" id="run-phone-check">Check Phone</button>
-                        </div>
-                        
-                        <!-- Website Check -->
-                        <div class="tool-box">
-                            <h3>🔗 Website/Domain Check</h3>
-                            <p>Check if your domain is blocked</p>
-                            <input type="url" id="check-website" class="input" placeholder="https://yoursite.com">
-                            <button class="btn-primary" id="run-website-check">Check Website</button>
-                        </div>
-                    </div>
-                    
-                    <!-- Bulk Check -->
-                    <div class="bulk-check-box">
-                        <div class="bulk-info">
-                            <h3>⚡ Bulk Check All Accounts</h3>
-                            <p>Check all <span id="bulk-count">8</span> monitored accounts at once</p>
-                        </div>
-                        <button class="btn-primary btn-lg" id="run-bulk">Run Bulk Check</button>
-                    </div>
-                    
-                    <!-- Results Area -->
-                    <div class="results-box hidden" id="results-box">
-                        <div class="results-header">
-                            <h3 id="results-title">Results</h3>
-                            <button class="btn-close" id="close-results">×</button>
-                        </div>
-                        <div id="results-content"></div>
-                    </div>
-                </section>
-                
-                <!-- REPORTS -->
-                <section id="reports" class="section">
-                    <div class="section-top">
-                        <div>
-                            <h1>Reports</h1>
-                            <p>Download and schedule detailed visibility reports</p>
-                        </div>
-                    </div>
-                    
-                    <div class="reports-row">
-                        <div class="report-box">
-                            <h3>📊 Status Report</h3>
-                            <p>Full analysis of all accounts</p>
-                            <div class="btn-row">
-                                <button class="btn-secondary">PDF</button>
-                                <button class="btn-secondary">CSV</button>
-                            </div>
-                        </div>
-                        <div class="report-box">
-                            <h3>📈 History</h3>
-                            <p>Track changes over time</p>
-                            <select class="input" id="history-range">
-                                <option value="7">7 days</option>
-                                <option value="30">30 days</option>
-                                <option value="90">90 days</option>
-                            </select>
-                            <button class="btn-secondary btn-full">Export</button>
-                        </div>
-                        <div class="report-box">
-                            <h3>📅 Scheduled</h3>
-                            <p>Auto-send via email</p>
-                            <div class="radio-row">
-                                <label><input type="radio" name="sched" value="daily"> Daily</label>
-                                <label><input type="radio" name="sched" value="weekly" checked> Weekly</label>
-                            </div>
-                            <button class="btn-secondary btn-full">Save</button>
-                        </div>
-                    </div>
-                    
-                    <div class="recent-section">
-                        <h3>Recent Downloads</h3>
-                        <div class="download-list">
-                            <div class="download-row">
-                                <span>📄 Status Report - Nov 24</span>
-                                <button class="btn-icon">⬇️</button>
-                            </div>
-                            <div class="download-row">
-                                <span>📊 History Export - Nov 20</span>
-                                <button class="btn-icon">⬇️</button>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-                
-                <!-- ALERTS -->
-                <section id="alerts" class="section">
-                    <div class="section-top">
-                        <div>
-                            <h1>Alerts & Notifications</h1>
-                            <p>Configure your notification preferences</p>
-                        </div>
-                    </div>
-                    
-                    <div class="alerts-row">
-                        <div class="alerts-box">
-                            <h3>📱 Channels</h3>
-                            <div class="toggle-row">
-                                <span>📧 Email</span>
-                                <label class="toggle"><input type="checkbox" checked><span class="slider"></span></label>
-                            </div>
-                            <div class="toggle-row">
-                                <span>📱 SMS</span>
-                                <label class="toggle"><input type="checkbox" checked><span class="slider"></span></label>
-                            </div>
-                        </div>
-                        <div class="alerts-box">
-                            <h3>🔔 Alert Types</h3>
-                            <div class="toggle-row">
-                                <span>Shadow Ban</span>
-                                <label class="toggle"><input type="checkbox" checked><span class="slider"></span></label>
-                            </div>
-                            <div class="toggle-row">
-                                <span>Reduced Reach</span>
-                                <label class="toggle"><input type="checkbox" checked><span class="slider"></span></label>
-                            </div>
-                            <div class="toggle-row">
-                                <span>Restored</span>
-                                <label class="toggle"><input type="checkbox" checked><span class="slider"></span></label>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="history-section">
-                        <h3>Alert History</h3>
-                        <div class="history-list">
-                            <div class="history-item danger">
-                                <span class="dot"></span>
-                                <div class="history-text">
-                                    <strong>Shadow ban on TikTok</strong>
-                                    <span>@johndoe_tiktok • Nov 24</span>
-                                </div>
-                                <span class="badge danger">Active</span>
-                            </div>
-                            <div class="history-item warning">
-                                <span class="dot"></span>
-                                <div class="history-text">
-                                    <strong>Reduced reach on Instagram</strong>
-                                    <span>@johndoe • Nov 23</span>
-                                </div>
-                                <span class="badge warning">Active</span>
-                            </div>
-                            <div class="history-item success">
-                                <span class="dot"></span>
-                                <div class="history-text">
-                                    <strong>Twitter restored</strong>
-                                    <span>@johndoe_x • Nov 21</span>
-                                </div>
-                                <span class="badge success">Resolved</span>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-                
-                <!-- SETTINGS -->
-                <section id="settings" class="section">
-                    <div class="section-top">
-                        <div>
-                            <h1>Settings</h1>
-                            <p>Manage account and subscription</p>
-                        </div>
-                    </div>
-                    
-                    <div class="tabs">
-                        <button class="tab active" data-tab="profile">Profile</button>
-                        <button class="tab" data-tab="subscription">Subscription</button>
-                        <button class="tab" data-tab="billing">Billing</button>
-                    </div>
-                    
-                    <div class="tab-panel active" id="panel-profile">
-                        <div class="form-card">
-                            <h3>Profile</h3>
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label>First Name</label>
-                                    <input type="text" class="input" id="profile-fname" value="John">
-                                </div>
-                                <div class="form-group">
-                                    <label>Last Name</label>
-                                    <input type="text" class="input" id="profile-lname" value="Doe">
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label>Email</label>
-                                <input type="email" class="input" id="profile-email" value="john@example.com">
-                            </div>
-                            <button class="btn-primary">Save Changes</button>
-                        </div>
-                    </div>
-                    
-                    <div class="tab-panel" id="panel-subscription">
-                        <div class="current-plan-box">
-                            <div class="plan-top">
-                                <span class="plan-name" id="current-plan-name">⭐ Pro Plan</span>
-                                <span class="plan-price" id="current-plan-price">$9.99/mo</span>
-                            </div>
-                            <p id="current-plan-features">15 accounts • 10 AI questions/day • Email + SMS alerts</p>
-                            <p class="renewal">Next billing: Dec 24, 2025</p>
-                        </div>
-                        
-                        <h3>Change Plan</h3>
-                        <div class="plans-row">
-                            <div class="plan-card">
-                                <h4>Starter</h4>
-                                <span class="price">$4.99/mo</span>
-                                <p>5 accounts • 3 AI/day</p>
-                                <button class="btn-secondary">Downgrade</button>
-                            </div>
-                            <div class="plan-card current">
-                                <h4>Pro</h4>
-                                <span class="price">$9.99/mo</span>
-                                <p>15 accounts • 10 AI/day</p>
-                                <button class="btn-secondary" disabled>Current</button>
-                            </div>
-                            <div class="plan-card">
-                                <h4>Premium</h4>
-                                <span class="price">$14.99/mo</span>
-                                <p>50 accounts • 25 AI/day</p>
-                                <button class="btn-primary">Upgrade</button>
-                            </div>
-                        </div>
-                        
-                        <!-- AI Add-on -->
-                        <div class="form-card" style="margin-top: 1.5rem;">
-                            <h3>🤖 AI Pro Add-on</h3>
-                            <p style="color: var(--text-muted); margin-bottom: 1rem;">Need more AI questions? Add 100/day to any plan.</p>
-                            <div style="display: flex; justify-content: space-between; align-items: center;">
-                                <span style="font-size: 1.25rem; font-weight: 700; color: var(--primary-light);">+$9.99/mo</span>
-                                <button class="btn-primary">Add AI Pro</button>
-                            </div>
-                        </div>
-                        
-                        <button class="btn-danger" id="cancel-btn" style="margin-top: 1.5rem;">Cancel Subscription</button>
-                    </div>
-                    
-                    <div class="tab-panel" id="panel-billing">
-                        <div class="form-card">
-                            <h3>Payment Method</h3>
-                            <div class="payment-row">
-                                <span>💳 Visa •••• 4242</span>
-                                <button class="btn-secondary">Update</button>
-                            </div>
-                        </div>
-                        <div class="form-card">
-                            <h3>History</h3>
-                            <div class="billing-row">
-                                <span>Nov 24, 2025</span>
-                                <span>$9.99</span>
-                                <button class="btn-link">Invoice</button>
-                            </div>
-                            <div class="billing-row">
-                                <span>Oct 24, 2025</span>
-                                <span>$9.99</span>
-                                <button class="btn-link">Invoice</button>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-                
-                <!-- SUPPORT -->
-                <section id="support" class="section">
-                    <div class="section-top">
-                        <div>
-                            <h1>Support</h1>
-                            <p>Get help or connect with the developer</p>
-                        </div>
-                    </div>
-                    
-                    <div class="support-row">
-                        <div class="support-box highlight">
-                            <span class="big-icon">🤖</span>
-                            <h3>Shadow AI</h3>
-                            <p>Instant answers about shadow bans</p>
-                            <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.75rem;" id="ai-questions-left">10 questions/day remaining</p>
-                            <button class="btn-primary" id="open-ai">Open AI Chat</button>
-                        </div>
-                        <div class="support-box">
-                            <span class="big-icon">📧</span>
-                            <h3>Email</h3>
-                            <p>We respond within 24 hours</p>
-                            <a href="mailto:andrew@ghost081280.com" class="btn-secondary">andrew@ghost081280.com</a>
-                        </div>
-                        <div class="support-box">
-                            <span class="big-icon">👨‍💻</span>
-                            <h3>Connect with the Dev</h3>
-                            <p>Reach Andrew directly</p>
-                            <div class="social-row">
-                                <a href="https://x.com/Ghost081280" target="_blank" title="X/Twitter">𝕏</a>
-                                <a href="https://linkedin.com/in/andrewcouch" target="_blank" title="LinkedIn">in</a>
-                                <a href="https://github.com/Ghost081280" target="_blank" title="GitHub">
-                                    <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="form-card">
-                        <h3>Send Message</h3>
-                        <form id="support-form">
-                            <select class="input" id="support-topic">
-                                <option value="">Select topic...</option>
-                                <option value="bug">Bug Report</option>
-                                <option value="feature">Feature Request</option>
-                                <option value="billing">Billing</option>
-                                <option value="other">Other</option>
-                            </select>
-                            <textarea class="input" id="support-msg" placeholder="How can we help?" rows="3"></textarea>
-                            <button type="submit" class="btn-primary">Send</button>
-                        </form>
-                    </div>
-                </section>
-                
-            </div>
+            // Mark as checked
+            localStorage.setItem(POST_CHECK_STORAGE_KEY, new Date().toISOString());
             
-            <!-- Footer - Sticky at bottom -->
-            <footer class="footer">
-                <div class="footer-left">
-                    <span>© 2025 ShadowBanCheck.io</span>
-                    <a href="index.html">Home</a>
-                    <a href="index.html#faq">FAQ</a>
-                    <a href="#">Terms</a>
-                    <a href="#">Privacy</a>
-                </div>
-            </footer>
-        </main>
-    </div>
+            // Generate demo results
+            showDemoResults(platform, url);
+        }, 2000);
+    });
     
-    <!-- Add Account Modal -->
-    <div class="modal-overlay hidden" id="add-account-modal">
-        <div class="modal">
-            <div class="modal-header">
-                <h2>Add Account</h2>
-                <button class="btn-close" id="modal-close">×</button>
-            </div>
+    // Check another button - should show limit if already used
+    checkAnotherBtn?.addEventListener('click', function() {
+        if (!canCheckPost()) {
+            const timeLeft = getTimeUntilNextCheck();
+            if (timeLeft) {
+                showLimitModal(timeLeft);
+                return;
+            }
+        }
+        resultsSection?.classList.add('hidden');
+        input.value = '';
+        input.focus();
+    });
+}
+
+function showLimitModal(timeLeft) {
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.innerHTML = `
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <button class="modal-close">&times;</button>
+            <div class="modal-icon">⏰</div>
+            <h3 class="modal-title">Free Limit Reached</h3>
             <div class="modal-body">
-                <div class="form-group">
-                    <label>Platform</label>
-                    <select id="new-platform" class="input">
-                        <option value="">Select Platform...</option>
-                        <optgroup label="Social Media">
-                            <option value="twitter">Twitter/X</option>
-                            <option value="instagram">Instagram</option>
-                            <option value="tiktok">TikTok</option>
-                            <option value="facebook">Facebook</option>
-                            <option value="youtube">YouTube</option>
-                            <option value="linkedin">LinkedIn</option>
-                            <option value="reddit">Reddit</option>
-                            <option value="pinterest">Pinterest</option>
-                            <option value="snapchat">Snapchat</option>
-                            <option value="threads">Threads</option>
-                            <option value="mastodon">Mastodon</option>
-                            <option value="bluesky">Bluesky</option>
-                            <option value="truth">Truth Social</option>
-                        </optgroup>
-                        <optgroup label="Messaging">
-                            <option value="telegram">Telegram</option>
-                            <option value="discord">Discord</option>
-                            <option value="whatsapp">WhatsApp</option>
-                            <option value="signal">Signal</option>
-                        </optgroup>
-                        <optgroup label="E-commerce">
-                            <option value="amazon">Amazon</option>
-                            <option value="ebay">eBay</option>
-                            <option value="etsy">Etsy</option>
-                            <option value="shopify">Shopify</option>
-                        </optgroup>
-                        <optgroup label="Streaming">
-                            <option value="twitch">Twitch</option>
-                            <option value="kick">Kick</option>
-                            <option value="rumble">Rumble</option>
-                        </optgroup>
-                        <optgroup label="Other">
-                            <option value="medium">Medium</option>
-                            <option value="quora">Quora</option>
-                        </optgroup>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Username</label>
-                    <input type="text" id="new-username" class="input" placeholder="@username">
-                </div>
-                <div class="form-group">
-                    <label>Nickname (optional)</label>
-                    <input type="text" id="new-nickname" class="input" placeholder="My Business Account">
-                </div>
+                <p class="modal-intro">You've used your <strong>1 free post check</strong> for today!</p>
+                <p>Next free check available in: <strong>${timeLeft.hours}h ${timeLeft.minutes}m</strong></p>
+                <hr style="border: none; border-top: 1px solid var(--border); margin: var(--space-lg) 0;">
+                <h4 style="margin-bottom: var(--space-md);">Want unlimited checks?</h4>
+                <p style="margin-bottom: var(--space-md);">Upgrade to a Pro plan for unlimited post analysis, account monitoring, and instant alerts.</p>
             </div>
             <div class="modal-footer">
-                <button class="btn-secondary" id="modal-cancel">Cancel</button>
-                <button class="btn-primary" id="modal-confirm">Add Account</button>
+                <a href="#pricing" class="btn btn-primary btn-lg" onclick="this.closest('.modal').remove(); document.body.style.overflow = '';">View Pricing →</a>
+                <button class="btn btn-ghost" onclick="this.closest('.modal').remove(); document.body.style.overflow = '';">Maybe Later</button>
             </div>
         </div>
-    </div>
+    `;
     
-    <!-- Toast -->
-    <div class="toast hidden" id="toast">
-        <span id="toast-icon">✅</span>
-        <span id="toast-message">Success</span>
-    </div>
+    document.body.appendChild(modal);
+    document.body.style.overflow = 'hidden';
     
-    <!-- Shadow AI Chatbot - Dashboard version with limits -->
-    <!-- Widget created dynamically by shadow-ai-dashboard.js -->
+    // Close handlers
+    const closeBtn = modal.querySelector('.modal-close');
+    const overlay = modal.querySelector('.modal-overlay');
     
-    <!-- Scripts: dashboard.js MUST load first to set userData -->
-    <script src="js/dashboard.js"></script>
-    <script src="js/shadow-ai-dashboard.js"></script>
-</body>
-</html>
+    function closeModal() {
+        modal.remove();
+        document.body.style.overflow = '';
+    }
+    
+    closeBtn?.addEventListener('click', closeModal);
+    overlay?.addEventListener('click', closeModal);
+    
+    document.addEventListener('keydown', function escHandler(e) {
+        if (e.key === 'Escape') {
+            closeModal();
+            document.removeEventListener('keydown', escHandler);
+        }
+    });
+}
+
+function isValidUrl(string) {
+    try {
+        new URL(string);
+        return true;
+    } catch (_) {
+        return false;
+    }
+}
+
+function detectPlatform(url) {
+    const urlLower = url.toLowerCase();
+    
+    if (urlLower.includes('twitter.com') || urlLower.includes('x.com')) {
+        return { name: 'Twitter/X', icon: '🐦' };
+    } else if (urlLower.includes('reddit.com')) {
+        return { name: 'Reddit', icon: '🤖' };
+    } else if (urlLower.includes('instagram.com')) {
+        return { name: 'Instagram', icon: '📸' };
+    } else if (urlLower.includes('tiktok.com')) {
+        return { name: 'TikTok', icon: '🎵' };
+    } else if (urlLower.includes('facebook.com') || urlLower.includes('fb.com')) {
+        return { name: 'Facebook', icon: '📘' };
+    } else if (urlLower.includes('youtube.com') || urlLower.includes('youtu.be')) {
+        return { name: 'YouTube', icon: '▶️' };
+    } else if (urlLower.includes('linkedin.com')) {
+        return { name: 'LinkedIn', icon: '💼' };
+    }
+    
+    return { name: 'Unknown Platform', icon: '🔗' };
+}
+
+function showDemoResults(platform, url) {
+    const resultsSection = document.getElementById('post-results');
+    const resultsIcon = document.getElementById('results-icon');
+    const resultsTitle = document.getElementById('results-title');
+    const resultsPlatform = document.getElementById('results-platform');
+    const scoreCircle = document.getElementById('score-circle');
+    const scoreValue = document.getElementById('score-value');
+    const factorsList = document.getElementById('factors-list');
+    
+    if (!resultsSection) return;
+    
+    // Generate random score for demo (weighted towards good results)
+    const score = Math.random() < 0.7 ? Math.floor(Math.random() * 35) + 5 : Math.floor(Math.random() * 40) + 45;
+    
+    // Update results
+    if (resultsIcon) resultsIcon.textContent = '📊';
+    if (resultsTitle) resultsTitle.textContent = 'Analysis Complete';
+    if (resultsPlatform) resultsPlatform.textContent = `Platform detected: ${platform.name}`;
+    if (scoreValue) scoreValue.textContent = `${score}%`;
+    
+    // Update score circle color
+    if (scoreCircle) {
+        scoreCircle.classList.remove('warning', 'danger');
+        if (score >= 60) {
+            scoreCircle.classList.add('danger');
+        } else if (score >= 35) {
+            scoreCircle.classList.add('warning');
+        }
+    }
+    
+    // Generate factors based on platform
+    if (factorsList) {
+        const factors = generateDemoFactors(platform.name, score);
+        factorsList.innerHTML = factors.map(f => `
+            <li class="factor-${f.status}">
+                <span>${f.icon}</span>
+                ${f.text}
+            </li>
+        `).join('');
+    }
+    
+    // Show results
+    resultsSection.classList.remove('hidden');
+    resultsSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function generateDemoFactors(platformName, score) {
+    const factors = [];
+    
+    if (platformName === 'Twitter/X') {
+        factors.push(
+            { icon: '✓', status: 'good', text: 'Post appears in hashtag searches' },
+            { icon: '✓', status: 'good', text: 'Profile visible to logged-out users' },
+            { icon: '✓', status: 'good', text: 'Replies visible in threads' }
+        );
+        
+        if (score > 30) {
+            factors.push({ icon: '⚠', status: 'warning', text: 'Lower than expected engagement rate' });
+        }
+        if (score > 50) {
+            factors.push({ icon: '✗', status: 'bad', text: 'Some replies hidden behind "Show more"' });
+        }
+        if (score <= 30) {
+            factors.push({ icon: '✓', status: 'good', text: 'No quality filter restrictions detected' });
+        }
+    } else if (platformName === 'Reddit') {
+        factors.push(
+            { icon: '✓', status: 'good', text: 'Post visible in subreddit listing' },
+            { icon: '✓', status: 'good', text: 'Profile page accessible' }
+        );
+        
+        if (score > 40) {
+            factors.push({ icon: '⚠', status: 'warning', text: 'Lower karma than expected for visibility' });
+            factors.push({ icon: '⚠', status: 'warning', text: 'Some comments may be filtered' });
+        } else {
+            factors.push({ icon: '✓', status: 'good', text: 'Comments appearing normally in threads' });
+            factors.push({ icon: '✓', status: 'good', text: 'No AutoModerator removal patterns' });
+        }
+    } else {
+        // Generic factors for other platforms
+        factors.push(
+            { icon: '✓', status: 'good', text: 'Content appears to be visible' },
+            { icon: '✓', status: 'good', text: 'Profile accessible' }
+        );
+        
+        if (score > 40) {
+            factors.push({ icon: '⚠', status: 'warning', text: 'Engagement lower than expected' });
+        } else {
+            factors.push({ icon: '✓', status: 'good', text: 'Engagement within normal range' });
+        }
+    }
+    
+    return factors;
+}
+
+/* =============================================================================
+   DEMO CHAT ANIMATION - TYPEWRITER EFFECT
+   ============================================================================= */
+function initDemoChatAnimation() {
+    const demoChat = document.getElementById('demo-chat-messages');
+    if (!demoChat) return;
+    
+    let hasPlayed = false;
+    
+    const chatSequence = [
+        { 
+            type: 'ai', 
+            text: "👋 Hi! I'm Shadow AI, your personal shadow ban detective.",
+            delay: 500
+        },
+        { 
+            type: 'ai', 
+            text: "I can check if you're being suppressed on Twitter/X, Reddit, Instagram, TikTok, and 22+ other platforms.",
+            delay: 1500
+        },
+        { 
+            type: 'ai', 
+            text: "I analyze engagement patterns, visibility signals, and platform-specific indicators to give you a probability score.",
+            delay: 1500
+        },
+        { 
+            type: 'ai', 
+            text: "Would you like to learn more about our Pro subscription? 🚀",
+            delay: 1500
+        },
+        { 
+            type: 'user', 
+            text: "Yes, tell me more!",
+            delay: 2000,
+            clickable: true
+        },
+        { 
+            type: 'ai', 
+            text: "Great choice! With Shadow AI Pro you get:",
+            delay: 1000
+        },
+        { 
+            type: 'ai', 
+            text: "✓ 100 AI questions/day\n✓ Live platform checks\n✓ Recovery strategies\n✓ 24/7 availability",
+            delay: 1200
+        },
+        { 
+            type: 'ai', 
+            text: '👉 <a href="#pricing">View pricing plans</a> to get started with a 7-day free trial!',
+            delay: 1500
+        }
+    ];
+    
+    let currentIndex = 0;
+    let isAnimating = false;
+    
+    function showTypingIndicator() {
+        const typing = document.createElement('div');
+        typing.className = 'typing-indicator';
+        typing.innerHTML = '<span></span><span></span><span></span>';
+        demoChat.appendChild(typing);
+        demoChat.scrollTop = demoChat.scrollHeight;
+        return typing;
+    }
+    
+    function addMessage(message) {
+        const msgEl = document.createElement('div');
+        msgEl.className = `demo-msg ${message.type}`;
+        
+        if (message.type === 'ai') {
+            // For AI messages, use innerHTML to support links and formatting
+            msgEl.innerHTML = message.text.replace(/\n/g, '<br>');
+        } else {
+            msgEl.textContent = message.text;
+        }
+        
+        if (message.clickable) {
+            msgEl.style.cursor = 'pointer';
+            msgEl.title = 'Click to continue';
+        }
+        
+        demoChat.appendChild(msgEl);
+        demoChat.scrollTop = demoChat.scrollHeight;
+        
+        return msgEl;
+    }
+    
+    function playNextMessage() {
+        if (currentIndex >= chatSequence.length) {
+            isAnimating = false;
+            return;
+        }
+        
+        const message = chatSequence[currentIndex];
+        currentIndex++;
+        
+        if (message.type === 'ai') {
+            // Show typing indicator for AI messages
+            const typing = showTypingIndicator();
+            
+            setTimeout(() => {
+                typing.remove();
+                addMessage(message);
+                
+                setTimeout(playNextMessage, message.delay || 1000);
+            }, 800 + Math.random() * 400);
+        } else {
+            // User messages appear after a delay
+            setTimeout(() => {
+                addMessage(message);
+                setTimeout(playNextMessage, message.delay || 1000);
+            }, message.delay || 1000);
+        }
+    }
+    
+    function startAnimation() {
+        if (hasPlayed || isAnimating) return;
+        
+        hasPlayed = true;
+        isAnimating = true;
+        demoChat.innerHTML = '';
+        currentIndex = 0;
+        
+        setTimeout(playNextMessage, 500);
+    }
+    
+    // Start animation when visible
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting && !hasPlayed) {
+                startAnimation();
+                observer.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.5 });
+    
+    observer.observe(demoChat);
+}
+
+/* =============================================================================
+   FAQ ACCORDION
+   ============================================================================= */
+function initFAQAccordion() {
+    const faqItems = document.querySelectorAll('.faq-item');
+    if (faqItems.length === 0) return;
+    
+    faqItems.forEach(item => {
+        const question = item.querySelector('.faq-question');
+        const answer = item.querySelector('.faq-answer');
+        
+        if (!question || !answer) return;
+        
+        question.addEventListener('click', function() {
+            const isActive = item.classList.contains('active');
+            
+            // Close all others
+            faqItems.forEach(otherItem => {
+                if (otherItem !== item) {
+                    otherItem.classList.remove('active');
+                }
+            });
+            
+            // Toggle current
+            item.classList.toggle('active');
+        });
+    });
+}
+
+/* =============================================================================
+   SMOOTH SCROLL FOR ANCHOR LINKS
+   ============================================================================= */
+function initSmoothScroll() {
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function(e) {
+            const href = this.getAttribute('href');
+            if (href === '#' || href === '#!') return;
+            
+            const target = document.querySelector(href);
+            if (target) {
+                e.preventDefault();
+                
+                const headerOffset = 80;
+                const elementPosition = target.getBoundingClientRect().top;
+                const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+                
+                window.scrollTo({
+                    top: offsetPosition,
+                    behavior: 'smooth'
+                });
+            }
+        });
+    });
+}
+
+/* =============================================================================
+   HEADER SCROLL EFFECT
+   ============================================================================= */
+function initHeaderScroll() {
+    const header = document.querySelector('.header');
+    if (!header) return;
+    
+    window.addEventListener('scroll', function() {
+        if (window.pageYOffset > 10) {
+            header.classList.add('scrolled');
+        } else {
+            header.classList.remove('scrolled');
+        }
+    }, { passive: true });
+}
+
+/* =============================================================================
+   SEARCH COUNTER (Free tier tracking)
+   ============================================================================= */
+const FREE_DAILY_LIMIT = 3;
+
+function getSearchCount() {
+    const today = new Date().toDateString();
+    const stored = localStorage.getItem('shadowban_searches');
+    
+    if (stored) {
+        const data = JSON.parse(stored);
+        if (data.date === today) {
+            return data.count;
+        }
+    }
+    
+    return 0;
+}
+
+function incrementSearchCount() {
+    const today = new Date().toDateString();
+    const currentCount = getSearchCount();
+    
+    localStorage.setItem('shadowban_searches', JSON.stringify({
+        date: today,
+        count: currentCount + 1
+    }));
+    
+    updateSearchCounterDisplay();
+    return currentCount + 1;
+}
+
+function getRemainingSearches() {
+    return Math.max(0, FREE_DAILY_LIMIT - getSearchCount());
+}
+
+function updateSearchCounterDisplay() {
+    const remaining = getRemainingSearches();
+    const total = FREE_DAILY_LIMIT;
+    
+    const counterElements = document.querySelectorAll('#searches-remaining, #hashtag-searches-remaining');
+    counterElements.forEach(el => {
+        if (el) el.textContent = `${remaining} / ${total} available`;
+    });
+    
+    const miniCounters = document.querySelectorAll('#checks-remaining-display');
+    miniCounters.forEach(el => {
+        if (el) el.textContent = `${remaining} free checks left today`;
+    });
+    
+    if (remaining === 0) {
+        const pricingCta = document.getElementById('pricing-cta');
+        if (pricingCta) pricingCta.classList.remove('hidden');
+    }
+}
+
+/* =============================================================================
+   SOCIAL SHARE
+   ============================================================================= */
+function initSocialShare() {
+    const shareUrl = encodeURIComponent(window.location.origin);
+    const shareText = encodeURIComponent('Check if you\'re shadow banned across 26+ platforms! 🔍');
+    
+    document.getElementById('share-twitter')?.addEventListener('click', function() {
+        window.open(`https://twitter.com/intent/tweet?text=${shareText}&url=${shareUrl}`, '_blank', 'width=600,height=400');
+    });
+    
+    document.getElementById('share-facebook')?.addEventListener('click', function() {
+        window.open(`https://www.facebook.com/sharer/sharer.php?u=${shareUrl}`, '_blank', 'width=600,height=400');
+    });
+    
+    document.getElementById('share-telegram')?.addEventListener('click', function() {
+        window.open(`https://t.me/share/url?url=${shareUrl}&text=${shareText}`, '_blank', 'width=600,height=400');
+    });
+    
+    document.getElementById('share-linkedin')?.addEventListener('click', function() {
+        window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${shareUrl}`, '_blank', 'width=600,height=400');
+    });
+    
+    document.getElementById('share-reddit')?.addEventListener('click', function() {
+        window.open(`https://www.reddit.com/submit?url=${shareUrl}&title=${shareText}`, '_blank', 'width=600,height=400');
+    });
+    
+    document.getElementById('copy-link')?.addEventListener('click', function() {
+        navigator.clipboard.writeText(window.location.href).then(() => {
+            showToast('Link copied to clipboard!');
+        });
+    });
+}
+
+/* =============================================================================
+   TOAST NOTIFICATIONS
+   ============================================================================= */
+function showToast(message) {
+    let toast = document.getElementById('toast');
+    if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'toast';
+        toast.className = 'toast';
+        document.body.appendChild(toast);
+    }
+    
+    toast.textContent = message;
+    toast.classList.add('visible');
+    
+    setTimeout(() => {
+        toast.classList.remove('visible');
+    }, 3000);
+}
+
+/* =============================================================================
+   COOKIE POPUP
+   ============================================================================= */
+function initCookiePopup() {
+    const cookiePopup = document.getElementById('cookie-popup');
+    if (!cookiePopup) return;
+    
+    if (localStorage.getItem('cookies_accepted')) {
+        cookiePopup.remove();
+        return;
+    }
+    
+    setTimeout(() => {
+        cookiePopup.classList.remove('hidden');
+        cookiePopup.classList.add('visible');
+    }, 1500);
+    
+    const acceptBtn = document.getElementById('cookie-accept');
+    acceptBtn?.addEventListener('click', function() {
+        localStorage.setItem('cookies_accepted', 'true');
+        cookiePopup.classList.remove('visible');
+        setTimeout(() => cookiePopup.remove(), 300);
+    });
+    
+    const dismissBtn = document.getElementById('cookie-dismiss');
+    dismissBtn?.addEventListener('click', function() {
+        cookiePopup.classList.remove('visible');
+        setTimeout(() => cookiePopup.remove(), 300);
+    });
+}
+
+/* =============================================================================
+   SHADOW AI BUTTON HANDLERS - Handled by shadow-ai.js
+   ============================================================================= */
+// Note: Shadow AI buttons (#try-ai-btn, #open-shadow-ai) are handled by shadow-ai.js
+
+/* =============================================================================
+   INITIALIZE ALL
+   ============================================================================= */
+document.addEventListener('DOMContentLoaded', function() {
+    // Core functionality
+    initMobileNav();
+    initBackToTop();
+    initScrollReveal();
+    initHeaderScroll();
+    initSmoothScroll();
+    
+    // Page-specific
+    initPlatformGrid();
+    initPostChecker();
+    initCheckerInfoModal();
+    initFAQAccordion();
+    initSocialShare();
+    initCookiePopup();
+    initDemoChatAnimation();
+    
+    // Shadow AI buttons handled by shadow-ai.js
+    
+    // Update search counter display
+    updateSearchCounterDisplay();
+    
+    console.log('✅ ShadowBanCheck.io initialized');
+});
+
+/* =============================================================================
+   UTILITY EXPORTS
+   ============================================================================= */
+window.ShadowBan = {
+    platformData,
+    getSearchCount,
+    incrementSearchCount,
+    getRemainingSearches,
+    updateSearchCounterDisplay,
+    openPlatformModal,
+    showToast
+};

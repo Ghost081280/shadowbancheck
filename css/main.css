@@ -14,6 +14,8 @@
    9. Utilities
    10. Animations
    11. Responsive Breakpoints
+   
+   NOTE: Demo chat styles moved to shadow-ai.css
    ============================================================================= */
 
 /* =============================================================================
@@ -1384,134 +1386,6 @@ strong, b {
     display: flex;
     gap: var(--space-md);
     flex-wrap: wrap;
-}
-
-/* =============================================================================
-   8. DEMO CHAT
-   ============================================================================= */
-.demo-chat {
-    background: var(--bg);
-    border: 2px solid var(--border);
-    border-radius: var(--radius-xl);
-    overflow: hidden;
-    max-width: 420px;
-    margin: 0 auto;
-    box-shadow: var(--shadow-lg);
-}
-
-.demo-header {
-    background: var(--gradient-primary);
-    color: white;
-    padding: var(--space-md) var(--space-lg);
-    display: flex;
-    gap: var(--space-sm);
-    align-items: center;
-    font-weight: 600;
-}
-
-.demo-status {
-    margin-left: auto;
-    font-size: 0.75rem;
-    font-weight: 400;
-    opacity: 0.9;
-}
-
-.demo-messages {
-    padding: var(--space-lg);
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-md);
-    height: 320px;
-    max-height: 320px;
-    overflow-y: auto;
-    scroll-behavior: smooth;
-}
-
-/* Custom scrollbar for demo chat */
-.demo-messages::-webkit-scrollbar {
-    width: 6px;
-}
-
-.demo-messages::-webkit-scrollbar-track {
-    background: var(--bg-secondary);
-    border-radius: 3px;
-}
-
-.demo-messages::-webkit-scrollbar-thumb {
-    background: var(--border-light);
-    border-radius: 3px;
-}
-
-.demo-messages::-webkit-scrollbar-thumb:hover {
-    background: var(--primary);
-}
-
-.demo-msg {
-    padding: var(--space-sm) var(--space-md);
-    border-radius: var(--radius-lg);
-    max-width: 85%;
-    font-size: 0.875rem;
-    line-height: 1.5;
-    animation: fadeInUp 0.3s ease;
-}
-
-.demo-msg.user {
-    background: var(--gradient-primary);
-    color: white;
-    margin-left: auto;
-    border-bottom-right-radius: var(--space-2xs);
-    cursor: pointer;
-    transition: transform var(--transition-fast);
-}
-
-.demo-msg.user:hover {
-    transform: scale(1.02);
-}
-
-.demo-msg.ai {
-    background: var(--card);
-    color: var(--text-secondary);
-    border: 1px solid var(--border);
-    border-bottom-left-radius: var(--space-2xs);
-}
-
-.demo-msg.ai a {
-    color: var(--primary-light);
-    text-decoration: underline;
-}
-
-/* Typing indicator */
-.typing-indicator {
-    display: flex;
-    gap: 4px;
-    padding: var(--space-sm) var(--space-md);
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    border-bottom-left-radius: var(--space-2xs);
-    width: fit-content;
-}
-
-.typing-indicator span {
-    width: 8px;
-    height: 8px;
-    background: var(--text-muted);
-    border-radius: 50%;
-    animation: typingBounce 1.4s infinite;
-}
-
-.typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
-.typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
-
-@keyframes typingBounce {
-    0%, 60%, 100% {
-        transform: translateY(0);
-        opacity: 0.5;
-    }
-    30% {
-        transform: translateY(-6px);
-        opacity: 1;
-    }
 }
 
 /* =============================================================================
@@ -2972,11 +2846,6 @@ strong, b {
     .spotlight-content h2 { font-size: 1.75rem; }
     .spotlight-cta { flex-direction: column; }
     .spotlight-cta .btn { width: 100%; }
-    
-    /* Demo Chat */
-    .demo-chat {
-        max-width: 100%;
-    }
     
     /* Footer */
     .footer-bottom { 

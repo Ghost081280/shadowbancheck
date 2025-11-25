@@ -320,56 +320,10 @@
 }
 
 /* =============================================================================
-   SHARE SECTION - MATCH INDEX PAGE STYLE
+   SHARE SECTION - INHERIT FROM MAIN.CSS
    ============================================================================= */
-.share-section {
-    background: var(--bg-secondary);
-}
-
-.share-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: var(--space-lg);
-    max-width: 900px;
-    margin: 0 auto;
-}
-
-.share-card {
-    background: var(--card);
-    border: 2px solid var(--border);
-    border-radius: var(--radius-xl);
-    padding: var(--space-xl);
-    text-align: center;
-    transition: all var(--transition-base);
-    cursor: pointer;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: var(--space-md);
-}
-
-.share-card:hover {
-    border-color: var(--primary);
-    transform: translateY(-4px);
-    box-shadow: var(--shadow-glow-md);
-}
-
-.share-card-icon {
-    font-size: 3rem;
-    font-weight: 700;
-    display: block;
-}
-
-.share-card h3 {
-    font-size: 1.125rem;
-    margin-bottom: var(--space-2xs);
-}
-
-.share-card p {
-    color: var(--text-muted);
-    font-size: 0.875rem;
-    margin: 0;
-}
+/* Share buttons use .share-buttons and .btn-share from main.css */
+/* No additional styles needed - matches index page */
 
 /* =============================================================================
    CROSS-PROMOTE
@@ -482,10 +436,16 @@
     
     .monitoring-cta-btn {
         order: 2;
+        width: 100%;
     }
     
-    .share-grid {
-        grid-template-columns: 1fr 1fr;
+    .share-buttons {
+        flex-direction: column;
+    }
+    
+    .btn-share {
+        width: 100%;
+        justify-content: center;
     }
     
     .cross-promote {
@@ -495,7 +455,5 @@
 }
 
 @media (max-width: 480px) {
-    .share-grid {
-        grid-template-columns: 1fr;
-    }
+    /* Additional mobile tweaks */
 }

@@ -73,7 +73,7 @@ function updateSearchCounter() {
     const remaining = getRemainingSearches();
     const counterEl = document.getElementById('searches-remaining');
     if (counterEl) {
-        counterEl.textContent = `${remaining} / ${MAX_FREE_SEARCHES} available`;
+        counterEl.textContent = `${remaining}/${MAX_FREE_SEARCHES}`;
     }
 }
 

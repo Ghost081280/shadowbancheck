@@ -69,29 +69,196 @@
 .platforms-checker .platform-item {
     padding: var(--space-sm) var(--space-md);
     min-height: 52px;
+    cursor: pointer;
+}
+
+.platforms-checker .platform-item[data-status="live"]:hover {
+    border-color: var(--primary);
+    transform: translateY(-2px);
+}
+
+.platforms-checker .platform-item[data-status="soon"] {
+    cursor: not-allowed;
+    opacity: 0.7;
 }
 
 /* =============================================================================
-   HOW IT WORKS - COMPACT
+   HOW IT WORKS - ENHANCED WITH METHODOLOGY
    ============================================================================= */
-.how-compact .how-grid {
+.how-works-section {
+    background: var(--bg-secondary);
+}
+
+/* Quick Steps Grid */
+.how-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-lg);
+    margin-bottom: var(--space-3xl);
+}
+
+.how-item {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-lg);
+    display: flex;
+    align-items: center;
     gap: var(--space-md);
+    transition: all var(--transition-base);
 }
 
-.how-compact .how-item {
+.how-item:hover {
+    border-color: var(--primary);
+    transform: translateY(-2px);
+}
+
+.how-icon {
+    font-size: 2rem;
+    flex-shrink: 0;
+}
+
+.how-content h4 {
+    font-size: 1rem;
+    margin-bottom: var(--space-xs);
+}
+
+.how-content p {
+    color: var(--text-muted);
+    font-size: 0.875rem;
+    margin: 0;
+}
+
+/* Methodology Section */
+.methodology-section {
+    margin-top: var(--space-3xl);
+    padding: var(--space-2xl);
+    background: var(--card);
+    border: 2px solid var(--border);
+    border-radius: var(--radius-2xl);
+}
+
+.methodology-title {
+    font-size: 1.75rem;
+    text-align: center;
+    margin-bottom: var(--space-md);
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.methodology-intro {
+    text-align: center;
+    color: var(--text-secondary);
+    font-size: 1.0625rem;
+    line-height: 1.7;
+    max-width: 900px;
+    margin: 0 auto var(--space-2xl);
+}
+
+.methodology-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-lg);
+    margin-bottom: var(--space-xl);
+}
+
+.method-card {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    padding: var(--space-xl);
+    transition: all var(--transition-base);
+}
+
+.method-card:hover {
+    border-color: var(--primary);
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-glow-md);
+}
+
+.method-icon {
+    font-size: 2.5rem;
+    display: block;
+    margin-bottom: var(--space-md);
+}
+
+.method-card h4 {
+    font-size: 1.125rem;
+    margin-bottom: var(--space-sm);
+    color: var(--text);
+}
+
+.method-card > p {
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin-bottom: var(--space-md);
+}
+
+.method-details {
+    background: var(--bg-secondary);
+    border-radius: var(--radius-md);
     padding: var(--space-md);
+    margin-top: var(--space-md);
 }
 
-.how-compact .how-icon {
-    font-size: 1.5rem;
-}
-
-.how-compact .how-content h4 {
-    font-size: 0.9375rem;
-}
-
-.how-compact .how-content p {
+.method-details strong {
+    display: block;
+    color: var(--primary-light);
     font-size: 0.8125rem;
+    margin-bottom: var(--space-sm);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.method-details ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.method-details li {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    padding: var(--space-2xs) 0;
+    padding-left: var(--space-md);
+    position: relative;
+}
+
+.method-details li:before {
+    content: "•";
+    position: absolute;
+    left: 0;
+    color: var(--primary);
+}
+
+.citation-info {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-md);
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(168, 85, 247, 0.1) 100%);
+    border: 1px solid rgba(99, 102, 241, 0.3);
+    border-radius: var(--radius-lg);
+    padding: var(--space-lg);
+}
+
+.citation-icon {
+    font-size: 2rem;
+    flex-shrink: 0;
+}
+
+.citation-content h4 {
+    font-size: 1rem;
+    margin-bottom: var(--space-xs);
+    color: var(--primary-light);
+}
+
+.citation-content p {
+    color: var(--text-secondary);
+    font-size: 0.9375rem;
+    margin: 0;
+    line-height: 1.6;
 }
 
 /* =============================================================================
@@ -124,7 +291,7 @@
 }
 
 .source-card h4 {
-    font-size: 0.75rem;
+    font-size: 0.8125rem;
     margin-bottom: var(--space-2xs);
 }
 
@@ -132,6 +299,7 @@
     color: var(--text-muted);
     font-size: 0.6875rem;
     margin: 0;
+    line-height: 1.4;
 }
 
 /* =============================================================================
@@ -188,94 +356,58 @@
 }
 
 /* =============================================================================
-   MODAL STYLES - CHECKER PAGE
+   PLATFORM CHECK MODAL
    ============================================================================= */
-.modal-header-custom {
-    display: flex;
-    align-items: center;
-    gap: var(--space-md);
+.modal-platform-check {
+    text-align: center;
+    padding: var(--space-lg);
+}
+
+.modal-platform-icon {
+    font-size: 4rem;
+    display: block;
     margin-bottom: var(--space-md);
 }
 
-.modal-icon {
-    font-size: 2.5rem;
-}
-
-.modal-header-custom h2 {
-    margin: 0;
+.modal-platform-check h3 {
     font-size: 1.5rem;
-}
-
-.modal-description {
-    color: var(--text-muted);
-    margin-bottom: var(--space-lg);
-}
-
-.modal-checks {
-    background: var(--bg);
-    border-radius: var(--radius-md);
-    padding: var(--space-md);
-    margin-bottom: var(--space-lg);
-}
-
-.modal-checks h4 {
-    font-size: 0.875rem;
-    color: var(--text-muted);
     margin-bottom: var(--space-sm);
 }
 
-.modal-checks ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: var(--space-xs);
+.modal-platform-check > p {
+    color: var(--text-muted);
+    margin-bottom: var(--space-xl);
 }
 
-.modal-checks li {
-    font-size: 0.8125rem;
-    color: var(--text-secondary);
-}
-
-/* Modal Form */
-.modal-form .form-group {
+.modal-input-group {
     margin-bottom: var(--space-lg);
 }
 
-.modal-form label {
-    display: block;
-    font-weight: 600;
-    font-size: 0.875rem;
-    margin-bottom: var(--space-xs);
-}
-
-.btn-check {
+.modal-input-group input {
     width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: var(--space-sm);
     padding: var(--space-md);
-    background: var(--gradient-primary);
-    color: white;
-    border: none;
+    background: var(--bg-tertiary);
+    border: 2px solid var(--border);
     border-radius: var(--radius-md);
+    color: var(--text);
     font-size: 1rem;
-    font-weight: 700;
-    cursor: pointer;
     transition: all var(--transition-base);
-    box-shadow: var(--shadow-md);
 }
 
-.btn-check:hover:not(:disabled) {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-lg);
+.modal-input-group input:focus {
+    outline: none;
+    border-color: var(--primary);
+    background: var(--bg);
 }
 
-.btn-check:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
+.modal-input-group input::placeholder {
+    color: var(--text-muted);
+}
+
+.btn-full {
+    width: 100%;
+    padding: var(--space-md);
+    font-size: 1.0625rem;
 }
 
 .modal-note {
@@ -285,130 +417,75 @@
     margin-top: var(--space-md);
 }
 
-/* Coming Soon Modal */
-.modal-coming-soon {
-    text-align: center;
-    padding: var(--space-md);
-}
-
-.coming-soon-icon {
-    font-size: 4rem;
-    margin-bottom: var(--space-md);
-}
-
-.coming-soon-text {
-    color: var(--warning);
-    font-weight: 600;
-    font-size: 1.125rem;
-    margin-bottom: var(--space-sm);
-}
-
-.coming-soon-checks {
+.modal-checks-preview {
     background: var(--bg);
     border-radius: var(--radius-md);
     padding: var(--space-md);
-    margin: var(--space-md) 0;
+    margin-bottom: var(--space-lg);
     text-align: left;
 }
 
-.coming-soon-checks h4 {
+.modal-checks-preview h4 {
     font-size: 0.875rem;
     color: var(--text-muted);
     margin-bottom: var(--space-sm);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
-.coming-soon-checks ul {
+.modal-checks-preview ul {
     list-style: none;
     padding: 0;
     margin: 0;
 }
 
-.coming-soon-checks li {
-    font-size: 0.8125rem;
+.modal-checks-preview li {
+    font-size: 0.875rem;
     color: var(--text-secondary);
     padding: var(--space-2xs) 0;
 }
 
-.btn-modal-cta {
-    display: inline-block;
-    background: var(--gradient-primary);
-    color: white;
-    padding: var(--space-sm) var(--space-lg);
-    border-radius: var(--radius-md);
-    font-weight: 600;
-    transition: all var(--transition-base);
-    text-decoration: none;
-    margin-top: var(--space-md);
+/* Checking State */
+.checking-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(10, 15, 26, 0.95);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    animation: fadeIn 0.3s ease;
 }
 
-.btn-modal-cta:hover {
-    transform: translateY(-2px);
-    color: white;
-}
-
-/* Upgrade Modal */
-.modal-upgrade {
+.checking-content {
     text-align: center;
-    padding: var(--space-md);
+    padding: var(--space-2xl);
 }
 
-.modal-upgrade .upgrade-icon {
-    font-size: 4rem;
-    margin-bottom: var(--space-md);
+.checking-spinner {
+    width: 60px;
+    height: 60px;
+    border: 4px solid rgba(99, 102, 241, 0.2);
+    border-top-color: var(--primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto var(--space-xl);
 }
 
-.modal-upgrade h2 {
+.checking-content h3 {
+    font-size: 1.5rem;
     margin-bottom: var(--space-sm);
 }
 
-.modal-upgrade > p {
+.checking-content p {
     color: var(--text-muted);
-    margin-bottom: var(--space-lg);
 }
 
-.upgrade-benefits {
-    background: var(--bg);
-    border-radius: var(--radius-md);
-    padding: var(--space-md);
-    margin-bottom: var(--space-lg);
-    text-align: left;
-}
-
-.upgrade-benefits .benefit {
-    padding: var(--space-xs) 0;
-    color: var(--text-secondary);
-    font-size: 0.9375rem;
-}
-
-.btn-upgrade-modal {
-    display: block;
-    background: var(--gradient-primary);
-    color: white;
-    padding: var(--space-md) var(--space-xl);
-    border-radius: var(--radius-md);
-    font-weight: 700;
-    font-size: 1.125rem;
-    transition: all var(--transition-base);
-    margin-bottom: var(--space-md);
-    text-decoration: none;
-}
-
-.btn-upgrade-modal:hover {
-    transform: translateY(-2px);
-    color: white;
-}
-
-.btn-close-upgrade {
-    background: none;
-    border: none;
-    color: var(--text-muted);
-    font-size: 0.875rem;
-    cursor: pointer;
-    padding: var(--space-xs);
-}
-
-.btn-close-upgrade:hover {
-    color: var(--text);
+@keyframes spin {
+    to { transform: rotate(360deg); }
 }
 
 /* =============================================================================
@@ -425,6 +502,23 @@
         flex-direction: column;
     }
     
+    .how-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .methodology-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .method-card {
+        padding: var(--space-lg);
+    }
+    
+    .citation-info {
+        flex-direction: column;
+        text-align: center;
+    }
+    
     .sources-grid {
         grid-template-columns: repeat(3, 1fr);
     }
@@ -434,14 +528,22 @@
         text-align: center;
         padding: var(--space-lg);
     }
-    
-    .modal-checks ul {
-        grid-template-columns: 1fr;
-    }
 }
 
 @media (max-width: 480px) {
     .sources-grid {
         grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .methodology-section {
+        padding: var(--space-lg);
+    }
+    
+    .methodology-title {
+        font-size: 1.5rem;
+    }
+    
+    .methodology-intro {
+        font-size: 1rem;
     }
 }

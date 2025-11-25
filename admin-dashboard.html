@@ -6,12 +6,14 @@
     <title>Admin Dashboard - ShadowBanCheck.io</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔍</text></svg>">
     <link rel="stylesheet" href="css/admin-dashboard.css">
-    <link rel="stylesheet" href="css/shadow-ai-dashboard.css">
+    <link rel="stylesheet" href="css/shadow-ai.css">
+    <!-- Stripe.js for payment management -->
+    <script src="https://js.stripe.com/v3/"></script>
 </head>
-<body>
+<body class="dashboard-page">
     <div class="admin-layout">
         <!-- Sidebar -->
-        <aside class="admin-sidebar">
+        <aside class="admin-sidebar" id="admin-sidebar">
             <a href="index.html" class="admin-logo">🔍 ShadowBanCheck</a>
             
             <nav class="admin-nav">
@@ -19,6 +21,8 @@
                 <a href="#messages" data-section="messages">✉️ Messages</a>
                 <a href="#chats" data-section="chats">💬 Live Chats</a>
                 <a href="#users" data-section="users">👥 Users</a>
+                <a href="#stripe" data-section="stripe">💳 Stripe</a>
+                <a href="#api-keys" data-section="api-keys">🔑 API Keys</a>
                 <a href="#analytics" data-section="analytics">📈 Analytics</a>
                 <a href="#settings" data-section="settings">⚙️ Settings</a>
             </nav>
@@ -33,77 +37,794 @@
             </div>
         </aside>
         
+        <!-- Mobile Menu Toggle -->
+        <button class="mobile-menu-btn" id="mobile-menu-btn">☰</button>
+        
         <!-- Main Content -->
         <main class="admin-main">
-            <div class="admin-header">
-                <h1>👋 Welcome, Andrew</h1>
-                <span class="header-subtitle">Admin Dashboard</span>
-            </div>
-            
-            <!-- Stats Row -->
-            <div class="admin-stats">
-                <div class="admin-stat">
-                    <h3 id="stat-messages">5</h3>
-                    <p>New Messages</p>
+            <!-- ==========================================
+                 SECTION: DASHBOARD
+                 ========================================== -->
+            <section class="admin-section active" id="section-dashboard">
+                <div class="admin-header">
+                    <h1>👋 Welcome, Andrew</h1>
+                    <span class="header-subtitle">Admin Dashboard</span>
                 </div>
-                <div class="admin-stat">
-                    <h3 id="stat-chats">2</h3>
-                    <p>Active Chats</p>
-                </div>
-                <div class="admin-stat">
-                    <h3 id="stat-users">156</h3>
-                    <p>Total Users</p>
-                </div>
-                <div class="admin-stat">
-                    <h3 id="stat-revenue">$1,247</h3>
-                    <p>This Month</p>
-                </div>
-            </div>
-            
-            <!-- Main Grid -->
-            <div class="admin-grid">
-                <!-- Recent Messages -->
-                <div class="admin-card">
-                    <div class="card-header">
-                        <h2>✉️ Recent Messages</h2>
-                        <span class="badge badge-warning" id="unread-badge">5 unread</span>
+                
+                <!-- Stats Row -->
+                <div class="admin-stats">
+                    <div class="admin-stat" onclick="switchSection('messages')">
+                        <h3 id="stat-messages">5</h3>
+                        <p>New Messages</p>
                     </div>
-                    <div class="card-body" id="messages-list">
-                        <!-- Messages populated by JS -->
+                    <div class="admin-stat" onclick="switchSection('chats')">
+                        <h3 id="stat-chats">2</h3>
+                        <p>Active Chats</p>
+                    </div>
+                    <div class="admin-stat" onclick="switchSection('users')">
+                        <h3 id="stat-users">156</h3>
+                        <p>Total Users</p>
+                    </div>
+                    <div class="admin-stat" onclick="switchSection('stripe')">
+                        <h3 id="stat-revenue">$1,247</h3>
+                        <p>This Month</p>
                     </div>
                 </div>
                 
-                <!-- Active Chats -->
-                <div class="admin-card">
-                    <div class="card-header">
-                        <h2>💬 Active Chats</h2>
-                        <span class="badge badge-success" id="online-badge">2 online</span>
-                    </div>
-                    <div class="card-body" id="chats-list">
-                        <!-- Chats populated by JS -->
-                    </div>
+                <!-- Quick Actions -->
+                <div class="quick-actions-row">
+                    <button class="quick-action" onclick="switchSection('messages')">
+                        <span>✉️</span> View Messages
+                    </button>
+                    <button class="quick-action" onclick="switchSection('chats')">
+                        <span>💬</span> Live Chats
+                    </button>
+                    <button class="quick-action" onclick="window.ShadowAI && window.ShadowAI.open()">
+                        <span>🤖</span> Shadow AI
+                    </button>
+                    <button class="quick-action" onclick="switchSection('api-keys')">
+                        <span>🔑</span> API Keys
+                    </button>
                 </div>
                 
-                <!-- Chat Window -->
-                <div class="admin-card chat-card">
-                    <div class="card-header">
-                        <h2 id="chat-window-title">💬 Select a chat</h2>
-                        <span class="online-indicator" id="chat-online-status">● Online</span>
+                <!-- Main Grid -->
+                <div class="admin-grid">
+                    <!-- Recent Messages Preview -->
+                    <div class="admin-card">
+                        <div class="card-header">
+                            <h2>✉️ Recent Messages</h2>
+                            <button class="btn-link" onclick="switchSection('messages')">View All →</button>
+                        </div>
+                        <div class="card-body" id="dashboard-messages-preview">
+                            <!-- Messages populated by JS -->
+                        </div>
                     </div>
-                    <div class="chat-window">
-                        <div class="chat-messages" id="admin-chat-messages">
-                            <div class="empty-state" id="chat-empty">
-                                <div class="icon">💬</div>
-                                <p>Select a conversation to start chatting</p>
+                    
+                    <!-- Active Chats Preview -->
+                    <div class="admin-card">
+                        <div class="card-header">
+                            <h2>💬 Active Chats</h2>
+                            <button class="btn-link" onclick="switchSection('chats')">View All →</button>
+                        </div>
+                        <div class="card-body" id="dashboard-chats-preview">
+                            <!-- Chats populated by JS -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- ==========================================
+                 SECTION: MESSAGES
+                 ========================================== -->
+            <section class="admin-section" id="section-messages">
+                <div class="admin-header">
+                    <h1>✉️ Messages</h1>
+                    <span class="header-subtitle">Customer inquiries and support requests</span>
+                </div>
+                
+                <div class="admin-grid messages-layout">
+                    <!-- Messages List -->
+                    <div class="admin-card">
+                        <div class="card-header">
+                            <h2>📥 Inbox</h2>
+                            <span class="badge badge-warning" id="unread-badge">5 unread</span>
+                        </div>
+                        <div class="card-body" id="messages-list">
+                            <!-- Messages populated by JS -->
+                        </div>
+                    </div>
+                    
+                    <!-- Message Reply Window -->
+                    <div class="admin-card message-reply-card">
+                        <div class="card-header">
+                            <h2 id="message-window-title">📧 Select a message</h2>
+                            <span class="message-email" id="message-email"></span>
+                        </div>
+                        <div class="message-window">
+                            <div class="message-content-area" id="message-content-area">
+                                <div class="empty-state" id="message-empty">
+                                    <div class="icon">📧</div>
+                                    <p>Select a message to view and reply</p>
+                                </div>
+                            </div>
+                            <div class="message-reply-area">
+                                <textarea class="message-reply-input" id="message-reply-input" placeholder="Type your reply..." disabled rows="3"></textarea>
+                                <button class="btn-send" id="message-send-btn" disabled>Send Reply</button>
                             </div>
                         </div>
-                        <div class="chat-input-area">
-                            <input type="text" class="chat-input" id="admin-chat-input" placeholder="Type your reply..." disabled>
-                            <button class="btn-send" id="admin-send-btn" disabled>Send</button>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- ==========================================
+                 SECTION: LIVE CHATS
+                 ========================================== -->
+            <section class="admin-section" id="section-chats">
+                <div class="admin-header">
+                    <h1>💬 Live Chats</h1>
+                    <span class="header-subtitle">Real-time customer conversations</span>
+                </div>
+                
+                <div class="admin-grid chats-layout">
+                    <!-- Chats List -->
+                    <div class="admin-card">
+                        <div class="card-header">
+                            <h2>🟢 Online Now</h2>
+                            <span class="badge badge-success" id="online-badge">2 online</span>
+                        </div>
+                        <div class="card-body" id="chats-list">
+                            <!-- Chats populated by JS -->
+                        </div>
+                    </div>
+                    
+                    <!-- Chat Window -->
+                    <div class="admin-card chat-card">
+                        <div class="card-header">
+                            <h2 id="chat-window-title">💬 Select a chat</h2>
+                            <span class="online-indicator" id="chat-online-status">● Online</span>
+                        </div>
+                        <div class="chat-window">
+                            <div class="chat-messages" id="admin-chat-messages">
+                                <div class="empty-state" id="chat-empty">
+                                    <div class="icon">💬</div>
+                                    <p>Select a conversation to start chatting</p>
+                                </div>
+                            </div>
+                            <div class="chat-input-area">
+                                <input type="text" class="chat-input" id="admin-chat-input" placeholder="Type your reply..." disabled>
+                                <button class="btn-send" id="admin-send-btn" disabled>Send</button>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            </section>
+            
+            <!-- ==========================================
+                 SECTION: USERS
+                 ========================================== -->
+            <section class="admin-section" id="section-users">
+                <div class="admin-header">
+                    <h1>👥 Users</h1>
+                    <span class="header-subtitle">Manage registered users and subscriptions</span>
+                </div>
+                
+                <!-- User Stats -->
+                <div class="admin-stats">
+                    <div class="admin-stat">
+                        <h3 id="users-total">156</h3>
+                        <p>Total Users</p>
+                    </div>
+                    <div class="admin-stat">
+                        <h3 id="users-pro">42</h3>
+                        <p>Pro Subscribers</p>
+                    </div>
+                    <div class="admin-stat">
+                        <h3 id="users-premium">18</h3>
+                        <p>Premium</p>
+                    </div>
+                    <div class="admin-stat">
+                        <h3 id="users-free">96</h3>
+                        <p>Free Users</p>
+                    </div>
+                </div>
+                
+                <!-- Users Table -->
+                <div class="admin-card">
+                    <div class="card-header">
+                        <h2>📋 User List</h2>
+                        <div class="search-box">
+                            <input type="text" id="user-search" placeholder="Search users...">
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="users-table-wrapper">
+                            <table class="users-table" id="users-table">
+                                <thead>
+                                    <tr>
+                                        <th>User</th>
+                                        <th>Email</th>
+                                        <th>Plan</th>
+                                        <th>Joined</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="users-table-body">
+                                    <!-- Users populated by JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- ==========================================
+                 SECTION: STRIPE MANAGEMENT
+                 ========================================== -->
+            <section class="admin-section" id="section-stripe">
+                <div class="admin-header">
+                    <h1>💳 Stripe Management</h1>
+                    <span class="header-subtitle">Manage payments, subscriptions, and billing</span>
+                </div>
+                
+                <!-- Stripe Stats -->
+                <div class="admin-stats">
+                    <div class="admin-stat">
+                        <h3 id="stripe-mrr">$1,247</h3>
+                        <p>Monthly Revenue</p>
+                    </div>
+                    <div class="admin-stat">
+                        <h3 id="stripe-subscribers">60</h3>
+                        <p>Active Subscribers</p>
+                    </div>
+                    <div class="admin-stat">
+                        <h3 id="stripe-churn">2.3%</h3>
+                        <p>Churn Rate</p>
+                    </div>
+                    <div class="admin-stat">
+                        <h3 id="stripe-ltv">$89</h3>
+                        <p>Avg LTV</p>
+                    </div>
+                </div>
+                
+                <!-- Stripe Quick Actions -->
+                <div class="quick-actions-row">
+                    <a href="https://dashboard.stripe.com/payments" target="_blank" class="quick-action">
+                        <span>💰</span> View Payments
+                    </a>
+                    <a href="https://dashboard.stripe.com/subscriptions" target="_blank" class="quick-action">
+                        <span>🔄</span> Subscriptions
+                    </a>
+                    <a href="https://dashboard.stripe.com/customers" target="_blank" class="quick-action">
+                        <span>👥</span> Customers
+                    </a>
+                    <a href="https://dashboard.stripe.com/invoices" target="_blank" class="quick-action">
+                        <span>📄</span> Invoices
+                    </a>
+                </div>
+                
+                <div class="admin-grid">
+                    <!-- Recent Transactions -->
+                    <div class="admin-card">
+                        <div class="card-header">
+                            <h2>💰 Recent Transactions</h2>
+                            <a href="https://dashboard.stripe.com/payments" target="_blank" class="btn-link">View in Stripe →</a>
+                        </div>
+                        <div class="card-body" id="stripe-transactions">
+                            <!-- Transactions populated by JS -->
+                        </div>
+                    </div>
+                    
+                    <!-- Subscription Plans -->
+                    <div class="admin-card">
+                        <div class="card-header">
+                            <h2>📦 Subscription Plans</h2>
+                            <a href="https://dashboard.stripe.com/products" target="_blank" class="btn-link">Manage Products →</a>
+                        </div>
+                        <div class="card-body">
+                            <div class="plan-item">
+                                <div class="plan-info">
+                                    <span class="plan-name">Starter</span>
+                                    <span class="plan-price">$4.99/mo</span>
+                                </div>
+                                <span class="plan-count" id="plan-starter-count">12 subscribers</span>
+                            </div>
+                            <div class="plan-item">
+                                <div class="plan-info">
+                                    <span class="plan-name">Pro</span>
+                                    <span class="plan-price">$9.99/mo</span>
+                                </div>
+                                <span class="plan-count" id="plan-pro-count">42 subscribers</span>
+                            </div>
+                            <div class="plan-item">
+                                <div class="plan-info">
+                                    <span class="plan-name">Premium</span>
+                                    <span class="plan-price">$14.99/mo</span>
+                                </div>
+                                <span class="plan-count" id="plan-premium-count">18 subscribers</span>
+                            </div>
+                            <div class="plan-item">
+                                <div class="plan-info">
+                                    <span class="plan-name">AI Pro Add-on</span>
+                                    <span class="plan-price">$9.99/mo</span>
+                                </div>
+                                <span class="plan-count" id="plan-ai-count">8 subscribers</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Stripe API Configuration -->
+                <div class="admin-card">
+                    <div class="card-header">
+                        <h2>🔧 Stripe Configuration</h2>
+                        <span class="config-status" id="stripe-config-status">⚠️ Test Mode</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="config-grid">
+                            <div class="config-item">
+                                <label>Publishable Key</label>
+                                <div class="api-key-input">
+                                    <input type="password" id="stripe-pk" placeholder="pk_test_..." value="">
+                                    <button class="btn-toggle-visibility" onclick="toggleKeyVisibility('stripe-pk')">👁️</button>
+                                </div>
+                            </div>
+                            <div class="config-item">
+                                <label>Secret Key</label>
+                                <div class="api-key-input">
+                                    <input type="password" id="stripe-sk" placeholder="sk_test_..." value="">
+                                    <button class="btn-toggle-visibility" onclick="toggleKeyVisibility('stripe-sk')">👁️</button>
+                                </div>
+                            </div>
+                            <div class="config-item">
+                                <label>Webhook Secret</label>
+                                <div class="api-key-input">
+                                    <input type="password" id="stripe-webhook" placeholder="whsec_..." value="">
+                                    <button class="btn-toggle-visibility" onclick="toggleKeyVisibility('stripe-webhook')">👁️</button>
+                                </div>
+                            </div>
+                            <div class="config-item full-width">
+                                <label>Webhook Endpoint URL</label>
+                                <div class="api-key-input">
+                                    <input type="text" id="stripe-webhook-url" placeholder="https://yourdomain.com/api/stripe/webhook" value="">
+                                    <button class="btn-copy" onclick="copyToClipboard('stripe-webhook-url')">📋</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="config-actions">
+                            <button class="btn-primary" onclick="saveStripeConfig()">💾 Save Configuration</button>
+                            <button class="btn-secondary" onclick="testStripeConnection()">🔌 Test Connection</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- ==========================================
+                 SECTION: API KEYS
+                 ========================================== -->
+            <section class="admin-section" id="section-api-keys">
+                <div class="admin-header">
+                    <h1>🔑 API Keys</h1>
+                    <span class="header-subtitle">Manage external service integrations</span>
+                </div>
+                
+                <!-- API Status Overview -->
+                <div class="api-status-grid">
+                    <div class="api-status-card" id="api-status-anthropic">
+                        <span class="api-icon">🤖</span>
+                        <div class="api-info">
+                            <h4>Anthropic (Claude)</h4>
+                            <span class="api-status-badge not-configured">Not Configured</span>
+                        </div>
+                    </div>
+                    <div class="api-status-card" id="api-status-twitter">
+                        <span class="api-icon">🐦</span>
+                        <div class="api-info">
+                            <h4>Twitter/X API</h4>
+                            <span class="api-status-badge not-configured">Not Configured</span>
+                        </div>
+                    </div>
+                    <div class="api-status-card" id="api-status-reddit">
+                        <span class="api-icon">🔴</span>
+                        <div class="api-info">
+                            <h4>Reddit API</h4>
+                            <span class="api-status-badge not-configured">Not Configured</span>
+                        </div>
+                    </div>
+                    <div class="api-status-card" id="api-status-email">
+                        <span class="api-icon">📧</span>
+                        <div class="api-info">
+                            <h4>Email Service</h4>
+                            <span class="api-status-badge not-configured">Not Configured</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- API Configuration Cards -->
+                <div class="api-config-grid">
+                    <!-- Anthropic/Claude API -->
+                    <div class="admin-card api-card">
+                        <div class="card-header">
+                            <h2>🤖 Anthropic (Claude AI)</h2>
+                            <span class="badge badge-info">Shadow AI</span>
+                        </div>
+                        <div class="card-body">
+                            <p class="api-description">Powers the Shadow AI chatbot for customer support and research.</p>
+                            <div class="config-item">
+                                <label>API Key</label>
+                                <div class="api-key-input">
+                                    <input type="password" id="api-anthropic" placeholder="sk-ant-..." data-api="anthropic">
+                                    <button class="btn-toggle-visibility" onclick="toggleKeyVisibility('api-anthropic')">👁️</button>
+                                </div>
+                            </div>
+                            <div class="config-item">
+                                <label>Model</label>
+                                <select id="anthropic-model">
+                                    <option value="claude-3-opus-20240229">Claude 3 Opus</option>
+                                    <option value="claude-3-sonnet-20240229" selected>Claude 3 Sonnet</option>
+                                    <option value="claude-3-haiku-20240307">Claude 3 Haiku</option>
+                                </select>
+                            </div>
+                            <button class="btn-save-api" onclick="saveApiKey('anthropic')">Save & Test</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Twitter/X API -->
+                    <div class="admin-card api-card">
+                        <div class="card-header">
+                            <h2>🐦 Twitter/X API</h2>
+                            <span class="badge badge-info">Shadow Ban Check</span>
+                        </div>
+                        <div class="card-body">
+                            <p class="api-description">Check Twitter shadow bans via official API.</p>
+                            <div class="config-item">
+                                <label>Bearer Token</label>
+                                <div class="api-key-input">
+                                    <input type="password" id="api-twitter-bearer" placeholder="Bearer token..." data-api="twitter">
+                                    <button class="btn-toggle-visibility" onclick="toggleKeyVisibility('api-twitter-bearer')">👁️</button>
+                                </div>
+                            </div>
+                            <div class="config-item">
+                                <label>API Key</label>
+                                <div class="api-key-input">
+                                    <input type="password" id="api-twitter-key" placeholder="API Key...">
+                                    <button class="btn-toggle-visibility" onclick="toggleKeyVisibility('api-twitter-key')">👁️</button>
+                                </div>
+                            </div>
+                            <div class="config-item">
+                                <label>API Secret</label>
+                                <div class="api-key-input">
+                                    <input type="password" id="api-twitter-secret" placeholder="API Secret...">
+                                    <button class="btn-toggle-visibility" onclick="toggleKeyVisibility('api-twitter-secret')">👁️</button>
+                                </div>
+                            </div>
+                            <button class="btn-save-api" onclick="saveApiKey('twitter')">Save & Test</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Reddit API -->
+                    <div class="admin-card api-card">
+                        <div class="card-header">
+                            <h2>🔴 Reddit API</h2>
+                            <span class="badge badge-info">Shadow Ban Check</span>
+                        </div>
+                        <div class="card-body">
+                            <p class="api-description">Check Reddit shadow bans and account status.</p>
+                            <div class="config-item">
+                                <label>Client ID</label>
+                                <div class="api-key-input">
+                                    <input type="password" id="api-reddit-client" placeholder="Client ID..." data-api="reddit">
+                                    <button class="btn-toggle-visibility" onclick="toggleKeyVisibility('api-reddit-client')">👁️</button>
+                                </div>
+                            </div>
+                            <div class="config-item">
+                                <label>Client Secret</label>
+                                <div class="api-key-input">
+                                    <input type="password" id="api-reddit-secret" placeholder="Client Secret...">
+                                    <button class="btn-toggle-visibility" onclick="toggleKeyVisibility('api-reddit-secret')">👁️</button>
+                                </div>
+                            </div>
+                            <button class="btn-save-api" onclick="saveApiKey('reddit')">Save & Test</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Email Service -->
+                    <div class="admin-card api-card">
+                        <div class="card-header">
+                            <h2>📧 Email Service (SendGrid/Mailgun)</h2>
+                            <span class="badge badge-info">Notifications</span>
+                        </div>
+                        <div class="card-body">
+                            <p class="api-description">Send alert emails and notifications to users.</p>
+                            <div class="config-item">
+                                <label>Service</label>
+                                <select id="email-service">
+                                    <option value="sendgrid">SendGrid</option>
+                                    <option value="mailgun">Mailgun</option>
+                                    <option value="ses">Amazon SES</option>
+                                </select>
+                            </div>
+                            <div class="config-item">
+                                <label>API Key</label>
+                                <div class="api-key-input">
+                                    <input type="password" id="api-email" placeholder="API Key..." data-api="email">
+                                    <button class="btn-toggle-visibility" onclick="toggleKeyVisibility('api-email')">👁️</button>
+                                </div>
+                            </div>
+                            <div class="config-item">
+                                <label>From Email</label>
+                                <input type="email" id="email-from" placeholder="alerts@shadowbancheck.io">
+                            </div>
+                            <button class="btn-save-api" onclick="saveApiKey('email')">Save & Test</button>
+                        </div>
+                    </div>
+                    
+                    <!-- SMS Service -->
+                    <div class="admin-card api-card">
+                        <div class="card-header">
+                            <h2>📱 SMS Service (Twilio)</h2>
+                            <span class="badge badge-info">Notifications</span>
+                        </div>
+                        <div class="card-body">
+                            <p class="api-description">Send SMS alerts for shadow ban notifications.</p>
+                            <div class="config-item">
+                                <label>Account SID</label>
+                                <div class="api-key-input">
+                                    <input type="password" id="api-twilio-sid" placeholder="ACxxxxxxx..." data-api="twilio">
+                                    <button class="btn-toggle-visibility" onclick="toggleKeyVisibility('api-twilio-sid')">👁️</button>
+                                </div>
+                            </div>
+                            <div class="config-item">
+                                <label>Auth Token</label>
+                                <div class="api-key-input">
+                                    <input type="password" id="api-twilio-token" placeholder="Auth Token...">
+                                    <button class="btn-toggle-visibility" onclick="toggleKeyVisibility('api-twilio-token')">👁️</button>
+                                </div>
+                            </div>
+                            <div class="config-item">
+                                <label>From Phone</label>
+                                <input type="tel" id="twilio-from" placeholder="+1234567890">
+                            </div>
+                            <button class="btn-save-api" onclick="saveApiKey('twilio')">Save & Test</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Database -->
+                    <div class="admin-card api-card">
+                        <div class="card-header">
+                            <h2>🗄️ Database</h2>
+                            <span class="badge badge-info">Storage</span>
+                        </div>
+                        <div class="card-body">
+                            <p class="api-description">Database connection for user data and analytics.</p>
+                            <div class="config-item">
+                                <label>Type</label>
+                                <select id="db-type">
+                                    <option value="mongodb">MongoDB</option>
+                                    <option value="postgresql">PostgreSQL</option>
+                                    <option value="mysql">MySQL</option>
+                                    <option value="supabase">Supabase</option>
+                                    <option value="firebase">Firebase</option>
+                                </select>
+                            </div>
+                            <div class="config-item">
+                                <label>Connection String</label>
+                                <div class="api-key-input">
+                                    <input type="password" id="api-db-url" placeholder="mongodb+srv://..." data-api="database">
+                                    <button class="btn-toggle-visibility" onclick="toggleKeyVisibility('api-db-url')">👁️</button>
+                                </div>
+                            </div>
+                            <button class="btn-save-api" onclick="saveApiKey('database')">Save & Test</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Environment Variables Export -->
+                <div class="admin-card">
+                    <div class="card-header">
+                        <h2>📋 Export Environment Variables</h2>
+                        <button class="btn-secondary" onclick="exportEnvVars()">📥 Export .env</button>
+                    </div>
+                    <div class="card-body">
+                        <p class="api-description">Generate a .env file with all your configured API keys for deployment.</p>
+                        <pre class="env-preview" id="env-preview"># Environment variables will appear here after saving API keys</pre>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- ==========================================
+                 SECTION: ANALYTICS
+                 ========================================== -->
+            <section class="admin-section" id="section-analytics">
+                <div class="admin-header">
+                    <h1>📈 Analytics</h1>
+                    <span class="header-subtitle">Site performance and user insights</span>
+                </div>
+                
+                <!-- Analytics Stats -->
+                <div class="admin-stats">
+                    <div class="admin-stat">
+                        <h3 id="analytics-visitors">2,847</h3>
+                        <p>Visitors (30d)</p>
+                    </div>
+                    <div class="admin-stat">
+                        <h3 id="analytics-checks">1,234</h3>
+                        <p>Checks Run</p>
+                    </div>
+                    <div class="admin-stat">
+                        <h3 id="analytics-conversion">3.2%</h3>
+                        <p>Conversion Rate</p>
+                    </div>
+                    <div class="admin-stat">
+                        <h3 id="analytics-ai">456</h3>
+                        <p>AI Questions</p>
+                    </div>
+                </div>
+                
+                <div class="admin-grid">
+                    <!-- Platform Breakdown -->
+                    <div class="admin-card">
+                        <div class="card-header">
+                            <h2>📊 Checks by Platform</h2>
+                        </div>
+                        <div class="card-body">
+                            <div class="platform-stat">
+                                <span class="platform-name">🐦 Twitter/X</span>
+                                <div class="progress-bar"><div class="progress" style="width: 45%"></div></div>
+                                <span class="platform-count">556</span>
+                            </div>
+                            <div class="platform-stat">
+                                <span class="platform-name">📸 Instagram</span>
+                                <div class="progress-bar"><div class="progress" style="width: 30%"></div></div>
+                                <span class="platform-count">370</span>
+                            </div>
+                            <div class="platform-stat">
+                                <span class="platform-name">🎵 TikTok</span>
+                                <div class="progress-bar"><div class="progress" style="width: 15%"></div></div>
+                                <span class="platform-count">185</span>
+                            </div>
+                            <div class="platform-stat">
+                                <span class="platform-name">🔴 Reddit</span>
+                                <div class="progress-bar"><div class="progress" style="width: 10%"></div></div>
+                                <span class="platform-count">123</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Top Pages -->
+                    <div class="admin-card">
+                        <div class="card-header">
+                            <h2>📄 Top Pages</h2>
+                        </div>
+                        <div class="card-body">
+                            <div class="page-stat">
+                                <span class="page-name">/</span>
+                                <span class="page-views">1,234 views</span>
+                            </div>
+                            <div class="page-stat">
+                                <span class="page-name">/checker</span>
+                                <span class="page-views">876 views</span>
+                            </div>
+                            <div class="page-stat">
+                                <span class="page-name">/hashtag-checker</span>
+                                <span class="page-views">432 views</span>
+                            </div>
+                            <div class="page-stat">
+                                <span class="page-name">/dashboard</span>
+                                <span class="page-views">305 views</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- ==========================================
+                 SECTION: SETTINGS
+                 ========================================== -->
+            <section class="admin-section" id="section-settings">
+                <div class="admin-header">
+                    <h1>⚙️ Settings</h1>
+                    <span class="header-subtitle">Admin account and site configuration</span>
+                </div>
+                
+                <div class="admin-grid settings-grid">
+                    <!-- Admin Profile -->
+                    <div class="admin-card">
+                        <div class="card-header">
+                            <h2>👤 Admin Profile</h2>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-group">
+                                <label>Name</label>
+                                <input type="text" id="admin-name" value="Andrew" class="form-input">
+                            </div>
+                            <div class="form-group">
+                                <label>Email</label>
+                                <input type="email" id="admin-email" value="andrew@ghost081280.com" class="form-input">
+                            </div>
+                            <div class="form-group">
+                                <label>Password</label>
+                                <input type="password" id="admin-password" placeholder="••••••••" class="form-input">
+                            </div>
+                            <button class="btn-primary" onclick="saveAdminProfile()">Save Profile</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Site Settings -->
+                    <div class="admin-card">
+                        <div class="card-header">
+                            <h2>🌐 Site Settings</h2>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-group">
+                                <label>Site Name</label>
+                                <input type="text" id="site-name" value="ShadowBanCheck.io" class="form-input">
+                            </div>
+                            <div class="form-group">
+                                <label>Support Email</label>
+                                <input type="email" id="support-email" value="support@shadowbancheck.io" class="form-input">
+                            </div>
+                            <div class="form-group toggle-group">
+                                <label>Maintenance Mode</label>
+                                <label class="toggle">
+                                    <input type="checkbox" id="maintenance-mode">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                            <button class="btn-primary" onclick="saveSiteSettings()">Save Settings</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Notification Settings -->
+                    <div class="admin-card">
+                        <div class="card-header">
+                            <h2>🔔 Notifications</h2>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-group toggle-group">
+                                <label>New User Signup</label>
+                                <label class="toggle">
+                                    <input type="checkbox" id="notify-signup" checked>
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                            <div class="form-group toggle-group">
+                                <label>New Subscription</label>
+                                <label class="toggle">
+                                    <input type="checkbox" id="notify-subscription" checked>
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                            <div class="form-group toggle-group">
+                                <label>Support Messages</label>
+                                <label class="toggle">
+                                    <input type="checkbox" id="notify-messages" checked>
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                            <div class="form-group toggle-group">
+                                <label>Failed Payments</label>
+                                <label class="toggle">
+                                    <input type="checkbox" id="notify-payments" checked>
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Danger Zone -->
+                    <div class="admin-card danger-card">
+                        <div class="card-header">
+                            <h2>⚠️ Danger Zone</h2>
+                        </div>
+                        <div class="card-body">
+                            <button class="btn-danger" onclick="clearCache()">🗑️ Clear Cache</button>
+                            <button class="btn-danger" onclick="resetDemo()">🔄 Reset Demo Data</button>
+                            <button class="btn-danger" onclick="exportData()">📥 Export All Data</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
         </main>
     </div>
     
@@ -113,6 +834,7 @@
         <span id="toast-message">Success</span>
     </div>
     
+    <!-- Scripts -->
     <script src="js/admin-dashboard.js"></script>
     <script src="js/shadow-ai-admin.js"></script>
 </body>

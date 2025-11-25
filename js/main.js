@@ -95,7 +95,24 @@ const platformData = [
     { name: 'Domain', icon: '🌐', category: 'other', status: 'soon' },
     { name: 'IP Address', icon: '🖥️', category: 'other', status: 'soon' },
     { name: 'Google Business', icon: '📍', category: 'other', status: 'soon' },
-    { name: 'Website', icon: '🔗', category: 'other', status: 'soon' }
+    { 
+        name: 'Bing', 
+        icon: '🔎', 
+        category: 'other', 
+        status: 'soon',
+        checks: [
+            'Site indexing status (are your pages indexed?)',
+            'Search result visibility',
+            'Crawler access and errors',
+            'Domain reputation score',
+            'Spam flag detection',
+            'Content quality penalties',
+            'Manual action notifications',
+            'Backlink profile analysis',
+            'DuckDuckGo visibility (Bing-powered)',
+            'Webmaster tools integration status'
+        ]
+    }
 ];
 
 // Export for use in other files
@@ -610,35 +627,12 @@ function generateHashtagFactors(hashtags) {
 }
 
 function getDataSources(platform) {
-    const sources = {
-        twitter: [
-            { icon: '🐦', title: 'Twitter/X API v2', desc: 'QFD status, search visibility, logged-out test' },
-            { icon: '📊', title: 'Engagement Analysis', desc: 'Baseline comparison, velocity patterns' },
-            { icon: '🔍', title: 'shadowban.eu', desc: 'Third-party verification service' }
-        ],
-        reddit: [
-            { icon: '🤖', title: 'Reddit API', desc: '/about.json endpoint (404 = shadowbanned)' },
-            { icon: '👤', title: 'Profile Check', desc: 'Profile accessibility test' },
-            { icon: '💬', title: 'Comment Analysis', desc: 'Visibility in thread testing' }
-        ],
-        instagram: [
-            { icon: '📸', title: 'Instagram API', desc: 'Explore eligibility, profile status' },
-            { icon: '#️⃣', title: 'Hashtag Database', desc: '500+ banned/restricted hashtags' },
-            { icon: '📈', title: 'Reach Analysis', desc: 'Engagement pattern detection' }
-        ],
-        tiktok: [
-            { icon: '🎵', title: 'TikTok Analysis', desc: 'FYP eligibility, shadow ban indicators' },
-            { icon: '#️⃣', title: 'Hashtag Database', desc: '300+ restricted hashtags' },
-            { icon: '📊', title: 'View Analysis', desc: 'View velocity patterns' }
-        ],
-        default: [
-            { icon: '🔍', title: 'Platform API', desc: 'Account status and visibility checks' },
-            { icon: '#️⃣', title: 'Hashtag Database', desc: 'Banned/restricted hashtag detection' },
-            { icon: '📊', title: 'Pattern Analysis', desc: 'Engagement and reach metrics' }
-        ]
-    };
-    
-    return sources[platform.key] || sources.default;
+    // Universal data sources - our Engine collects from multiple places
+    return [
+        { icon: '🔌', title: 'Platform APIs', desc: 'Direct integration where available' },
+        { icon: '🤖', title: 'AI Web Analysis', desc: '3rd party scraping & pattern detection' },
+        { icon: '📊', title: 'Historical Data', desc: 'Baseline comparison & trend analysis' }
+    ];
 }
 
 function renderPowerResults(results) {

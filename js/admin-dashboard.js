@@ -97,7 +97,11 @@ const activeChats = [
 
 // State
 let currentChat = null;
-let isOnline = true;
+let isOnline = localStorage.getItem('admin_online') !== 'false'; // Default to true
+
+// Set initial online status in localStorage
+localStorage.setItem('admin_online', isOnline ? 'true' : 'false');
+localStorage.setItem('admin_last_seen', Date.now().toString());
 
 // ============================================
 // RENDER FUNCTIONS
@@ -303,6 +307,10 @@ function sendAdminMessage() {
 // ============================================
 function toggleStatus() {
     isOnline = !isOnline;
+    
+    // Save to localStorage so user dashboard can check
+    localStorage.setItem('admin_online', isOnline ? 'true' : 'false');
+    localStorage.setItem('admin_last_seen', Date.now().toString());
     
     const dot = document.getElementById('status-dot');
     const text = document.getElementById('status-text');

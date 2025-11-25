@@ -867,23 +867,9 @@ function initCookiePopup() {
 }
 
 /* =============================================================================
-   SHADOW AI BUTTON HANDLERS
+   SHADOW AI BUTTON HANDLERS - Handled by shadow-ai.js
    ============================================================================= */
-function initShadowAIButtons() {
-    // Try AI button in spotlight
-    document.getElementById('try-ai-btn')?.addEventListener('click', function() {
-        // Scroll to demo chat
-        const demoChat = document.querySelector('.demo-chat');
-        if (demoChat) {
-            demoChat.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
-    });
-    
-    // Open Shadow AI in contact
-    document.getElementById('open-shadow-ai')?.addEventListener('click', function() {
-        showToast('Shadow AI chatbot coming soon!');
-    });
-}
+// Note: Shadow AI buttons (#try-ai-btn, #open-shadow-ai) are handled by shadow-ai.js
 
 /* =============================================================================
    INITIALIZE ALL
@@ -903,7 +889,8 @@ document.addEventListener('DOMContentLoaded', function() {
     initSocialShare();
     initCookiePopup();
     initDemoChatAnimation();
-    initShadowAIButtons();
+    
+    // Shadow AI buttons handled by shadow-ai.js
     
     // Update search counter display
     updateSearchCounterDisplay();

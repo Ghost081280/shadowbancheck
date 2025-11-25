@@ -9,7 +9,7 @@ function buildPlatformGrid() {
     const grid = document.getElementById('platform-grid');
     if (!grid || !window.platformData) return;
     
-    // CRITICAL: Clear existing platforms first to prevent duplicates
+    // Clear any existing content first
     grid.innerHTML = '';
     
     const platforms = window.platformData;
@@ -44,7 +44,6 @@ function getRemainingSearches() {
     const today = new Date().toDateString();
     
     if (data.date !== today) {
-        // Reset for new day
         return MAX_FREE_SEARCHES;
     }
     
@@ -56,13 +55,11 @@ function incrementSearchCount() {
     const today = new Date().toDateString();
     
     if (data.date !== today) {
-        // New day
         localStorage.setItem(STORAGE_KEY, JSON.stringify({
             date: today,
             count: 1
         }));
     } else {
-        // Increment
         localStorage.setItem(STORAGE_KEY, JSON.stringify({
             date: today,
             count: (data.count || 0) + 1
@@ -95,7 +92,6 @@ function showPlatformModal(platformKey) {
         return;
     }
     
-    // Show appropriate modal based on platform
     if (platform.name === 'Twitter/X') {
         showTwitterModal();
     } else if (platform.name === 'Reddit') {
@@ -122,7 +118,6 @@ function showTwitterModal() {
                     <li>✓ Search visibility status</li>
                     <li>✓ Reply deboosting (QFD)</li>
                     <li>✓ Hashtag reach analysis</li>
-                    <li>✓ Profile accessibility</li>
                     <li>✓ Engagement rate patterns</li>
                 </ul>
             </div>
@@ -142,12 +137,8 @@ function showTwitterModal() {
     modal.classList.remove('hidden');
     document.body.style.overflow = 'hidden';
     
-    // Focus input
-    setTimeout(() => {
-        document.getElementById('modal-username-input')?.focus();
-    }, 100);
+    setTimeout(() => document.getElementById('modal-username-input')?.focus(), 100);
     
-    // Handle form submission
     const checkBtn = document.getElementById('modal-check-btn');
     const usernameInput = document.getElementById('modal-username-input');
     
@@ -192,7 +183,6 @@ function showRedditModal() {
                 <ul>
                     <li>✓ Site-wide shadowban status</li>
                     <li>✓ Subreddit-specific bans</li>
-                    <li>✓ AutoModerator filters</li>
                     <li>✓ Post/comment visibility</li>
                     <li>✓ Karma restrictions</li>
                 </ul>
@@ -213,9 +203,7 @@ function showRedditModal() {
     modal.classList.remove('hidden');
     document.body.style.overflow = 'hidden';
     
-    setTimeout(() => {
-        document.getElementById('modal-username-input')?.focus();
-    }, 100);
+    setTimeout(() => document.getElementById('modal-username-input')?.focus(), 100);
     
     const checkBtn = document.getElementById('modal-check-btn');
     const usernameInput = document.getElementById('modal-username-input');
@@ -259,8 +247,7 @@ function showEmailModal() {
             <div class="modal-checks-preview">
                 <h4>What we'll check:</h4>
                 <ul>
-                    <li>✓ Spamhaus blacklist status</li>
-                    <li>✓ SURBL database check</li>
+                    <li>✓ Blacklist status</li>
                     <li>✓ IP reputation score</li>
                     <li>✓ DKIM/SPF/DMARC setup</li>
                     <li>✓ Deliverability probability</li>
@@ -268,7 +255,7 @@ function showEmailModal() {
             </div>
             
             <div class="modal-input-group">
-                <input type="email" id="modal-email-input" placeholder="Enter email@domain.com or domain.com..." />
+                <input type="email" id="modal-email-input" placeholder="Enter email@domain.com..." />
             </div>
             
             <button class="btn btn-primary btn-full" id="modal-check-btn">
@@ -282,9 +269,7 @@ function showEmailModal() {
     modal.classList.remove('hidden');
     document.body.style.overflow = 'hidden';
     
-    setTimeout(() => {
-        document.getElementById('modal-email-input')?.focus();
-    }, 100);
+    setTimeout(() => document.getElementById('modal-email-input')?.focus(), 100);
     
     const checkBtn = document.getElementById('modal-check-btn');
     const emailInput = document.getElementById('modal-email-input');
@@ -352,11 +337,10 @@ function showUpgradeModal() {
             
             <div class="upgrade-benefits" style="background: var(--bg); border-radius: var(--radius-md); padding: var(--space-lg); margin: var(--space-lg) 0; text-align: left;">
                 <h4 style="margin-bottom: var(--space-md);">Pro Benefits:</h4>
-                <p style="padding: var(--space-xs) 0;">✓ Unlimited shadow ban checks</p>
-                <p style="padding: var(--space-xs) 0;">✓ 24/7 account monitoring</p>
-                <p style="padding: var(--space-xs) 0;">✓ Instant email alerts</p>
+                <p style="padding: var(--space-xs) 0;">✓ Unlimited checks</p>
+                <p style="padding: var(--space-xs) 0;">✓ 24/7 monitoring</p>
+                <p style="padding: var(--space-xs) 0;">✓ Instant alerts</p>
                 <p style="padding: var(--space-xs) 0;">✓ Historical tracking</p>
-                <p style="padding: var(--space-xs) 0;">✓ Priority support</p>
             </div>
             
             <a href="index.html#pricing" class="btn btn-primary btn-full">
@@ -396,20 +380,14 @@ function setupModalCloseHandlers(modal) {
 }
 
 /* =============================================================================
-   RUN CHECK & REDIRECT TO RESULTS
+   RUN CHECK & REDIRECT
    ============================================================================= */
 function runCheck(platform, identifier) {
-    // Show checking overlay
     showCheckingState(platform);
     
-    // Generate demo results
     setTimeout(() => {
         const results = generateDemoResults(platform, identifier);
-        
-        // Store in sessionStorage
         sessionStorage.setItem('shadowban_results', JSON.stringify(results));
-        
-        // Redirect to results page
         window.location.href = 'results.html';
     }, 2500);
 }
@@ -417,141 +395,52 @@ function runCheck(platform, identifier) {
 function generateDemoResults(platform, identifier) {
     const random = Math.random();
     
-    // Generate probability score
     let probability, status, statusText;
     if (random < 0.65) {
-        // Clean
-        probability = Math.floor(Math.random() * 10) + 90; // 90-100
+        probability = Math.floor(Math.random() * 10) + 90;
         status = 'clean';
         statusText = 'No Shadow Ban Detected';
     } else if (random < 0.85) {
-        // Warning
-        probability = Math.floor(Math.random() * 25) + 60; // 60-85
+        probability = Math.floor(Math.random() * 25) + 60;
         status = 'warning';
         statusText = 'Potential Issues Detected';
     } else {
-        // Restricted
-        probability = Math.floor(Math.random() * 40) + 20; // 20-60
+        probability = Math.floor(Math.random() * 40) + 20;
         status = 'restricted';
         statusText = 'Shadow Ban Likely';
     }
     
-    // Platform-specific checks
     let checks = [];
     if (platform === 'Twitter/X') {
         checks = [
-            {
-                name: 'Search Visibility',
-                status: random < 0.7 ? 'passed' : 'warning',
-                description: random < 0.7 ? 'Account appears in search results' : 'Reduced search visibility detected',
-                citation: 'Twitter/X API v2 search endpoint'
-            },
-            {
-                name: 'Reply Visibility (QFD)',
-                status: random < 0.75 ? 'passed' : 'failed',
-                description: random < 0.75 ? 'Replies visible to all users' : 'Quality Filter restriction active',
-                citation: 'Third-party QFD detection API'
-            },
-            {
-                name: 'Hashtag Reach',
-                status: random < 0.65 ? 'passed' : 'warning',
-                description: random < 0.65 ? 'Hashtags working normally' : 'Some hashtags may be suppressed',
-                citation: 'Hashtag search crawl + API comparison'
-            },
-            {
-                name: 'Engagement Rate',
-                status: random < 0.7 ? 'passed' : 'warning',
-                description: random < 0.7 ? 'Normal engagement patterns' : 'Below-average engagement detected',
-                citation: 'Historical baseline comparison'
-            }
+            { name: 'Search Visibility', status: random < 0.7 ? 'passed' : 'warning', description: random < 0.7 ? 'Account appears in search' : 'Reduced visibility', citation: 'Twitter/X API v2 search endpoint' },
+            { name: 'Reply Visibility (QFD)', status: random < 0.75 ? 'passed' : 'failed', description: random < 0.75 ? 'Replies visible' : 'Quality Filter active', citation: 'Third-party QFD detection API' },
+            { name: 'Hashtag Reach', status: random < 0.65 ? 'passed' : 'warning', description: random < 0.65 ? 'Hashtags working' : 'Some suppressed', citation: 'Hashtag search crawl' },
+            { name: 'Engagement Rate', status: random < 0.7 ? 'passed' : 'warning', description: random < 0.7 ? 'Normal patterns' : 'Below average', citation: 'Historical baseline' }
         ];
     } else if (platform === 'Reddit') {
         checks = [
-            {
-                name: 'Site-wide Shadowban',
-                status: random < 0.8 ? 'passed' : 'failed',
-                description: random < 0.8 ? 'Account is not site-wide shadowbanned' : 'Site-wide shadowban detected',
-                citation: 'Reddit API + /r/ShadowBan verification'
-            },
-            {
-                name: 'Subreddit Bans',
-                status: random < 0.75 ? 'passed' : 'warning',
-                description: random < 0.75 ? 'No subreddit bans detected' : 'Banned from some subreddits',
-                citation: 'Subreddit API queries'
-            },
-            {
-                name: 'Post Visibility',
-                status: random < 0.7 ? 'passed' : 'warning',
-                description: random < 0.7 ? 'Posts visible normally' : 'Some posts may be auto-hidden',
-                citation: 'New post crawl test'
-            },
-            {
-                name: 'Karma Status',
-                status: random < 0.85 ? 'passed' : 'warning',
-                description: random < 0.85 ? 'Karma is within normal range' : 'Low karma may trigger filters',
-                citation: 'Reddit API user endpoint'
-            }
+            { name: 'Site-wide Shadowban', status: random < 0.8 ? 'passed' : 'failed', description: random < 0.8 ? 'Not shadowbanned' : 'Shadowbanned', citation: 'Reddit API + /r/ShadowBan' },
+            { name: 'Subreddit Bans', status: random < 0.75 ? 'passed' : 'warning', description: random < 0.75 ? 'No bans' : 'Some bans', citation: 'Subreddit API' },
+            { name: 'Post Visibility', status: random < 0.7 ? 'passed' : 'warning', description: random < 0.7 ? 'Posts visible' : 'Some hidden', citation: 'Post crawl test' },
+            { name: 'Karma Status', status: random < 0.85 ? 'passed' : 'warning', description: random < 0.85 ? 'Normal karma' : 'Low karma', citation: 'Reddit API' }
         ];
     } else if (platform === 'Email') {
         checks = [
-            {
-                name: 'Blacklist Status',
-                status: random < 0.8 ? 'passed' : 'failed',
-                description: random < 0.8 ? 'Not listed on major blacklists' : 'Found on Spamhaus or SURBL',
-                citation: 'Spamhaus ZEN + SURBL multi query'
-            },
-            {
-                name: 'IP Reputation',
-                status: random < 0.75 ? 'passed' : 'warning',
-                description: random < 0.75 ? 'Good sender reputation score' : 'Moderate reputation concerns',
-                citation: 'Sender Score + Talos Intelligence'
-            },
-            {
-                name: 'Authentication Setup',
-                status: random < 0.85 ? 'passed' : 'warning',
-                description: random < 0.85 ? 'DKIM, SPF, DMARC configured' : 'Missing authentication records',
-                citation: 'DNS TXT record lookup'
-            },
-            {
-                name: 'Deliverability',
-                status: random < 0.7 ? 'passed' : 'warning',
-                description: random < 0.7 ? 'High inbox placement probability' : 'May land in spam folders',
-                citation: 'GlockApps deliverability test'
-            }
+            { name: 'Blacklist Status', status: random < 0.8 ? 'passed' : 'failed', description: random < 0.8 ? 'Not blacklisted' : 'On blacklist', citation: 'Spamhaus ZEN + SURBL' },
+            { name: 'IP Reputation', status: random < 0.75 ? 'passed' : 'warning', description: random < 0.75 ? 'Good reputation' : 'Moderate concerns', citation: 'Sender Score' },
+            { name: 'Authentication', status: random < 0.85 ? 'passed' : 'warning', description: random < 0.85 ? 'Configured' : 'Missing records', citation: 'DNS TXT lookup' },
+            { name: 'Deliverability', status: random < 0.7 ? 'passed' : 'warning', description: random < 0.7 ? 'High placement' : 'May hit spam', citation: 'GlockApps test' }
         ];
     }
     
-    return {
-        platform,
-        identifier,
-        timestamp: new Date().toISOString(),
-        probability,
-        status,
-        statusText,
-        checks,
-        recommendations: generateRecommendations(status)
-    };
-}
-
-function generateRecommendations(status) {
-    if (status === 'clean') {
-        return [
-            { type: 'success', text: 'Your account is performing well. Keep following platform guidelines.' },
-            { type: 'info', text: 'Consider setting up monitoring alerts to catch future issues early.' }
-        ];
-    } else if (status === 'warning') {
-        return [
-            { type: 'warning', text: 'Review recent content for potential guideline violations.' },
-            { type: 'warning', text: 'Audit your hashtags and links for restricted content.' },
-            { type: 'info', text: 'Monitor engagement over the next 48-72 hours for improvements.' }
-        ];
-    } else {
-        return [
-            { type: 'danger', text: 'Remove any content that may violate platform guidelines immediately.' },
-            { type: 'warning', text: 'Submit an appeal through the platform if you believe this is an error.' },
-            { type: 'info', text: 'Most restrictions lift within 14-28 days with good behavior.' }
-        ];
-    }
+    const recommendations = status === 'clean' 
+        ? [{ type: 'success', text: 'Account performing well. Keep following guidelines.' }, { type: 'info', text: 'Consider setting up monitoring alerts.' }]
+        : status === 'warning'
+        ? [{ type: 'warning', text: 'Review recent content for violations.' }, { type: 'info', text: 'Monitor engagement over 48-72 hours.' }]
+        : [{ type: 'danger', text: 'Remove violating content immediately.' }, { type: 'warning', text: 'Submit an appeal if this is an error.' }];
+    
+    return { platform, identifier, timestamp: new Date().toISOString(), results: { probability, status, statusText, checks, recommendations } };
 }
 
 function showCheckingState(platform) {
@@ -561,61 +450,41 @@ function showCheckingState(platform) {
         <div class="checking-content">
             <div class="checking-spinner"></div>
             <h3>Analyzing ${platform}...</h3>
-            <p>Querying APIs, testing visibility, calculating probability score...</p>
+            <p>Querying APIs, testing visibility...</p>
         </div>
     `;
     document.body.appendChild(overlay);
 }
 
 /* =============================================================================
-   AUTO-OPEN MODAL FROM URL PARAMETER
-   ============================================================================= */
-function checkUrlParams() {
-    const params = new URLSearchParams(window.location.search);
-    const platform = params.get('platform');
-    
-    if (platform) {
-        // Wait for DOM and platform data to load
-        setTimeout(() => {
-            showPlatformModal(platform);
-        }, 500);
-    }
-}
-
-/* =============================================================================
    INITIALIZE
    ============================================================================= */
-let gridBuilt = false; // Prevent double initialization
-
 document.addEventListener('DOMContentLoaded', function() {
-    // Build platform grid from shared data
-    if (window.platformData && !gridBuilt) {
+    // Build grid once platformData is available
+    if (window.platformData) {
         buildPlatformGrid();
-        gridBuilt = true;
-    } else if (!window.platformData) {
-        // Wait for shared data to load
-        document.addEventListener('sharedComponentsLoaded', function() {
-            if (!gridBuilt) {
-                buildPlatformGrid();
-                gridBuilt = true;
-            }
+    } else {
+        window.addEventListener('load', () => {
+            if (window.platformData) buildPlatformGrid();
         });
     }
     
-    // Update search counter
     updateSearchCounter();
     
-    // Platform grid click handlers
+    // Click handler for platforms
     document.addEventListener('click', function(e) {
         const platformItem = e.target.closest('.platform-item');
         if (platformItem) {
-            const platform = platformItem.dataset.platform;
-            showPlatformModal(platform);
+            showPlatformModal(platformItem.dataset.platform);
         }
     });
     
-    // Check for URL parameters (from index page)
-    checkUrlParams();
+    // Check URL params
+    const params = new URLSearchParams(window.location.search);
+    const platform = params.get('platform');
+    if (platform) {
+        setTimeout(() => showPlatformModal(platform), 500);
+    }
     
-    console.log('✅ Checker page initialized');
+    console.log('✅ Checker initialized');
 });

@@ -32,13 +32,12 @@ let conversationHistory = [];
 // USAGE TRACKING
 // ============================================
 function getUsageData() {
-    const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+    const today = new Date().toISOString().split('T')[0];
     const stored = localStorage.getItem(STORAGE_KEY);
     
     if (stored) {
         try {
             const data = JSON.parse(stored);
-            // Reset if different day
             if (data.date !== today) {
                 return { date: today, questionsUsed: 0 };
             }
@@ -68,15 +67,13 @@ function getCurrentUsage() {
 }
 
 function getPlanLimit() {
-    // Try to get from userData (set by dashboard.js)
     if (window.userData && window.userData.plan && window.userData.plan.aiPerDay) {
         return window.userData.plan.aiPerDay;
     }
-    // Fallback to plan name lookup
     if (window.userData && window.userData.plan && window.userData.plan.name) {
         return PLAN_LIMITS[window.userData.plan.name] || 3;
     }
-    return 3; // Default free limit
+    return 3;
 }
 
 function getPlanName() {
@@ -101,12 +98,10 @@ function updateUsageDisplay() {
     const used = getCurrentUsage();
     const limit = getPlanLimit();
     
-    // Update chat header counter
     const counter = document.getElementById('shadow-ai-counter');
     if (counter) {
         counter.textContent = `${used}/${limit} today`;
         
-        // Color code based on usage
         if (used >= limit) {
             counter.classList.add('limit-reached');
             counter.classList.remove('limit-warning');
@@ -118,18 +113,15 @@ function updateUsageDisplay() {
         }
     }
     
-    // Update sidebar AI counter
     const sidebarAI = document.getElementById('sidebar-ai');
     if (sidebarAI) {
         sidebarAI.textContent = `${used}/${limit}`;
     }
     
-    // Sync with userData if available
     if (window.userData && window.userData.usage) {
         window.userData.usage.aiUsed = used;
     }
     
-    // Dispatch event for dashboard to listen
     window.dispatchEvent(new CustomEvent('shadowai-usage-updated', { 
         detail: { used, limit, remaining: Math.max(0, limit - used) }
     }));
@@ -139,11 +131,10 @@ function updateUsageDisplay() {
 // WIDGET HTML
 // ============================================
 function createWidget() {
-    console.log('📍 createWidget called');
+    console.log('🤖 createWidget called');
     
-    // Check if widget already exists
     if (document.querySelector('.shadow-ai-container')) {
-        console.log('📍 Widget already exists, skipping');
+        console.log('Widget already exists, skipping');
         return;
     }
     
@@ -151,10 +142,9 @@ function createWidget() {
     const limit = getPlanLimit();
     const plan = getPlanName();
     
-    console.log('📍 Creating widget with plan:', plan, 'usage:', used + '/' + limit);
+    console.log('Creating widget with plan:', plan, 'usage:', used + '/' + limit);
     
     const widgetHTML = `
-        <!-- Shadow AI Button Container -->
         <div class="shadow-ai-container ready">
             <div class="shadow-ai-glow"></div>
             <button id="shadow-ai-btn" class="copilot-btn" aria-label="Open Shadow AI Assistant">
@@ -163,7 +153,6 @@ function createWidget() {
             <div class="shadow-ai-tooltip">Ask Shadow AI</div>
         </div>
 
-        <!-- Shadow AI Chat Window -->
         <div id="shadow-ai-chat" class="copilot-chat hidden">
             <div class="copilot-header">
                 <div class="copilot-header-left">
@@ -187,7 +176,7 @@ function createWidget() {
     `;
     
     document.body.insertAdjacentHTML('beforeend', widgetHTML);
-    console.log('📍 Widget HTML inserted into body');
+    console.log('Widget HTML inserted');
 }
 
 // ============================================
@@ -197,26 +186,18 @@ function openChat() {
     const chat = document.getElementById('shadow-ai-chat');
     const tooltip = document.querySelector('.shadow-ai-tooltip');
     
-    console.log('📍 openChat called, chat element:', !!chat);
-    
     if (!chat) return;
     
-    // Remove hidden AND add active
     chat.classList.remove('hidden');
     chat.classList.add('active');
     chatOpen = true;
     
-    console.log('📍 Chat classes now:', chat.className);
-    
-    // Hide tooltip when chat is open
     if (tooltip) tooltip.style.opacity = '0';
     
-    // Focus input
     setTimeout(() => {
         document.getElementById('shadow-ai-input')?.focus();
     }, 100);
     
-    // Show welcome message if first time
     const messages = document.getElementById('shadow-ai-messages');
     if (messages && messages.children.length === 0) {
         showWelcomeMessage();
@@ -231,12 +212,10 @@ function closeChat() {
     
     if (!chat) return;
     
-    // Remove active AND add hidden
     chat.classList.remove('active');
     chat.classList.add('hidden');
     chatOpen = false;
     
-    // Show tooltip again
     if (tooltip) tooltip.style.opacity = '1';
 }
 
@@ -275,7 +254,6 @@ function addMessage(content, type = 'ai', isHTML = false) {
     msgDiv.appendChild(bubble);
     container.appendChild(msgDiv);
     
-    // Scroll to bottom
     container.scrollTop = container.scrollHeight;
     
     return bubble;
@@ -329,7 +307,6 @@ function showWelcomeMessage() {
         <br>What would you like to know?
     `;
     
-    // Show typing first
     const typing = showTypingIndicator();
     
     setTimeout(() => {
@@ -371,13 +348,11 @@ function sendMessage() {
     
     const message = input.value.trim();
     if (!message) {
-        // Blink input if empty
         input.classList.add('blink');
         setTimeout(() => input.classList.remove('blink'), 300);
         return;
     }
     
-    // Check if user can ask more questions
     if (!canAskQuestion()) {
         addMessage(message, 'user');
         input.value = '';
@@ -385,21 +360,16 @@ function sendMessage() {
         return;
     }
     
-    // Add user message
     addMessage(message, 'user');
     input.value = '';
     
-    // Increment usage
     incrementUsage();
     
-    // Store in conversation history
     conversationHistory.push({ role: 'user', content: message });
     
-    // Show typing indicator
     isTyping = true;
     const typing = showTypingIndicator();
     
-    // Get AI response
     setTimeout(() => {
         removeTypingIndicator(typing);
         isTyping = false;
@@ -409,7 +379,6 @@ function sendMessage() {
         
         conversationHistory.push({ role: 'assistant', content: response });
         
-        // Check if this was their last question
         if (!canAskQuestion()) {
             setTimeout(() => {
                 addMessage(`<em style="color: var(--text-muted);">⚠️ That was your last question for today. <a href="#settings" onclick="navigateTo('settings')" style="color: var(--primary-light);">Upgrade</a> for more!</em>`, 'ai', true);
@@ -419,13 +388,12 @@ function sendMessage() {
 }
 
 // ============================================
-// AI RESPONSES (Simulated - Replace with API)
+// AI RESPONSES
 // ============================================
 function getAIResponse(message) {
     const msg = message.toLowerCase();
     const remaining = getRemainingQuestions();
     
-    // Dashboard-specific responses
     if (msg.includes('alert') || msg.includes('notification')) {
         return `<strong>About Your Alerts 🔔</strong><br><br>
         I see you have some recent alerts. Here's what they mean:<br><br>
@@ -497,7 +465,6 @@ function getAIResponse(message) {
         You have <strong>${remaining}</strong> questions remaining today. What's on your mind?`;
     }
     
-    // Default response
     return `Thanks for your question! 🤖<br><br>
     Based on your dashboard data, I can see you're monitoring <strong>8 accounts</strong> across multiple platforms.<br><br>
     To give you the best advice, could you tell me:<br>
@@ -567,24 +534,13 @@ function initTooltipScrollHandler() {
 // ============================================
 function initializeDashboardAI() {
     console.log('🤖 Shadow AI Dashboard v2.0 Initializing...');
-    console.log('📍 Document body exists:', !!document.body);
     
-    // Create widget
     createWidget();
     
-    console.log('📍 Widget created, checking elements...');
-    
-    // Get elements
     const btn = document.getElementById('shadow-ai-btn');
     const closeBtn = document.getElementById('shadow-ai-close');
     const sendBtn = document.getElementById('shadow-ai-send');
-    const container = document.querySelector('.shadow-ai-container');
     
-    console.log('📍 Button found:', !!btn);
-    console.log('📍 Container found:', !!container);
-    console.log('📍 Container classes:', container ? container.className : 'N/A');
-    
-    // Button click - toggle chat
     if (btn) {
         btn.addEventListener('click', (e) => {
             e.preventDefault();
@@ -593,7 +549,6 @@ function initializeDashboardAI() {
         });
     }
     
-    // Close button
     if (closeBtn) {
         closeBtn.addEventListener('click', (e) => {
             e.preventDefault();
@@ -602,7 +557,6 @@ function initializeDashboardAI() {
         });
     }
     
-    // Send button
     if (sendBtn) {
         sendBtn.addEventListener('click', (e) => {
             e.preventDefault();
@@ -610,15 +564,12 @@ function initializeDashboardAI() {
         });
     }
     
-    // Initialize handlers
     initKeyboardHandler();
     initScrollIsolation();
     initTooltipScrollHandler();
     
-    // Update display
     updateUsageDisplay();
     
-    // Expose for dashboard.js integration
     window.ShadowAI = {
         open: openChat,
         close: closeChat,

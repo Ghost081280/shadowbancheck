@@ -391,9 +391,10 @@
     font-size: 1.25rem;
 }
 
-/* AI Messages - Floating text, no background */
+/* AI Messages - Floating text, no background, NO BORDER */
 .assistant-message .message-text {
     background: transparent;
+    border: none;
     padding: 0.5rem 0;
     border-radius: 0;
     font-size: 0.9rem;
@@ -590,13 +591,14 @@
 
 .demo-msg.user:hover { transform: scale(1.02); }
 
-/* AI messages - With avatar on left, floating text */
+/* AI messages - With avatar on left, floating text, NO BOX/BORDER */
 .demo-msg.ai {
     display: flex !important;
     flex-direction: row !important;
     gap: 12px !important;
     align-items: flex-start !important;
     background: transparent !important;
+    border: none !important;
     padding: 0 !important;
     max-width: 90%;
 }
@@ -620,6 +622,8 @@
     padding: 6px 0;
     flex: 1;
     line-height: 1.6;
+    background: transparent;
+    border: none;
 }
 
 .demo-msg.ai a { color: var(--primary-light); text-decoration: underline; }

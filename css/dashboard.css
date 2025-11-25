@@ -201,7 +201,7 @@
     flex: 1;
     overflow-y: auto;
     padding: 2rem;
-    padding-bottom: 120px;
+    padding-bottom: 2rem;
 }
 
 /* =============================================================================
@@ -954,6 +954,7 @@ textarea.input {
     transition: all 0.2s;
 }
 .social-row a:hover { background: var(--primary); color: white; }
+.social-row a svg { width: 16px; height: 16px; }
 
 /* =============================================================================
    BUTTONS
@@ -1025,12 +1026,14 @@ textarea.input {
 .btn-link:hover { text-decoration: underline; }
 
 /* =============================================================================
-   FOOTER - LEFT ALIGNED
+   FOOTER - STICKY BOTTOM
    ============================================================================= */
 .footer {
-    padding: 1.5rem 0;
+    padding: 1.5rem 2rem;
     border-top: 1px solid var(--border);
     margin-top: auto;
+    background: var(--card);
+    flex-shrink: 0;
 }
 
 .footer-left {
@@ -1068,7 +1071,7 @@ textarea.input {
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 1000;
+    z-index: 2000;
     padding: 1rem;
 }
 
@@ -1084,6 +1087,7 @@ textarea.input {
     max-width: 420px;
     max-height: 90vh;
     overflow-y: auto;
+    z-index: 2001;
 }
 
 .modal-header {
@@ -1140,7 +1144,7 @@ textarea.input {
     .sidebar-close { display: block; }
     .main-content { margin-left: 0; }
     .topbar { display: flex; }
-    .content-scroll { padding: 1rem; padding-bottom: 120px; }
+    .content-scroll { padding: 1rem; padding-bottom: 2rem; }
     .stats-row { grid-template-columns: repeat(2, 1fr); }
     .cards-row { grid-template-columns: 1fr; }
     .quick-actions { flex-wrap: wrap; }

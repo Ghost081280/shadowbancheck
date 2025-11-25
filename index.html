@@ -171,24 +171,14 @@
             <!-- POST URL CHECKER - Primary Feature -->
             <div class="post-checker-hero">
                 <div class="post-checker-card">
-                    <!-- Info Button -->
-                    <button class="checker-info-btn" id="post-info-btn" aria-label="What we check" type="button">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
-                            <path d="M12 16V12M12 8H12.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                        </svg>
-                    </button>
-                    
                     <div class="checker-header">
-                        <div class="checker-header-content">
-                            <span class="checker-icon">🔗</span>
-                            <div>
-                                <h3>Instant Post Analysis</h3>
-                                <p>3-in-1 Check: Post visibility + Account status + Hashtag health</p>
-                            </div>
+                        <span class="checker-icon">🔗</span>
+                        <div>
+                            <h3>Instant Post Analysis</h3>
+                            <p>Works with Twitter, Instagram, TikTok, Reddit, YouTube</p>
                         </div>
                     </div>
-                    <div class="checker-form" id="post-checker-form">
+                    <div class="checker-form">
                         <input 
                             type="url" 
                             id="post-url-input"
@@ -196,99 +186,25 @@
                             class="post-url-input"
                         >
                         <button class="btn-analyze" id="analyze-post-btn">
-                            <span class="btn-text">Analyze Post</span>
+                            <span class="btn-text">Analyze Post Now</span>
                             <span class="btn-icon">🔍</span>
                         </button>
                     </div>
                     <div class="checker-features">
-                        <span>✓ Scans post, username & hashtags</span>
-                        <span>✓ 1 free check per day</span>
-                        <span>✓ Full report in 60 seconds</span>
+                        <span>✓ Probability score in 60 seconds</span>
+                        <span>✓ First check FREE</span>
+                        <span>✓ AI-powered analysis</span>
                     </div>
                 </div>
                 
                 <!-- Results Area (Hidden Initially) -->
-                <div class="post-results hidden" id="post-results">
-                    <div class="results-card">
-                        <div class="results-header">
-                            <span class="results-icon" id="results-icon">📊</span>
-                            <div>
-                                <h3 id="results-title">Analysis Complete</h3>
-                                <p id="results-platform">Platform detected: Twitter/X</p>
-                            </div>
-                        </div>
-                        
-                        <!-- Extracted Info -->
-                        <div class="results-extracted" id="results-extracted">
-                            <div class="extracted-item">
-                                <span class="extracted-label">👤 Username:</span>
-                                <span class="extracted-value" id="extracted-username">@username</span>
-                            </div>
-                            <div class="extracted-item">
-                                <span class="extracted-label">#️⃣ Hashtags:</span>
-                                <span class="extracted-value" id="extracted-hashtags">#example #hashtag</span>
-                            </div>
-                        </div>
-                        
-                        <!-- Overall Score -->
-                        <div class="results-score">
-                            <div class="score-circle" id="score-circle">
-                                <span class="score-value" id="score-value">15%</span>
-                                <span class="score-label">Shadow Ban Risk</span>
-                            </div>
-                        </div>
-                        
-                        <!-- 3-Panel Analysis -->
-                        <div class="analysis-panels">
-                            <div class="analysis-panel" id="panel-post">
-                                <div class="panel-header">
-                                    <span class="panel-icon">🔗</span>
-                                    <span class="panel-title">Post Visibility</span>
-                                    <span class="panel-score good" id="post-score">✓ Clear</span>
-                                </div>
-                                <ul class="panel-factors" id="post-factors">
-                                    <li class="factor-good"><span>✓</span> Post appears in search results</li>
-                                </ul>
-                            </div>
-                            
-                            <div class="analysis-panel" id="panel-account">
-                                <div class="panel-header">
-                                    <span class="panel-icon">👤</span>
-                                    <span class="panel-title">Account Status</span>
-                                    <span class="panel-score good" id="account-score">✓ Clear</span>
-                                </div>
-                                <ul class="panel-factors" id="account-factors">
-                                    <li class="factor-good"><span>✓</span> Profile visible to logged-out users</li>
-                                </ul>
-                            </div>
-                            
-                            <div class="analysis-panel" id="panel-hashtags">
-                                <div class="panel-header">
-                                    <span class="panel-icon">#️⃣</span>
-                                    <span class="panel-title">Hashtag Health</span>
-                                    <span class="panel-score good" id="hashtag-score">✓ All Safe</span>
-                                </div>
-                                <ul class="panel-factors" id="hashtag-factors">
-                                    <li class="factor-good"><span>✓</span> No banned hashtags detected</li>
-                                </ul>
-                            </div>
-                        </div>
-                        
-                        <!-- Data Sources Citation -->
-                        <div class="results-citations">
-                            <h4>📄 Data Sources</h4>
-                            <p id="citation-text">Analysis based on API checks, search visibility tests, historical database comparison, and AI pattern detection.</p>
-                        </div>
-                        
-                        <!-- CTAs -->
-                        <div class="results-cta">
-                            <p>Want to check more? Try our dedicated tools:</p>
-                            <div class="cta-buttons">
-                                <a href="checker.html" class="btn btn-secondary">Check Another Username</a>
-                                <a href="hashtag-checker.html" class="btn btn-secondary">Check More Hashtags</a>
-                                <button class="btn btn-primary" id="check-another-btn">Analyze Another Post</button>
-                            </div>
-                        </div>
+                <div class="post-results" id="post-results" style="display: none;">
+                    <div class="result-header">
+                        <span class="result-icon">📊</span>
+                        <h3>Analysis Complete</h3>
+                    </div>
+                    <div class="result-content">
+                        <!-- Results will be inserted here -->
                     </div>
                 </div>
             </div>
@@ -1261,56 +1177,6 @@
         <div class="copilot-input">
             <input type="text" id="shadow-ai-input" placeholder="Ask about shadow bans...">
             <button id="shadow-ai-send">Send</button>
-        </div>
-    </div>
-
-    <!-- Post Checker Info Modal -->
-    <div id="post-info-modal" class="modal hidden">
-        <div class="modal-overlay"></div>
-        <div class="modal-content">
-            <button class="modal-close">&times;</button>
-            <div class="modal-icon">🔗</div>
-            <h3 class="modal-title">What We Check</h3>
-            <div class="modal-body">
-                <p class="modal-intro">Our 3-in-1 Post Analysis scans your post URL and extracts the <strong>username</strong> and <strong>hashtags</strong> to give you a comprehensive shadow ban report:</p>
-                
-                <h4>🔗 Post Visibility Check</h4>
-                <ul class="check-list">
-                    <li>Post appears in search results</li>
-                    <li>Post visible in hashtag feeds</li>
-                    <li>Engagement rate vs. baseline</li>
-                    <li>Content warning flags</li>
-                    <li>Logged-out visibility test</li>
-                </ul>
-                
-                <h4>👤 Account Status Check</h4>
-                <ul class="check-list">
-                    <li>Profile visible to logged-out users</li>
-                    <li>Search suggestion ban detection</li>
-                    <li>Reply deboosting / ghost ban</li>
-                    <li>Quality filter status (Twitter QFD)</li>
-                    <li>Account suspension flags</li>
-                </ul>
-                
-                <h4>#️⃣ Hashtag Health Check</h4>
-                <ul class="check-list">
-                    <li>Scans all hashtags in the post</li>
-                    <li>Checks against 1,800+ banned hashtag database</li>
-                    <li>Platform-specific restrictions</li>
-                    <li>Spam association score</li>
-                </ul>
-                
-                <div class="modal-tech-note">
-                    <h4>📊 Our Detection Methods</h4>
-                    <p><strong>Platform APIs:</strong> Twitter/X API, Reddit API, third-party services</p>
-                    <p><strong>Live Tests:</strong> Search visibility, incognito mode checks</p>
-                    <p><strong>Database:</strong> Historical patterns, known restrictions</p>
-                    <p><strong>AI Analysis:</strong> Pattern detection with 92% accuracy</p>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-primary btn-lg" onclick="document.getElementById('post-info-modal').classList.add('hidden'); document.body.style.overflow = '';">Got It!</button>
-            </div>
         </div>
     </div>
 

@@ -64,37 +64,36 @@ const platformData = [
         ]
     },
     
-    // COMING SOON - Social Media
+    // COMING SOON - Social Media (13)
     { name: 'Instagram', icon: '📸', category: 'social', status: 'soon' },
     { name: 'TikTok', icon: '🎵', category: 'social', status: 'soon' },
     { name: 'Facebook', icon: '📘', category: 'social', status: 'soon' },
     { name: 'LinkedIn', icon: '💼', category: 'social', status: 'soon' },
-    { name: 'YouTube', icon: '▶️', category: 'social', status: 'soon' },
+    { name: 'YouTube', icon: '📺', category: 'social', status: 'soon' },
     { name: 'Pinterest', icon: '📌', category: 'social', status: 'soon' },
     { name: 'Snapchat', icon: '👻', category: 'social', status: 'soon' },
     { name: 'Threads', icon: '🧵', category: 'social', status: 'soon' },
     { name: 'Bluesky', icon: '🦋', category: 'social', status: 'soon' },
-    { name: 'Mastodon', icon: '🐘', category: 'social', status: 'soon' },
-    { name: 'Rumble', icon: '📹', category: 'social', status: 'soon' },
     { name: 'Truth Social', icon: '🗽', category: 'social', status: 'soon' },
-    { name: 'Kick', icon: '🎯', category: 'social', status: 'soon' },
-    { name: 'Quora', icon: '❓', category: 'social', status: 'soon' },
+    { name: 'Rumble', icon: '📹', category: 'social', status: 'soon' },
+    { name: 'Kick', icon: '⚡', category: 'social', status: 'soon' },
     
-    // COMING SOON - Messaging
-    { name: 'WhatsApp', icon: '💬', category: 'messaging', status: 'soon' },
+    // COMING SOON - Messaging (2)
     { name: 'Telegram', icon: '✈️', category: 'messaging', status: 'soon' },
     { name: 'Discord', icon: '🎮', category: 'messaging', status: 'soon' },
     
-    // COMING SOON - E-Commerce
+    // COMING SOON - E-Commerce (3)
     { name: 'Amazon', icon: '📦', category: 'ecommerce', status: 'soon' },
     { name: 'eBay', icon: '🏷️', category: 'ecommerce', status: 'soon' },
-    { name: 'Etsy', icon: '🎨', category: 'ecommerce', status: 'soon' },
-    { name: 'Shopify', icon: '🛒', category: 'ecommerce', status: 'soon' },
+    { name: 'Etsy', icon: '🛍️', category: 'ecommerce', status: 'soon' },
     
-    // COMING SOON - Other
-    { name: 'Google', icon: '🔍', category: 'other', status: 'soon' },
-    { name: 'Bing', icon: '🌐', category: 'other', status: 'soon' },
-    { name: 'Twitch', icon: '📺', category: 'other', status: 'soon' }
+    // COMING SOON - Other (5)
+    { name: 'Twitch', icon: '🟣', category: 'other', status: 'soon' },
+    { name: 'Phone', icon: '📱', category: 'other', status: 'soon' },
+    { name: 'Domain', icon: '🌐', category: 'other', status: 'soon' },
+    { name: 'IP Address', icon: '🖥️', category: 'other', status: 'soon' },
+    { name: 'Google Business', icon: '📍', category: 'other', status: 'soon' },
+    { name: 'Website', icon: '🔗', category: 'other', status: 'soon' }
 ];
 
 // Export for use in other files
@@ -379,6 +378,36 @@ function openPlatformModal(platform) {
 /* =============================================================================
    POST CHECKER - DEMO RESULTS
    ============================================================================= */
+const POST_CHECK_STORAGE_KEY = 'shadowban_last_post_check';
+
+function canCheckPost() {
+    const lastCheck = localStorage.getItem(POST_CHECK_STORAGE_KEY);
+    if (!lastCheck) return true;
+    
+    const lastCheckTime = new Date(lastCheck);
+    const now = new Date();
+    const hoursSince = (now - lastCheckTime) / (1000 * 60 * 60);
+    
+    return hoursSince >= 24;
+}
+
+function getTimeUntilNextCheck() {
+    const lastCheck = localStorage.getItem(POST_CHECK_STORAGE_KEY);
+    if (!lastCheck) return null;
+    
+    const lastCheckTime = new Date(lastCheck);
+    const nextCheckTime = new Date(lastCheckTime.getTime() + (24 * 60 * 60 * 1000));
+    const now = new Date();
+    const msUntil = nextCheckTime - now;
+    
+    if (msUntil <= 0) return null;
+    
+    const hours = Math.floor(msUntil / (1000 * 60 * 60));
+    const minutes = Math.floor((msUntil % (1000 * 60 * 60)) / (1000 * 60));
+    
+    return { hours, minutes };
+}
+
 function initPostChecker() {
     const form = document.getElementById('post-checker-form');
     const input = document.getElementById('post-url-input');
@@ -403,6 +432,15 @@ function initPostChecker() {
             return;
         }
         
+        // Check if user can scan (1 per 24 hours for free)
+        if (!canCheckPost()) {
+            const timeLeft = getTimeUntilNextCheck();
+            if (timeLeft) {
+                showLimitModal(timeLeft);
+                return;
+            }
+        }
+        
         // Detect platform from URL
         const platform = detectPlatform(url);
         
@@ -415,16 +453,72 @@ function initPostChecker() {
             button.classList.remove('loading');
             button.disabled = false;
             
+            // Mark as checked
+            localStorage.setItem(POST_CHECK_STORAGE_KEY, new Date().toISOString());
+            
             // Generate demo results
             showDemoResults(platform, url);
         }, 2000);
     });
     
-    // Check another button
+    // Check another button - should show limit if already used
     checkAnotherBtn?.addEventListener('click', function() {
+        if (!canCheckPost()) {
+            const timeLeft = getTimeUntilNextCheck();
+            if (timeLeft) {
+                showLimitModal(timeLeft);
+                return;
+            }
+        }
         resultsSection?.classList.add('hidden');
         input.value = '';
         input.focus();
+    });
+}
+
+function showLimitModal(timeLeft) {
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.innerHTML = `
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <button class="modal-close">&times;</button>
+            <div class="modal-icon">⏰</div>
+            <h3 class="modal-title">Free Limit Reached</h3>
+            <div class="modal-body">
+                <p class="modal-intro">You've used your <strong>1 free post check</strong> for today!</p>
+                <p>Next free check available in: <strong>${timeLeft.hours}h ${timeLeft.minutes}m</strong></p>
+                <hr style="border: none; border-top: 1px solid var(--border); margin: var(--space-lg) 0;">
+                <h4 style="margin-bottom: var(--space-md);">Want unlimited checks?</h4>
+                <p style="margin-bottom: var(--space-md);">Upgrade to a Pro plan for unlimited post analysis, account monitoring, and instant alerts.</p>
+            </div>
+            <div class="modal-footer">
+                <a href="#pricing" class="btn btn-primary btn-lg" onclick="this.closest('.modal').remove(); document.body.style.overflow = '';">View Pricing →</a>
+                <button class="btn btn-ghost" onclick="this.closest('.modal').remove(); document.body.style.overflow = '';">Maybe Later</button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    document.body.style.overflow = 'hidden';
+    
+    // Close handlers
+    const closeBtn = modal.querySelector('.modal-close');
+    const overlay = modal.querySelector('.modal-overlay');
+    
+    function closeModal() {
+        modal.remove();
+        document.body.style.overflow = '';
+    }
+    
+    closeBtn?.addEventListener('click', closeModal);
+    overlay?.addEventListener('click', closeModal);
+    
+    document.addEventListener('keydown', function escHandler(e) {
+        if (e.key === 'Escape') {
+            closeModal();
+            document.removeEventListener('keydown', escHandler);
+        }
     });
 }
 

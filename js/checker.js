@@ -107,8 +107,8 @@ function showTwitterModal() {
                 <ul>
                     <li>✓ Search visibility status</li>
                     <li>✓ Reply deboosting (QFD)</li>
-                    <li>✓ Hashtag reach analysis</li>
                     <li>✓ Engagement rate patterns</li>
+                    <li>✓ Account status & flags</li>
                 </ul>
             </div>
             
@@ -405,8 +405,8 @@ function generateDemoResults(platform, identifier) {
         checks = [
             { name: 'Search Visibility', status: random < 0.7 ? 'passed' : 'warning', description: random < 0.7 ? 'Account appears in search' : 'Reduced visibility', citation: 'Twitter/X API v2 search endpoint' },
             { name: 'Reply Visibility (QFD)', status: random < 0.75 ? 'passed' : 'failed', description: random < 0.75 ? 'Replies visible' : 'Quality Filter active', citation: 'Third-party QFD detection API' },
-            { name: 'Hashtag Reach', status: random < 0.65 ? 'passed' : 'warning', description: random < 0.65 ? 'Hashtags working' : 'Some suppressed', citation: 'Hashtag search crawl' },
-            { name: 'Engagement Rate', status: random < 0.7 ? 'passed' : 'warning', description: random < 0.7 ? 'Normal patterns' : 'Below average', citation: 'Historical baseline' }
+            { name: 'Engagement Rate', status: random < 0.7 ? 'passed' : 'warning', description: random < 0.7 ? 'Normal patterns' : 'Below average', citation: 'Historical baseline comparison' },
+            { name: 'Account Status', status: random < 0.8 ? 'passed' : 'warning', description: random < 0.8 ? 'No restrictions' : 'Some flags detected', citation: 'Twitter/X API v2 user lookup' }
         ];
     } else if (platform === 'Reddit') {
         checks = [

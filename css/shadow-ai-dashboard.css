@@ -1,0 +1,99 @@
+/* =============================================================================
+   SHADOW AI DASHBOARD ADDITIONS
+   ShadowBanCheck.io - Dashboard-specific chatbot styles
+   Add this AFTER shadow-ai.css
+   ============================================================================= */
+
+/* Plan Badge in Header */
+.copilot-header-text h3 .plan-badge {
+    display: inline-block;
+    font-size: 0.65rem;
+    font-weight: 600;
+    padding: 0.15rem 0.4rem;
+    border-radius: 4px;
+    background: var(--gradient-primary);
+    color: white;
+    margin-left: 0.5rem;
+    vertical-align: middle;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Usage Counter Styles */
+#shadow-ai-counter {
+    font-size: 0.75rem;
+    font-weight: 500;
+    transition: color 0.3s;
+}
+
+#shadow-ai-counter.limit-warning {
+    color: #eab308 !important;
+}
+
+#shadow-ai-counter.limit-reached {
+    color: #ef4444 !important;
+}
+
+/* Input Blink Animation */
+.copilot-input-area input.blink {
+    animation: inputBlink 0.3s ease;
+}
+
+@keyframes inputBlink {
+    0%, 100% { border-color: var(--border); }
+    50% { border-color: #ef4444; }
+}
+
+/* Message Links */
+.message-bubble a {
+    color: var(--primary-light);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.message-bubble a:hover {
+    text-decoration: underline;
+}
+
+/* Message Lists */
+.message-bubble ul,
+.message-bubble ol {
+    margin: 0.5rem 0;
+    padding-left: 1.25rem;
+}
+
+.message-bubble li {
+    margin-bottom: 0.25rem;
+}
+
+/* Upgrade Message Styling */
+.message-bubble em {
+    font-style: italic;
+}
+
+/* Dashboard-specific positioning adjustments */
+@media (max-width: 768px) {
+    /* Keep chat above sidebar when on mobile */
+    .shadow-ai-container {
+        z-index: 150;
+    }
+    
+    .copilot-chat {
+        z-index: 149;
+    }
+}
+
+/* Dashboard footer spacing - ensure chat doesn't overlap */
+.footer {
+    position: relative;
+    z-index: 1;
+}
+
+/* Ensure chat window is above dashboard content */
+.copilot-chat {
+    z-index: 999;
+}
+
+.shadow-ai-container {
+    z-index: 1000;
+}

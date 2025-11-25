@@ -38,6 +38,12 @@
                             <h3>Instant Post Analysis</h3>
                             <p>Works with Twitter/X, Reddit, and more coming soon</p>
                         </div>
+                        <button class="checker-info-btn" id="checker-info-btn" aria-label="What we check" type="button">
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <circle cx="10" cy="10" r="9" stroke="currentColor" stroke-width="2"/>
+                                <path d="M10 14V10M10 6H10.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                        </button>
                     </div>
                     <form class="checker-form" id="post-checker-form">
                         <input 
@@ -166,31 +172,6 @@
             </div>
             
             <p class="audience-footer">Also trusted by streamers, podcasters, marketers, and anyone who relies on visibility.</p>
-            
-            <!-- How It Works - Inline Strip -->
-            <div class="how-strip">
-                <div class="how-strip-item">
-                    <span class="how-strip-icon">🤖</span>
-                    <div>
-                        <strong>AI-Powered Analysis</strong>
-                        <span>Scans 10+ factors to detect shadow bans</span>
-                    </div>
-                </div>
-                <div class="how-strip-item">
-                    <span class="how-strip-icon">🔌</span>
-                    <div>
-                        <strong>Platform APIs</strong>
-                        <span>Real-time account status checks</span>
-                    </div>
-                </div>
-                <div class="how-strip-item">
-                    <span class="how-strip-icon">📊</span>
-                    <div>
-                        <strong>Instant Alerts</strong>
-                        <span>Text or email notifications</span>
-                    </div>
-                </div>
-            </div>
         </div>
     </section>
 
@@ -318,7 +299,6 @@
                 </div>
                 
                 <div class="price-card featured reveal">
-                    <span class="price-badge">Most Popular</span>
                     <h3>Pro</h3>
                     <div class="price-amount">
                         <span class="currency">$</span>
@@ -391,7 +371,7 @@
         <div class="container">
             <div class="ai-wrapper">
                 <div class="ai-header">
-                    <span class="ai-badge">🤖 AI-Powered Investigation</span>
+                    <span class="ai-badge-top">🤖 AI-Powered Investigation</span>
                     <h2 class="text-gradient">Shadow AI Pro</h2>
                     <p class="ai-tagline">Your 24/7 Shadow Ban Expert—Get Instant Answers & Recovery Strategies</p>
                 </div>
@@ -705,6 +685,57 @@
     <!-- ===================================
          FOOTER - Loaded by shared-components.js
          =================================== -->
+
+    <!-- Post Checker Info Modal -->
+    <div id="checker-info-modal" class="modal hidden">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <button class="modal-close">&times;</button>
+            <div class="modal-icon">🔍</div>
+            <h3 class="modal-title">What We Check</h3>
+            <div class="modal-body">
+                <p class="modal-intro">Our AI analyzes <strong>13+ factors</strong> to give you an accurate shadow ban probability score:</p>
+                
+                <h4>Platform & Validation</h4>
+                <ul class="check-list">
+                    <li>Platform identification (Twitter/X, Reddit, etc.)</li>
+                    <li>URL validation & post accessibility</li>
+                    <li>Account status verification</li>
+                </ul>
+                
+                <h4>Engagement Analysis</h4>
+                <ul class="check-list">
+                    <li>Engagement rate vs. follower baseline</li>
+                    <li>Time-decay patterns (drop-off speed)</li>
+                    <li>First-hour engagement velocity</li>
+                </ul>
+                
+                <h4>Visibility Tests</h4>
+                <ul class="check-list">
+                    <li>Hashtag search presence</li>
+                    <li>Platform search result visibility</li>
+                    <li>Chronological feed appearance</li>
+                    <li>Reply visibility & quality filters</li>
+                </ul>
+                
+                <h4>Content Flags</h4>
+                <ul class="check-list">
+                    <li>Sensitive content warnings</li>
+                    <li>Quality filter status (Twitter QFD)</li>
+                    <li>Spam/bot behavior indicators</li>
+                </ul>
+                
+                <div class="modal-tech-note">
+                    <h4>🔌 Technical Implementation</h4>
+                    <p><strong>APIs Used:</strong> Twitter/X API v2, Reddit API, third-party shadowban detection APIs (shadowban.eu, hisubway.online), custom web scraping engine</p>
+                    <p><strong>Databases:</strong> Banned hashtag database, shadowban pattern history, platform algorithm tracking, engagement baselines</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary btn-lg" onclick="document.getElementById('checker-info-modal').classList.add('hidden'); document.body.style.overflow = '';">Got It!</button>
+            </div>
+        </div>
+    </div>
 
     <!-- Platform Modal -->
     <div id="platform-modal" class="modal hidden">

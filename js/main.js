@@ -257,6 +257,45 @@ function initPlatformGrid() {
 /* =============================================================================
    PLATFORM MODAL
    ============================================================================= */
+function initCheckerInfoModal() {
+    const infoBtn = document.getElementById('checker-info-btn');
+    const modal = document.getElementById('checker-info-modal');
+    
+    if (!infoBtn || !modal) return;
+    
+    infoBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        openCheckerInfoModal();
+    });
+    
+    function openCheckerInfoModal() {
+        modal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+        
+        // Close handlers
+        const closeBtn = modal.querySelector('.modal-close');
+        const overlay = modal.querySelector('.modal-overlay');
+        
+        function closeModal() {
+            modal.classList.add('hidden');
+            document.body.style.overflow = '';
+        }
+        
+        closeBtn?.addEventListener('click', closeModal, { once: true });
+        overlay?.addEventListener('click', closeModal, { once: true });
+        
+        // ESC key
+        const escHandler = function(e) {
+            if (e.key === 'Escape') {
+                closeModal();
+                document.removeEventListener('keydown', escHandler);
+            }
+        };
+        document.addEventListener('keydown', escHandler);
+    }
+}
+
 function openPlatformModal(platform) {
     const modal = document.getElementById('platform-modal');
     if (!modal) return;
@@ -885,6 +924,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Page-specific
     initPlatformGrid();
     initPostChecker();
+    initCheckerInfoModal();
     initFAQAccordion();
     initSocialShare();
     initCookiePopup();

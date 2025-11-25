@@ -1,6 +1,8 @@
 /* =============================================================================
    MAIN.JS - SHARED FUNCTIONALITY
    All global functionality for ShadowBanCheck.io
+   
+   NOTE: Demo chat animation moved to shadow-ai.js
    ============================================================================= */
 
 /* =============================================================================
@@ -650,145 +652,6 @@ function generateDemoFactors(platformName, score) {
 }
 
 /* =============================================================================
-   DEMO CHAT ANIMATION - TYPEWRITER EFFECT
-   ============================================================================= */
-function initDemoChatAnimation() {
-    const demoChat = document.getElementById('demo-chat-messages');
-    if (!demoChat) return;
-    
-    let hasPlayed = false;
-    
-    const chatSequence = [
-        { 
-            type: 'ai', 
-            text: "👋 Hi! I'm Shadow AI, your personal shadow ban detective.",
-            delay: 500
-        },
-        { 
-            type: 'ai', 
-            text: "I can check if you're being suppressed on Twitter/X, Reddit, Instagram, TikTok, and 22+ other platforms.",
-            delay: 1500
-        },
-        { 
-            type: 'ai', 
-            text: "I analyze engagement patterns, visibility signals, and platform-specific indicators to give you a probability score.",
-            delay: 1500
-        },
-        { 
-            type: 'ai', 
-            text: "Would you like to learn more about our Pro subscription? 🚀",
-            delay: 1500
-        },
-        { 
-            type: 'user', 
-            text: "Yes, tell me more!",
-            delay: 2000,
-            clickable: true
-        },
-        { 
-            type: 'ai', 
-            text: "Great choice! With Shadow AI Pro you get:",
-            delay: 1000
-        },
-        { 
-            type: 'ai', 
-            text: "✓ 100 AI questions/day\n✓ Live platform checks\n✓ Recovery strategies\n✓ 24/7 availability",
-            delay: 1200
-        },
-        { 
-            type: 'ai', 
-            text: '👉 <a href="#pricing">View pricing plans</a> to get started with a 7-day free trial!',
-            delay: 1500
-        }
-    ];
-    
-    let currentIndex = 0;
-    let isAnimating = false;
-    
-    function showTypingIndicator() {
-        const typing = document.createElement('div');
-        typing.className = 'typing-indicator';
-        typing.innerHTML = '<span></span><span></span><span></span>';
-        demoChat.appendChild(typing);
-        demoChat.scrollTop = demoChat.scrollHeight;
-        return typing;
-    }
-    
-    function addMessage(message) {
-        const msgEl = document.createElement('div');
-        msgEl.className = `demo-msg ${message.type}`;
-        
-        if (message.type === 'ai') {
-            // For AI messages, use innerHTML to support links and formatting
-            msgEl.innerHTML = message.text.replace(/\n/g, '<br>');
-        } else {
-            msgEl.textContent = message.text;
-        }
-        
-        if (message.clickable) {
-            msgEl.style.cursor = 'pointer';
-            msgEl.title = 'Click to continue';
-        }
-        
-        demoChat.appendChild(msgEl);
-        demoChat.scrollTop = demoChat.scrollHeight;
-        
-        return msgEl;
-    }
-    
-    function playNextMessage() {
-        if (currentIndex >= chatSequence.length) {
-            isAnimating = false;
-            return;
-        }
-        
-        const message = chatSequence[currentIndex];
-        currentIndex++;
-        
-        if (message.type === 'ai') {
-            // Show typing indicator for AI messages
-            const typing = showTypingIndicator();
-            
-            setTimeout(() => {
-                typing.remove();
-                addMessage(message);
-                
-                setTimeout(playNextMessage, message.delay || 1000);
-            }, 800 + Math.random() * 400);
-        } else {
-            // User messages appear after a delay
-            setTimeout(() => {
-                addMessage(message);
-                setTimeout(playNextMessage, message.delay || 1000);
-            }, message.delay || 1000);
-        }
-    }
-    
-    function startAnimation() {
-        if (hasPlayed || isAnimating) return;
-        
-        hasPlayed = true;
-        isAnimating = true;
-        demoChat.innerHTML = '';
-        currentIndex = 0;
-        
-        setTimeout(playNextMessage, 500);
-    }
-    
-    // Start animation when visible
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting && !hasPlayed) {
-                startAnimation();
-                observer.unobserve(entry.target);
-            }
-        });
-    }, { threshold: 0.5 });
-    
-    observer.observe(demoChat);
-}
-
-/* =============================================================================
    FAQ ACCORDION
    ============================================================================= */
 function initFAQAccordion() {
@@ -1004,6 +867,7 @@ function initCookiePopup() {
    SHADOW AI BUTTON HANDLERS - Handled by shadow-ai.js
    ============================================================================= */
 // Note: Shadow AI buttons (#try-ai-btn, #open-shadow-ai) are handled by shadow-ai.js
+// Note: Demo chat animation is handled by shadow-ai.js
 
 /* =============================================================================
    INITIALIZE ALL
@@ -1023,9 +887,8 @@ document.addEventListener('DOMContentLoaded', function() {
     initFAQAccordion();
     initSocialShare();
     initCookiePopup();
-    initDemoChatAnimation();
     
-    // Shadow AI buttons handled by shadow-ai.js
+    // Demo chat animation handled by shadow-ai.js
     
     // Update search counter display
     updateSearchCounterDisplay();

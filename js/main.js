@@ -296,42 +296,6 @@ function initCheckerInfoModal() {
     }
 }
 
-/* =============================================================================
-   POST INFO MODAL
-   ============================================================================= */
-function initPostInfoModal() {
-    const infoBtn = document.getElementById('post-info-btn');
-    const modal = document.getElementById('post-info-modal');
-    
-    if (!infoBtn || !modal) return;
-    
-    infoBtn.addEventListener('click', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        modal.classList.remove('hidden');
-        document.body.style.overflow = 'hidden';
-    });
-    
-    // Close handlers
-    const closeBtn = modal.querySelector('.modal-close');
-    const overlay = modal.querySelector('.modal-overlay');
-    
-    function closeModal() {
-        modal.classList.add('hidden');
-        document.body.style.overflow = '';
-    }
-    
-    closeBtn?.addEventListener('click', closeModal);
-    overlay?.addEventListener('click', closeModal);
-    
-    // ESC key
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
-            closeModal();
-        }
-    });
-}
-
 function openPlatformModal(platform) {
     const modal = document.getElementById('platform-modal');
     if (!modal) return;
@@ -413,38 +377,8 @@ function openPlatformModal(platform) {
 }
 
 /* =============================================================================
-   POST CHECKER - COMPREHENSIVE 3-IN-1 ANALYSIS
+   POST CHECKER - DEMO RESULTS
    ============================================================================= */
-const POST_CHECK_STORAGE_KEY = 'shadowban_last_post_check';
-
-function canCheckPost() {
-    const lastCheck = localStorage.getItem(POST_CHECK_STORAGE_KEY);
-    if (!lastCheck) return true;
-    
-    const lastCheckTime = new Date(lastCheck);
-    const now = new Date();
-    const hoursSince = (now - lastCheckTime) / (1000 * 60 * 60);
-    
-    return hoursSince >= 24;
-}
-
-function getTimeUntilNextCheck() {
-    const lastCheck = localStorage.getItem(POST_CHECK_STORAGE_KEY);
-    if (!lastCheck) return null;
-    
-    const lastCheckTime = new Date(lastCheck);
-    const nextCheckTime = new Date(lastCheckTime.getTime() + (24 * 60 * 60 * 1000));
-    const now = new Date();
-    const msUntil = nextCheckTime - now;
-    
-    if (msUntil <= 0) return null;
-    
-    const hours = Math.floor(msUntil / (1000 * 60 * 60));
-    const minutes = Math.floor((msUntil % (1000 * 60 * 60)) / (1000 * 60));
-    
-    return { hours, minutes };
-}
-
 function initPostChecker() {
     const form = document.getElementById('post-checker-form');
     const input = document.getElementById('post-url-input');
@@ -452,10 +386,9 @@ function initPostChecker() {
     const resultsSection = document.getElementById('post-results');
     const checkAnotherBtn = document.getElementById('check-another-btn');
     
-    if (!input || !button) return;
+    if (!form || !input || !button) return;
     
-    // Handle button click (not form submit since we removed the form tag behavior)
-    button.addEventListener('click', function(e) {
+    form.addEventListener('submit', function(e) {
         e.preventDefault();
         
         const url = input.value.trim();
@@ -470,15 +403,6 @@ function initPostChecker() {
             return;
         }
         
-        // Check if user can scan (1 per 24 hours for free)
-        if (!canCheckPost()) {
-            const timeLeft = getTimeUntilNextCheck();
-            if (timeLeft) {
-                showPostLimitModal(timeLeft);
-                return;
-            }
-        }
-        
         // Detect platform from URL
         const platform = detectPlatform(url);
         
@@ -486,92 +410,21 @@ function initPostChecker() {
         button.classList.add('loading');
         button.disabled = true;
         
-        // Simulate analysis (demo) - longer for comprehensive check
+        // Simulate analysis (demo)
         setTimeout(() => {
             button.classList.remove('loading');
             button.disabled = false;
             
-            // Record the check time
-            localStorage.setItem(POST_CHECK_STORAGE_KEY, new Date().toISOString());
-            
-            // Generate comprehensive demo results
-            showComprehensiveResults(platform, url);
-        }, 3000);
-    });
-    
-    // Also handle Enter key in input
-    input.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            button.click();
-        }
+            // Generate demo results
+            showDemoResults(platform, url);
+        }, 2000);
     });
     
     // Check another button
     checkAnotherBtn?.addEventListener('click', function() {
-        if (!canCheckPost()) {
-            const timeLeft = getTimeUntilNextCheck();
-            if (timeLeft) {
-                showPostLimitModal(timeLeft);
-                return;
-            }
-        }
         resultsSection?.classList.add('hidden');
         input.value = '';
         input.focus();
-    });
-}
-
-function showPostLimitModal(timeLeft) {
-    const modal = document.createElement('div');
-    modal.className = 'modal';
-    modal.id = 'post-limit-modal';
-    modal.innerHTML = `
-        <div class="modal-overlay"></div>
-        <div class="modal-content">
-            <button class="modal-close">&times;</button>
-            <div class="modal-icon">⏰</div>
-            <h3 class="modal-title">Daily Limit Reached</h3>
-            <div class="modal-body">
-                <p class="modal-intro">You've used your <strong>1 free post analysis</strong> for today!</p>
-                <p>Next free check available in: <strong>${timeLeft.hours}h ${timeLeft.minutes}m</strong></p>
-                
-                <h4 style="margin-top: var(--space-lg);">Want Unlimited Checks?</h4>
-                <ul class="check-list">
-                    <li>✓ Unlimited post analysis</li>
-                    <li>✓ Unlimited username checks</li>
-                    <li>✓ Unlimited hashtag scans</li>
-                    <li>✓ Priority API access</li>
-                    <li>✓ Email/SMS alerts</li>
-                </ul>
-            </div>
-            <div class="modal-footer">
-                <a href="#pricing" class="btn btn-primary btn-lg" onclick="this.closest('.modal').remove(); document.body.style.overflow = '';">View Plans →</a>
-                <button class="btn btn-ghost" onclick="this.closest('.modal').remove(); document.body.style.overflow = '';">Maybe Later</button>
-            </div>
-        </div>
-    `;
-    
-    document.body.appendChild(modal);
-    document.body.style.overflow = 'hidden';
-    
-    // Close handlers
-    const closeBtn = modal.querySelector('.modal-close');
-    const overlay = modal.querySelector('.modal-overlay');
-    
-    function closeModal() {
-        modal.remove();
-        document.body.style.overflow = '';
-    }
-    
-    closeBtn?.addEventListener('click', closeModal);
-    overlay?.addEventListener('click', closeModal);
-    
-    document.addEventListener('keydown', function escHandler(e) {
-        if (e.key === 'Escape') {
-            closeModal();
-            document.removeEventListener('keydown', escHandler);
-        }
     });
 }
 
@@ -606,281 +459,99 @@ function detectPlatform(url) {
     return { name: 'Unknown Platform', icon: '🔗' };
 }
 
-// Extract username from URL (simulated - in production would scrape/API)
-function extractUsername(url, platform) {
-    const urlLower = url.toLowerCase();
-    
-    // Demo usernames based on platform
-    const demoUsernames = {
-        'Twitter/X': '@shadowcheck_demo',
-        'Reddit': 'u/shadowcheck_user',
-        'Instagram': '@shadow.check.demo',
-        'TikTok': '@shadowcheckdemo',
-        'Facebook': 'ShadowCheckDemo',
-        'YouTube': '@ShadowCheckDemo',
-        'LinkedIn': 'shadow-check-demo'
-    };
-    
-    // Try to extract real username from URL patterns
-    if (urlLower.includes('twitter.com') || urlLower.includes('x.com')) {
-        const match = url.match(/(?:twitter\.com|x\.com)\/([^\/\?]+)/i);
-        if (match && match[1] && !['status', 'home', 'explore', 'search'].includes(match[1].toLowerCase())) {
-            return '@' + match[1];
-        }
-    } else if (urlLower.includes('reddit.com')) {
-        const match = url.match(/reddit\.com\/(?:user|u)\/([^\/\?]+)/i);
-        if (match && match[1]) return 'u/' + match[1];
-        // Extract from post URL
-        const postMatch = url.match(/reddit\.com\/r\/[^\/]+\/comments\/[^\/]+\/[^\/]+/i);
-        if (postMatch) return 'u/reddit_poster';
-    } else if (urlLower.includes('instagram.com')) {
-        const match = url.match(/instagram\.com\/(?:p\/[^\/]+|reel\/[^\/]+|stories\/)?([^\/\?]+)/i);
-        if (match && match[1] && !['p', 'reel', 'stories', 'explore'].includes(match[1].toLowerCase())) {
-            return '@' + match[1];
-        }
-    } else if (urlLower.includes('tiktok.com')) {
-        const match = url.match(/tiktok\.com\/@([^\/\?]+)/i);
-        if (match && match[1]) return '@' + match[1];
-    }
-    
-    return demoUsernames[platform.name] || '@demo_user';
-}
-
-// Generate demo hashtags (simulated - in production would scrape/API)
-function extractHashtags(url, platform) {
-    // Demo hashtags per platform
-    const demoHashtags = {
-        'Twitter/X': ['#ShadowBan', '#TwitterCheck', '#Visibility', '#Engagement'],
-        'Reddit': [], // Reddit doesn't use hashtags the same way
-        'Instagram': ['#shadowban', '#instagramgrowth', '#reachcheck', '#algorithm', '#viral'],
-        'TikTok': ['#fyp', '#shadowban', '#viral', '#foryou', '#tiktokgrowth'],
-        'Facebook': ['#socialmedia', '#reach', '#engagement'],
-        'YouTube': ['#youtube', '#creator', '#visibility'],
-        'LinkedIn': ['#professional', '#networking', '#visibility']
-    };
-    
-    const hashtags = demoHashtags[platform.name] || ['#demo', '#test'];
-    
-    // Randomly select 2-4 hashtags
-    const count = Math.floor(Math.random() * 3) + 2;
-    return hashtags.slice(0, count);
-}
-
-function showComprehensiveResults(platform, url) {
+function showDemoResults(platform, url) {
     const resultsSection = document.getElementById('post-results');
-    if (!resultsSection) return;
-    
-    // Extract data from URL
-    const username = extractUsername(url, platform);
-    const hashtags = extractHashtags(url, platform);
-    
-    // Generate scores for each category (weighted towards good results for demo)
-    const postScore = Math.random() < 0.7 ? Math.floor(Math.random() * 25) + 5 : Math.floor(Math.random() * 35) + 40;
-    const accountScore = Math.random() < 0.75 ? Math.floor(Math.random() * 20) + 5 : Math.floor(Math.random() * 40) + 35;
-    const hashtagScore = Math.random() < 0.8 ? Math.floor(Math.random() * 15) + 5 : Math.floor(Math.random() * 30) + 45;
-    
-    // Calculate overall score (weighted average)
-    const overallScore = Math.round((postScore * 0.4) + (accountScore * 0.4) + (hashtagScore * 0.2));
-    
-    // Update header
-    document.getElementById('results-icon').textContent = platform.icon;
-    document.getElementById('results-title').textContent = 'Analysis Complete';
-    document.getElementById('results-platform').textContent = `Platform: ${platform.name}`;
-    
-    // Update extracted info
-    document.getElementById('extracted-username').textContent = username;
-    document.getElementById('extracted-hashtags').textContent = hashtags.length > 0 ? hashtags.join(' ') : 'No hashtags found';
-    
-    // Update overall score
+    const resultsIcon = document.getElementById('results-icon');
+    const resultsTitle = document.getElementById('results-title');
+    const resultsPlatform = document.getElementById('results-platform');
     const scoreCircle = document.getElementById('score-circle');
     const scoreValue = document.getElementById('score-value');
-    scoreValue.textContent = `${overallScore}%`;
+    const factorsList = document.getElementById('factors-list');
     
-    scoreCircle.classList.remove('warning', 'danger');
-    if (overallScore >= 60) {
-        scoreCircle.classList.add('danger');
-    } else if (overallScore >= 35) {
-        scoreCircle.classList.add('warning');
-    }
+    if (!resultsSection) return;
     
-    // Update Post panel
-    updateAnalysisPanel('post', postScore, generatePostFactors(platform.name, postScore));
+    // Generate random score for demo (weighted towards good results)
+    const score = Math.random() < 0.7 ? Math.floor(Math.random() * 35) + 5 : Math.floor(Math.random() * 40) + 45;
     
-    // Update Account panel
-    updateAnalysisPanel('account', accountScore, generateAccountFactors(platform.name, accountScore, username));
+    // Update results
+    if (resultsIcon) resultsIcon.textContent = '📊';
+    if (resultsTitle) resultsTitle.textContent = 'Analysis Complete';
+    if (resultsPlatform) resultsPlatform.textContent = `Platform detected: ${platform.name}`;
+    if (scoreValue) scoreValue.textContent = `${score}%`;
     
-    // Update Hashtag panel
-    updateAnalysisPanel('hashtags', hashtagScore, generateHashtagFactors(platform.name, hashtagScore, hashtags));
-    
-    // Update citations
-    document.getElementById('citation-text').textContent = getCitationText(platform.name);
-    
-    // Show results
-    resultsSection.classList.remove('hidden');
-    resultsSection.style.display = 'block';
-    resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-}
-
-function updateAnalysisPanel(type, score, factors) {
-    const scoreEl = document.getElementById(`${type}-score`);
-    const factorsEl = document.getElementById(`${type}-factors`);
-    
-    if (scoreEl) {
-        scoreEl.classList.remove('good', 'warning', 'danger');
-        if (score < 30) {
-            scoreEl.textContent = '✓ Clear';
-            scoreEl.classList.add('good');
-        } else if (score < 55) {
-            scoreEl.textContent = '⚠ Warning';
-            scoreEl.classList.add('warning');
-        } else {
-            scoreEl.textContent = '✗ Issues';
-            scoreEl.classList.add('danger');
+    // Update score circle color
+    if (scoreCircle) {
+        scoreCircle.classList.remove('warning', 'danger');
+        if (score >= 60) {
+            scoreCircle.classList.add('danger');
+        } else if (score >= 35) {
+            scoreCircle.classList.add('warning');
         }
     }
     
-    if (factorsEl) {
-        factorsEl.innerHTML = factors.map(f => `
+    // Generate factors based on platform
+    if (factorsList) {
+        const factors = generateDemoFactors(platform.name, score);
+        factorsList.innerHTML = factors.map(f => `
             <li class="factor-${f.status}">
                 <span>${f.icon}</span>
                 ${f.text}
             </li>
         `).join('');
     }
+    
+    // Show results
+    resultsSection.classList.remove('hidden');
+    resultsSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
-function generatePostFactors(platformName, score) {
+function generateDemoFactors(platformName, score) {
     const factors = [];
     
     if (platformName === 'Twitter/X') {
-        factors.push({ icon: '✓', status: 'good', text: 'Post appears in search results' });
-        if (score < 40) {
-            factors.push({ icon: '✓', status: 'good', text: 'Visible in hashtag feeds' });
-            factors.push({ icon: '✓', status: 'good', text: 'No content warnings applied' });
-        } else {
-            factors.push({ icon: '⚠', status: 'warning', text: 'Lower than expected reach' });
-            if (score > 55) {
-                factors.push({ icon: '✗', status: 'bad', text: 'Post may be filtered from search' });
-            }
+        factors.push(
+            { icon: '✓', status: 'good', text: 'Post appears in hashtag searches' },
+            { icon: '✓', status: 'good', text: 'Profile visible to logged-out users' },
+            { icon: '✓', status: 'good', text: 'Replies visible in threads' }
+        );
+        
+        if (score > 30) {
+            factors.push({ icon: '⚠', status: 'warning', text: 'Lower than expected engagement rate' });
         }
-    } else if (platformName === 'Instagram') {
-        factors.push({ icon: '✓', status: 'good', text: 'Post accessible via direct link' });
-        if (score < 40) {
-            factors.push({ icon: '✓', status: 'good', text: 'Appears in Explore eligibility' });
-        } else {
-            factors.push({ icon: '⚠', status: 'warning', text: 'May have reduced Explore visibility' });
+        if (score > 50) {
+            factors.push({ icon: '✗', status: 'bad', text: 'Some replies hidden behind "Show more"' });
         }
-    } else if (platformName === 'TikTok') {
-        factors.push({ icon: '✓', status: 'good', text: 'Video is publicly accessible' });
-        if (score < 40) {
-            factors.push({ icon: '✓', status: 'good', text: 'FYP eligible' });
-        } else {
-            factors.push({ icon: '⚠', status: 'warning', text: 'May have reduced FYP distribution' });
+        if (score <= 30) {
+            factors.push({ icon: '✓', status: 'good', text: 'No quality filter restrictions detected' });
         }
     } else if (platformName === 'Reddit') {
-        factors.push({ icon: '✓', status: 'good', text: 'Post visible in subreddit' });
-        if (score < 40) {
-            factors.push({ icon: '✓', status: 'good', text: 'No AutoModerator removal' });
+        factors.push(
+            { icon: '✓', status: 'good', text: 'Post visible in subreddit listing' },
+            { icon: '✓', status: 'good', text: 'Profile page accessible' }
+        );
+        
+        if (score > 40) {
+            factors.push({ icon: '⚠', status: 'warning', text: 'Lower karma than expected for visibility' });
+            factors.push({ icon: '⚠', status: 'warning', text: 'Some comments may be filtered' });
         } else {
-            factors.push({ icon: '⚠', status: 'warning', text: 'May be spam filtered' });
+            factors.push({ icon: '✓', status: 'good', text: 'Comments appearing normally in threads' });
+            factors.push({ icon: '✓', status: 'good', text: 'No AutoModerator removal patterns' });
         }
     } else {
-        factors.push({ icon: '✓', status: 'good', text: 'Content is accessible' });
-        if (score >= 40) {
-            factors.push({ icon: '⚠', status: 'warning', text: 'Engagement below expected' });
+        // Generic factors for other platforms
+        factors.push(
+            { icon: '✓', status: 'good', text: 'Content appears to be visible' },
+            { icon: '✓', status: 'good', text: 'Profile accessible' }
+        );
+        
+        if (score > 40) {
+            factors.push({ icon: '⚠', status: 'warning', text: 'Engagement lower than expected' });
+        } else {
+            factors.push({ icon: '✓', status: 'good', text: 'Engagement within normal range' });
         }
     }
     
     return factors;
-}
-
-function generateAccountFactors(platformName, score, username) {
-    const factors = [];
-    
-    if (platformName === 'Twitter/X') {
-        factors.push({ icon: '✓', status: 'good', text: 'Profile visible to logged-out users' });
-        if (score < 35) {
-            factors.push({ icon: '✓', status: 'good', text: 'No search suggestion ban' });
-            factors.push({ icon: '✓', status: 'good', text: 'Replies visible in threads' });
-        } else if (score < 55) {
-            factors.push({ icon: '⚠', status: 'warning', text: 'Some replies may be deboosted' });
-        } else {
-            factors.push({ icon: '✗', status: 'bad', text: 'Reply deboosting detected' });
-            factors.push({ icon: '⚠', status: 'warning', text: 'Quality filter may be active' });
-        }
-    } else if (platformName === 'Reddit') {
-        if (score < 35) {
-            factors.push({ icon: '✓', status: 'good', text: 'Account not shadowbanned' });
-            factors.push({ icon: '✓', status: 'good', text: 'Comments visible in threads' });
-        } else {
-            factors.push({ icon: '⚠', status: 'warning', text: 'Possible subreddit-specific restrictions' });
-        }
-    } else if (platformName === 'Instagram') {
-        factors.push({ icon: '✓', status: 'good', text: 'Profile publicly accessible' });
-        if (score >= 40) {
-            factors.push({ icon: '⚠', status: 'warning', text: 'Reach may be algorithmically limited' });
-        }
-    } else {
-        factors.push({ icon: '✓', status: 'good', text: 'Account appears active' });
-        if (score >= 40) {
-            factors.push({ icon: '⚠', status: 'warning', text: 'Some visibility restrictions possible' });
-        }
-    }
-    
-    return factors;
-}
-
-function generateHashtagFactors(platformName, score, hashtags) {
-    const factors = [];
-    
-    if (platformName === 'Reddit') {
-        factors.push({ icon: '✓', status: 'good', text: 'Reddit does not use hashtags' });
-        return factors;
-    }
-    
-    if (hashtags.length === 0) {
-        factors.push({ icon: '✓', status: 'good', text: 'No hashtags to check' });
-        return factors;
-    }
-    
-    // Check for common "risky" hashtags
-    const riskyHashtags = ['#fyp', '#foryou', '#viral', '#likeforlike', '#follow'];
-    const bannedDemo = ['#shadowban'];
-    
-    const foundRisky = hashtags.filter(h => riskyHashtags.includes(h.toLowerCase()));
-    const foundBanned = hashtags.filter(h => bannedDemo.includes(h.toLowerCase()));
-    
-    if (score < 30) {
-        factors.push({ icon: '✓', status: 'good', text: `All ${hashtags.length} hashtags are safe` });
-    } else if (score < 50) {
-        if (foundRisky.length > 0) {
-            factors.push({ icon: '⚠', status: 'warning', text: `${foundRisky.join(', ')} may be overused` });
-        }
-        factors.push({ icon: '✓', status: 'good', text: 'No fully banned hashtags' });
-    } else {
-        if (foundBanned.length > 0) {
-            factors.push({ icon: '✗', status: 'bad', text: `${foundBanned.join(', ')} is restricted` });
-        }
-        if (foundRisky.length > 0) {
-            factors.push({ icon: '⚠', status: 'warning', text: `${foundRisky.join(', ')} reduces reach` });
-        }
-    }
-    
-    return factors;
-}
-
-function getCitationText(platformName) {
-    const citations = {
-        'Twitter/X': 'Analysis via Twitter/X API v2, search visibility tests, QFD status check, and historical engagement patterns.',
-        'Reddit': 'Analysis via Reddit API (/about.json), profile accessibility test, and subreddit visibility checks.',
-        'Instagram': 'Analysis via explore eligibility test, hashtag database (500+ entries), and engagement pattern analysis.',
-        'TikTok': 'Analysis via FYP eligibility indicators, hashtag database (300+ entries), and visibility pattern matching.',
-        'Facebook': 'Analysis via public visibility test and engagement pattern analysis.',
-        'YouTube': 'Analysis via search visibility test and recommendation eligibility indicators.',
-        'LinkedIn': 'Analysis via professional visibility test and reach pattern analysis.'
-    };
-    
-    return citations[platformName] || 'Analysis based on platform-specific visibility tests and historical patterns.';
 }
 
 /* =============================================================================
@@ -1254,7 +925,6 @@ document.addEventListener('DOMContentLoaded', function() {
     initPlatformGrid();
     initPostChecker();
     initCheckerInfoModal();
-    initPostInfoModal();
     initFAQAccordion();
     initSocialShare();
     initCookiePopup();

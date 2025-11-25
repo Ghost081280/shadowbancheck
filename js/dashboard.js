@@ -3,14 +3,33 @@
    ============================================================================= */
 
 // =============================================================================
-// DEMO DATA
+// USER DATA - Global for Shadow AI integration
 // =============================================================================
-const userData = {
+window.userData = {
     firstName: 'John',
     lastName: 'Doe',
     email: 'john@example.com',
-    plan: { name: 'Pro', price: 9.99, accountLimit: 15, aiPerDay: 10 },
-    usage: { accounts: 8, aiUsed: 7 }
+    plan: { 
+        name: 'Pro', 
+        price: 9.99, 
+        accountLimit: 15, 
+        aiPerDay: 10 
+    },
+    usage: { 
+        accounts: 8, 
+        aiUsed: 0  // Will be synced from localStorage by Shadow AI
+    }
+};
+
+// Plan configurations for reference
+const PLAN_CONFIG = {
+    'Free':      { price: 0,     accounts: 2,   ai: 3,   alerts: false },
+    'Starter':   { price: 4.99,  accounts: 5,   ai: 3,   alerts: true },
+    'Pro':       { price: 9.99,  accounts: 15,  ai: 10,  alerts: true },
+    'Premium':   { price: 14.99, accounts: 50,  ai: 25,  alerts: true },
+    'AI Pro':    { price: 9.99,  accounts: 0,   ai: 100, alerts: false }, // Add-on
+    'Power':     { price: 14.99, accounts: 100, ai: 200, alerts: true },
+    'Unlimited': { price: 19.99, accounts: 200, ai: 500, alerts: true }
 };
 
 const accounts = [
@@ -59,10 +78,14 @@ document.addEventListener('DOMContentLoaded', () => {
     initForms();
     populateDashboard();
     detectUserIP();
+    updateAIQuestionsDisplay();
     
     // Check URL hash
     const hash = window.location.hash.slice(1);
     if (hash) navigateTo(hash);
+    
+    // Listen for Shadow AI usage updates
+    window.addEventListener('shadowai-usage-updated', updateAIQuestionsDisplay);
 });
 
 // =============================================================================
@@ -78,7 +101,8 @@ function initNavigation() {
     });
 }
 
-function navigateTo(sectionId) {
+// Make navigateTo global for Shadow AI links
+window.navigateTo = function(sectionId) {
     window.location.hash = sectionId;
     
     document.querySelectorAll('.nav-link').forEach(link => {
@@ -90,7 +114,7 @@ function navigateTo(sectionId) {
     });
     
     document.querySelector('.content-scroll').scrollTop = 0;
-}
+};
 
 // =============================================================================
 // SIDEBAR (Mobile)
@@ -154,6 +178,11 @@ function initQuickActions() {
                 case 'check-hashtags':
                     navigateTo('tools');
                     document.getElementById('hashtag-input')?.focus();
+                    break;
+                case 'ask-ai':
+                    if (window.ShadowAI && window.ShadowAI.open) {
+                        window.ShadowAI.open();
+                    }
                     break;
             }
         });
@@ -244,7 +273,7 @@ window.removeAccount = function(id) {
     const idx = accounts.findIndex(a => a.id === id);
     if (idx > -1) {
         accounts.splice(idx, 1);
-        userData.usage.accounts--;
+        window.userData.usage.accounts--;
         renderAccounts();
         populateDashboard();
         showToast('✅', 'Account removed');
@@ -291,7 +320,7 @@ function addAccount() {
         return;
     }
     
-    if (accounts.length >= userData.plan.accountLimit) {
+    if (accounts.length >= window.userData.plan.accountLimit) {
         showToast('⚠️', 'Account limit reached. Upgrade to add more!');
         closeModal();
         return;
@@ -309,7 +338,7 @@ function addAccount() {
     };
     
     accounts.push(newAcc);
-    userData.usage.accounts++;
+    window.userData.usage.accounts++;
     
     renderAccounts();
     renderMiniAccounts();
@@ -605,6 +634,39 @@ function initForms() {
 }
 
 // =============================================================================
+// AI QUESTIONS DISPLAY
+// =============================================================================
+function updateAIQuestionsDisplay() {
+    const limit = window.userData.plan.aiPerDay;
+    let used = 0;
+    
+    // Get usage from Shadow AI if available
+    if (window.ShadowAI && window.ShadowAI.getUsage) {
+        used = window.ShadowAI.getUsage();
+    }
+    
+    const remaining = Math.max(0, limit - used);
+    
+    // Update sidebar
+    setText('sidebar-ai', `${used}/${limit}`);
+    
+    // Update support section
+    const aiQuestionsEl = document.getElementById('ai-questions-left');
+    if (aiQuestionsEl) {
+        if (remaining === 0) {
+            aiQuestionsEl.textContent = '0 questions remaining today';
+            aiQuestionsEl.style.color = '#ef4444';
+        } else {
+            aiQuestionsEl.textContent = `${remaining} questions/day remaining`;
+            aiQuestionsEl.style.color = '';
+        }
+    }
+    
+    // Sync to userData
+    window.userData.usage.aiUsed = used;
+}
+
+// =============================================================================
 // POPULATE DASHBOARD
 // =============================================================================
 function populateDashboard() {
@@ -619,22 +681,28 @@ function populateDashboard() {
     setText('stat-total', accounts.length);
     
     // Sidebar
-    setText('sidebar-accounts', `${userData.usage.accounts}/${userData.plan.accountLimit}`);
-    setText('sidebar-ai', `${userData.usage.aiUsed}/${userData.plan.aiPerDay}`);
-    setText('sidebar-user-name', `${userData.firstName} ${userData.lastName}`);
-    setText('sidebar-user-email', userData.email);
+    setText('sidebar-accounts', `${window.userData.usage.accounts}/${window.userData.plan.accountLimit}`);
+    setText('sidebar-plan-name', `⭐ ${window.userData.plan.name} Plan`);
+    setText('sidebar-user-name', `${window.userData.firstName} ${window.userData.lastName}`);
+    setText('sidebar-user-email', window.userData.email);
     
     // User name
-    setText('user-first-name', userData.firstName);
+    setText('user-first-name', window.userData.firstName);
     
     // Accounts page
     setText('accounts-count', accounts.length);
-    setText('accounts-limit', userData.plan.accountLimit);
+    setText('accounts-limit', window.userData.plan.accountLimit);
     setText('bulk-count', accounts.length);
+    
+    // Settings - current plan
+    setText('current-plan-name', `⭐ ${window.userData.plan.name} Plan`);
+    setText('current-plan-price', `$${window.userData.plan.price.toFixed(2)}/mo`);
+    setText('current-plan-features', `${window.userData.plan.accountLimit} accounts • ${window.userData.plan.aiPerDay} AI questions/day • Email + SMS alerts`);
     
     // Render
     renderAccounts();
     renderMiniAccounts();
+    updateAIQuestionsDisplay();
 }
 
 function setText(id, text) {

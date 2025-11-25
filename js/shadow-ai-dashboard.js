@@ -169,7 +169,7 @@ function createWidget() {
                 <div class="copilot-header-left">
                     <span class="copilot-header-emoji">🤖</span>
                     <div class="copilot-header-text">
-                        <h3>Shadow AI <span class="plan-badge">${plan}</span></h3>
+                        <h3>Shadow AI ${plan !== 'Free' ? plan : ''}</h3>
                         <p class="copilot-status">
                             <span class="copilot-status-dot"></span>
                             <span id="shadow-ai-counter">${used}/${limit} today</span>

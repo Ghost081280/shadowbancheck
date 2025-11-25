@@ -523,61 +523,6 @@ li {
     color: var(--text);
 }
 
-/* Desktop Nav - Header Navigation */
-.nav-desktop {
-    display: flex;
-    align-items: center;
-    gap: var(--space-md);
-}
-
-/* Mobile Nav Toggle - Hidden on Desktop */
-.nav-toggle {
-    display: none;
-    flex-direction: column;
-    justify-content: center;
-    gap: 5px;
-    width: 44px;
-    height: 44px;
-    padding: var(--space-xs);
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    z-index: calc(var(--z-overlay) + 1);
-}
-
-.nav-toggle span {
-    display: block;
-    width: 24px;
-    height: 2px;
-    background: var(--text);
-    border-radius: 2px;
-    transition: all var(--transition-base);
-}
-
-/* Hamburger Animation */
-.nav-toggle.active span:nth-child(1) {
-    transform: rotate(45deg) translate(5px, 5px);
-}
-
-.nav-toggle.active span:nth-child(2) {
-    opacity: 0;
-}
-
-.nav-toggle.active span:nth-child(3) {
-    transform: rotate(-45deg) translate(5px, -5px);
-}
-
-/* Show hamburger on mobile */
-@media (max-width: 768px) {
-    .nav-desktop {
-        display: none;
-    }
-    
-    .nav-toggle {
-        display: flex;
-    }
-}
-
 /* =============================================================================
    BADGES & TAGS
    ============================================================================= */
@@ -3864,5 +3809,25 @@ li {
     .step-arrow {
         transform: rotate(90deg);
         font-size: 1.5rem;
+    }
+}
+
+/* =============================================================================
+   DESKTOP NAV - Added for shared header component
+   ============================================================================= */
+.nav-desktop {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+}
+
+/* Mobile: Hide desktop nav, show hamburger */
+@media (max-width: 768px) {
+    .nav-desktop {
+        display: none;
+    }
+    
+    .nav-toggle {
+        display: flex;
     }
 }

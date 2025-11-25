@@ -61,6 +61,55 @@ const bannedHashtags = {
 window.bannedHashtags = bannedHashtags;
 
 /* =============================================================================
+   SEARCH COUNTER - HASHTAG SPECIFIC
+   ============================================================================= */
+const HASHTAG_STORAGE_KEY = 'shadowban_hashtag_searches';
+const MAX_FREE_HASHTAG_SEARCHES = 3;
+
+function getHashtagSearchCount() {
+    const data = JSON.parse(localStorage.getItem(HASHTAG_STORAGE_KEY) || '{}');
+    const today = new Date().toDateString();
+    
+    if (data.date !== today) {
+        return 0;
+    }
+    
+    return data.count || 0;
+}
+
+function getRemainingHashtagSearches() {
+    return Math.max(0, MAX_FREE_HASHTAG_SEARCHES - getHashtagSearchCount());
+}
+
+function incrementHashtagSearchCount() {
+    const data = JSON.parse(localStorage.getItem(HASHTAG_STORAGE_KEY) || '{}');
+    const today = new Date().toDateString();
+    
+    if (data.date !== today) {
+        localStorage.setItem(HASHTAG_STORAGE_KEY, JSON.stringify({
+            date: today,
+            count: 1
+        }));
+    } else {
+        localStorage.setItem(HASHTAG_STORAGE_KEY, JSON.stringify({
+            date: today,
+            count: (data.count || 0) + 1
+        }));
+    }
+    
+    updateHashtagCounterDisplay();
+}
+
+function updateHashtagCounterDisplay() {
+    const remaining = getRemainingHashtagSearches();
+    
+    const checksDisplay = document.getElementById('checks-remaining-display');
+    if (checksDisplay) {
+        checksDisplay.textContent = `${remaining} free checks left today`;
+    }
+}
+
+/* =============================================================================
    HASHTAG PARSING
    ============================================================================= */
 function parseHashtags(input) {
@@ -198,6 +247,25 @@ function displayResults(results) {
 }
 
 /* =============================================================================
+   LIMIT MODAL
+   ============================================================================= */
+function showLimitModal() {
+    const modal = document.getElementById('limit-modal');
+    if (modal) {
+        modal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+function hideLimitModal() {
+    const modal = document.getElementById('limit-modal');
+    if (modal) {
+        modal.classList.add('hidden');
+        document.body.style.overflow = '';
+    }
+}
+
+/* =============================================================================
    FORM HANDLERS
    ============================================================================= */
 function initHashtagForm() {
@@ -223,7 +291,7 @@ function initHashtagForm() {
     
     // Example button
     exampleBtn?.addEventListener('click', function() {
-        input.value = '#fitness #healthy #motivation #likeforlike #travel #food #photography #love #instagood';
+        input.value = '#fitness #healthy #motivation #likeforlike #travel #food #photography #love #instagood #fyp';
         updateHashtagCount();
     });
 }
@@ -233,54 +301,60 @@ function handleHashtagCheck() {
     const value = input?.value.trim();
     
     if (!value) {
-        showError('Please enter at least one hashtag');
+        showToast('Please enter at least one hashtag');
         return;
     }
     
     const hashtags = parseHashtags(value);
     
     if (hashtags.length === 0) {
-        showError('No valid hashtags found');
+        showToast('No valid hashtags found');
         return;
     }
     
     // Check remaining searches for free users
-    const remaining = window.ShadowBan?.getRemainingSearches() || 0;
+    const remaining = getRemainingHashtagSearches();
     if (remaining <= 0) {
-        showUpgradeModal();
+        showLimitModal();
         return;
     }
     
     // Increment search count
-    window.ShadowBan?.incrementSearchCount();
+    incrementHashtagSearchCount();
     
     // Check hashtags
     const results = checkAllHashtags(hashtags);
     
     // Display results
     displayResults(results);
+    
+    // Check if this was the last free search
+    if (getRemainingHashtagSearches() <= 0) {
+        // Show modal after results are displayed
+        setTimeout(() => {
+            showLimitModal();
+        }, 1500);
+    }
 }
 
-function showError(message) {
+/* =============================================================================
+   TOAST NOTIFICATIONS
+   ============================================================================= */
+function showToast(message, type = '') {
     let toast = document.getElementById('toast');
     if (!toast) {
         toast = document.createElement('div');
         toast.id = 'toast';
-        toast.className = 'toast error';
+        toast.className = 'toast';
         document.body.appendChild(toast);
     }
     
     toast.textContent = message;
-    toast.classList.add('visible', 'error');
+    toast.className = `toast visible ${type}`;
     
     setTimeout(() => {
-        toast.classList.remove('visible', 'error');
+        toast.classList.remove('visible');
     }, 4000);
-}
-
-function showUpgradeModal() {
-    alert('You\'ve used all your free checks for today. Visit our pricing page to upgrade for unlimited access!');
-    // Could be enhanced with a proper modal
 }
 
 /* =============================================================================
@@ -307,15 +381,39 @@ function initResultsActions() {
         const results = document.getElementById('results-list');
         if (!results) return;
         
-        let text = 'Hashtag Check Results\n';
-        text += '=====================\n\n';
+        let text = 'Hashtag Check Results - ShadowBanCheck.io\n';
+        text += '==========================================\n\n';
+        text += `Generated: ${new Date().toLocaleString()}\n\n`;
         
         const items = results.querySelectorAll('.result-item');
+        
+        // Group by status
+        const safe = [];
+        const banned = [];
+        const restricted = [];
+        
         items.forEach(item => {
             const hashtag = item.querySelector('.result-hashtag')?.textContent || '';
-            const status = item.querySelector('.result-status')?.textContent || '';
-            text += `${hashtag}: ${status}\n`;
+            if (item.classList.contains('safe')) {
+                safe.push(hashtag);
+            } else if (item.classList.contains('banned')) {
+                banned.push(hashtag);
+            } else if (item.classList.contains('restricted')) {
+                restricted.push(hashtag);
+            }
         });
+        
+        text += `✅ SAFE (${safe.length}):\n`;
+        text += safe.join(' ') + '\n\n';
+        
+        text += `🚫 BANNED (${banned.length}):\n`;
+        text += banned.join(' ') + '\n\n';
+        
+        text += `⚠️ RESTRICTED (${restricted.length}):\n`;
+        text += restricted.join(' ') + '\n\n';
+        
+        text += '---\n';
+        text += 'Check your hashtags at: https://shadowbancheck.io/hashtag-checker.html\n';
         
         // Download as text file
         const blob = new Blob([text], { type: 'text/plain' });
@@ -325,24 +423,9 @@ function initResultsActions() {
         a.download = 'hashtag-results.txt';
         a.click();
         URL.revokeObjectURL(url);
+        
+        showToast('Results exported!');
     });
-}
-
-function showToast(message) {
-    let toast = document.getElementById('toast');
-    if (!toast) {
-        toast = document.createElement('div');
-        toast.id = 'toast';
-        toast.className = 'toast';
-        document.body.appendChild(toast);
-    }
-    
-    toast.textContent = message;
-    toast.classList.add('visible');
-    
-    setTimeout(() => {
-        toast.classList.remove('visible');
-    }, 3000);
 }
 
 /* =============================================================================
@@ -352,6 +435,18 @@ document.addEventListener('DOMContentLoaded', function() {
     initHashtagForm();
     initResultsActions();
     updateHashtagCount();
+    updateHashtagCounterDisplay();
     
     console.log('✅ Hashtag Checker initialized');
 });
+
+/* =============================================================================
+   EXPORTS
+   ============================================================================= */
+window.HashtagChecker = {
+    getRemainingHashtagSearches,
+    incrementHashtagSearchCount,
+    updateHashtagCounterDisplay,
+    showLimitModal,
+    hideLimitModal
+};

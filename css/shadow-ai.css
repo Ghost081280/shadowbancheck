@@ -373,6 +373,11 @@
     flex-direction: row-reverse;
 }
 
+/* Hide user avatar - right side is obviously the user */
+.user-message .message-avatar {
+    display: none;
+}
+
 .message-avatar {
     width: 36px;
     height: 36px;
@@ -611,6 +616,10 @@
     opacity: 0.9;
 }
 
+.demo-status.online {
+    color: #22c55e;
+}
+
 .demo-messages {
     padding: var(--space-lg);
     display: flex;
@@ -649,7 +658,7 @@
     animation: fadeInUp 0.3s ease;
 }
 
-/* User messages - Keep purple bubble */
+/* User messages - Keep purple bubble, NO avatar */
 .demo-msg.user {
     padding: var(--space-sm) var(--space-md);
     border-radius: var(--radius-lg);
@@ -665,13 +674,34 @@
     transform: scale(1.02);
 }
 
-/* AI messages - Floating text, no background box */
+/* AI messages - With avatar, floating text */
 .demo-msg.ai {
+    display: flex;
+    gap: var(--space-sm);
+    align-items: flex-start;
     background: transparent;
-    padding: var(--space-xs) 0;
+    padding: 0;
     border: none;
     border-radius: 0;
+    max-width: 90%;
+}
+
+.demo-msg.ai .demo-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--gradient-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    flex-shrink: 0;
+    box-shadow: var(--shadow-sm);
+}
+
+.demo-msg.ai .demo-text {
     color: var(--text-secondary);
+    padding: var(--space-xs) 0;
 }
 
 .demo-msg.ai a {
@@ -679,15 +709,34 @@
     text-decoration: underline;
 }
 
-/* Demo typing indicator - Floating dots, no box */
+/* Demo typing indicator - With avatar, floating dots */
 .demo-typing-indicator {
     display: flex;
-    gap: 4px;
-    padding: var(--space-xs) 0;
+    gap: var(--space-sm);
+    align-items: flex-start;
+    padding: 0;
     width: fit-content;
 }
 
-.demo-typing-indicator span {
+.demo-typing-indicator .demo-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--gradient-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+
+.demo-typing-indicator .demo-dots {
+    display: flex;
+    gap: 4px;
+    padding: var(--space-sm) 0;
+}
+
+.demo-typing-indicator .demo-dots span {
     width: 8px;
     height: 8px;
     background: var(--primary-light);
@@ -695,8 +744,8 @@
     animation: typingBounce 1.4s infinite;
 }
 
-.demo-typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
-.demo-typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+.demo-typing-indicator .demo-dots span:nth-child(2) { animation-delay: 0.2s; }
+.demo-typing-indicator .demo-dots span:nth-child(3) { animation-delay: 0.4s; }
 
 @keyframes fadeInUp {
     from {

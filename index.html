@@ -55,15 +55,26 @@
                     <div class="power-preview">
                         <div class="preview-item">
                             <span class="preview-icon">🔗</span>
-                            <span>Post Visibility</span>
+                            <div class="preview-text">
+                                <span class="preview-label">Post Visibility</span>
+                                <span class="preview-desc">Is your content hidden?</span>
+                            </div>
                         </div>
+                        <div class="preview-divider">+</div>
                         <div class="preview-item">
                             <span class="preview-icon">👤</span>
-                            <span>Account Status</span>
+                            <div class="preview-text">
+                                <span class="preview-label">Account Status</span>
+                                <span class="preview-desc">Are you restricted?</span>
+                            </div>
                         </div>
+                        <div class="preview-divider">+</div>
                         <div class="preview-item">
                             <span class="preview-icon">#️⃣</span>
-                            <span>Hashtag Health</span>
+                            <div class="preview-text">
+                                <span class="preview-label">Hashtag Health</span>
+                                <span class="preview-desc">Any banned tags?</span>
+                            </div>
                         </div>
                     </div>
                     
@@ -105,7 +116,7 @@
                         <div class="overall-score-wrap">
                             <div class="overall-score" id="overall-score-circle">
                                 <span class="score-number" id="overall-score-value">28%</span>
-                                <span class="score-text">Overall Risk</span>
+                                <span class="score-text">Shadow Ban<br>Probability</span>
                             </div>
                         </div>
                     </div>
@@ -151,7 +162,6 @@
                                 <li class="factor-good"><span>✓</span> Not search banned</li>
                                 <li class="factor-warning"><span>⚠</span> QFD partially enabled</li>
                             </ul>
-                            <a href="checker.html" class="panel-cta">Full Account Check →</a>
                         </div>
                         
                         <!-- Panel 3: Hashtag Health -->
@@ -177,13 +187,12 @@
                                 <li class="factor-warning"><span>⚠</span> 1 hashtag low-reach</li>
                                 <li class="factor-bad"><span>✗</span> 1 hashtag restricted</li>
                             </ul>
-                            <a href="hashtag-checker.html" class="panel-cta">Check More Hashtags →</a>
                         </div>
                     </div>
                     
-                    <!-- Data Sources Citation -->
+                    <!-- Engine Analysis -->
                     <div class="results-sources">
-                        <h5>🔌 Data Sources Used</h5>
+                        <h5>🧠 Our Engine Analyzed These Sources</h5>
                         <div class="sources-grid" id="sources-grid">
                             <div class="source-item">
                                 <span class="source-icon">🐦</span>
@@ -207,6 +216,7 @@
                                 </div>
                             </div>
                         </div>
+                        <p class="engine-note">Our Engine takes all collected data and assigns a <strong>Shadow Ban Probability Score</strong> based on multiple detection signals.</p>
                     </div>
                     
                     <!-- Results CTA -->
@@ -734,7 +744,7 @@
                             <div>
                                 <strong>Email Us Directly</strong>
                                 <p>Send platform suggestions or questions to our team</p>
-                                <a href="mailto:support@shadowbancheck.io" class="btn-method">Send Email</a>
+                                <a href="/cdn-cgi/l/email-protection#10636560607f626450637871747f6772717e737875737b3e797f" class="btn-method">Send Email</a>
                             </div>
                         </div>
                         
@@ -858,24 +868,16 @@
                 </div>
                 
                 <div class="modal-tech-note">
-                    <h4>🔌 Detection Methods by Platform</h4>
-                    <div class="detection-methods">
-                        <div class="method-item">
-                            <strong>🐦 Twitter/X:</strong>
-                            <p>API v2, QFD status check, search visibility test, logged-out profile test, shadowban.eu integration</p>
-                        </div>
-                        <div class="method-item">
-                            <strong>🤖 Reddit:</strong>
-                            <p>/about.json API (404 = shadowbanned), profile accessibility, comment visibility test</p>
-                        </div>
-                        <div class="method-item">
-                            <strong>📸 Instagram:</strong>
-                            <p>Explore eligibility check, 500+ banned hashtag database, engagement pattern analysis</p>
-                        </div>
-                        <div class="method-item">
-                            <strong>🎵 TikTok:</strong>
-                            <p>FYP eligibility test, 300+ restricted hashtag database, shadow ban indicator patterns</p>
-                        </div>
+                    <h4>🧠 How Our Engine Works</h4>
+                    <div class="engine-description">
+                        <p>Our Shadow Ban Detection Engine collects data from multiple sources to give you the most accurate probability score possible:</p>
+                        <ul class="engine-sources">
+                            <li><strong>Platform APIs</strong> — Direct integration where available</li>
+                            <li><strong>AI-Powered Web Analysis</strong> — 3rd party scraping & pattern recognition</li>
+                            <li><strong>Historical Data</strong> — Comparing your metrics to known baselines</li>
+                            <li><strong>Community Reports</strong> — Cross-referencing with reported bans</li>
+                        </ul>
+                        <p class="engine-conclusion">After gathering all available signals, <strong>our Engine analyzes the data and assigns a Shadow Ban Probability Score</strong> with detailed breakdowns so you know exactly where you stand.</p>
                     </div>
                 </div>
             </div>
@@ -952,8 +954,4 @@
     <!-- Shadow AI Chatbot - Created dynamically by shadow-ai.js -->
 
     <!-- Scripts -->
-    <script src="js/shared-components.js"></script>
-    <script src="js/main.js"></script>
-    <script src="js/shadow-ai.js"></script>
-</body>
-</html>
+    <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js">

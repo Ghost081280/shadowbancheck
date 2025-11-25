@@ -150,7 +150,7 @@ function createWidget() {
     
     const widgetHTML = `
         <!-- Shadow AI Button Container -->
-        <div class="shadow-ai-container">
+        <div class="shadow-ai-container ready">
             <div class="shadow-ai-glow"></div>
             <button id="shadow-ai-btn" class="copilot-btn" aria-label="Open Shadow AI Assistant">
                 <span class="copilot-emoji">🤖</span>

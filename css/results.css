@@ -130,17 +130,17 @@
 
 .check-card.passed {
     border-color: var(--success);
-    background: linear-gradient(135deg, var(--success-bg) 0%, var(--card) 100%);
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.05) 0%, var(--card) 100%);
 }
 
 .check-card.warning {
     border-color: var(--warning);
-    background: linear-gradient(135deg, var(--warning-bg) 0%, var(--card) 100%);
+    background: linear-gradient(135deg, rgba(251, 191, 36, 0.05) 0%, var(--card) 100%);
 }
 
 .check-card.failed {
     border-color: var(--danger);
-    background: linear-gradient(135deg, var(--danger-bg) 0%, var(--card) 100%);
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.05) 0%, var(--card) 100%);
 }
 
 .check-header {
@@ -163,7 +163,23 @@
     color: var(--text-muted);
     font-size: 0.875rem;
     line-height: 1.6;
-    margin: 0;
+    margin: 0 0 var(--space-sm) 0;
+}
+
+.check-citation {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    color: var(--primary-light);
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-top: var(--space-sm);
+    padding-top: var(--space-sm);
+    border-top: 1px solid var(--border);
+}
+
+.check-citation-icon {
+    font-size: 0.875rem;
 }
 
 /* =============================================================================
@@ -203,18 +219,10 @@
 .recommendation-item.success { border-left-color: var(--success); }
 .recommendation-item.warning { border-left-color: var(--warning); }
 .recommendation-item.danger { border-left-color: var(--danger); }
-
-.recommendation-title {
-    font-weight: 600;
-    font-size: 1rem;
-    margin-bottom: var(--space-xs);
-    display: flex;
-    align-items: center;
-    gap: var(--space-xs);
-}
+.recommendation-item.info { border-left-color: var(--primary); }
 
 .recommendation-text {
-    color: var(--text-muted);
+    color: var(--text-secondary);
     font-size: 0.875rem;
     line-height: 1.6;
     margin: 0;
@@ -251,6 +259,116 @@
     border-color: var(--primary);
     color: var(--primary-light);
     transform: translateY(-2px);
+}
+
+/* =============================================================================
+   COMPACT MONITORING CTA
+   ============================================================================= */
+.monitoring-cta-compact {
+    margin-bottom: var(--space-2xl);
+}
+
+.monitoring-cta-content {
+    max-width: 900px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    gap: var(--space-lg);
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(168, 85, 247, 0.1) 100%);
+    border: 2px solid rgba(99, 102, 241, 0.3);
+    border-radius: var(--radius-xl);
+    padding: var(--space-lg) var(--space-xl);
+}
+
+.monitoring-icon {
+    font-size: 2.5rem;
+    flex-shrink: 0;
+}
+
+.monitoring-text {
+    flex: 1;
+}
+
+.monitoring-text h3 {
+    font-size: 1.125rem;
+    margin-bottom: var(--space-xs);
+    color: var(--text);
+}
+
+.monitoring-text p {
+    color: var(--text-muted);
+    font-size: 0.875rem;
+    margin: 0;
+}
+
+.monitoring-cta-btn {
+    background: var(--gradient-primary);
+    color: white;
+    padding: var(--space-sm) var(--space-xl);
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    white-space: nowrap;
+    transition: all var(--transition-base);
+    text-decoration: none;
+    box-shadow: var(--shadow-sm);
+}
+
+.monitoring-cta-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+    color: white;
+}
+
+/* =============================================================================
+   SHARE SECTION - MATCH INDEX PAGE STYLE
+   ============================================================================= */
+.share-section {
+    background: var(--bg-secondary);
+}
+
+.share-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--space-lg);
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.share-card {
+    background: var(--card);
+    border: 2px solid var(--border);
+    border-radius: var(--radius-xl);
+    padding: var(--space-xl);
+    text-align: center;
+    transition: all var(--transition-base);
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-md);
+}
+
+.share-card:hover {
+    border-color: var(--primary);
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-glow-md);
+}
+
+.share-card-icon {
+    font-size: 3rem;
+    font-weight: 700;
+    display: block;
+}
+
+.share-card h3 {
+    font-size: 1.125rem;
+    margin-bottom: var(--space-2xs);
+}
+
+.share-card p {
+    color: var(--text-muted);
+    font-size: 0.875rem;
+    margin: 0;
 }
 
 /* =============================================================================
@@ -311,123 +429,6 @@
 }
 
 /* =============================================================================
-   SHARE RESULTS
-   ============================================================================= */
-.share-results-section {
-    text-align: center;
-    margin-bottom: var(--space-2xl);
-}
-
-.share-results-section h3 {
-    font-size: 1.25rem;
-    margin-bottom: var(--space-xs);
-}
-
-.share-results-section > p {
-    color: var(--text-muted);
-    font-size: 0.875rem;
-    margin-bottom: var(--space-md);
-}
-
-.share-buttons-results {
-    display: flex;
-    gap: var(--space-sm);
-    justify-content: center;
-    flex-wrap: wrap;
-}
-
-.btn-share-result {
-    display: flex;
-    align-items: center;
-    gap: var(--space-xs);
-    padding: var(--space-sm) var(--space-md);
-    border: 2px solid var(--border);
-    border-radius: var(--radius-md);
-    background: var(--card);
-    color: var(--text);
-    font-weight: 600;
-    font-size: 0.875rem;
-    cursor: pointer;
-    transition: all var(--transition-base);
-}
-
-.btn-share-result:hover {
-    border-color: var(--primary);
-    transform: translateY(-2px);
-}
-
-.btn-share-result .share-icon {
-    font-size: 1rem;
-    font-weight: 700;
-}
-
-/* =============================================================================
-   UPGRADE CTA
-   ============================================================================= */
-.upgrade-cta-section {
-    margin-bottom: var(--space-2xl);
-}
-
-.upgrade-cta-card {
-    background: var(--gradient-card);
-    border: 2px solid var(--primary);
-    border-radius: var(--radius-xl);
-    padding: var(--space-xl);
-    text-align: center;
-    max-width: 700px;
-    margin: 0 auto;
-}
-
-.upgrade-cta-icon {
-    font-size: 3rem;
-    margin-bottom: var(--space-md);
-}
-
-.upgrade-cta-card h3 {
-    font-size: 1.5rem;
-    margin-bottom: var(--space-sm);
-}
-
-.upgrade-cta-card > p {
-    color: var(--text-muted);
-    margin-bottom: var(--space-md);
-}
-
-.upgrade-features {
-    list-style: none;
-    padding: 0;
-    margin: 0 0 var(--space-lg) 0;
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: var(--space-md);
-}
-
-.upgrade-features li {
-    color: var(--text-secondary);
-    font-size: 0.9375rem;
-}
-
-.btn-upgrade-cta {
-    display: inline-block;
-    background: var(--gradient-primary);
-    color: white;
-    padding: var(--space-md) var(--space-xl);
-    border-radius: var(--radius-md);
-    font-weight: 700;
-    font-size: 1.125rem;
-    transition: all var(--transition-base);
-    text-decoration: none;
-    box-shadow: var(--shadow-md);
-}
-
-.btn-upgrade-cta:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-lg);
-    color: white;
-}
-
-/* =============================================================================
    RESPONSIVE - RESULTS PAGE
    ============================================================================= */
 @media (max-width: 768px) {
@@ -465,22 +466,36 @@
         justify-content: center;
     }
     
+    .monitoring-cta-content {
+        flex-direction: column;
+        text-align: center;
+        padding: var(--space-lg);
+    }
+    
+    .monitoring-text {
+        order: 1;
+    }
+    
+    .monitoring-icon {
+        order: 0;
+    }
+    
+    .monitoring-cta-btn {
+        order: 2;
+    }
+    
+    .share-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+    
     .cross-promote {
         flex-direction: column;
         text-align: center;
     }
-    
-    .share-buttons-results {
-        flex-direction: column;
-    }
-    
-    .btn-share-result {
-        width: 100%;
-        justify-content: center;
-    }
-    
-    .upgrade-features {
-        flex-direction: column;
-        gap: var(--space-xs);
+}
+
+@media (max-width: 480px) {
+    .share-grid {
+        grid-template-columns: 1fr;
     }
 }

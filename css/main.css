@@ -826,28 +826,32 @@ strong, b {
 }
 
 .checker-info-btn {
-    width: 36px;
-    height: 36px;
+    width: 44px;
+    height: 44px;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(99, 102, 241, 0.1);
-    border: 1px solid rgba(99, 102, 241, 0.3);
+    background: rgba(99, 102, 241, 0.15);
+    border: 2px solid rgba(99, 102, 241, 0.4);
     border-radius: 50%;
     color: var(--primary-light);
     cursor: pointer;
     transition: all var(--transition-fast);
     flex-shrink: 0;
+    margin-left: auto;
 }
 
 .checker-info-btn:hover {
-    background: rgba(99, 102, 241, 0.2);
+    background: rgba(99, 102, 241, 0.25);
     border-color: var(--primary);
-    transform: scale(1.1);
+    transform: scale(1.05);
+    box-shadow: 0 0 12px rgba(99, 102, 241, 0.3);
 }
 
 .checker-info-btn svg {
     flex-shrink: 0;
+    width: 24px;
+    height: 24px;
 }
 
 .checker-form {
@@ -1188,13 +1192,15 @@ strong, b {
 
 .audience-card {
     display: flex;
-    align-items: flex-start;
+    flex-direction: column;
+    align-items: center;
     gap: var(--space-md);
     background: var(--card);
     border: 1px solid var(--border);
     border-radius: var(--radius-xl);
-    padding: var(--space-lg);
+    padding: var(--space-xl);
     transition: all var(--transition-base);
+    text-align: center;
 }
 
 .audience-card:hover {
@@ -1203,33 +1209,58 @@ strong, b {
 }
 
 .audience-icon {
-    font-size: 1.75rem;
+    font-size: 2.5rem;
     flex-shrink: 0;
 }
 
+.audience-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+}
+
 .audience-content h4 {
-    font-size: 1rem;
-    margin-bottom: var(--space-2xs);
+    font-size: 1.125rem;
+    margin-bottom: 0;
 }
 
 .audience-content p {
     color: var(--text-muted);
-    font-size: 0.875rem;
-    margin-bottom: var(--space-sm);
-    line-height: 1.5;
+    font-size: 0.9375rem;
+    margin: 0;
+    line-height: 1.6;
 }
 
-.audience-link {
-    color: var(--primary-light);
-    font-size: 0.875rem;
+.audience-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-xs);
+    padding: var(--space-sm) var(--space-lg);
+    background: var(--gradient-primary);
+    color: white !important;
+    font-size: 0.9375rem;
     font-weight: 600;
+    border-radius: var(--radius-md);
+    transition: all var(--transition-base);
+    text-decoration: none;
+    margin-top: auto;
+    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
 }
 
-.audience-footer {
+.audience-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.5);
+    color: white !important;
+}
+
+.audience-footer-centered {
     text-align: center;
     color: var(--text-muted);
-    font-size: 0.875rem;
-    margin-bottom: var(--space-2xl);
+    font-size: 0.9375rem;
+    margin: var(--space-2xl) auto 0;
+    max-width: 700px;
 }
 
 /* =============================================================================
@@ -2845,6 +2876,15 @@ strong, b {
     .pricing-grid { grid-template-columns: 1fr; }
     .contact-grid { grid-template-columns: 1fr; }
     .footer-grid { grid-template-columns: 1fr; gap: var(--space-xl); }
+    
+    /* Audience cards on mobile */
+    .audience-card {
+        padding: var(--space-lg);
+    }
+    
+    .audience-icon {
+        font-size: 2rem;
+    }
     
     /* Hero */
     .hero { padding: var(--space-2xl) 0 var(--space-xl); }

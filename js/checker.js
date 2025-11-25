@@ -65,16 +65,6 @@ function incrementSearchCount() {
             count: (data.count || 0) + 1
         }));
     }
-    
-    updateSearchCounter();
-}
-
-function updateSearchCounter() {
-    const remaining = getRemainingSearches();
-    const counterEl = document.getElementById('searches-remaining');
-    if (counterEl) {
-        counterEl.textContent = `${remaining}/${MAX_FREE_SEARCHES}`;
-    }
 }
 
 /* =============================================================================
@@ -468,8 +458,6 @@ document.addEventListener('DOMContentLoaded', function() {
             if (window.platformData) buildPlatformGrid();
         });
     }
-    
-    updateSearchCounter();
     
     // Click handler for platforms
     document.addEventListener('click', function(e) {

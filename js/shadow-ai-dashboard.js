@@ -139,14 +139,19 @@ function updateUsageDisplay() {
 // WIDGET HTML
 // ============================================
 function createWidget() {
+    console.log('📍 createWidget called');
+    
     // Check if widget already exists
     if (document.querySelector('.shadow-ai-container')) {
+        console.log('📍 Widget already exists, skipping');
         return;
     }
     
     const used = getCurrentUsage();
     const limit = getPlanLimit();
     const plan = getPlanName();
+    
+    console.log('📍 Creating widget with plan:', plan, 'usage:', used + '/' + limit);
     
     const widgetHTML = `
         <!-- Shadow AI Button Container -->
@@ -182,6 +187,7 @@ function createWidget() {
     `;
     
     document.body.insertAdjacentHTML('beforeend', widgetHTML);
+    console.log('📍 Widget HTML inserted into body');
 }
 
 // ============================================
@@ -189,13 +195,18 @@ function createWidget() {
 // ============================================
 function openChat() {
     const chat = document.getElementById('shadow-ai-chat');
-    const container = document.querySelector('.shadow-ai-container');
     const tooltip = document.querySelector('.shadow-ai-tooltip');
+    
+    console.log('📍 openChat called, chat element:', !!chat);
     
     if (!chat) return;
     
+    // Remove hidden AND add active
     chat.classList.remove('hidden');
+    chat.classList.add('active');
     chatOpen = true;
+    
+    console.log('📍 Chat classes now:', chat.className);
     
     // Hide tooltip when chat is open
     if (tooltip) tooltip.style.opacity = '0';
@@ -220,6 +231,8 @@ function closeChat() {
     
     if (!chat) return;
     
+    // Remove active AND add hidden
+    chat.classList.remove('active');
     chat.classList.add('hidden');
     chatOpen = false;
     
@@ -554,14 +567,22 @@ function initTooltipScrollHandler() {
 // ============================================
 function initializeDashboardAI() {
     console.log('🤖 Shadow AI Dashboard v2.0 Initializing...');
+    console.log('📍 Document body exists:', !!document.body);
     
     // Create widget
     createWidget();
+    
+    console.log('📍 Widget created, checking elements...');
     
     // Get elements
     const btn = document.getElementById('shadow-ai-btn');
     const closeBtn = document.getElementById('shadow-ai-close');
     const sendBtn = document.getElementById('shadow-ai-send');
+    const container = document.querySelector('.shadow-ai-container');
+    
+    console.log('📍 Button found:', !!btn);
+    console.log('📍 Container found:', !!container);
+    console.log('📍 Container classes:', container ? container.className : 'N/A');
     
     // Button click - toggle chat
     if (btn) {

@@ -340,9 +340,9 @@ strong, b {
 .btn-nav {
     background: var(--gradient-primary);
     color: white !important;
-    padding: var(--space-sm) var(--space-lg);
+    padding: var(--space-xs) var(--space-md);
     font-size: 0.875rem;
-    min-height: 44px;
+    min-height: 40px;
 }
 
 /* Login Button */
@@ -350,9 +350,9 @@ strong, b {
     background: transparent;
     color: var(--text-secondary);
     border: 2px solid var(--border);
-    padding: var(--space-sm) var(--space-lg);
+    padding: var(--space-xs) var(--space-md);
     font-size: 0.875rem;
-    min-height: 44px;
+    min-height: 40px;
     border-radius: var(--radius-md);
     font-weight: 600;
     transition: all var(--transition-base);
@@ -491,7 +491,7 @@ strong, b {
     background: rgba(10, 15, 26, 0.9);
     backdrop-filter: blur(12px);
     border-bottom: 1px solid var(--border);
-    padding: var(--space-md) 0;
+    padding: var(--space-sm) 0;
 }
 
 .header.scrolled {
@@ -1096,6 +1096,168 @@ strong, b {
 
 .results-cta .btn {
     margin: 0 var(--space-xs);
+}
+
+/* =============================================================================
+   8a. COMPREHENSIVE POST RESULTS - 3-IN-1 ANALYSIS
+   ============================================================================= */
+
+/* Extracted Info Bar */
+.results-extracted {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-md);
+    padding: var(--space-md);
+    background: var(--bg);
+    border-radius: var(--radius-lg);
+    margin-bottom: var(--space-lg);
+}
+
+.extracted-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+}
+
+.extracted-label {
+    color: var(--text-muted);
+    font-size: 0.875rem;
+}
+
+.extracted-value {
+    color: var(--primary-light);
+    font-weight: 600;
+    font-size: 0.9375rem;
+}
+
+/* 3-Panel Analysis Grid */
+.analysis-panels {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-md);
+    margin-bottom: var(--space-xl);
+}
+
+.analysis-panel {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-md);
+}
+
+.panel-header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    margin-bottom: var(--space-md);
+    padding-bottom: var(--space-sm);
+    border-bottom: 1px solid var(--border);
+    flex-wrap: wrap;
+}
+
+.panel-icon {
+    font-size: 1.25rem;
+}
+
+.panel-title {
+    font-weight: 600;
+    font-size: 0.9375rem;
+    flex: 1;
+}
+
+.panel-score {
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: var(--space-2xs) var(--space-sm);
+    border-radius: var(--radius-full);
+}
+
+.panel-score.good {
+    background: var(--success-bg);
+    color: var(--success);
+}
+
+.panel-score.warning {
+    background: var(--warning-bg);
+    color: var(--warning);
+}
+
+.panel-score.danger {
+    background: var(--danger-bg);
+    color: var(--danger);
+}
+
+.panel-factors {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+}
+
+.panel-factors li {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-xs);
+    font-size: 0.8125rem;
+    line-height: 1.4;
+}
+
+.panel-factors li span {
+    flex-shrink: 0;
+    width: 16px;
+    text-align: center;
+}
+
+/* Citations Section */
+.results-citations {
+    background: rgba(99, 102, 241, 0.08);
+    border: 1px solid rgba(99, 102, 241, 0.2);
+    border-radius: var(--radius-lg);
+    padding: var(--space-md);
+    margin-bottom: var(--space-lg);
+}
+
+.results-citations h4 {
+    font-size: 0.875rem;
+    margin-bottom: var(--space-xs);
+    color: var(--primary-light);
+}
+
+.results-citations p {
+    font-size: 0.8125rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+    margin: 0;
+}
+
+/* CTA Buttons */
+.cta-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-sm);
+    justify-content: center;
+}
+
+/* Responsive for panels */
+@media (max-width: 900px) {
+    .analysis-panels {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 600px) {
+    .results-extracted {
+        flex-direction: column;
+        gap: var(--space-sm);
+    }
+    
+    .cta-buttons {
+        flex-direction: column;
+    }
+    
+    .cta-buttons .btn {
+        width: 100%;
+    }
 }
 
 /* =============================================================================

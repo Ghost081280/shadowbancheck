@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - ShadowBanCheck.io</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔍</text></svg>">
+    <link rel="stylesheet" href="css/admin-dashboard.css">
+    <link rel="stylesheet" href="css/shadow-ai-dashboard.css">
+</head>
+<body>
+    <div class="admin-layout">
+        <!-- Sidebar -->
+        <aside class="admin-sidebar">
+            <a href="index.html" class="admin-logo">🔍 ShadowBanCheck</a>
+            
+            <nav class="admin-nav">
+                <a href="#dashboard" class="active" data-section="dashboard">📊 Dashboard</a>
+                <a href="#messages" data-section="messages">✉️ Messages</a>
+                <a href="#chats" data-section="chats">💬 Live Chats</a>
+                <a href="#users" data-section="users">👥 Users</a>
+                <a href="#analytics" data-section="analytics">📈 Analytics</a>
+                <a href="#settings" data-section="settings">⚙️ Settings</a>
+            </nav>
+            
+            <div class="admin-status" id="admin-status-box">
+                <div class="status-header">
+                    <span>Chat Status</span>
+                    <span class="status-dot" id="status-dot"></span>
+                </div>
+                <p id="status-text">You're Online</p>
+                <button class="toggle-status" id="toggle-status">Go Offline</button>
+            </div>
+        </aside>
+        
+        <!-- Main Content -->
+        <main class="admin-main">
+            <div class="admin-header">
+                <h1>👋 Welcome, Andrew</h1>
+                <span class="header-subtitle">Admin Dashboard</span>
+            </div>
+            
+            <!-- Stats Row -->
+            <div class="admin-stats">
+                <div class="admin-stat">
+                    <h3 id="stat-messages">5</h3>
+                    <p>New Messages</p>
+                </div>
+                <div class="admin-stat">
+                    <h3 id="stat-chats">2</h3>
+                    <p>Active Chats</p>
+                </div>
+                <div class="admin-stat">
+                    <h3 id="stat-users">156</h3>
+                    <p>Total Users</p>
+                </div>
+                <div class="admin-stat">
+                    <h3 id="stat-revenue">$1,247</h3>
+                    <p>This Month</p>
+                </div>
+            </div>
+            
+            <!-- Main Grid -->
+            <div class="admin-grid">
+                <!-- Recent Messages -->
+                <div class="admin-card">
+                    <div class="card-header">
+                        <h2>✉️ Recent Messages</h2>
+                        <span class="badge badge-warning" id="unread-badge">5 unread</span>
+                    </div>
+                    <div class="card-body" id="messages-list">
+                        <!-- Messages populated by JS -->
+                    </div>
+                </div>
+                
+                <!-- Active Chats -->
+                <div class="admin-card">
+                    <div class="card-header">
+                        <h2>💬 Active Chats</h2>
+                        <span class="badge badge-success" id="online-badge">2 online</span>
+                    </div>
+                    <div class="card-body" id="chats-list">
+                        <!-- Chats populated by JS -->
+                    </div>
+                </div>
+                
+                <!-- Chat Window -->
+                <div class="admin-card chat-card">
+                    <div class="card-header">
+                        <h2 id="chat-window-title">💬 Select a chat</h2>
+                        <span class="online-indicator" id="chat-online-status">● Online</span>
+                    </div>
+                    <div class="chat-window">
+                        <div class="chat-messages" id="admin-chat-messages">
+                            <div class="empty-state" id="chat-empty">
+                                <div class="icon">💬</div>
+                                <p>Select a conversation to start chatting</p>
+                            </div>
+                        </div>
+                        <div class="chat-input-area">
+                            <input type="text" class="chat-input" id="admin-chat-input" placeholder="Type your reply..." disabled>
+                            <button class="btn-send" id="admin-send-btn" disabled>Send</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <!-- Toast Notification -->
+    <div class="toast hidden" id="toast">
+        <span id="toast-icon">✅</span>
+        <span id="toast-message">Success</span>
+    </div>
+    
+    <script src="js/admin-dashboard.js"></script>
+    <script src="js/shadow-ai-admin.js"></script>
+</body>
+</html>

@@ -39,9 +39,9 @@
                             <p>Works with Twitter/X, Reddit, and more coming soon</p>
                         </div>
                         <button class="checker-info-btn" id="checker-info-btn" aria-label="What we check" type="button">
-                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <circle cx="10" cy="10" r="9" stroke="currentColor" stroke-width="2"/>
-                                <path d="M10 14V10M10 6H10.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+                                <path d="M12 16V12M12 8H12.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                             </svg>
                         </button>
                     </div>
@@ -60,8 +60,8 @@
                     </form>
                     <div class="checker-features">
                         <span>✓ Results in 60 seconds</span>
-                        <span>✓ First check FREE</span>
-                        <span>✓ AI-powered analysis</span>
+                        <span>✓ 1 free check per day</span>
+                        <span>✓ 10+ factors analyzed</span>
                     </div>
                 </div>
                 
@@ -150,28 +150,28 @@
                     <div class="audience-content">
                         <h4>Influencers & Creators</h4>
                         <p>Engagement dropped? Posts not showing? We check if platforms are limiting your reach.</p>
-                        <a href="#pricing" class="audience-link">Get Started →</a>
                     </div>
+                    <a href="#pricing" class="audience-btn">Get Started →</a>
                 </div>
                 <div class="audience-card reveal">
                     <span class="audience-icon">🗳️</span>
                     <div class="audience-content">
                         <h4>Politicians & Officials</h4>
                         <p>Your message needs to reach voters. We verify your visibility on all platforms.</p>
-                        <a href="#pricing" class="audience-link">Get Started →</a>
                     </div>
+                    <a href="#pricing" class="audience-btn">Get Started →</a>
                 </div>
                 <div class="audience-card reveal">
                     <span class="audience-icon">💰</span>
                     <div class="audience-content">
                         <h4>Online Sellers</h4>
                         <p>Sales down? Products hidden? We check if platforms are suppressing your content.</p>
-                        <a href="#pricing" class="audience-link">Get Started →</a>
                     </div>
+                    <a href="#pricing" class="audience-btn">Get Started →</a>
                 </div>
             </div>
             
-            <p class="audience-footer">Also trusted by streamers, podcasters, marketers, and anyone who relies on visibility.</p>
+            <p class="audience-footer-centered">Also trusted by streamers, podcasters, marketers, and anyone who relies on visibility.</p>
         </div>
     </section>
 
@@ -694,41 +694,40 @@
             <div class="modal-icon">🔍</div>
             <h3 class="modal-title">What We Check</h3>
             <div class="modal-body">
-                <p class="modal-intro">Our AI analyzes <strong>13+ factors</strong> to give you an accurate shadow ban probability score:</p>
+                <p class="modal-intro">Our AI analyzes <strong>10+ factors</strong> to give you an accurate shadow ban probability score:</p>
                 
                 <h4>Platform & Validation</h4>
                 <ul class="check-list">
-                    <li>Platform identification (Twitter/X, Reddit, etc.)</li>
-                    <li>URL validation & post accessibility</li>
-                    <li>Account status verification</li>
+                    <li>Platform identification from URL</li>
+                    <li>Post existence verification</li>
+                    <li>Account status check</li>
                 </ul>
                 
                 <h4>Engagement Analysis</h4>
                 <ul class="check-list">
-                    <li>Engagement rate vs. follower baseline</li>
-                    <li>Time-decay patterns (drop-off speed)</li>
-                    <li>First-hour engagement velocity</li>
+                    <li>Engagement rate vs. baseline</li>
+                    <li>Time-decay patterns</li>
+                    <li>First-hour velocity</li>
                 </ul>
                 
                 <h4>Visibility Tests</h4>
                 <ul class="check-list">
-                    <li>Hashtag search presence</li>
-                    <li>Platform search result visibility</li>
-                    <li>Chronological feed appearance</li>
-                    <li>Reply visibility & quality filters</li>
+                    <li>Search result presence</li>
+                    <li>Feed visibility status</li>
+                    <li>Reply visibility (quality filters)</li>
                 </ul>
                 
                 <h4>Content Flags</h4>
                 <ul class="check-list">
                     <li>Sensitive content warnings</li>
-                    <li>Quality filter status (Twitter QFD)</li>
-                    <li>Spam/bot behavior indicators</li>
+                    <li>Quality filter restrictions</li>
                 </ul>
                 
                 <div class="modal-tech-note">
-                    <h4>🔌 Technical Implementation</h4>
-                    <p><strong>APIs Used:</strong> Twitter/X API v2, Reddit API, third-party shadowban detection APIs (shadowban.eu, hisubway.online), custom web scraping engine</p>
-                    <p><strong>Databases:</strong> Banned hashtag database, shadowban pattern history, platform algorithm tracking, engagement baselines</p>
+                    <h4>🔌 How It Works</h4>
+                    <p><strong>Platform APIs:</strong> We use official Twitter/X API v2, Reddit API, and other platform APIs to fetch post data and account status in real-time.</p>
+                    <p><strong>Third-Party APIs:</strong> Integration with shadowban detection services (shadowban.eu, hisubway.online) for additional validation.</p>
+                    <p><strong>Pattern Analysis:</strong> Our AI compares engagement patterns against historical baselines and platform norms to calculate probability scores.</p>
                 </div>
             </div>
             <div class="modal-footer">

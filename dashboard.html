@@ -7,7 +7,7 @@
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔍</text></svg>">
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/dashboard.css">
-    <link rel="stylesheet" href="css/shadow-ai.css">
+    <!-- Dashboard uses shadow-ai-dashboard.css ONLY (not shadow-ai.css) to avoid CSS conflicts -->
     <link rel="stylesheet" href="css/shadow-ai-dashboard.css">
 </head>
 <body class="dashboard-body">
@@ -552,7 +552,7 @@
                     <div class="support-row">
                         <div class="support-box highlight">
                             <span class="big-icon">🤖</span>
-                            <h3>Shadow AI</h3>
+                            <h3>Shadow AI Pro</h3>
                             <p>Instant answers about shadow bans</p>
                             <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.75rem;" id="ai-questions-left">10 questions/day remaining</p>
                             <button class="btn-primary" id="open-ai">Open AI Chat</button>
@@ -680,7 +680,7 @@
         <span id="toast-message">Success</span>
     </div>
     
-    <!-- Shadow AI Chatbot - Dashboard version with limits -->
+    <!-- Shadow AI Pro Chatbot - Dashboard version with limits -->
     <!-- Widget created dynamically by shadow-ai-dashboard.js -->
     
     <!-- Scripts: dashboard.js MUST load first to set userData -->

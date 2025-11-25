@@ -810,6 +810,10 @@ strong, b {
     font-size: 2.5rem;
 }
 
+.checker-header > div {
+    flex: 1;
+}
+
 .checker-header h3 {
     font-size: 1.25rem;
     margin-bottom: var(--space-2xs);
@@ -819,6 +823,31 @@ strong, b {
     color: var(--text-muted);
     font-size: 0.875rem;
     margin: 0;
+}
+
+.checker-info-btn {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(99, 102, 241, 0.1);
+    border: 1px solid rgba(99, 102, 241, 0.3);
+    border-radius: 50%;
+    color: var(--primary-light);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    flex-shrink: 0;
+}
+
+.checker-info-btn:hover {
+    background: rgba(99, 102, 241, 0.2);
+    border-color: var(--primary);
+    transform: scale(1.1);
+}
+
+.checker-info-btn svg {
+    flex-shrink: 0;
 }
 
 .checker-form {
@@ -1201,42 +1230,6 @@ strong, b {
     color: var(--text-muted);
     font-size: 0.875rem;
     margin-bottom: var(--space-2xl);
-}
-
-/* =============================================================================
-   8. HOW IT WORKS - INLINE STRIP
-   ============================================================================= */
-.how-strip {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: var(--space-lg);
-    padding: var(--space-xl);
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-xl);
-}
-
-.how-strip-item {
-    display: flex;
-    align-items: flex-start;
-    gap: var(--space-md);
-    text-align: left;
-}
-
-.how-strip-icon {
-    font-size: 1.5rem;
-    flex-shrink: 0;
-}
-
-.how-strip-item strong {
-    display: block;
-    font-size: 0.9375rem;
-    margin-bottom: var(--space-2xs);
-}
-
-.how-strip-item span {
-    font-size: 0.8125rem;
-    color: var(--text-muted);
 }
 
 /* =============================================================================
@@ -1664,7 +1657,45 @@ strong, b {
 .modal-body h4 {
     font-size: 1rem;
     margin-bottom: var(--space-md);
+    margin-top: var(--space-lg);
     color: var(--text-secondary);
+}
+
+.modal-body h4:first-of-type {
+    margin-top: 0;
+}
+
+.modal-intro {
+    font-size: 1rem;
+    color: var(--text-secondary);
+    margin-bottom: var(--space-lg);
+    padding: var(--space-md);
+    background: rgba(99, 102, 241, 0.1);
+    border-left: 3px solid var(--primary);
+    border-radius: var(--radius-md);
+}
+
+.modal-tech-note {
+    margin-top: var(--space-xl);
+    padding: var(--space-lg);
+    background: rgba(99, 102, 241, 0.05);
+    border: 1px solid rgba(99, 102, 241, 0.2);
+    border-radius: var(--radius-md);
+}
+
+.modal-tech-note h4 {
+    margin-top: 0;
+    margin-bottom: var(--space-sm);
+}
+
+.modal-tech-note p {
+    font-size: 0.875rem;
+    line-height: 1.6;
+    margin-bottom: var(--space-sm);
+}
+
+.modal-tech-note p:last-child {
+    margin-bottom: 0;
 }
 
 .check-list {
@@ -1992,6 +2023,23 @@ strong, b {
 .ai-header {
     text-align: center;
     margin-bottom: var(--space-2xl);
+    position: relative;
+    padding-top: var(--space-md);
+}
+
+.ai-badge-top {
+    position: absolute;
+    top: -14px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--gradient-primary);
+    color: white;
+    padding: var(--space-xs) var(--space-lg);
+    border-radius: var(--radius-full);
+    font-size: 0.8125rem;
+    font-weight: 700;
+    box-shadow: var(--shadow-md);
+    white-space: nowrap;
 }
 
 .ai-badge {
@@ -2437,7 +2485,7 @@ strong, b {
 
 /* Contact Form */
 .contact-form-box {
-    background: var(--bg);
+    background: var(--card);
     border: 1px solid var(--border);
     border-radius: var(--radius-xl);
     padding: var(--space-xl);

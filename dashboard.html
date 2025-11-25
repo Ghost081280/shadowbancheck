@@ -64,7 +64,7 @@
                     <span class="user-avatar">👤</span>
                     <div>
                         <span class="user-name" id="sidebar-user-name">John Doe</span>
-                        <span class="user-email" id="sidebar-user-email"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="046e6b6c6a44617c65697468612a676b69">[email&#160;protected]</a></span>
+                        <span class="user-email" id="sidebar-user-email">john@example.com</span>
                     </div>
                 </div>
                 <button class="btn-logout" id="logout-btn">Logout</button>
@@ -467,7 +467,7 @@
                                 <label>Email</label>
                                 <input type="email" class="input" id="profile-email" value="john@example.com">
                             </div>
-                            <button class="btn-primary" id="save-profile">Save Changes</button>
+                            <button class="btn-primary">Save Changes</button>
                         </div>
                     </div>
                     
@@ -580,7 +580,7 @@
                     <!-- Two Column: Send Message + Live Chat -->
                     <div class="support-columns">
                         <!-- Left: Send Message Form -->
-                        <div class="support-form-card">
+                        <div class="form-card">
                             <h3>📝 Send a Message</h3>
                             <form id="support-form">
                                 <div class="form-group">
@@ -599,34 +599,32 @@
                                 </div>
                                 <button type="submit" class="btn-primary btn-full">📤 Send Message</button>
                             </form>
-                            <p class="form-note">We typically respond within 24 hours.</p>
+                            <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 1rem; text-align: center;">We typically respond within 24 hours.</p>
                         </div>
                         
                         <!-- Right: Live Chat -->
-                        <div class="live-chat-card">
+                        <div class="form-card live-chat-card">
                             <h3>💬 Live Chat</h3>
                             <div class="chat-status">
-                                <span class="status-indicator" id="admin-status-indicator"></span>
+                                <span class="status-dot" id="admin-status-dot"></span>
                                 <span id="admin-status-text">Checking status...</span>
                             </div>
                             
                             <div class="mini-chat" id="mini-chat">
                                 <div class="chat-messages" id="live-chat-messages">
-                                    <div class="chat-message admin">
-                                        <span class="msg-sender">Support</span>
-                                        <span class="msg-text">Hi! How can I help you today?</span>
-                                        <span class="msg-time">Just now</span>
+                                    <div class="chat-message system">
+                                        <span class="msg-text">👋 Welcome! How can we help you today?</span>
                                     </div>
                                 </div>
-                                <div class="chat-input-area">
+                                <div class="chat-input-row">
                                     <input type="text" class="input" id="live-chat-input" placeholder="Type a message...">
-                                    <button class="btn-primary btn-send" id="live-chat-send">Send</button>
+                                    <button class="btn-primary" id="live-chat-send">Send</button>
                                 </div>
                             </div>
                             
                             <div class="chat-offline hidden" id="chat-offline">
                                 <p>😴 We're currently offline</p>
-                                <p class="offline-note">Leave a message using the form and we'll get back to you!</p>
+                                <p style="font-size: 0.85rem; color: var(--text-muted);">Leave a message using the form and we'll get back to you!</p>
                             </div>
                         </div>
                     </div>
@@ -716,7 +714,7 @@
     <!-- Toast -->
     <div class="toast hidden" id="toast">
         <span id="toast-icon">✅</span>
-        <span id="toast-message">Success!</span>
+        <span id="toast-message">Success</span>
     </div>
     
     <!-- Scripts -->

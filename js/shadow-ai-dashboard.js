@@ -42,6 +42,12 @@
         widget.id = 'shadow-ai-pro';
         
         widget.innerHTML = `
+            <!-- Glow Effect -->
+            <div class="shadow-ai-glow"></div>
+            
+            <!-- Tooltip -->
+            <div class="shadow-ai-tooltip">Ask Shadow AI Pro</div>
+            
             <!-- Floating Button -->
             <button class="shadow-ai-btn" id="shadow-ai-toggle" aria-label="Open Shadow AI Pro">
                 <span class="shadow-ai-btn-icon">🤖</span>
@@ -139,12 +145,14 @@
     function openChat() {
         isOpen = true;
         document.getElementById('shadow-ai-window').classList.add('active');
+        document.getElementById('shadow-ai-pro').classList.add('chat-open');
         document.getElementById('shadow-ai-input').focus();
     }
     
     function closeChat() {
         isOpen = false;
         document.getElementById('shadow-ai-window').classList.remove('active');
+        document.getElementById('shadow-ai-pro').classList.remove('chat-open');
     }
     
     /* =========================================================================

@@ -554,6 +554,12 @@ function initSupportedPlatforms() {
     const livePlatforms = allPlatforms.filter(p => p.status === 'live');
     const comingSoonCount = allPlatforms.filter(p => p.status !== 'live').length;
     
+    // Update live platform count display
+    const countEl = document.getElementById('live-platform-count');
+    if (countEl) {
+        countEl.textContent = livePlatforms.length;
+    }
+    
     // Sort live platforms - prioritize Twitter/X and Reddit
     const priorityOrder = ['twitter', 'reddit'];
     livePlatforms.sort((a, b) => {
@@ -650,16 +656,27 @@ function showAllPlatformsModal() {
     html += '</div>';
     bodyEl.innerHTML = html;
     
-    // Add click handlers to platform items
+    // Add click handlers to platform items - smooth transition
     bodyEl.querySelectorAll('.platform-item[data-platform]').forEach(item => {
         item.addEventListener('click', () => {
-            modal.classList.add('hidden');
-            document.body.style.overflow = '';
+            // Fade out content but keep modal visible
+            const content = modal.querySelector('.modal-content');
+            content.style.opacity = '0';
+            content.style.transform = 'scale(0.95)';
+            
             setTimeout(() => {
+                modal.classList.add('hidden');
+                content.style.opacity = '';
+                content.style.transform = '';
+                // Open new modal immediately (overlay stays visible)
                 showHashtagPlatformInfo(item.dataset.platform);
-            }, 100);
+            }, 150);
         });
     });
+    
+    // Scroll modal content to top
+    const content = modal.querySelector('.modal-content');
+    if (content) content.scrollTop = 0;
     
     modal.classList.remove('hidden');
     document.body.style.overflow = 'hidden';

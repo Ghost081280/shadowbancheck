@@ -1,5 +1,6 @@
 /* =============================================================================
-   DASHBOARD.JS - ShadowBanCheck.io Dashboard
+   DASHBOARD.JS - ShadowBanCheck.io User Dashboard
+   Matching Admin Dashboard Theme
    ============================================================================= */
 
 // =============================================================================
@@ -17,21 +18,11 @@ window.userData = {
     },
     usage: { 
         accounts: 8, 
-        aiUsed: 0  // Will be synced from localStorage by Shadow AI
+        aiUsed: 0
     }
 };
 
-// Plan configurations for reference
-const PLAN_CONFIG = {
-    'Free':      { price: 0,     accounts: 2,   ai: 3,   alerts: false },
-    'Starter':   { price: 4.99,  accounts: 5,   ai: 3,   alerts: true },
-    'Pro':       { price: 9.99,  accounts: 15,  ai: 10,  alerts: true },
-    'Premium':   { price: 14.99, accounts: 50,  ai: 25,  alerts: true },
-    'AI Pro':    { price: 9.99,  accounts: 0,   ai: 100, alerts: false }, // Add-on
-    'Power':     { price: 14.99, accounts: 100, ai: 200, alerts: true },
-    'Unlimited': { price: 19.99, accounts: 200, ai: 500, alerts: true }
-};
-
+// Demo accounts data
 const accounts = [
     { id: 1, platform: 'instagram', icon: '📸', username: '@johndoe', nickname: 'Personal', status: 'healthy', score: 95, lastCheck: '2h ago' },
     { id: 2, platform: 'tiktok', icon: '🎵', username: '@johndoe_tiktok', nickname: 'TikTok Main', status: 'banned', score: 15, lastCheck: '2h ago' },
@@ -47,21 +38,7 @@ const accounts = [
 const platformIcons = {
     instagram: '📸', tiktok: '🎵', twitter: '🐦', facebook: '📘', youtube: '▶️',
     linkedin: '💼', reddit: '🤖', pinterest: '📌', snapchat: '👻', threads: '🧵',
-    mastodon: '🐘', bluesky: '🦋', truth: '🇺🇸', telegram: '✈️', discord: '🎮',
-    whatsapp: '💬', signal: '📶', amazon: '📦', ebay: '🛒', etsy: '🎨',
-    shopify: '🛍️', twitch: '🎮', kick: '🟢', rumble: '📺', medium: '✍️', quora: '❓'
-};
-
-// Hashtag alternatives (AI placeholder)
-const hashtagAlternatives = {
-    '#fitness': ['#fitnessjourney', '#fitlife', '#workoutmotivation'],
-    '#gym': ['#gymlife', '#gymmotivation', '#strengthtraining'],
-    '#weightloss': ['#healthylifestyle', '#transformation', '#fitnessgoals'],
-    '#diet': ['#healthyeating', '#nutrition', '#cleaneating'],
-    '#money': ['#personalfinance', '#financialfreedom', '#investing'],
-    '#crypto': ['#cryptocurrency', '#blockchain', '#web3'],
-    '#follow4follow': ['#communitybuilding', '#engagement', '#connectwithme'],
-    '#likeforlike': ['#engagementtips', '#growthtips', '#socialmedia']
+    mastodon: '🐘', bluesky: '🦋', truth: '🗽', telegram: '✈️', discord: '🎮'
 };
 
 // =============================================================================
@@ -76,13 +53,17 @@ document.addEventListener('DOMContentLoaded', () => {
     initTools();
     initModal();
     initForms();
+    initLiveChat();
     populateDashboard();
     detectUserIP();
     updateAIQuestionsDisplay();
     
     // Check URL hash
     const hash = window.location.hash.slice(1);
-    if (hash) navigateTo(hash);
+    if (hash) {
+        const sectionId = hash.replace('section-', '');
+        navigateTo(sectionId);
+    }
     
     // Listen for Shadow AI usage updates
     window.addEventListener('shadowai-usage-updated', updateAIQuestionsDisplay);
@@ -101,19 +82,23 @@ function initNavigation() {
     });
 }
 
-// Make navigateTo global for Shadow AI links
 window.navigateTo = function(sectionId) {
     window.location.hash = sectionId;
     
-    document.querySelectorAll('.nav-link').forEach(link => {
+    // Update nav active state
+    document.querySelectorAll('.nav-item').forEach(link => {
         link.classList.toggle('active', link.dataset.section === sectionId);
     });
     
-    document.querySelectorAll('.section').forEach(section => {
-        section.classList.toggle('active', section.id === sectionId);
+    // Show/hide sections
+    document.querySelectorAll('.dashboard-section').forEach(section => {
+        section.classList.remove('active');
     });
     
-    document.querySelector('.content-scroll').scrollTop = 0;
+    const targetSection = document.getElementById(`section-${sectionId}`);
+    if (targetSection) {
+        targetSection.classList.add('active');
+    }
 };
 
 // =============================================================================
@@ -122,16 +107,24 @@ window.navigateTo = function(sectionId) {
 function initSidebar() {
     const sidebar = document.getElementById('sidebar');
     const toggle = document.getElementById('menu-toggle');
-    const close = document.getElementById('sidebar-close');
     
-    toggle?.addEventListener('click', () => sidebar.classList.add('open'));
-    close?.addEventListener('click', closeSidebar);
+    toggle?.addEventListener('click', () => sidebar?.classList.add('open'));
     
     document.addEventListener('click', (e) => {
-        if (sidebar.classList.contains('open') && 
+        if (sidebar?.classList.contains('open') && 
             !sidebar.contains(e.target) && 
-            !toggle.contains(e.target)) {
+            !toggle?.contains(e.target)) {
             closeSidebar();
+        }
+    });
+    
+    // Logout
+    document.getElementById('logout-btn')?.addEventListener('click', () => {
+        if (confirm('Log out of your account?')) {
+            localStorage.removeItem('shadowban_session');
+            sessionStorage.removeItem('shadowban_session');
+            showToast('👋', 'Logging out...');
+            setTimeout(() => window.location.href = 'login.html', 1000);
         }
     });
 }
@@ -144,11 +137,11 @@ function closeSidebar() {
 // TABS (Settings)
 // =============================================================================
 function initTabs() {
-    document.querySelectorAll('.tab').forEach(tab => {
+    document.querySelectorAll('.tab-btn').forEach(tab => {
         tab.addEventListener('click', () => {
             const tabId = tab.dataset.tab;
             
-            document.querySelectorAll('.tab').forEach(t => {
+            document.querySelectorAll('.tab-btn').forEach(t => {
                 t.classList.toggle('active', t.dataset.tab === tabId);
             });
             
@@ -193,9 +186,9 @@ function initQuickActions() {
 // ACCOUNTS PAGE
 // =============================================================================
 function initAccountsPage() {
-    document.querySelectorAll('.filter').forEach(btn => {
+    document.querySelectorAll('.filter-btn').forEach(btn => {
         btn.addEventListener('click', () => {
-            document.querySelectorAll('.filter').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             filterAccounts(btn.dataset.filter);
         });
@@ -265,7 +258,7 @@ window.checkAccount = function(id) {
 
 window.viewAccount = function(id) {
     const acc = accounts.find(a => a.id === id);
-    alert(`Account Details\n\n${acc.icon} ${acc.username}\nPlatform: ${acc.platform}\nNickname: ${acc.nickname}\nStatus: ${acc.status}\nScore: ${acc.score}%\nLast Check: ${acc.lastCheck}`);
+    showToast('📊', `${acc.username} - Score: ${acc.score}%`);
 };
 
 window.removeAccount = function(id) {
@@ -285,15 +278,11 @@ window.removeAccount = function(id) {
 // =============================================================================
 function initModal() {
     const modal = document.getElementById('add-account-modal');
-    const closeBtn = document.getElementById('modal-close');
-    const cancelBtn = document.getElementById('modal-cancel');
-    const confirmBtn = document.getElementById('modal-confirm');
     
-    closeBtn?.addEventListener('click', closeModal);
-    cancelBtn?.addEventListener('click', closeModal);
-    confirmBtn?.addEventListener('click', addAccount);
+    document.getElementById('modal-close')?.addEventListener('click', closeModal);
+    document.getElementById('modal-cancel')?.addEventListener('click', closeModal);
+    document.getElementById('modal-confirm')?.addEventListener('click', addAccount);
     
-    // Close on overlay click
     modal?.addEventListener('click', (e) => {
         if (e.target === modal) closeModal();
     });
@@ -361,12 +350,9 @@ function initTools() {
     document.getElementById('close-results')?.addEventListener('click', hideResults);
 }
 
-// Detect user IP
 function detectUserIP() {
     const ipEl = document.getElementById('user-ip');
     if (!ipEl) return;
-    
-    // Demo IP
     setTimeout(() => {
         ipEl.textContent = '192.168.1.' + Math.floor(Math.random() * 255);
     }, 500);
@@ -396,7 +382,6 @@ function runAccountCheck() {
                 <p style="color: var(--text-muted); margin: 0 0 1rem;">
                     ${platformIcons[platform] || '📱'} ${username} • Visibility Score: ${score}%
                 </p>
-                ${status !== 'healthy' ? `<p style="font-size: 0.85rem; color: var(--primary-light);">💡 Tip: Try posting original content and avoid flagged hashtags for 48 hours.</p>` : ''}
             </div>
         `);
     }, 2000);
@@ -412,7 +397,6 @@ function runHashtagCheck() {
     }
     
     const hashtags = input.match(/#\w+/g) || [];
-    
     if (hashtags.length === 0) {
         showToast('⚠️', 'Enter at least one hashtag');
         return;
@@ -423,36 +407,20 @@ function runHashtagCheck() {
     setTimeout(() => {
         const results = hashtags.map(tag => ({
             tag,
-            status: Math.random() > 0.25 ? 'safe' : 'banned',
-            alternatives: hashtagAlternatives[tag.toLowerCase()] || 
-                         ['#' + tag.slice(1) + 'life', '#' + tag.slice(1) + 'daily', '#' + tag.slice(1) + 'tips']
+            status: Math.random() > 0.25 ? 'safe' : 'banned'
         }));
         
         const safe = results.filter(r => r.status === 'safe').length;
         const banned = results.filter(r => r.status === 'banned').length;
         
-        let html = `
-            <div style="margin-bottom: 1rem; display: flex; gap: 1rem;">
-                <span style="color: #22c55e;">✅ ${safe} Safe</span>
-                <span style="color: #ef4444;">🚫 ${banned} Banned</span>
-            </div>
-            <div class="hashtag-results">
-        `;
-        
+        let html = `<div style="margin-bottom: 1rem;"><span style="color: #22c55e;">✅ ${safe} Safe</span> • <span style="color: #ef4444;">🚫 ${banned} Banned</span></div>`;
         results.forEach(r => {
-            html += `
-                <div class="hashtag-row">
-                    <span class="platform-icon">${platformIcons[platform]}</span>
-                    <span class="tag">${r.tag}</span>
-                    <span class="status ${r.status}">${r.status === 'safe' ? '✅ Safe' : '🚫 Banned'}</span>
-                </div>
-            `;
-            if (r.status === 'banned') {
-                html += `<div class="hashtag-alt">💡 <strong>Try instead:</strong> ${r.alternatives.slice(0, 3).join(', ')}</div>`;
-            }
+            html += `<div style="display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem; background: var(--bg); border-radius: 6px; margin-bottom: 0.5rem;">
+                <span>${r.tag}</span>
+                <span style="margin-left: auto; font-size: 0.8rem; padding: 0.25rem 0.5rem; border-radius: 4px; ${r.status === 'safe' ? 'background: rgba(34, 197, 94, 0.2); color: #22c55e;' : 'background: rgba(239, 68, 68, 0.2); color: #ef4444;'}">${r.status === 'safe' ? '✅ Safe' : '🚫 Banned'}</span>
+            </div>`;
         });
         
-        html += '</div>';
         showResults(`Hashtag Check - ${platform}`, html);
     }, 1500);
 }
@@ -471,7 +439,6 @@ function runIPCheck() {
                 <div style="font-size: 3rem; margin-bottom: 0.75rem;">${isFlagged ? '⚠️' : '✅'}</div>
                 <h3 style="margin: 0 0 0.5rem;">${isFlagged ? 'IP May Be Flagged' : 'IP Looks Clean'}</h3>
                 <p style="color: var(--text-muted); margin: 0; font-family: monospace;">${ip}</p>
-                ${isFlagged ? `<p style="font-size: 0.85rem; color: var(--primary-light); margin-top: 1rem;">💡 Tip: Try using a VPN or contact your ISP.</p>` : ''}
             </div>
         `);
     }, 1500);
@@ -479,21 +446,15 @@ function runIPCheck() {
 
 function runEmailCheck() {
     const email = document.getElementById('check-email').value.trim();
-    
-    if (!email) {
-        showToast('⚠️', 'Enter an email address');
-        return;
-    }
+    if (!email) { showToast('⚠️', 'Enter an email address'); return; }
     
     showToast('📧', `Checking ${email}...`);
-    
     setTimeout(() => {
         const isBlacklisted = Math.random() > 0.9;
         showResults('Email Check', `
             <div style="text-align: center; padding: 1.5rem;">
                 <div style="font-size: 3rem; margin-bottom: 0.75rem;">${isBlacklisted ? '🚫' : '✅'}</div>
                 <h3 style="margin: 0 0 0.5rem;">${isBlacklisted ? 'Email May Be Blacklisted' : 'Email Looks Good'}</h3>
-                <p style="color: var(--text-muted); margin: 0;">${email}</p>
             </div>
         `);
     }, 1500);
@@ -501,21 +462,15 @@ function runEmailCheck() {
 
 function runPhoneCheck() {
     const phone = document.getElementById('check-phone').value.trim();
-    
-    if (!phone) {
-        showToast('⚠️', 'Enter a phone number');
-        return;
-    }
+    if (!phone) { showToast('⚠️', 'Enter a phone number'); return; }
     
     showToast('📱', `Checking phone...`);
-    
     setTimeout(() => {
         const isFlagged = Math.random() > 0.9;
         showResults('Phone Check', `
             <div style="text-align: center; padding: 1.5rem;">
                 <div style="font-size: 3rem; margin-bottom: 0.75rem;">${isFlagged ? '⚠️' : '✅'}</div>
                 <h3 style="margin: 0 0 0.5rem;">${isFlagged ? 'Phone May Be Flagged' : 'Phone Looks Clean'}</h3>
-                <p style="color: var(--text-muted); margin: 0;">${phone}</p>
             </div>
         `);
     }, 1500);
@@ -523,22 +478,15 @@ function runPhoneCheck() {
 
 function runWebsiteCheck() {
     const website = document.getElementById('check-website').value.trim();
-    
-    if (!website) {
-        showToast('⚠️', 'Enter a website URL');
-        return;
-    }
+    if (!website) { showToast('⚠️', 'Enter a website URL'); return; }
     
     showToast('🔗', `Checking domain...`);
-    
     setTimeout(() => {
         const isBlocked = Math.random() > 0.85;
         showResults('Website Check', `
             <div style="text-align: center; padding: 1.5rem;">
                 <div style="font-size: 3rem; margin-bottom: 0.75rem;">${isBlocked ? '🚫' : '✅'}</div>
                 <h3 style="margin: 0 0 0.5rem;">${isBlocked ? 'Domain May Be Blocked' : 'Domain Looks Safe'}</h3>
-                <p style="color: var(--text-muted); margin: 0; word-break: break-all;">${website}</p>
-                ${isBlocked ? `<p style="font-size: 0.85rem; color: var(--primary-light); margin-top: 1rem;">💡 Some platforms may block links to this domain.</p>` : ''}
             </div>
         `);
     }, 1500);
@@ -548,37 +496,28 @@ function runBulkCheck() {
     showToast('⚡', `Checking ${accounts.length} accounts...`);
     
     setTimeout(() => {
-        // Update all accounts with new check time
         accounts.forEach(acc => {
             acc.lastCheck = 'Just now';
-            // Randomly adjust scores slightly
             acc.score = Math.max(0, Math.min(100, acc.score + (Math.random() > 0.5 ? 2 : -2)));
         });
         
         renderAccounts();
         
-        // Show bulk results
-        let html = `
-            <div style="margin-bottom: 1rem;">
-                <span style="color: #22c55e;">✅ ${accounts.filter(a => a.status === 'healthy').length} Healthy</span> • 
-                <span style="color: #eab308;">⚠️ ${accounts.filter(a => a.status === 'issues').length} Issues</span> • 
-                <span style="color: #ef4444;">🚫 ${accounts.filter(a => a.status === 'banned').length} Banned</span>
-            </div>
-            <div class="bulk-results">
-        `;
+        let html = `<div style="margin-bottom: 1rem;">
+            <span style="color: #22c55e;">✅ ${accounts.filter(a => a.status === 'healthy').length} Healthy</span> • 
+            <span style="color: #eab308;">⚠️ ${accounts.filter(a => a.status === 'issues').length} Issues</span> • 
+            <span style="color: #ef4444;">🚫 ${accounts.filter(a => a.status === 'banned').length} Banned</span>
+        </div>`;
         
         accounts.forEach(acc => {
-            html += `
-                <div class="bulk-result-row">
-                    <span class="platform-icon">${acc.icon}</span>
-                    <span class="username">${acc.username}</span>
-                    <span class="score">${acc.score}%</span>
-                    <span class="status ${acc.status}">${acc.status === 'healthy' ? '✓' : acc.status === 'issues' ? '!' : '✕'} ${acc.status}</span>
-                </div>
-            `;
+            html += `<div style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem; background: var(--bg); border-radius: 6px; margin-bottom: 0.5rem;">
+                <span>${acc.icon}</span>
+                <span style="flex: 1;">${acc.username}</span>
+                <span style="color: var(--text-muted); font-size: 0.8rem;">${acc.score}%</span>
+                <span style="font-size: 0.75rem; padding: 0.25rem 0.5rem; border-radius: 4px; ${acc.status === 'healthy' ? 'background: rgba(34, 197, 94, 0.2); color: #22c55e;' : acc.status === 'issues' ? 'background: rgba(234, 179, 8, 0.2); color: #eab308;' : 'background: rgba(239, 68, 68, 0.2); color: #ef4444;'}">${acc.status}</span>
+            </div>`;
         });
         
-        html += '</div>';
         showResults('Bulk Check Results', html);
         showToast('✅', 'All accounts checked!');
     }, 2500);
@@ -588,8 +527,6 @@ function showResults(title, html) {
     document.getElementById('results-title').textContent = title;
     document.getElementById('results-content').innerHTML = html;
     document.getElementById('results-box').classList.remove('hidden');
-    
-    // Scroll to results
     document.getElementById('results-box').scrollIntoView({ behavior: 'smooth' });
 }
 
@@ -598,23 +535,135 @@ function hideResults() {
 }
 
 // =============================================================================
+// LIVE CHAT - Syncs with Admin Dashboard
+// =============================================================================
+function initLiveChat() {
+    const openBtn = document.getElementById('open-live-chat');
+    const chatWindow = document.getElementById('live-chat-window');
+    const sendBtn = document.getElementById('live-chat-send');
+    const input = document.getElementById('live-chat-input');
+    
+    openBtn?.addEventListener('click', () => {
+        chatWindow?.classList.remove('hidden');
+        openBtn.textContent = 'Chat Open';
+        openBtn.disabled = true;
+        
+        // Store that user opened chat (for admin to see)
+        storeLiveChatSession();
+    });
+    
+    sendBtn?.addEventListener('click', sendLiveChatMessage);
+    input?.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') sendLiveChatMessage();
+    });
+}
+
+function storeLiveChatSession() {
+    // Store in localStorage so admin can see this user is online
+    const chatSession = {
+        id: Date.now(),
+        user: window.userData.firstName + ' ' + window.userData.lastName,
+        email: window.userData.email,
+        startTime: new Date().toISOString(),
+        online: true
+    };
+    localStorage.setItem('user_live_chat', JSON.stringify(chatSession));
+}
+
+function sendLiveChatMessage() {
+    const input = document.getElementById('live-chat-input');
+    const messagesContainer = document.getElementById('live-chat-messages');
+    const text = input?.value?.trim();
+    
+    if (!text) return;
+    
+    // Add user message to chat
+    const messageDiv = document.createElement('div');
+    messageDiv.className = 'chat-bubble user';
+    messageDiv.innerHTML = `
+        <span class="bubble-text">${escapeHtml(text)}</span>
+        <span class="bubble-time">Just now</span>
+    `;
+    messagesContainer.appendChild(messageDiv);
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    
+    // Store message for admin to see
+    const messages = JSON.parse(localStorage.getItem('user_chat_messages') || '[]');
+    messages.push({
+        id: Date.now(),
+        from: 'user',
+        user: window.userData.firstName,
+        text: text,
+        time: new Date().toISOString()
+    });
+    localStorage.setItem('user_chat_messages', JSON.stringify(messages));
+    
+    input.value = '';
+    
+    // Simulate admin response after delay
+    setTimeout(() => {
+        const responses = [
+            "Thanks for reaching out! Let me look into that for you.",
+            "I understand. Can you tell me more about the issue?",
+            "I'm checking our system now. One moment please.",
+            "That's a great question! Here's what I can tell you..."
+        ];
+        const response = responses[Math.floor(Math.random() * responses.length)];
+        
+        const adminMsg = document.createElement('div');
+        adminMsg.className = 'chat-bubble admin';
+        adminMsg.innerHTML = `
+            <span class="bubble-text">${response}</span>
+            <span class="bubble-time">Just now</span>
+        `;
+        messagesContainer.appendChild(adminMsg);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }, 1500);
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// =============================================================================
 // FORMS
 // =============================================================================
 function initForms() {
-    // Support form
+    // Support form - sends to admin Messages
     document.getElementById('support-form')?.addEventListener('submit', (e) => {
         e.preventDefault();
+        
+        const topic = document.getElementById('support-topic').value;
+        const message = document.getElementById('support-msg').value.trim();
+        
+        if (!topic || !message) {
+            showToast('⚠️', 'Please select a topic and enter a message');
+            return;
+        }
+        
+        // Store message for admin to see
+        const messages = JSON.parse(localStorage.getItem('user_support_messages') || '[]');
+        messages.push({
+            id: Date.now(),
+            name: window.userData.firstName + ' ' + window.userData.lastName,
+            email: window.userData.email,
+            topic: topic,
+            message: message,
+            time: new Date().toISOString(),
+            unread: true
+        });
+        localStorage.setItem('user_support_messages', JSON.stringify(messages));
+        
         showToast('✅', 'Message sent! We\'ll respond within 24 hours.');
         e.target.reset();
     });
     
-    // Logout
-    document.getElementById('logout-btn')?.addEventListener('click', () => {
-        if (confirm('Log out of your account?')) {
-            localStorage.removeItem('shadowban_session');
-            sessionStorage.removeItem('shadowban_session');
-            showToast('👋', 'Logging out...');
-            setTimeout(() => window.location.href = 'login.html', 1000);
+    // Open Shadow AI
+    document.getElementById('open-ai')?.addEventListener('click', () => {
+        if (window.ShadowAI && window.ShadowAI.open) {
+            window.ShadowAI.open();
         }
     });
     
@@ -622,13 +671,6 @@ function initForms() {
     document.getElementById('cancel-btn')?.addEventListener('click', () => {
         if (confirm('Cancel your subscription? You\'ll keep access until your billing period ends.')) {
             showToast('😢', 'Subscription cancelled');
-        }
-    });
-    
-    // Open Shadow AI
-    document.getElementById('open-ai')?.addEventListener('click', () => {
-        if (window.ShadowAI && window.ShadowAI.open) {
-            window.ShadowAI.open();
         }
     });
 }
@@ -640,17 +682,14 @@ function updateAIQuestionsDisplay() {
     const limit = window.userData.plan.aiPerDay;
     let used = 0;
     
-    // Get usage from Shadow AI if available
     if (window.ShadowAI && window.ShadowAI.getUsage) {
         used = window.ShadowAI.getUsage();
     }
     
     const remaining = Math.max(0, limit - used);
     
-    // Update sidebar
     setText('sidebar-ai', `${used}/${limit}`);
     
-    // Update support section
     const aiQuestionsEl = document.getElementById('ai-questions-left');
     if (aiQuestionsEl) {
         if (remaining === 0) {
@@ -662,7 +701,6 @@ function updateAIQuestionsDisplay() {
         }
     }
     
-    // Sync to userData
     window.userData.usage.aiUsed = used;
 }
 
@@ -721,6 +759,5 @@ function showToast(icon, message) {
     document.getElementById('toast-message').textContent = message;
     
     toast.classList.remove('hidden');
-    
     setTimeout(() => toast.classList.add('hidden'), 3000);
 }

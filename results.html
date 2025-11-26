@@ -20,79 +20,140 @@
          Header, Mobile Nav, Footer loaded by shared-components.js
          =================================== -->
 
+    <!-- Hero - Compact -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-badge" id="results-badge">📊 Analysis Complete</div>
+            <h1 class="hero-title" id="results-title">Your Results</h1>
+            <p class="hero-subtitle" id="results-subtitle">Here's what our 5-Factor Detection Engine found</p>
+        </div>
+    </section>
+
     <!-- Main Content -->
     <main class="results-main">
         <div class="container">
-            <!-- Results Header -->
-            <div id="results-header" class="results-header"></div>
-
-            <!-- Overall Status -->
-            <div id="overall-status" class="overall-status"></div>
+            <!-- Overall Status Card -->
+            <div class="status-card" id="status-card">
+                <div class="status-header">
+                    <div class="status-icon" id="status-icon">🔍</div>
+                    <div class="status-info">
+                        <span class="status-platform" id="status-platform">Platform</span>
+                        <span class="status-query" id="status-query">@username</span>
+                    </div>
+                </div>
+                <div class="status-result">
+                    <div class="probability-circle" id="probability-circle">
+                        <span class="probability-value" id="probability-value">0%</span>
+                        <span class="probability-label">Shadow Ban<br>Probability</span>
+                    </div>
+                    <div class="status-verdict">
+                        <span class="verdict-badge" id="verdict-badge">Analyzing...</span>
+                        <p class="verdict-text" id="verdict-text">Processing your request...</p>
+                    </div>
+                </div>
+            </div>
 
             <!-- 5-Factor Engine Summary -->
-            <div class="engine-summary" id="engine-summary">
-                <div class="engine-summary-header">
-                    <div class="engine-summary-title">
-                        <span class="engine-icon">🧠</span>
+            <div class="engine-card">
+                <div class="engine-header">
+                    <div class="engine-title">
+                        <span>🧠</span>
                         <h3>5-Factor Detection Engine</h3>
                     </div>
-                    <button class="engine-info-btn" id="engine-info-btn" aria-label="View engine details" type="button">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
-                            <path d="M12 16V12M12 8H12.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                        </svg>
-                    </button>
+                    <span class="factors-badge" id="factors-badge">0/5 Factors</span>
                 </div>
-                <div class="engine-factors-inline" id="engine-factors-inline">
+                <div class="engine-factors-row" id="engine-factors-row">
                     <!-- Populated by JS -->
                 </div>
-                <div class="ip-analysis-display" id="ip-analysis-display">
-                    <!-- Populated by JS if IP analysis was used -->
+                <div class="ip-display" id="ip-display">
+                    <!-- Populated by JS if IP data available -->
                 </div>
             </div>
 
             <!-- Detailed Checks -->
-            <div class="detailed-checks">
+            <div class="checks-section">
                 <h2>📋 Detailed Analysis</h2>
-                <div id="checks-grid" class="checks-grid"></div>
+                <div class="checks-grid" id="checks-grid">
+                    <!-- Populated by JS -->
+                </div>
             </div>
 
             <!-- Recommendations -->
-            <div class="recommendations">
+            <div class="recommendations-section">
                 <h2>💡 Recommendations</h2>
-                <div id="recommendations-content" class="recommendations-content"></div>
-            </div>
-
-            <!-- Actions -->
-            <div class="results-actions">
-                <a href="checker.html" class="btn-action">🔍 Check Another Account</a>
-                <button id="share-results-btn" class="btn-action">📤 Share Results</button>
-                <button id="download-report" class="btn-action">📄 Download Report</button>
-            </div>
-
-            <!-- Compact Monitoring CTA -->
-            <div class="monitoring-cta-compact">
-                <div class="monitoring-cta-content">
-                    <span class="monitoring-icon">🔔</span>
-                    <div class="monitoring-text">
-                        <h3>Get Instant Alerts</h3>
-                        <p>Set up monitoring to get notified the moment your visibility changes. Never miss a shadow ban again.</p>
-                    </div>
-                    <a href="index.html#pricing" class="monitoring-cta-btn">Set Up Monitoring</a>
+                <div class="recommendations-list" id="recommendations-list">
+                    <!-- Populated by JS -->
                 </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="results-actions">
+                <button id="share-results-btn" class="btn-action secondary">
+                    <span>📤</span>
+                    <span>Share Results</span>
+                </button>
+                <button id="download-report" class="btn-action secondary">
+                    <span>📄</span>
+                    <span>Download Report</span>
+                </button>
+            </div>
+
+            <!-- Monitoring CTA -->
+            <div class="monitoring-cta">
+                <span class="monitoring-icon">🔔</span>
+                <div class="monitoring-content">
+                    <h3>Get Instant Alerts</h3>
+                    <p>Set up monitoring to get notified the moment your visibility changes.</p>
+                </div>
+                <a href="index.html#pricing" class="btn btn-primary">Set Up Monitoring →</a>
             </div>
         </div>
     </main>
+
+    <!-- Check Other Tools Section -->
+    <section class="section section-alt">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Check Something Else?</h2>
+                <p class="section-desc">Use our other tools to get a complete picture</p>
+            </div>
+            
+            <div class="tools-grid">
+                <a href="checker.html" class="tool-card">
+                    <span class="tool-icon">👤</span>
+                    <h4>Account Check</h4>
+                    <p>Check if your account is shadow banned</p>
+                    <span class="tool-arrow">→</span>
+                </a>
+                <a href="post-checker.html" class="tool-card">
+                    <span class="tool-icon">📝</span>
+                    <h4>Post URL Check</h4>
+                    <p>Check if a specific post is restricted</p>
+                    <span class="tool-arrow">→</span>
+                </a>
+                <a href="hashtag-checker.html" class="tool-card">
+                    <span class="tool-icon">🚫</span>
+                    <h4>Hashtag Checker</h4>
+                    <p>Check if your hashtags are banned</p>
+                    <span class="tool-arrow">→</span>
+                </a>
+            </div>
+            
+            <div class="back-home">
+                <a href="index.html" class="btn btn-ghost btn-lg">← Back to Home</a>
+            </div>
+        </div>
+    </section>
 
     <!-- Share Modal -->
     <div id="share-modal" class="modal hidden">
         <div class="modal-overlay"></div>
         <div class="modal-content" style="max-width: 400px;">
             <button class="modal-close">&times;</button>
-            <div class="modal-platform-check">
-                <span class="modal-platform-icon">📤</span>
-                <h3>Share Your Results</h3>
-                <p style="margin-bottom: var(--space-lg);">Invite others to check their accounts!</p>
+            <div class="modal-icon">📤</div>
+            <h3 class="modal-title">Share Your Results</h3>
+            <div class="modal-body">
+                <p style="margin-bottom: var(--space-lg); text-align: center;">Invite others to check their accounts!</p>
                 
                 <div style="display: flex; flex-direction: column; gap: var(--space-sm);">
                     <button class="btn btn-primary btn-full" id="share-modal-twitter">
@@ -107,9 +168,9 @@
                         <span>✈️</span>
                         <span>Share on Telegram</span>
                     </button>
-                    <button class="btn btn-secondary btn-full" id="share-modal-linkedin">
-                        <span>in</span>
-                        <span>Share on LinkedIn</span>
+                    <button class="btn btn-secondary btn-full" id="share-modal-copy">
+                        <span>📋</span>
+                        <span>Copy Link</span>
                     </button>
                 </div>
             </div>
@@ -140,20 +201,6 @@
             </div>
         </div>
     </div>
-
-    <!-- Cross-Promote: Hashtag Checker -->
-    <section class="section section-alt">
-        <div class="container">
-            <div class="cross-promote">
-                <span class="cross-promote-icon">🚫</span>
-                <div class="cross-promote-content">
-                    <h3>Also Check Your Hashtags</h3>
-                    <p>Using banned hashtags can trigger shadow bans. Check if your hashtags are safe before posting.</p>
-                </div>
-                <a href="hashtag-checker.html" class="btn-cross-promote">Check Hashtags →</a>
-            </div>
-        </div>
-    </section>
 
     <!-- ===================================
          FOOTER - Loaded by shared-components.js

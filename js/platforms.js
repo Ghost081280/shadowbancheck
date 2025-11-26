@@ -347,3 +347,7 @@ window.getPlatformCount = function() {
 };
 
 console.log('✅ Platforms loaded:', window.platformData.length, 'social media platforms');
+
+// Alias for backwards compatibility
+window.PLATFORMS = window.platformData;
+const PLATFORMS = window.platformData;

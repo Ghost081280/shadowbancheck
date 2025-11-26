@@ -783,10 +783,12 @@ function initPowerPlatforms() {
     const container = document.getElementById('power-platform-icons');
     if (!container || typeof PLATFORMS === 'undefined') return;
     
-    // Get live platforms - show Twitter/X and Reddit first
+    // Get live and coming soon platforms from platforms.js
     const livePlatforms = PLATFORMS.filter(p => p.status === 'live');
-    const priorityOrder = ['twitter', 'reddit'];
+    const comingSoonCount = PLATFORMS.filter(p => p.status !== 'live').length;
     
+    // Sort live platforms - prioritize Twitter/X and Reddit
+    const priorityOrder = ['twitter', 'reddit'];
     livePlatforms.sort((a, b) => {
         const aIndex = priorityOrder.indexOf(a.id);
         const bIndex = priorityOrder.indexOf(b.id);
@@ -796,17 +798,13 @@ function initPowerPlatforms() {
         return 0;
     });
     
-    // Show first 7 platforms + "more" chip (consistent across all pages)
-    const DISPLAY_COUNT = 7;
-    const displayPlatforms = livePlatforms.slice(0, DISPLAY_COUNT);
-    const remainingCount = PLATFORMS.length - DISPLAY_COUNT;
-    
-    let html = displayPlatforms.map(p => `
+    // Show all live platforms + "+X more" for coming soon
+    let html = livePlatforms.map(p => `
         <span class="platform-chip" data-platform="${p.id}" title="${p.name}">${p.icon}</span>
     `).join('');
     
-    if (remainingCount > 0) {
-        html += `<span class="platform-chip more-chip" id="power-more-platforms" title="View all platforms">+${remainingCount}</span>`;
+    if (comingSoonCount > 0) {
+        html += `<span class="platform-chip coming" id="power-more-platforms" title="View all platforms">+${comingSoonCount}</span>`;
     }
     
     container.innerHTML = html;
@@ -878,6 +876,29 @@ function openAllPlatformsModal() {
     // Show modal
     modal.classList.remove('hidden');
     document.body.style.overflow = 'hidden';
+    
+    // Close handlers
+    const closeBtn = modal.querySelector('.modal-close');
+    const overlay = modal.querySelector('.modal-overlay');
+    
+    function closeModal() {
+        modal.classList.add('hidden');
+        document.body.style.overflow = '';
+    }
+    
+    closeBtn?.removeEventListener('click', closeModal);
+    overlay?.removeEventListener('click', closeModal);
+    closeBtn?.addEventListener('click', closeModal);
+    overlay?.addEventListener('click', closeModal);
+    
+    // ESC key
+    const escHandler = function(e) {
+        if (e.key === 'Escape') {
+            closeModal();
+            document.removeEventListener('keydown', escHandler);
+        }
+    };
+    document.addEventListener('keydown', escHandler);
 }
 
 function initPowerCheck() {

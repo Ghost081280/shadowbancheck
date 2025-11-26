@@ -236,16 +236,12 @@ function showComingSoonModal(platformName, icon) {
     
     const modalBody = modal.querySelector('#modal-body');
     modalBody.innerHTML = `
-        <div class="modal-platform-check">
-            <span class="modal-platform-icon">${icon}</span>
-            <h3>${platformName} Coming Soon</h3>
+        <div class="modal-icon">${icon}</div>
+        <h3 class="modal-title">Check ${platformName}</h3>
+        <p class="modal-status"><span class="status-badge soon">● Coming Soon</span></p>
+        <div class="modal-body coming-soon">
             <p>We're working hard to add ${platformName} support!</p>
-            
             <p style="margin-top: var(--space-md);">Want to be notified when it's ready? <a href="login.html">Create an account</a> to get notified when we launch support for this platform.</p>
-            
-            <a href="login.html" class="btn btn-primary btn-full" style="margin-top: var(--space-lg);">
-                Create Account →
-            </a>
         </div>
     `;
     

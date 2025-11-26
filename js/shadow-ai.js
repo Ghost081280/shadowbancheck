@@ -1,10 +1,11 @@
 /**
  * =============================================================================
- * SHADOW AI - UNIFIED CHATBOT v3.0
+ * SHADOW AI - UNIFIED CHATBOT v3.1
  * ShadowBanCheck.io - Website & Dashboard (Identical Behavior)
  * 
  * Features:
- * - Question counter (3 free/day for website, configurable for dashboard)
+ * - Lookup counter (3 single lookups/day OR 1 power check/day)
+ * - Message limit (20 general messages/day to prevent bot abuse)
  * - Dynamic widget creation
  * - Keyboard handler for mobile
  * - Demo chat animation
@@ -22,12 +23,20 @@
         // Detect if we're on dashboard
         isDashboard: window.location.pathname.includes('dashboard'),
         
-        // Question limits
-        freeQuestionsPerDay: 1,
-        proQuestionsPerDay: 10,
+        // Lookup limits (actual shadow ban checks)
+        freeLookupsPerDay: 3,         // Single lookups (username, post, hashtag)
+        freePowerCheckPerDay: 1,      // 3-in-1 Power Check (uses ALL daily lookups)
+        proLookupsPerDay: 50,
+        proPowerChecksPerDay: 25,
+        
+        // Message limits (general chat - prevents bot abuse)
+        freeMessagesPerDay: 20,
+        proMessagesPerDay: 200,
         
         // Storage keys
-        storageKey: 'shadowAI_questions',
+        lookupKey: 'shadowAI_lookups',
+        messageKey: 'shadowAI_messages',
+        powerCheckKey: 'shadowAI_usedPowerCheck',
         
         // Title based on context
         get title() {
@@ -39,69 +48,166 @@
             return this.isDashboard ? 'Ask Shadow AI Pro' : 'Ask Shadow AI';
         },
         
-        // Questions per day based on context
-        get dailyLimit() {
-            return this.isDashboard ? this.proQuestionsPerDay : this.freeQuestionsPerDay;
+        // Limits based on context
+        get lookupLimit() {
+            return this.isDashboard ? this.proLookupsPerDay : this.freeLookupsPerDay;
+        },
+        
+        get messageLimit() {
+            return this.isDashboard ? this.proMessagesPerDay : this.freeMessagesPerDay;
         }
     };
     
     // State
     let conversationHistory = [];
     let isTyping = false;
-    let questionsUsed = 0;
+    let lookupsUsed = 0;
+    let messagesUsed = 0;
+    let usedPowerCheck = false;
     
     // ==========================================================================
-    // QUESTION TRACKING
+    // LOOKUP & MESSAGE TRACKING
     // ==========================================================================
-    function getQuestionData() {
+    function getStorageData(key) {
         try {
-            const data = localStorage.getItem(CONFIG.storageKey);
+            const data = localStorage.getItem(key);
             if (data) {
                 const parsed = JSON.parse(data);
-                // Check if it's a new day
                 const today = new Date().toDateString();
                 if (parsed.date !== today) {
-                    // Reset for new day
                     return { date: today, count: 0 };
                 }
                 return parsed;
             }
         } catch (e) {
-            console.warn('Could not read question data:', e);
+            console.warn('Could not read storage data:', e);
         }
         return { date: new Date().toDateString(), count: 0 };
     }
     
-    function saveQuestionData(count) {
+    function saveStorageData(key, count) {
         try {
-            localStorage.setItem(CONFIG.storageKey, JSON.stringify({
+            localStorage.setItem(key, JSON.stringify({
                 date: new Date().toDateString(),
                 count: count
             }));
         } catch (e) {
-            console.warn('Could not save question data:', e);
+            console.warn('Could not save storage data:', e);
+        }
+    }
+    
+    function getPowerCheckStatus() {
+        try {
+            const data = localStorage.getItem(CONFIG.powerCheckKey);
+            if (data) {
+                const parsed = JSON.parse(data);
+                const today = new Date().toDateString();
+                if (parsed.date !== today) {
+                    return false; // New day, reset
+                }
+                return parsed.used;
+            }
+        } catch (e) {
+            console.warn('Could not read power check status:', e);
+        }
+        return false;
+    }
+    
+    function setPowerCheckUsed() {
+        try {
+            localStorage.setItem(CONFIG.powerCheckKey, JSON.stringify({
+                date: new Date().toDateString(),
+                used: true
+            }));
+            usedPowerCheck = true;
+        } catch (e) {
+            console.warn('Could not save power check status:', e);
         }
     }
     
     function updateUsageCounter() {
         const usage = document.getElementById('shadow-ai-usage');
         if (usage) {
-            const data = getQuestionData();
-            questionsUsed = data.count;
-            usage.textContent = `${questionsUsed}/${CONFIG.dailyLimit} today`;
+            const lookupData = getStorageData(CONFIG.lookupKey);
+            lookupsUsed = lookupData.count;
+            usedPowerCheck = getPowerCheckStatus();
+            
+            if (usedPowerCheck) {
+                usage.textContent = `Power Check used today`;
+            } else {
+                const remaining = CONFIG.lookupLimit - lookupsUsed;
+                usage.textContent = `${remaining}/${CONFIG.lookupLimit} lookups left`;
+            }
         }
     }
     
-    function canAskQuestion() {
-        const data = getQuestionData();
-        return data.count < CONFIG.dailyLimit;
+    function canDoLookup() {
+        if (usedPowerCheck || getPowerCheckStatus()) return false;
+        const data = getStorageData(CONFIG.lookupKey);
+        return data.count < CONFIG.lookupLimit;
     }
     
-    function incrementQuestionCount() {
-        const data = getQuestionData();
+    function canDoPowerCheck() {
+        if (getPowerCheckStatus()) return false;
+        const lookupData = getStorageData(CONFIG.lookupKey);
+        return lookupData.count === 0; // Can only do power check if no single lookups used
+    }
+    
+    function canSendMessage() {
+        const data = getStorageData(CONFIG.messageKey);
+        return data.count < CONFIG.messageLimit;
+    }
+    
+    function incrementLookupCount() {
+        const data = getStorageData(CONFIG.lookupKey);
         data.count++;
-        saveQuestionData(data.count);
+        saveStorageData(CONFIG.lookupKey, data.count);
         updateUsageCounter();
+    }
+    
+    function incrementMessageCount() {
+        const data = getStorageData(CONFIG.messageKey);
+        data.count++;
+        saveStorageData(CONFIG.messageKey, data.count);
+    }
+    
+    // ==========================================================================
+    // DETECT LOOKUP REQUESTS
+    // ==========================================================================
+    function isLookupRequest(message) {
+        const lower = message.toLowerCase();
+        
+        // Patterns that indicate a lookup request
+        const lookupPatterns = [
+            // Direct check requests with username
+            /@[a-zA-Z0-9_]+/,                           // @username
+            /check\s+(my\s+)?(account|profile|username)/i,
+            /am\s+i\s+(shadow\s*)?banned/i,
+            /is\s+@?[a-zA-Z0-9_]+\s+(shadow\s*)?banned/i,
+            
+            // URL patterns
+            /https?:\/\/(twitter|x|instagram|tiktok|reddit|facebook|youtube|linkedin|threads)/i,
+            /check\s+(this\s+)?(post|url|link)/i,
+            
+            // Hashtag check requests
+            /check\s+(these\s+)?hashtag/i,
+            /are\s+(these\s+)?hashtag/i,
+            /#[a-zA-Z0-9_]+.*#[a-zA-Z0-9_]+/,          // Multiple hashtags
+            
+            // Power check / 3-in-1 requests
+            /power\s*check/i,
+            /3[\s-]?in[\s-]?1/i,
+            /full\s+(analysis|check|scan)/i
+        ];
+        
+        return lookupPatterns.some(pattern => pattern.test(lower));
+    }
+    
+    function isPowerCheckRequest(message) {
+        const lower = message.toLowerCase();
+        return /power\s*check/i.test(lower) || 
+               /3[\s-]?in[\s-]?1/i.test(lower) || 
+               /full\s+(analysis|check|scan)/i.test(lower);
     }
     
     // ==========================================================================
@@ -145,7 +251,7 @@
                         <span class="copilot-header-emoji">🤖</span>
                         <div class="copilot-header-text">
                             <h3>${CONFIG.title}</h3>
-                            <p class="copilot-usage" id="shadow-ai-usage">0/${CONFIG.dailyLimit} today</p>
+                            <p class="copilot-usage" id="shadow-ai-usage">${CONFIG.lookupLimit}/${CONFIG.lookupLimit} lookups left</p>
                         </div>
                     </div>
                     <div class="copilot-header-right">
@@ -315,10 +421,35 @@
             return;
         }
         
-        // Check question limit
-        if (!canAskQuestion()) {
-            showLimitReachedMessage();
-            return;
+        // Check if this is a lookup request
+        const isLookup = isLookupRequest(message);
+        const isPowerCheck = isPowerCheckRequest(message);
+        
+        // Check limits based on request type
+        if (isPowerCheck) {
+            if (!canDoPowerCheck()) {
+                if (getPowerCheckStatus()) {
+                    showLimitMessage("You've already used your daily Power Check. Try again tomorrow or upgrade to Pro!");
+                } else {
+                    showLimitMessage("Power Check requires no prior lookups today. You've already used single lookups. Try again tomorrow!");
+                }
+                return;
+            }
+        } else if (isLookup) {
+            if (!canDoLookup()) {
+                if (usedPowerCheck || getPowerCheckStatus()) {
+                    showLimitMessage("You've used your Power Check today, which includes all lookups. Try again tomorrow or upgrade to Pro!");
+                } else {
+                    showLimitMessage(`You've used all ${CONFIG.lookupLimit} lookups for today. Upgrade to Pro for more!`);
+                }
+                return;
+            }
+        } else {
+            // General chat message
+            if (!canSendMessage()) {
+                showLimitMessage(`You've reached the daily chat limit (${CONFIG.messageLimit} messages). Upgrade to Pro for unlimited chat!`);
+                return;
+            }
         }
         
         if (isTyping) return;
@@ -327,8 +458,14 @@
         addMessage(message, 'user');
         input.value = '';
         
-        // Increment counter
-        incrementQuestionCount();
+        // Increment appropriate counter
+        if (isPowerCheck) {
+            setPowerCheckUsed();
+        } else if (isLookup) {
+            incrementLookupCount();
+        } else {
+            incrementMessageCount();
+        }
         
         // Add to history
         conversationHistory.push({ role: 'user', content: message });
@@ -344,14 +481,37 @@
         // Generate response (simulate for now)
         setTimeout(() => {
             hideTypingIndicator();
-            const response = generateResponse(message);
+            const response = generateResponse(message, isLookup, isPowerCheck);
             addMessage(response, 'assistant');
             conversationHistory.push({ role: 'assistant', content: response });
             
             input.disabled = false;
             document.getElementById('shadow-ai-send').disabled = false;
             isTyping = false;
-        }, 1000 + Math.random() * 1000);
+        }, isLookup ? 2000 + Math.random() * 1000 : 800 + Math.random() * 500);
+    }
+    
+    function showLimitMessage(text) {
+        const messagesContainer = document.getElementById('shadow-ai-messages');
+        if (!messagesContainer) return;
+        
+        // Remove existing limit messages
+        messagesContainer.querySelectorAll('.limit-message').forEach(el => el.remove());
+        
+        const limitDiv = document.createElement('div');
+        limitDiv.className = 'chat-message assistant-message limit-message';
+        limitDiv.innerHTML = `
+            <div class="message-content">
+                <div class="message-avatar">🤖</div>
+                <div class="message-text">
+                    <strong>⏰ Daily Limit Reached</strong><br><br>
+                    ${text}<br><br>
+                    <a href="#pricing" onclick="document.getElementById('shadow-ai-chat').classList.remove('open');">View Pricing →</a>
+                </div>
+            </div>
+        `;
+        messagesContainer.appendChild(limitDiv);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
     }
     
     // ==========================================================================
@@ -425,58 +585,211 @@
     }
     
     // ==========================================================================
-    // LIMIT REACHED MESSAGE
-    // ==========================================================================
-    function showLimitReachedMessage() {
-        const messagesContainer = document.getElementById('shadow-ai-messages');
-        if (!messagesContainer) return;
-        
-        // Check if already showing
-        if (messagesContainer.querySelector('.limit-reached-message')) return;
-        
-        const limitDiv = document.createElement('div');
-        limitDiv.className = 'limit-reached-message';
-        limitDiv.innerHTML = `
-            <h4>🚫 Daily Limit Reached</h4>
-            <p>You've used all ${CONFIG.dailyLimit} free questions for today. Upgrade to Shadow AI Pro for more!</p>
-            <a href="#shadow-ai-pro">Get Shadow AI Pro →</a>
-        `;
-        
-        messagesContainer.appendChild(limitDiv);
-        messagesContainer.scrollTop = messagesContainer.scrollHeight;
-    }
-    
-    // ==========================================================================
     // RESPONSE GENERATION (Placeholder - replace with API)
     // ==========================================================================
-    function generateResponse(message) {
+    function generateResponse(message, isLookup = false, isPowerCheck = false) {
         const lower = message.toLowerCase();
         
+        // Handle Power Check requests
+        if (isPowerCheck) {
+            return generatePowerCheckResponse(message);
+        }
+        
+        // Handle lookup requests (username, post URL, hashtag)
+        if (isLookup) {
+            return generateLookupResponse(message);
+        }
+        
+        // General chat responses
         if (lower.includes('shadow ban') || lower.includes('shadowban')) {
             return "Shadow banning is when a platform limits your content's visibility without notifying you. Your posts appear normal to you, but others can't see them in searches, feeds, or recommendations. I can help you check if you're affected!";
         }
         
-        if (lower.includes('check') || lower.includes('test')) {
-            return "To check for a shadow ban, I analyze multiple factors including:\n\n✓ Search visibility\n✓ Engagement patterns\n✓ Hashtag reach\n✓ Profile accessibility\n\nWould you like me to check a specific platform for you?";
+        if (lower.includes('how') && (lower.includes('check') || lower.includes('test'))) {
+            return "To check for a shadow ban, I analyze multiple factors including:\n\n✓ Search visibility\n✓ Engagement patterns\n✓ Hashtag reach\n✓ Profile accessibility\n\nJust paste a **username** (like @username), **post URL**, or **hashtags** and I'll analyze it for you!";
         }
         
-        if (lower.includes('twitter') || lower.includes('x.com')) {
-            return "For Twitter/X shadow bans, I check:\n\n• Search suggestion ban\n• Search ban\n• Ghost ban (replies hidden)\n• Reply deboosting\n\nPaste your Twitter username or post URL and I'll analyze it!";
+        if (lower.includes('what') && lower.includes('platform')) {
+            return "I currently support checking:\n\n🐦 **Twitter/X** - Full analysis\n🤖 **Reddit** - Full analysis\n📷 Instagram - Coming soon\n🎵 TikTok - Coming soon\n\nWhich platform would you like to check?";
         }
         
-        if (lower.includes('instagram') || lower.includes('tiktok')) {
-            return "I can help with Instagram and TikTok shadow ban detection! Common signs include:\n\n• Sudden engagement drop\n• Hashtags not working\n• Content not showing in Explore/For You\n\nWant me to explain how to check your account?";
-        }
-        
-        if (lower.includes('fix') || lower.includes('recover')) {
+        if (lower.includes('fix') || lower.includes('recover') || lower.includes('appeal')) {
             return "Here are general recovery strategies:\n\n1. **Take a break** - Stop posting for 24-48 hours\n2. **Review content** - Remove anything potentially violating guidelines\n3. **Avoid spam behavior** - Don't mass-like, follow, or use bots\n4. **Diversify hashtags** - Don't use the same ones repeatedly\n5. **Engage authentically** - Focus on genuine interactions\n\nWant platform-specific advice?";
         }
         
-        if (lower.includes('pro') || lower.includes('upgrade') || lower.includes('premium')) {
-            return "**Shadow AI Pro** gives you:\n\n✓ 100 AI questions/day\n✓ Live platform checks\n✓ Personalized recovery strategies\n✓ 24/7 availability\n\nStart your 7-day free trial at just $9.99/mo!";
+        if (lower.includes('price') || lower.includes('cost') || lower.includes('pro') || lower.includes('upgrade') || lower.includes('premium')) {
+            return "**Shadow AI Pro** gives you:\n\n✓ 50 lookups/day (vs 3 free)\n✓ 25 Power Checks/day\n✓ Unlimited chat\n✓ Priority analysis\n✓ Personalized recovery strategies\n\nPlans start at just **$9.99/mo**. Check out our pricing section!";
         }
         
-        return "I understand you're concerned about your online visibility. As a Pro user, I can provide detailed analysis of your accounts and personalized recovery strategies. What specific platform or issue would you like to discuss?";
+        if (lower.includes('hello') || lower.includes('hi') || lower.includes('hey')) {
+            return "Hey there! 👋 I'm here to help you detect and recover from shadow bans. You can:\n\n• Ask me questions about shadow banning\n• Paste a **@username** to check an account\n• Paste a **post URL** to check visibility\n• Paste **#hashtags** to check if they're banned\n\nWhat would you like to do?";
+        }
+        
+        if (lower.includes('thank')) {
+            return "You're welcome! 😊 Let me know if you need anything else. I'm here to help you stay visible on social media!";
+        }
+        
+        // Default helpful response
+        return "I'm here to help with shadow ban detection! You can:\n\n• **Check an account** - paste @username\n• **Check a post** - paste a URL\n• **Check hashtags** - paste #hashtag1 #hashtag2\n• **Ask questions** - about shadow banning, recovery, etc.\n\nWhat would you like to know?";
+    }
+    
+    function generateLookupResponse(message) {
+        // Extract what type of lookup
+        const lower = message.toLowerCase();
+        
+        // Check for username
+        const usernameMatch = message.match(/@([a-zA-Z0-9_]+)/);
+        if (usernameMatch) {
+            return generateUsernameCheckResponse(usernameMatch[1], message);
+        }
+        
+        // Check for URL
+        const urlMatch = message.match(/https?:\/\/[^\s]+/i);
+        if (urlMatch) {
+            return generatePostCheckResponse(urlMatch[0]);
+        }
+        
+        // Check for hashtags
+        const hashtags = message.match(/#[a-zA-Z0-9_]+/g);
+        if (hashtags && hashtags.length > 0) {
+            return generateHashtagCheckResponse(hashtags);
+        }
+        
+        // Generic check request
+        return "I'd be happy to run a check! Please provide:\n\n• A **username** (like @yourname)\n• A **post URL** from Twitter, Reddit, etc.\n• Or **hashtags** to check (like #fitness #health)\n\nWhat would you like me to analyze?";
+    }
+    
+    function generateUsernameCheckResponse(username, fullMessage) {
+        // Detect platform from message
+        const lower = fullMessage.toLowerCase();
+        let platform = 'Twitter/X';
+        let platformIcon = '🐦';
+        
+        if (lower.includes('reddit')) {
+            platform = 'Reddit';
+            platformIcon = '🤖';
+        } else if (lower.includes('instagram')) {
+            platform = 'Instagram';
+            platformIcon = '📷';
+        } else if (lower.includes('tiktok')) {
+            platform = 'TikTok';
+            platformIcon = '🎵';
+        }
+        
+        // Generate mock results
+        const probability = Math.floor(Math.random() * 35) + 5;
+        const status = probability < 15 ? 'LOW RISK ✅' : probability < 30 ? 'MODERATE RISK ⚠️' : 'HIGH RISK 🚨';
+        
+        return `${platformIcon} **${platform} Account Check: @${username}**\n\n` +
+               `**Shadow Ban Probability: ${probability}%** (${status})\n\n` +
+               `**Checks Performed:**\n` +
+               `✓ Search visibility: ${Math.random() > 0.3 ? 'Visible' : 'Reduced'}\n` +
+               `✓ Profile accessibility: ${Math.random() > 0.2 ? 'Normal' : 'Limited'}\n` +
+               `✓ Engagement analysis: ${Math.random() > 0.4 ? 'Healthy' : 'Below average'}\n` +
+               `✓ Content flags: ${Math.random() > 0.8 ? '1 warning' : 'None detected'}\n\n` +
+               `_This used 1 of your ${CONFIG.lookupLimit} daily lookups._\n\n` +
+               `Want detailed analysis? Try our [full checker tool](checker.html?platform=${platform.toLowerCase()})!`;
+    }
+    
+    function generatePostCheckResponse(url) {
+        // Detect platform from URL
+        let platform = 'Unknown';
+        let platformIcon = '🔗';
+        
+        if (url.includes('twitter.com') || url.includes('x.com')) {
+            platform = 'Twitter/X';
+            platformIcon = '🐦';
+        } else if (url.includes('reddit.com')) {
+            platform = 'Reddit';
+            platformIcon = '🤖';
+        } else if (url.includes('instagram.com')) {
+            platform = 'Instagram';
+            platformIcon = '📷';
+        } else if (url.includes('tiktok.com')) {
+            platform = 'TikTok';
+            platformIcon = '🎵';
+        }
+        
+        const probability = Math.floor(Math.random() * 30) + 5;
+        const status = probability < 15 ? 'VISIBLE ✅' : probability < 25 ? 'REDUCED REACH ⚠️' : 'SUPPRESSED 🚨';
+        
+        return `${platformIcon} **Post Visibility Check**\n\n` +
+               `**Platform:** ${platform}\n` +
+               `**Suppression Probability: ${probability}%** (${status})\n\n` +
+               `**Analysis:**\n` +
+               `✓ Search indexing: ${Math.random() > 0.3 ? 'Indexed' : 'Not indexed'}\n` +
+               `✓ Feed visibility: ${Math.random() > 0.2 ? 'Normal' : 'Reduced'}\n` +
+               `✓ Hashtag reach: ${Math.random() > 0.4 ? 'Good' : 'Limited'}\n` +
+               `✓ Engagement rate: ${Math.random() > 0.3 ? 'Normal' : 'Below expected'}\n\n` +
+               `_This used 1 of your ${CONFIG.lookupLimit} daily lookups._`;
+    }
+    
+    function generateHashtagCheckResponse(hashtags) {
+        const cleanHashtags = hashtags.map(h => h.replace('#', ''));
+        const results = cleanHashtags.map(tag => {
+            const rand = Math.random();
+            if (rand < 0.15) return { tag, status: 'BANNED 🚫', class: 'banned' };
+            if (rand < 0.35) return { tag, status: 'RESTRICTED ⚠️', class: 'restricted' };
+            return { tag, status: 'SAFE ✅', class: 'safe' };
+        });
+        
+        const banned = results.filter(r => r.class === 'banned').length;
+        const restricted = results.filter(r => r.class === 'restricted').length;
+        const safe = results.filter(r => r.class === 'safe').length;
+        
+        let summary = banned > 0 ? '🚨 **Warning:** Some hashtags are problematic!' : 
+                      restricted > 0 ? '⚠️ **Caution:** Some hashtags have restrictions.' :
+                      '✅ **All clear!** Your hashtags look safe.';
+        
+        let response = `**Hashtag Check Results**\n\n${summary}\n\n`;
+        response += `**Summary:** ${safe} Safe, ${restricted} Restricted, ${banned} Banned\n\n`;
+        response += `**Details:**\n`;
+        results.forEach(r => {
+            response += `• #${r.tag}: ${r.status}\n`;
+        });
+        response += `\n_This used 1 of your ${CONFIG.lookupLimit} daily lookups._`;
+        
+        return response;
+    }
+    
+    function generatePowerCheckResponse(message) {
+        // Try to extract URL from message
+        const urlMatch = message.match(/https?:\/\/[^\s]+/i);
+        let platform = 'Twitter/X';
+        let platformIcon = '🐦';
+        let target = 'your content';
+        
+        if (urlMatch) {
+            const url = urlMatch[0];
+            if (url.includes('reddit.com')) {
+                platform = 'Reddit';
+                platformIcon = '🤖';
+            }
+            target = 'this post';
+        }
+        
+        const accountProb = Math.floor(Math.random() * 25) + 5;
+        const postProb = Math.floor(Math.random() * 30) + 5;
+        const hashtagProb = Math.floor(Math.random() * 20) + 5;
+        const overallProb = Math.floor((accountProb + postProb + hashtagProb) / 3);
+        
+        const status = overallProb < 15 ? 'LOW RISK ✅' : overallProb < 25 ? 'MODERATE RISK ⚠️' : 'HIGH RISK 🚨';
+        
+        return `⚡ **Power Check Complete** (3-in-1 Analysis)\n\n` +
+               `${platformIcon} **Platform:** ${platform}\n` +
+               `**Overall Shadow Ban Probability: ${overallProb}%** (${status})\n\n` +
+               `**━━━ Breakdown ━━━**\n\n` +
+               `👤 **Account Health:** ${accountProb}%\n` +
+               `• Profile visibility: ${accountProb < 20 ? 'Normal' : 'Reduced'}\n` +
+               `• Search appearance: ${accountProb < 15 ? 'Good' : 'Limited'}\n\n` +
+               `📝 **Post Visibility:** ${postProb}%\n` +
+               `• Feed distribution: ${postProb < 20 ? 'Normal' : 'Suppressed'}\n` +
+               `• Engagement rate: ${postProb < 25 ? 'Healthy' : 'Below average'}\n\n` +
+               `#️⃣ **Hashtag Status:** ${hashtagProb}%\n` +
+               `• All hashtags: ${hashtagProb < 15 ? 'Safe' : 'Some restrictions'}\n\n` +
+               `**━━━━━━━━━━━━━━━━**\n\n` +
+               `⚠️ _Power Check uses your entire daily lookup allowance._\n\n` +
+               `Need detailed recovery strategies? Ask me how to fix any issues!`;
     }
     
     // ==========================================================================

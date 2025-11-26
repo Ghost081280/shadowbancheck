@@ -232,39 +232,57 @@
         <div class="modal-content">
             <button class="modal-close">&times;</button>
             <div class="modal-icon">🧠</div>
-            <h3 class="modal-title">Our 5-Factor Detection Engine</h3>
+            <h3 class="modal-title">Powered by Our 5-Factor Detection Engine</h3>
             <div class="modal-body">
-                <p class="modal-intro">The Account Checker uses <strong>4 of our 5 factors</strong> to analyze your account:</p>
+                <p class="modal-intro">The Account Checker uses <strong>4 of our 5 detection factors</strong>:</p>
                 
                 <ul class="engine-factors">
                     <li class="factor-active">
                         <span class="factor-check">✓</span>
-                        <strong>🔌 Platform APIs</strong>
-                        <span class="factor-desc">Direct integration with Twitter/X API, Reddit API, and more</span>
+                        <span class="factor-icon">🔌</span>
+                        <div class="factor-content">
+                            <span class="factor-name">Platform APIs</span>
+                            <span class="factor-desc">Direct integration with Twitter/X API, Reddit API</span>
+                        </div>
                     </li>
                     <li class="factor-active">
                         <span class="factor-check">✓</span>
-                        <strong>🌐 Web Analysis</strong>
-                        <span class="factor-desc">Live scraping, logged-in/out tests, search visibility checks</span>
+                        <span class="factor-icon">🌐</span>
+                        <div class="factor-content">
+                            <span class="factor-name">Web Analysis</span>
+                            <span class="factor-desc">Live scraping & search visibility checks</span>
+                        </div>
                     </li>
                     <li class="factor-active">
                         <span class="factor-check">✓</span>
-                        <strong>📊 Historical Data</strong>
-                        <span class="factor-desc">Baseline comparisons from tracked accounts</span>
+                        <span class="factor-icon">📊</span>
+                        <div class="factor-content">
+                            <span class="factor-name">Historical Data</span>
+                            <span class="factor-desc">Baseline comparisons from tracked accounts</span>
+                        </div>
                     </li>
                     <li class="factor-inactive">
                         <span class="factor-check">○</span>
-                        <strong>#️⃣ Hashtag Database</strong>
-                        <span class="factor-desc">Not applicable for account-only checks</span>
+                        <span class="factor-icon">#️⃣</span>
+                        <div class="factor-content">
+                            <span class="factor-name">Hashtag Database</span>
+                            <span class="factor-desc">Not applicable for account-only checks</span>
+                        </div>
                     </li>
                     <li class="factor-active">
                         <span class="factor-check">✓</span>
-                        <strong>🔍 IP Analysis</strong>
-                        <span class="factor-desc">VPN/proxy detection, datacenter flagging, location risk</span>
+                        <span class="factor-icon">🔍</span>
+                        <div class="factor-content">
+                            <span class="factor-name">IP Analysis</span>
+                            <span class="factor-desc">VPN/proxy detection, datacenter flagging</span>
+                        </div>
                     </li>
                 </ul>
                 
-                <p class="engine-conclusion">Our Engine combines all applicable signals and assigns a <strong>Shadow Ban Probability Score</strong> with detailed breakdowns.</p>
+                <div class="modal-tech-note">
+                    <h4>💡 Our Engine combines all applicable signals</h4>
+                    <p>Each account is analyzed for shadow ban indicators and assigned a probability score with detailed breakdowns.</p>
+                </div>
             </div>
             <div class="modal-footer">
                 <button class="btn btn-primary btn-lg" onclick="document.getElementById('engine-info-modal').classList.add('hidden'); document.body.style.overflow = '';">Got It!</button>

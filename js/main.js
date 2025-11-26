@@ -291,7 +291,7 @@ function openPlatformModal(platform) {
             modalBody.className = 'modal-body coming-soon';
             modalBody.innerHTML = `
                 <p>We're working hard to add ${platform.name} support!</p>
-                <p style="margin-top: var(--space-md);">Want to be notified when it's ready? Sign up for our newsletter or check back soon.</p>
+                <p style="margin-top: var(--space-md);">Want to be notified when it's ready? <a href="login.html">Create an account</a> to get notified when we launch support for this platform.</p>
             `;
         }
     }
@@ -969,7 +969,7 @@ function updateSearchCounterDisplay() {
    ============================================================================= */
 function initSocialShare() {
     const shareUrl = encodeURIComponent(window.location.origin);
-    const shareText = encodeURIComponent('Check if you\'re shadow banned across 26+ platforms! 🔍');
+    const shareText = encodeURIComponent('Check to see if you\'re shadow banned on the platforms we support! 🔍');
     
     document.getElementById('share-twitter')?.addEventListener('click', function() {
         window.open(`https://twitter.com/intent/tweet?text=${shareText}&url=${shareUrl}`, '_blank', 'width=600,height=400');
@@ -1067,6 +1067,7 @@ document.addEventListener('DOMContentLoaded', function() {
     initFAQAccordion();
     initSocialShare();
     initCookiePopup();
+    initAudienceModals();
     
     // Update search counter display
     updateSearchCounterDisplay();
@@ -1076,6 +1077,115 @@ document.addEventListener('DOMContentLoaded', function() {
     
     console.log('✅ ShadowBanCheck.io initialized');
 });
+
+/* =============================================================================
+   AUDIENCE INFO MODALS
+   ============================================================================= */
+function initAudienceModals() {
+    const audienceData = {
+        'influencer': {
+            icon: '📱',
+            title: 'Why Influencers Need Shadow Ban Detection',
+            content: `
+                <p class="modal-intro">As an influencer, your reach IS your business. A shadow ban can silently kill your engagement overnight.</p>
+                
+                <h4>Common Triggers:</h4>
+                <ul class="check-list">
+                    <li>A single post that upset a platform moderator or automated bot</li>
+                    <li>Using hashtags that became restricted after you posted</li>
+                    <li>Engagement patterns that algorithms flag as "suspicious"</li>
+                    <li>Content that's controversial but not actually against guidelines</li>
+                </ul>
+                
+                <div class="modal-tech-note">
+                    <h4>💡 The Problem</h4>
+                    <p>Platforms are <strong>not required by law</strong> to notify you of shadow bans. Automated bots apply restrictions without human review—and platform operators may not even know until they check their flagged accounts database. Our system gets ahead of this, giving you <strong>real-time visibility data with actionable citations</strong>.</p>
+                </div>
+            `
+        },
+        'politician': {
+            icon: '🗳️',
+            title: 'Why Politicians Need Shadow Ban Detection',
+            content: `
+                <p class="modal-intro">Your constituents need to hear your message. A shadow ban can silently suppress your voice during critical moments.</p>
+                
+                <h4>Why This Happens:</h4>
+                <ul class="check-list">
+                    <li>Algorithms may flag political content as "divisive" without context</li>
+                    <li>Opposing viewpoints can trigger mass-reporting campaigns</li>
+                    <li>Platform content policies are applied inconsistently</li>
+                    <li>Automated systems don't understand nuance in political discourse</li>
+                </ul>
+                
+                <div class="modal-tech-note">
+                    <h4>💡 Transparency Matters</h4>
+                    <p>Social media platforms have <strong>no legal obligation</strong> to disclose visibility restrictions. Our system monitors your accounts in real-time, so you'll know immediately if your reach is being suppressed—with <strong>documented evidence and citations</strong> you can use to appeal or inform your communications strategy.</p>
+                </div>
+            `
+        },
+        'public-figure': {
+            icon: '⭐',
+            title: 'Why Public Figures Need Shadow Ban Detection',
+            content: `
+                <p class="modal-intro">Whether you're an actor, athlete, musician, or public personality—your fans expect to see your content. Shadow bans can disconnect you from your audience.</p>
+                
+                <h4>At-Risk Situations:</h4>
+                <ul class="check-list">
+                    <li>Expressing political or religious views that algorithms flag</li>
+                    <li>Supporting causes that attract organized reporting</li>
+                    <li>Content that's misinterpreted by automated moderation</li>
+                    <li>High visibility making you a target for coordinated complaints</li>
+                </ul>
+                
+                <div class="modal-tech-note">
+                    <h4>💡 Stay Connected</h4>
+                    <p>From royalty to reality stars, public figures are often targeted by both automated systems and coordinated reporting. Platforms <strong>aren't required to tell you</strong> when your visibility is restricted. Our detection system alerts you in real-time with <strong>actionable data and source citations</strong>—so you can take action before your audience thinks you've gone silent.</p>
+                </div>
+            `
+        }
+    };
+    
+    // Add click handlers to all audience info buttons
+    document.querySelectorAll('.audience-info-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const audienceType = this.dataset.audience;
+            const data = audienceData[audienceType];
+            
+            if (!data) return;
+            
+            const modal = document.getElementById('audience-modal');
+            const modalIcon = document.getElementById('audience-modal-icon');
+            const modalTitle = document.getElementById('audience-modal-title');
+            const modalBody = document.getElementById('audience-modal-body');
+            
+            if (modal && modalIcon && modalTitle && modalBody) {
+                modalIcon.textContent = data.icon;
+                modalTitle.textContent = data.title;
+                modalBody.innerHTML = data.content;
+                
+                modal.classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+            }
+        });
+    });
+    
+    // Close modal handlers
+    const modal = document.getElementById('audience-modal');
+    if (modal) {
+        modal.querySelector('.modal-close')?.addEventListener('click', () => {
+            modal.classList.add('hidden');
+            document.body.style.overflow = '';
+        });
+        
+        modal.querySelector('.modal-overlay')?.addEventListener('click', () => {
+            modal.classList.add('hidden');
+            document.body.style.overflow = '';
+        });
+    }
+}
 
 /* =============================================================================
    UTILITY EXPORTS

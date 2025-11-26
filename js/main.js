@@ -796,21 +796,22 @@ function initPowerPlatforms() {
         return 0;
     });
     
-    // Show first 6 platforms + "more" chip
-    const displayPlatforms = livePlatforms.slice(0, 6);
-    const remainingCount = PLATFORMS.length - 6;
+    // Show first 7 platforms + "more" chip (consistent across all pages)
+    const DISPLAY_COUNT = 7;
+    const displayPlatforms = livePlatforms.slice(0, DISPLAY_COUNT);
+    const remainingCount = PLATFORMS.length - DISPLAY_COUNT;
     
     let html = displayPlatforms.map(p => `
         <span class="platform-chip" data-platform="${p.id}" title="${p.name}">${p.icon}</span>
     `).join('');
     
     if (remainingCount > 0) {
-        html += `<span class="platform-chip coming" title="More platforms">+${remainingCount}</span>`;
+        html += `<span class="platform-chip more-chip" id="power-more-platforms" title="View all platforms">+${remainingCount}</span>`;
     }
     
     container.innerHTML = html;
     
-    // Add click handlers
+    // Add click handlers for platform chips
     container.querySelectorAll('.platform-chip[data-platform]').forEach(chip => {
         chip.addEventListener('click', () => {
             const platform = PLATFORMS.find(p => p.id === chip.dataset.platform);
@@ -819,6 +820,64 @@ function initPowerPlatforms() {
             }
         });
     });
+    
+    // Add click handler for "+X more" chip
+    const moreChip = document.getElementById('power-more-platforms');
+    moreChip?.addEventListener('click', () => {
+        openAllPlatformsModal();
+    });
+}
+
+// Open modal showing all platforms
+function openAllPlatformsModal() {
+    const modal = document.getElementById('platform-modal');
+    if (!modal) return;
+    
+    const modalIcon = document.getElementById('modal-icon');
+    const modalTitle = document.getElementById('modal-title');
+    const modalStatus = document.getElementById('modal-status');
+    const modalBody = document.getElementById('modal-body');
+    const modalFooter = document.getElementById('modal-footer');
+    
+    if (modalIcon) modalIcon.textContent = '🌐';
+    if (modalTitle) modalTitle.textContent = 'All Supported Platforms';
+    if (modalStatus) modalStatus.innerHTML = '';
+    
+    const livePlatforms = PLATFORMS.filter(p => p.status === 'live');
+    const comingSoon = PLATFORMS.filter(p => p.status !== 'live');
+    
+    if (modalBody) {
+        let html = '<div class="all-platforms-list">';
+        
+        // Live platforms
+        html += '<div class="platforms-group"><h4 style="color: var(--success); margin-bottom: var(--space-sm);">✓ Available Now</h4>';
+        html += '<div class="platforms-grid">';
+        livePlatforms.forEach(p => {
+            html += `<div class="platform-item"><span class="platform-item-icon">${p.icon}</span><span>${p.name}</span></div>`;
+        });
+        html += '</div></div>';
+        
+        // Coming soon
+        if (comingSoon.length > 0) {
+            html += '<div class="platforms-group" style="margin-top: var(--space-lg);"><h4 style="color: var(--warning); margin-bottom: var(--space-sm);">◷ Coming Soon</h4>';
+            html += '<div class="platforms-grid">';
+            comingSoon.forEach(p => {
+                html += `<div class="platform-item coming"><span class="platform-item-icon">${p.icon}</span><span>${p.name}</span></div>`;
+            });
+            html += '</div></div>';
+        }
+        
+        html += '</div>';
+        modalBody.innerHTML = html;
+        modalBody.className = 'modal-body';
+    }
+    
+    // Hide footer buttons for all platforms view
+    if (modalFooter) modalFooter.style.display = 'none';
+    
+    // Show modal
+    modal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
 }
 
 function initPowerCheck() {

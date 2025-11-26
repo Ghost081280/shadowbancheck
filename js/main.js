@@ -283,58 +283,42 @@ function openPlatformModal(platform) {
     const modalFooter = document.getElementById('modal-footer');
     
     if (modalIcon) modalIcon.textContent = platform.icon;
-    if (modalTitle) modalTitle.textContent = `Check ${platform.name}`;
+    if (modalTitle) modalTitle.textContent = `${platform.name} - Account Checks`;
     
-    // Update status badge
+    // Hide status badge for cleaner look
     if (modalStatus) {
-        if (platform.status === 'live') {
-            modalStatus.innerHTML = '<span class="status-badge live">● Live</span>';
-        } else {
-            modalStatus.innerHTML = '<span class="status-badge soon">● Coming Soon</span>';
-        }
+        modalStatus.innerHTML = '';
     }
     
-    // Update body content
+    // Update body content - match hashtag-checker style
     if (modalBody) {
         if (platform.status === 'live' && platform.checks) {
             modalBody.className = 'modal-body';
             modalBody.innerHTML = `
-                <h4>What We Check:</h4>
-                <ul class="check-list" id="modal-checks">
-                    ${platform.checks.map(check => `<li>${check}</li>`).join('')}
+                <p class="modal-intro">For ${platform.name} accounts, we check:</p>
+                <ul class="platform-checks-list">
+                    ${platform.checks.slice(0, 8).map(check => `<li>✓ ${check}</li>`).join('')}
                 </ul>
+                <p style="margin-top: var(--space-md); color: var(--text-muted); font-size: 0.875rem;">
+                    Results include shadow ban probability, detailed breakdown, and recovery tips.
+                </p>
             `;
         } else {
             modalBody.className = 'modal-body coming-soon';
             modalBody.innerHTML = `
-                <p>We're working hard to add ${platform.name} support!</p>
-                <p style="margin-top: var(--space-md);">Want to be notified when it's ready? <a href="login.html">Create an account</a> to get notified when we launch support for this platform.</p>
+                <p class="modal-intro">${platform.name} account checking is coming soon!</p>
+                <p style="color: var(--text-muted);">We're working hard to add ${platform.name} to our detection engine. Create an account to get notified when it launches.</p>
             `;
         }
     }
     
-    // Update footer - show check type buttons for live platforms
+    // Update footer - replace 3 buttons with "Got It!" button
     if (modalFooter) {
-        if (platform.status === 'live') {
-            modalFooter.style.display = 'flex';
-            
-            // Set up button links
-            const btnAccount = document.getElementById('modal-btn-account');
-            const btnPost = document.getElementById('modal-btn-post');
-            const btnHashtag = document.getElementById('modal-btn-hashtag');
-            
-            if (btnAccount) {
-                btnAccount.href = `checker.html?platform=${platform.id}`;
-            }
-            if (btnPost) {
-                btnPost.href = 'post-checker.html';
-            }
-            if (btnHashtag) {
-                btnHashtag.href = 'hashtag-checker.html';
-            }
-        } else {
-            modalFooter.style.display = 'none';
-        }
+        modalFooter.className = 'modal-footer';
+        modalFooter.style.display = 'block';
+        modalFooter.innerHTML = `
+            <button class="btn btn-primary btn-lg" onclick="document.getElementById('platform-modal').classList.add('hidden'); document.body.style.overflow = '';">Got It!</button>
+        `;
     }
     
     // Show modal

@@ -1386,10 +1386,9 @@ strong, b {
 }
 
 .engine-factors li {
-    display: grid;
-    grid-template-columns: 24px 1fr;
-    grid-template-rows: auto auto;
-    gap: 2px var(--space-sm);
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
     padding: var(--space-sm) var(--space-md);
     background: var(--bg);
     border-radius: var(--radius-md);
@@ -1409,12 +1408,11 @@ strong, b {
 }
 
 .engine-factors .factor-check {
-    grid-row: span 2;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    flex-shrink: 0;
+    width: 20px;
     font-size: 1rem;
     font-weight: 700;
+    text-align: center;
 }
 
 .engine-factors li.factor-active .factor-check {
@@ -1425,19 +1423,39 @@ strong, b {
     color: var(--text-muted);
 }
 
+.engine-factors .factor-icon {
+    flex-shrink: 0;
+    font-size: 1.25rem;
+    width: 28px;
+    text-align: center;
+}
+
+.engine-factors .factor-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.engine-factors .factor-name {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text);
+}
+
+.engine-factors .factor-desc {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    line-height: 1.4;
+}
+
+/* Legacy support for old structure */
 .engine-factors li strong {
     font-size: 0.875rem;
     color: var(--text);
     display: flex;
     align-items: center;
     gap: var(--space-xs);
-}
-
-.engine-factors .factor-desc {
-    grid-column: 2;
-    font-size: 0.75rem;
-    color: var(--text-muted);
-    line-height: 1.4;
 }
 
 .engine-conclusion {

@@ -2363,16 +2363,16 @@ strong, b {
     padding: var(--space-lg);
     z-index: var(--z-toast);
     box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.4);
-    animation: slideUp var(--transition-base);
+    transform: translateY(100%);
+    transition: transform 0.4s ease-out;
 }
 
 .cookie-popup.hidden {
     display: none;
 }
 
-@keyframes slideUp {
-    from { transform: translateY(100%); }
-    to { transform: translateY(0); }
+.cookie-popup.visible {
+    transform: translateY(0);
 }
 
 .cookie-content {
@@ -2645,11 +2645,13 @@ strong, b {
 }
 
 .power-badge-new {
+    display: inline-flex;
+    align-items: center;
     background: var(--gradient-primary);
     color: white;
-    font-size: 0.75rem;
-    font-weight: 700;
-    padding: var(--space-2xs) var(--space-sm);
+    font-size: 0.875rem;
+    font-weight: 600;
+    padding: var(--space-xs) var(--space-md);
     border-radius: var(--radius-full);
     text-transform: uppercase;
     letter-spacing: 0.05em;

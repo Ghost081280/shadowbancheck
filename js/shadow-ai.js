@@ -545,11 +545,11 @@
         let hasPlayed = false;
         
         const chatSequence = [
-            { type: 'user', text: "Am I shadow banned on Twitter?", delay: 1500 },
-            { type: 'ai', text: "I can check that for you! What's your Twitter username?", delay: 2000 },
-            { type: 'user', text: "@myusername", delay: 1500 },
-            { type: 'ai', text: "I'm analyzing your account now...", delay: 1500 },
-            { type: 'ai', text: "✓ Search visibility: Normal\n✓ Reply visibility: Normal\n✓ Profile access: Public\n\n**Result:** No shadow ban detected! Your account appears healthy.", delay: 2000 }
+            { type: 'user', text: "Am I shadow banned on Twitter?", delay: 800 },
+            { type: 'ai', text: "I can check that for you! What's your Twitter username?", delay: 1200 },
+            { type: 'user', text: "@myusername", delay: 600 },
+            { type: 'ai', text: "I'm analyzing your account now...", delay: 1000 },
+            { type: 'ai', text: "✓ Search visibility: Normal\n✓ Reply visibility: Normal\n✓ Profile access: Public\n\n**Result:** No shadow ban detected! Your account appears healthy.", delay: 1500 }
         ];
         
         let currentIndex = 0;
@@ -570,22 +570,70 @@
             return typing;
         }
         
-        function addDemoMessage(message) {
+        function showUserTypingIndicator() {
+            const typing = document.createElement('div');
+            typing.className = 'demo-msg user demo-user-typing';
+            typing.style.cssText = 'opacity: 0.7;';
+            typing.innerHTML = '<span class="typing-cursor">|</span>';
+            demoChat.appendChild(typing);
+            demoChat.scrollTop = demoChat.scrollHeight;
+            return typing;
+        }
+        
+        // Typewriter effect - types words one at a time
+        function typewriterEffect(element, text, isUser, callback) {
+            const words = text.split(' ');
+            let currentWord = 0;
+            let displayText = '';
+            
+            // Speed: AI types faster (50ms), user types slower (80ms)
+            const speed = isUser ? 80 : 50;
+            
+            function typeNextWord() {
+                if (currentWord < words.length) {
+                    displayText += (currentWord > 0 ? ' ' : '') + words[currentWord];
+                    
+                    if (isUser) {
+                        element.textContent = displayText;
+                    } else {
+                        // For AI messages, handle line breaks and bold
+                        const formattedText = displayText
+                            .replace(/\n/g, '<br>')
+                            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                        element.querySelector('.demo-text').innerHTML = formattedText;
+                    }
+                    
+                    currentWord++;
+                    demoChat.scrollTop = demoChat.scrollHeight;
+                    setTimeout(typeNextWord, speed);
+                } else {
+                    if (callback) callback();
+                }
+            }
+            
+            typeNextWord();
+        }
+        
+        function addDemoMessageWithTypewriter(message, callback) {
             const msgEl = document.createElement('div');
             msgEl.className = `demo-msg ${message.type}`;
             
             if (message.type === 'ai') {
                 msgEl.innerHTML = `
                     <div class="demo-avatar" style="width:36px;height:36px;min-width:36px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#a855f7);display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;box-shadow:0 4px 12px rgba(99,102,241,0.3);">🤖</div>
-                    <div class="demo-text" style="flex:1;padding:6px 0;line-height:1.6;">${message.text.replace(/\n/g, '<br>')}</div>
+                    <div class="demo-text" style="flex:1;padding:6px 0;line-height:1.6;"></div>
                 `;
                 msgEl.style.cssText = 'display:flex !important;flex-direction:row !important;gap:12px !important;align-items:flex-start !important;background:transparent !important;padding:0 !important;';
             } else {
-                msgEl.textContent = message.text;
+                msgEl.textContent = '';
             }
             
             demoChat.appendChild(msgEl);
             demoChat.scrollTop = demoChat.scrollHeight;
+            
+            // Start typewriter effect
+            typewriterEffect(msgEl, message.text, message.type === 'user', callback);
+            
             return msgEl;
         }
         
@@ -599,17 +647,24 @@
             currentIndex++;
             
             if (message.type === 'ai') {
+                // Show typing dots first
                 const typing = showDemoTypingIndicator();
                 setTimeout(() => {
                     typing.remove();
-                    addDemoMessage(message);
-                    setTimeout(playNextMessage, message.delay || 1000);
-                }, 800 + Math.random() * 400);
+                    // Then typewriter the message
+                    addDemoMessageWithTypewriter(message, () => {
+                        setTimeout(playNextMessage, message.delay || 800);
+                    });
+                }, 500 + Math.random() * 300);
             } else {
+                // For user: show brief typing indicator then typewriter
+                const userTyping = showUserTypingIndicator();
                 setTimeout(() => {
-                    addDemoMessage(message);
-                    setTimeout(playNextMessage, message.delay || 1000);
-                }, message.delay || 1000);
+                    userTyping.remove();
+                    addDemoMessageWithTypewriter(message, () => {
+                        setTimeout(playNextMessage, message.delay || 600);
+                    });
+                }, 300);
             }
         }
         
@@ -619,10 +674,11 @@
             isAnimating = true;
             demoChat.innerHTML = '';
             currentIndex = 0;
-            setTimeout(playNextMessage, 500);
+            // Start almost immediately when section is visible
+            setTimeout(playNextMessage, 100);
         }
         
-        // Start when visible
+        // Start when section becomes visible - trigger earlier (20% visible)
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting && !hasPlayed) {
@@ -630,7 +686,7 @@
                     observer.unobserve(entry.target);
                 }
             });
-        }, { threshold: 0.5 });
+        }, { threshold: 0.2 });
         
         observer.observe(demoChat);
     }

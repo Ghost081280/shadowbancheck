@@ -889,19 +889,20 @@ strong, b {
 .audience-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: var(--space-lg);
+    gap: var(--space-md);
     margin-bottom: var(--space-md);
 }
 
 .audience-card {
+    position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: var(--space-md);
+    gap: var(--space-sm);
     background: var(--card);
     border: 1px solid var(--border);
     border-radius: var(--radius-xl);
-    padding: var(--space-xl);
+    padding: var(--space-lg) var(--space-md);
     transition: all var(--transition-base);
     text-align: center;
 }
@@ -911,8 +912,37 @@ strong, b {
     transform: translateY(-2px);
 }
 
+/* Audience Info Button */
+.audience-info-btn {
+    position: absolute;
+    top: var(--space-sm);
+    right: var(--space-sm);
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: rgba(99, 102, 241, 0.1);
+    border: 1px solid rgba(99, 102, 241, 0.3);
+    color: var(--primary-light);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--transition-base);
+}
+
+.audience-info-btn:hover {
+    background: rgba(99, 102, 241, 0.2);
+    border-color: var(--primary);
+    transform: scale(1.1);
+}
+
+.audience-info-btn svg {
+    width: 18px;
+    height: 18px;
+}
+
 .audience-icon {
-    font-size: 2.5rem;
+    font-size: 2rem;
     flex-shrink: 0;
 }
 
@@ -920,19 +950,19 @@ strong, b {
     flex: 1;
     display: flex;
     flex-direction: column;
-    gap: var(--space-sm);
+    gap: var(--space-xs);
 }
 
 .audience-content h4 {
-    font-size: 1.125rem;
+    font-size: 1rem;
     margin-bottom: 0;
 }
 
 .audience-content p {
     color: var(--text-muted);
-    font-size: 0.9375rem;
+    font-size: 0.875rem;
     margin: 0;
-    line-height: 1.6;
+    line-height: 1.5;
 }
 
 .audience-btn {
@@ -940,10 +970,10 @@ strong, b {
     align-items: center;
     justify-content: center;
     gap: var(--space-xs);
-    padding: var(--space-sm) var(--space-lg);
+    padding: var(--space-xs) var(--space-md);
     background: var(--gradient-primary);
     color: white !important;
-    font-size: 0.9375rem;
+    font-size: 0.875rem;
     font-weight: 600;
     border-radius: var(--radius-md);
     transition: all var(--transition-base);
@@ -2361,7 +2391,7 @@ strong, b {
     background: var(--card);
     border-top: 2px solid var(--primary);
     padding: var(--space-lg);
-    z-index: var(--z-toast);
+    z-index: 9999;
     box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.4);
     transform: translateY(100%);
     opacity: 0;

@@ -1025,20 +1025,15 @@ function initCookiePopup() {
     const cookiePopup = document.getElementById('cookie-popup');
     if (!cookiePopup) return;
     
+    // Already accepted - remove popup entirely
     if (localStorage.getItem('cookies_accepted')) {
         cookiePopup.remove();
         return;
     }
     
-    // Show after delay - remove hidden first, then add visible on next frame for animation
+    // Show after 1.5 second delay - just add visible class to trigger animation
     setTimeout(() => {
-        cookiePopup.classList.remove('hidden');
-        // Force reflow then add visible class for transition
-        requestAnimationFrame(() => {
-            requestAnimationFrame(() => {
-                cookiePopup.classList.add('visible');
-            });
-        });
+        cookiePopup.classList.add('visible');
     }, 1500);
     
     const acceptBtn = document.getElementById('cookie-accept');

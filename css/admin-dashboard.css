@@ -202,6 +202,8 @@ input, textarea, select {
     min-height: 100vh;
     min-width: 0;
     width: calc(100% - var(--sidebar-width));
+    display: flex;
+    flex-direction: column;
 }
 
 /* -----------------------------------------------------------------------------
@@ -213,6 +215,7 @@ input, textarea, select {
 
 .admin-section.active {
     display: block;
+    flex: 1;
 }
 
 .admin-header {
@@ -307,7 +310,7 @@ input, textarea, select {
    ----------------------------------------------------------------------------- */
 .two-column {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 1.5rem;
     margin-bottom: 1.5rem;
 }
@@ -349,6 +352,8 @@ input, textarea, select {
     border-radius: var(--radius);
     display: flex;
     flex-direction: column;
+    min-width: 0;
+    overflow: hidden;
 }
 
 .card-header {
@@ -1264,6 +1269,30 @@ input, textarea, select {
 .toggle input:checked + .slider:before {
     transform: translateX(22px);
     background: white;
+}
+
+/* -----------------------------------------------------------------------------
+   Footer
+   ----------------------------------------------------------------------------- */
+.admin-footer {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 1.5rem 2rem;
+    margin-top: auto;
+    border-top: 1px solid var(--border);
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    flex-shrink: 0;
+}
+
+.admin-footer a {
+    color: var(--text-muted);
+    transition: color 0.2s ease;
+}
+
+.admin-footer a:hover {
+    color: var(--primary);
 }
 
 /* -----------------------------------------------------------------------------

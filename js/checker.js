@@ -239,13 +239,13 @@ function showComingSoonModal(platformName, icon) {
         <div class="modal-platform-check">
             <span class="modal-platform-icon">${icon}</span>
             <h3>${platformName} Coming Soon</h3>
-            <p>We're working on adding ${platformName} support. Want early access?</p>
+            <p>We're working hard to add ${platformName} support!</p>
             
-            <a href="index.html#pricing" class="btn btn-primary btn-full">
-                Get Early Access with Pro
+            <p style="margin-top: var(--space-md);">Want to be notified when it's ready? <a href="login.html">Create an account</a> to get notified when we launch support for this platform.</p>
+            
+            <a href="login.html" class="btn btn-primary btn-full" style="margin-top: var(--space-lg);">
+                Create Account →
             </a>
-            
-            <p class="modal-note" style="margin-top: var(--space-lg);">Pro members get first access to new platforms</p>
         </div>
     `;
     

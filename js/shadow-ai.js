@@ -545,8 +545,40 @@
     
     function formatMessage(text) {
         return text
+            // Bold **text**
             .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+            // Italic _text_
+            .replace(/_(.*?)_/g, '<em>$1</em>')
+            // Links [text](url) - convert to clickable links
+            .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="chat-link" target="_blank">$1</a>')
+            // Line breaks
             .replace(/\n/g, '<br>');
+    }
+    
+    // Get platform info from platforms.js
+    function getPlatformData() {
+        if (typeof PLATFORMS !== 'undefined') return PLATFORMS;
+        if (typeof window.platformData !== 'undefined') return window.platformData;
+        // Fallback
+        return [
+            { id: 'twitter', name: 'Twitter/X', icon: '𝕏', status: 'live' },
+            { id: 'reddit', name: 'Reddit', icon: '🔴', status: 'live' }
+        ];
+    }
+    
+    function getLivePlatforms() {
+        return getPlatformData().filter(p => p.status === 'live');
+    }
+    
+    function getPlatformByIdOrName(identifier) {
+        const platforms = getPlatformData();
+        const lower = identifier.toLowerCase();
+        return platforms.find(p => 
+            p.id === lower || 
+            p.name.toLowerCase().includes(lower) ||
+            (lower.includes('twitter') && p.id === 'twitter') ||
+            (lower.includes('x.com') && p.id === 'twitter')
+        );
     }
     
     function escapeHtml(text) {
@@ -600,50 +632,64 @@
             return generateLookupResponse(message);
         }
         
-        // General chat responses
+        // General chat responses - use platforms.js
+        const livePlatforms = getLivePlatforms();
+        const platformList = livePlatforms.map(p => `${p.icon} **${p.name}**`).join('\n');
+        
         if (lower.includes('shadow ban') || lower.includes('shadowban')) {
-            return "Shadow banning is when a platform limits your content's visibility without notifying you. Your posts appear normal to you, but others can't see them in searches, feeds, or recommendations. I can help you check if you're affected!";
+            return "Shadow banning is when a platform limits your content's visibility without notifying you. Your posts appear normal to you, but others can't see them in searches, feeds, or recommendations.\n\nI can help you check if you're affected! Just tell me:\n• Your **@username** and which **platform** to check\n• Or paste a **post URL**";
         }
         
         if (lower.includes('how') && (lower.includes('check') || lower.includes('test'))) {
-            return "To check for a shadow ban, I analyze multiple factors including:\n\n✓ Search visibility\n✓ Engagement patterns\n✓ Hashtag reach\n✓ Profile accessibility\n\nJust paste a **username** (like @username), **post URL**, or **hashtags** and I'll analyze it for you!";
+            return "To check for a shadow ban, I analyze:\n\n✓ Search visibility\n✓ Engagement patterns\n✓ Hashtag reach\n✓ Profile accessibility\n\nJust tell me your **@username** and which **platform** (Twitter/X or Reddit), and I'll give you a quick summary!\n\nWant detailed analysis? Use our [full checker tools](checker.html).";
         }
         
         if (lower.includes('what') && lower.includes('platform')) {
-            return "I currently support checking:\n\n🐦 **Twitter/X** - Full analysis\n🤖 **Reddit** - Full analysis\n📷 Instagram - Coming soon\n🎵 TikTok - Coming soon\n\nWhich platform would you like to check?";
+            return `I currently support:\n\n${platformList}\n\nMore platforms coming soon! Which one would you like to check?`;
         }
         
         if (lower.includes('fix') || lower.includes('recover') || lower.includes('appeal')) {
-            return "Here are general recovery strategies:\n\n1. **Take a break** - Stop posting for 24-48 hours\n2. **Review content** - Remove anything potentially violating guidelines\n3. **Avoid spam behavior** - Don't mass-like, follow, or use bots\n4. **Diversify hashtags** - Don't use the same ones repeatedly\n5. **Engage authentically** - Focus on genuine interactions\n\nWant platform-specific advice?";
+            return "Here are general recovery strategies:\n\n1. **Take a break** - Stop posting for 24-48 hours\n2. **Review content** - Remove anything potentially violating guidelines\n3. **Avoid spam behavior** - Don't mass-like, follow, or use bots\n4. **Diversify hashtags** - Don't use the same ones repeatedly\n5. **Engage authentically** - Focus on genuine interactions\n\nWant platform-specific advice? Tell me which platform!";
         }
         
         if (lower.includes('price') || lower.includes('cost') || lower.includes('pro') || lower.includes('upgrade') || lower.includes('premium')) {
-            return "**Shadow AI Pro** gives you:\n\n✓ 50 lookups/day (vs 3 free)\n✓ 25 Power Checks/day\n✓ Unlimited chat\n✓ Priority analysis\n✓ Personalized recovery strategies\n\nPlans start at just **$9.99/mo**. Check out our pricing section!";
+            return "**Shadow AI Pro** gives you:\n\n✓ 50 lookups/day (vs 3 free)\n✓ 25 Power Checks/day\n✓ Detailed analysis in chat\n✓ Priority processing\n✓ Personalized recovery strategies\n\n[View Pro Plans](index.html#pricing)";
+        }
+        
+        if (lower.includes('power check') || lower.includes('3-in-1') || lower.includes('3 in 1')) {
+            return "⚡ **Power Check** is our 3-in-1 analysis that checks:\n\n• Account health\n• Post visibility\n• Hashtag status\n\nIt uses your entire daily lookup allowance but gives you a complete picture!\n\nTo run a Power Check, say: **\"power check @username on Twitter\"** or paste a post URL.";
         }
         
         if (lower.includes('hello') || lower.includes('hi') || lower.includes('hey')) {
-            return "Hey there! 👋 I'm here to help you detect and recover from shadow bans. You can:\n\n• Ask me questions about shadow banning\n• Paste a **@username** to check an account\n• Paste a **post URL** to check visibility\n• Paste **#hashtags** to check if they're banned\n\nWhat would you like to do?";
+            return `Hey there! 👋 I'm Shadow AI, your shadow ban detection assistant.\n\n**What I can do:**\n• Check accounts: \"check @username on Twitter\"\n• Check posts: paste any post URL\n• Check hashtags: \"are #fitness #health safe?\"\n• Power Check (3-in-1): \"power check @username\"\n\n**Currently supporting:** ${livePlatforms.map(p => p.icon).join(' ')}\n\nWhat would you like to check?`;
         }
         
         if (lower.includes('thank')) {
-            return "You're welcome! 😊 Let me know if you need anything else. I'm here to help you stay visible on social media!";
+            return "You're welcome! 😊 Let me know if you need anything else.\n\nWant more lookups? [Check out Pro](index.html#pricing)";
         }
         
         // Default helpful response
-        return "I'm here to help with shadow ban detection! You can:\n\n• **Check an account** - paste @username\n• **Check a post** - paste a URL\n• **Check hashtags** - paste #hashtag1 #hashtag2\n• **Ask questions** - about shadow banning, recovery, etc.\n\nWhat would you like to know?";
+        return `I can help with shadow ban detection!\n\n**Quick commands:**\n• \"check @username on Twitter\"\n• \"check @username on Reddit\"\n• Paste a post URL\n• \"power check @username\" (3-in-1)\n\n**Supporting:** ${livePlatforms.map(p => `${p.icon} ${p.name}`).join(', ')}\n\nWhat would you like to check?`;
     }
     
     function generateLookupResponse(message) {
-        // Extract what type of lookup
         const lower = message.toLowerCase();
+        const livePlatforms = getLivePlatforms();
         
         // Check for username
         const usernameMatch = message.match(/@([a-zA-Z0-9_]+)/);
         if (usernameMatch) {
-            return generateUsernameCheckResponse(usernameMatch[1], message);
+            // Check if platform is specified
+            const platform = detectPlatformFromMessage(message);
+            if (!platform) {
+                // Ask which platform
+                const platformOptions = livePlatforms.map(p => `${p.icon} ${p.name}`).join('\n');
+                return `I found **@${usernameMatch[1]}** - which platform should I check?\n\n${platformOptions}\n\nJust say \"Twitter\" or \"Reddit\" and I'll run the check!`;
+            }
+            return generateUsernameCheckResponse(usernameMatch[1], message, platform);
         }
         
-        // Check for URL
+        // Check for URL - platform detected from URL
         const urlMatch = message.match(/https?:\/\/[^\s]+/i);
         if (urlMatch) {
             return generatePostCheckResponse(urlMatch[0]);
@@ -652,79 +698,106 @@
         // Check for hashtags
         const hashtags = message.match(/#[a-zA-Z0-9_]+/g);
         if (hashtags && hashtags.length > 0) {
-            return generateHashtagCheckResponse(hashtags);
+            // Check if platform is specified for hashtag check
+            const platform = detectPlatformFromMessage(message);
+            if (!platform) {
+                const platformOptions = livePlatforms.map(p => `${p.icon} ${p.name}`).join('\n');
+                return `I found hashtags: ${hashtags.join(' ')}\n\nWhich platform should I check them for?\n\n${platformOptions}\n\nJust say \"Twitter\" or \"Reddit\"!`;
+            }
+            return generateHashtagCheckResponse(hashtags, platform);
         }
         
         // Generic check request
-        return "I'd be happy to run a check! Please provide:\n\n• A **username** (like @yourname)\n• A **post URL** from Twitter, Reddit, etc.\n• Or **hashtags** to check (like #fitness #health)\n\nWhat would you like me to analyze?";
+        return "I'd be happy to run a check! Please provide:\n\n• A **@username** + platform (e.g., \"@yourname on Twitter\")\n• A **post URL** from Twitter or Reddit\n• Or **#hashtags** + platform\n\nWhat would you like me to analyze?";
     }
     
-    function generateUsernameCheckResponse(username, fullMessage) {
-        // Detect platform from message
-        const lower = fullMessage.toLowerCase();
-        let platform = 'Twitter/X';
-        let platformIcon = '🐦';
+    function detectPlatformFromMessage(message) {
+        const lower = message.toLowerCase();
+        const livePlatforms = getLivePlatforms();
         
-        if (lower.includes('reddit')) {
-            platform = 'Reddit';
-            platformIcon = '🤖';
-        } else if (lower.includes('instagram')) {
-            platform = 'Instagram';
-            platformIcon = '📷';
-        } else if (lower.includes('tiktok')) {
-            platform = 'TikTok';
-            platformIcon = '🎵';
+        for (const platform of livePlatforms) {
+            if (lower.includes(platform.id) || lower.includes(platform.name.toLowerCase())) {
+                return platform;
+            }
+            // Special handling for "x" vs "twitter"
+            if (platform.id === 'twitter' && (lower.includes('twitter') || lower.includes(' x ') || lower.includes(' x.com'))) {
+                return platform;
+            }
+        }
+        return null;
+    }
+    
+    function generateUsernameCheckResponse(username, fullMessage, platform = null) {
+        // Use provided platform or try to detect
+        if (!platform) {
+            platform = detectPlatformFromMessage(fullMessage);
+        }
+        
+        // Fallback to Twitter if still no platform (shouldn't happen with new flow)
+        if (!platform) {
+            const livePlatforms = getLivePlatforms();
+            platform = livePlatforms[0] || { name: 'Twitter/X', icon: '𝕏', id: 'twitter' };
         }
         
         // Generate mock results
         const probability = Math.floor(Math.random() * 35) + 5;
         const status = probability < 15 ? 'LOW RISK ✅' : probability < 30 ? 'MODERATE RISK ⚠️' : 'HIGH RISK 🚨';
         
-        return `${platformIcon} **${platform} Account Check: @${username}**\n\n` +
+        return `${platform.icon} **${platform.name} Account Check: @${username}**\n\n` +
                `**Shadow Ban Probability: ${probability}%** (${status})\n\n` +
-               `**Checks Performed:**\n` +
+               `**Quick Summary:**\n` +
                `✓ Search visibility: ${Math.random() > 0.3 ? 'Visible' : 'Reduced'}\n` +
                `✓ Profile accessibility: ${Math.random() > 0.2 ? 'Normal' : 'Limited'}\n` +
                `✓ Engagement analysis: ${Math.random() > 0.4 ? 'Healthy' : 'Below average'}\n` +
                `✓ Content flags: ${Math.random() > 0.8 ? '1 warning' : 'None detected'}\n\n` +
-               `_This used 1 of your ${CONFIG.lookupLimit} daily lookups._\n\n` +
-               `Want detailed analysis? Try our [full checker tool](checker.html?platform=${platform.toLowerCase()})!`;
+               `This used 1 of your ${CONFIG.lookupLimit} daily lookups.\n\n` +
+               `**Want detailed analysis?** Use our [full checker](checker.html?platform=${platform.id}) for comprehensive results with recovery tips!\n\n` +
+               `**Pro users** get detailed analysis right here in chat. [Learn more](index.html#pricing)`;
     }
     
     function generatePostCheckResponse(url) {
-        // Detect platform from URL
-        let platform = 'Unknown';
-        let platformIcon = '🔗';
+        // Detect platform from URL using platforms.js
+        const platforms = getPlatformData();
+        let platform = null;
         
         if (url.includes('twitter.com') || url.includes('x.com')) {
-            platform = 'Twitter/X';
-            platformIcon = '🐦';
+            platform = platforms.find(p => p.id === 'twitter');
         } else if (url.includes('reddit.com')) {
-            platform = 'Reddit';
-            platformIcon = '🤖';
+            platform = platforms.find(p => p.id === 'reddit');
         } else if (url.includes('instagram.com')) {
-            platform = 'Instagram';
-            platformIcon = '📷';
+            platform = platforms.find(p => p.id === 'instagram');
         } else if (url.includes('tiktok.com')) {
-            platform = 'TikTok';
-            platformIcon = '🎵';
+            platform = platforms.find(p => p.id === 'tiktok');
+        }
+        
+        // Check if platform is supported (live)
+        if (!platform || platform.status !== 'live') {
+            const detectedName = platform ? platform.name : 'this platform';
+            return `I detected a link from **${detectedName}**, but it's not supported yet.\n\n**Currently supporting:**\n${getLivePlatforms().map(p => `${p.icon} ${p.name}`).join('\n')}\n\nPaste a Twitter/X or Reddit URL to check!`;
         }
         
         const probability = Math.floor(Math.random() * 30) + 5;
         const status = probability < 15 ? 'VISIBLE ✅' : probability < 25 ? 'REDUCED REACH ⚠️' : 'SUPPRESSED 🚨';
         
-        return `${platformIcon} **Post Visibility Check**\n\n` +
-               `**Platform:** ${platform}\n` +
+        return `${platform.icon} **Post Visibility Check**\n\n` +
+               `**Platform:** ${platform.name}\n` +
                `**Suppression Probability: ${probability}%** (${status})\n\n` +
-               `**Analysis:**\n` +
+               `**Quick Analysis:**\n` +
                `✓ Search indexing: ${Math.random() > 0.3 ? 'Indexed' : 'Not indexed'}\n` +
                `✓ Feed visibility: ${Math.random() > 0.2 ? 'Normal' : 'Reduced'}\n` +
                `✓ Hashtag reach: ${Math.random() > 0.4 ? 'Good' : 'Limited'}\n` +
                `✓ Engagement rate: ${Math.random() > 0.3 ? 'Normal' : 'Below expected'}\n\n` +
-               `_This used 1 of your ${CONFIG.lookupLimit} daily lookups._`;
+               `This used 1 of your ${CONFIG.lookupLimit} daily lookups.\n\n` +
+               `**Want full analysis?** Use our [Post URL Checker](post-checker.html) for detailed breakdown!\n\n` +
+               `[Upgrade to Pro](index.html#pricing) for detailed analysis in chat.`;
     }
     
-    function generateHashtagCheckResponse(hashtags) {
+    function generateHashtagCheckResponse(hashtags, platform = null) {
+        // Use provided platform or first live platform
+        if (!platform) {
+            platform = getLivePlatforms()[0];
+        }
+        
         const cleanHashtags = hashtags.map(h => h.replace('#', ''));
         const results = cleanHashtags.map(tag => {
             const rand = Math.random();
@@ -741,31 +814,48 @@
                       restricted > 0 ? '⚠️ **Caution:** Some hashtags have restrictions.' :
                       '✅ **All clear!** Your hashtags look safe.';
         
-        let response = `**Hashtag Check Results**\n\n${summary}\n\n`;
+        let response = `${platform.icon} **Hashtag Check for ${platform.name}**\n\n${summary}\n\n`;
         response += `**Summary:** ${safe} Safe, ${restricted} Restricted, ${banned} Banned\n\n`;
         response += `**Details:**\n`;
         results.forEach(r => {
             response += `• #${r.tag}: ${r.status}\n`;
         });
-        response += `\n_This used 1 of your ${CONFIG.lookupLimit} daily lookups._`;
+        response += `\nThis used 1 of your ${CONFIG.lookupLimit} daily lookups.\n\n`;
+        response += `**Want full analysis?** Use our [Hashtag Checker](hashtag-checker.html) for comprehensive results!\n\n`;
+        response += `[Upgrade to Pro](index.html#pricing) for detailed analysis in chat.`;
         
         return response;
     }
     
     function generatePowerCheckResponse(message) {
-        // Try to extract URL from message
+        // Try to extract URL or detect platform from message
         const urlMatch = message.match(/https?:\/\/[^\s]+/i);
-        let platform = 'Twitter/X';
-        let platformIcon = '🐦';
-        let target = 'your content';
+        const platforms = getPlatformData();
+        let platform = null;
         
+        // Try to detect platform from URL
         if (urlMatch) {
             const url = urlMatch[0];
-            if (url.includes('reddit.com')) {
-                platform = 'Reddit';
-                platformIcon = '🤖';
+            if (url.includes('twitter.com') || url.includes('x.com')) {
+                platform = platforms.find(p => p.id === 'twitter');
+            } else if (url.includes('reddit.com')) {
+                platform = platforms.find(p => p.id === 'reddit');
             }
-            target = 'this post';
+        }
+        
+        // Try to detect platform from message text
+        if (!platform) {
+            platform = detectPlatformFromMessage(message);
+        }
+        
+        // Fallback to first live platform
+        if (!platform) {
+            platform = getLivePlatforms()[0] || { name: 'Twitter/X', icon: '𝕏', id: 'twitter' };
+        }
+        
+        // Check if platform is supported
+        if (platform.status !== 'live') {
+            return `⚡ **Power Check** isn't available for ${platform.name} yet.\n\n**Currently supporting:**\n${getLivePlatforms().map(p => `${p.icon} ${p.name}`).join('\n')}\n\nTry: \"power check @username on Twitter\"`;
         }
         
         const accountProb = Math.floor(Math.random() * 25) + 5;
@@ -776,7 +866,7 @@
         const status = overallProb < 15 ? 'LOW RISK ✅' : overallProb < 25 ? 'MODERATE RISK ⚠️' : 'HIGH RISK 🚨';
         
         return `⚡ **Power Check Complete** (3-in-1 Analysis)\n\n` +
-               `${platformIcon} **Platform:** ${platform}\n` +
+               `${platform.icon} **Platform:** ${platform.name}\n` +
                `**Overall Shadow Ban Probability: ${overallProb}%** (${status})\n\n` +
                `**━━━ Breakdown ━━━**\n\n` +
                `👤 **Account Health:** ${accountProb}%\n` +
@@ -788,8 +878,8 @@
                `#️⃣ **Hashtag Status:** ${hashtagProb}%\n` +
                `• All hashtags: ${hashtagProb < 15 ? 'Safe' : 'Some restrictions'}\n\n` +
                `**━━━━━━━━━━━━━━━━**\n\n` +
-               `⚠️ _Power Check uses your entire daily lookup allowance._\n\n` +
-               `Need detailed recovery strategies? Ask me how to fix any issues!`;
+               `This is a quick summary. Power Check uses your entire daily lookup allowance.\n\n` +
+               `**Want detailed analysis + recovery tips?** Use our [full 3-in-1 Power Check](index.html#power-check) or [upgrade to Pro](index.html#pricing) for in-chat details!`;
     }
     
     // ==========================================================================

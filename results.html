@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Check Results - ShadowBanCheck.io</title>
-    <meta name="description" content="Your shadow ban check results">
+    <meta name="description" content="Your shadow ban check results powered by our 5-Factor Detection Engine">
     
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>">
@@ -29,6 +29,28 @@
             <!-- Overall Status -->
             <div id="overall-status" class="overall-status"></div>
 
+            <!-- 5-Factor Engine Summary -->
+            <div class="engine-summary" id="engine-summary">
+                <div class="engine-summary-header">
+                    <div class="engine-summary-title">
+                        <span class="engine-icon">🧠</span>
+                        <h3>5-Factor Detection Engine</h3>
+                    </div>
+                    <button class="engine-info-btn" id="engine-info-btn" aria-label="View engine details" type="button">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+                            <path d="M12 16V12M12 8H12.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                    </button>
+                </div>
+                <div class="engine-factors-inline" id="engine-factors-inline">
+                    <!-- Populated by JS -->
+                </div>
+                <div class="ip-analysis-display" id="ip-analysis-display">
+                    <!-- Populated by JS if IP analysis was used -->
+                </div>
+            </div>
+
             <!-- Detailed Checks -->
             <div class="detailed-checks">
                 <h2>📋 Detailed Analysis</h2>
@@ -43,9 +65,21 @@
 
             <!-- Actions -->
             <div class="results-actions">
-                <a href="checker.html" class="btn-action">🔍 Check Another Platform</a>
+                <a href="checker.html" class="btn-action">🔍 Check Another Account</a>
                 <button id="share-results-btn" class="btn-action">📤 Share Results</button>
                 <button id="download-report" class="btn-action">📄 Download Report</button>
+            </div>
+
+            <!-- Compact Monitoring CTA -->
+            <div class="monitoring-cta-compact">
+                <div class="monitoring-cta-content">
+                    <span class="monitoring-icon">🔔</span>
+                    <div class="monitoring-text">
+                        <h3>Get Instant Alerts</h3>
+                        <p>Set up monitoring to get notified the moment your visibility changes. Never miss a shadow ban again.</p>
+                    </div>
+                    <a href="index.html#pricing" class="monitoring-cta-btn">Set Up Monitoring</a>
+                </div>
             </div>
         </div>
     </main>
@@ -82,7 +116,32 @@
         </div>
     </div>
 
-    <!-- Cross-Promote: Hashtag Checker - Match Checker Page Style -->
+    <!-- 5-Factor Engine Info Modal -->
+    <div id="engine-info-modal" class="modal hidden">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <button class="modal-close">&times;</button>
+            <div class="modal-icon">🧠</div>
+            <h3 class="modal-title">Our 5-Factor Detection Engine</h3>
+            <div class="modal-body">
+                <p class="modal-intro">We combine <strong>5 detection factors</strong> to deliver the most accurate shadow ban analysis:</p>
+                
+                <ul class="engine-factors" id="modal-engine-factors">
+                    <!-- Populated by JS based on check type -->
+                </ul>
+                
+                <div class="modal-tech-note">
+                    <h4>💡 How We Calculate Your Score</h4>
+                    <p>Each active factor contributes signals that our engine combines into your final Shadow Ban Probability Score. More factors = more accurate results.</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary btn-lg" onclick="document.getElementById('engine-info-modal').classList.add('hidden'); document.body.style.overflow = '';">Got It!</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cross-Promote: Hashtag Checker -->
     <section class="section section-alt">
         <div class="container">
             <div class="cross-promote">
@@ -103,7 +162,8 @@
     <!-- Back to Top Button -->
     <button id="back-to-top" class="back-to-top" aria-label="Back to top">↑</button>
 
-    <!-- Scripts -->
+    <!-- Scripts - platforms.js loads FIRST -->
+    <script src="js/platforms.js"></script>
     <script src="js/shared-components.js"></script>
     <script src="js/main.js"></script>
     <script src="js/results.js"></script>

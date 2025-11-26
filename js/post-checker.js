@@ -70,7 +70,6 @@ function initPostChecker() {
     const urlInput = document.getElementById('post-url-input');
     const checkBtn = document.getElementById('check-post-btn');
     const clearBtn = document.getElementById('clear-btn');
-    const exampleBtn = document.getElementById('example-btn');
     
     if (!urlInput || !checkBtn) return;
     
@@ -101,12 +100,6 @@ function initPostChecker() {
         urlInput.value = '';
         detectedPlatform = null;
         updatePlatformDisplay();
-    });
-    
-    // Example button
-    exampleBtn?.addEventListener('click', function() {
-        urlInput.value = 'https://twitter.com/elonmusk/status/1234567890123456789';
-        detectPlatform(urlInput.value);
     });
 }
 
@@ -220,8 +213,18 @@ async function checkPost(url) {
     }
     
     if (!detectedPlatform) {
-        showToast('Unsupported platform. Please use a supported social media URL.');
+        showToast('Sorry, we don\'t recognize this URL. Please enter a valid social media post URL.');
         return;
+    }
+    
+    // Check if platform is live in platforms.js
+    if (typeof PLATFORMS !== 'undefined') {
+        const platformData = PLATFORMS.find(p => p.id === detectedPlatform);
+        if (!platformData || platformData.status !== 'live') {
+            const platformName = PLATFORM_NAMES[detectedPlatform] || detectedPlatform;
+            showToast(`${platformName} support coming soon! Currently we support Twitter/X, Reddit, and more.`);
+            return;
+        }
     }
     
     // Check limits

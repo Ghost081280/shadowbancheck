@@ -1,445 +1,629 @@
 /* =============================================================================
-   CHECKER.JS - Shadow Ban Checker Page Functionality
-   
-   NOTE: Uses window.platformData from platforms.js (loaded before this file)
+   ACCOUNT CHECKER PAGE - JAVASCRIPT
+   ShadowBanCheck.io
+   Analyzes user accounts for shadow ban status
    ============================================================================= */
 
-/* =============================================================================
-   PLATFORM GRID - BUILD FROM SHARED DATA
-   ============================================================================= */
-function buildPlatformGrid() {
-    const grid = document.getElementById('platform-grid');
-    if (!grid || !window.platformData) return;
+(function() {
+'use strict';
+
+// ============================================
+// CONFIGURATION
+// ============================================
+const DAILY_FREE_CHECKS = 1;
+const STORAGE_KEY = 'accountChecks';
+const DATE_KEY = 'accountCheckDate';
+
+// ============================================
+// STATE
+// ============================================
+let selectedPlatform = null;
+let userIPData = null;
+
+// ============================================
+// INITIALIZATION
+// ============================================
+document.addEventListener('DOMContentLoaded', function() {
+    initAccountChecker();
+    initPlatformSelect();
+    initSupportedPlatforms();
+    initInfoModals();
+    updateChecksDisplay();
+    detectIP();
     
-    // Clear any existing content first
-    grid.innerHTML = '';
+    // Check for pre-selected platform from URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const preselectedPlatform = urlParams.get('platform');
+    if (preselectedPlatform) {
+        const select = document.getElementById('platform-select');
+        if (select) {
+            select.value = preselectedPlatform;
+            handlePlatformChange(preselectedPlatform);
+        }
+    }
+});
+
+function initAccountChecker() {
+    const usernameInput = document.getElementById('username-input');
+    const checkBtn = document.getElementById('check-account-btn');
+    const clearBtn = document.getElementById('clear-btn');
+    const platformSelect = document.getElementById('platform-select');
     
-    // Sort: live platforms first, then alphabetically (matches main.js)
-    const sortedPlatforms = [...window.platformData].sort((a, b) => {
-        if (a.status === 'live' && b.status !== 'live') return -1;
-        if (a.status !== 'live' && b.status === 'live') return 1;
-        return a.name.localeCompare(b.name);
+    if (!usernameInput || !checkBtn) return;
+    
+    // Username input
+    usernameInput.addEventListener('input', function() {
+        updateCheckButton();
     });
     
-    sortedPlatforms.forEach(platform => {
-        const item = document.createElement('div');
-        item.className = 'platform-item';
-        item.dataset.platform = platform.name.toLowerCase().replace(/[^a-z0-9]/g, '');
-        item.dataset.status = platform.status;
-        
-        // Use same badge classes as main.js for consistency
-        const statusBadge = platform.status === 'live' 
-            ? '<span class="platform-badge live">Live</span>'
-            : '<span class="platform-badge soon">Soon</span>';
-        
-        item.innerHTML = `
-            <span class="platform-icon">${platform.icon}</span>
-            <span class="platform-name">${platform.name}</span>
-            ${statusBadge}
-        `;
-        
-        grid.appendChild(item);
+    // Platform select
+    platformSelect?.addEventListener('change', function() {
+        handlePlatformChange(this.value);
+    });
+    
+    // Check button
+    checkBtn.addEventListener('click', function() {
+        const username = usernameInput.value.trim();
+        if (username && selectedPlatform) {
+            checkAccount(username);
+        }
+    });
+    
+    // Enter key submits
+    usernameInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            checkBtn.click();
+        }
+    });
+    
+    // Clear button
+    clearBtn?.addEventListener('click', function() {
+        usernameInput.value = '';
+        platformSelect.value = '';
+        selectedPlatform = null;
+        updateCheckButton();
+        updatePlatformStatus();
     });
 }
 
-/* =============================================================================
-   SEARCH COUNTER
-   ============================================================================= */
-const STORAGE_KEY = 'shadowban_searches';
-const MAX_FREE_SEARCHES = 3;
-
-function getRemainingSearches() {
-    const data = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
-    const today = new Date().toDateString();
+function initPlatformSelect() {
+    const select = document.getElementById('platform-select');
+    if (!select || typeof PLATFORMS === 'undefined') return;
     
-    if (data.date !== today) {
-        return MAX_FREE_SEARCHES;
+    // Clear existing options except first
+    select.innerHTML = '<option value="">Select Platform</option>';
+    
+    // Add live platforms first
+    const livePlatforms = PLATFORMS.filter(p => p.status === 'live');
+    const comingSoon = PLATFORMS.filter(p => p.status !== 'live');
+    
+    if (livePlatforms.length > 0) {
+        const liveGroup = document.createElement('optgroup');
+        liveGroup.label = '✓ Available Now';
+        livePlatforms.forEach(platform => {
+            const option = document.createElement('option');
+            option.value = platform.id;
+            option.textContent = `${platform.icon} ${platform.name}`;
+            option.dataset.icon = platform.icon;
+            liveGroup.appendChild(option);
+        });
+        select.appendChild(liveGroup);
     }
     
-    return Math.max(0, MAX_FREE_SEARCHES - (data.count || 0));
-}
-
-function incrementSearchCount() {
-    const data = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
-    const today = new Date().toDateString();
-    
-    if (data.date !== today) {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify({
-            date: today,
-            count: 1
-        }));
-    } else {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify({
-            date: today,
-            count: (data.count || 0) + 1
-        }));
+    if (comingSoon.length > 0) {
+        const soonGroup = document.createElement('optgroup');
+        soonGroup.label = '● Coming Soon';
+        comingSoon.forEach(platform => {
+            const option = document.createElement('option');
+            option.value = platform.id;
+            option.textContent = `${platform.icon} ${platform.name}`;
+            option.dataset.icon = platform.icon;
+            option.disabled = true;
+            soonGroup.appendChild(option);
+        });
+        select.appendChild(soonGroup);
     }
 }
 
-/* =============================================================================
-   PLATFORM MODAL SYSTEM
-   ============================================================================= */
-function showPlatformModal(platformKey) {
-    const platform = window.platformData?.find(p => 
-        p.name.toLowerCase().replace(/[^a-z0-9]/g, '') === platformKey
-    );
+function initSupportedPlatforms() {
+    const container = document.getElementById('supported-platform-icons');
+    if (!container || typeof PLATFORMS === 'undefined') return;
     
-    if (!platform) return;
+    // Get live platforms - show Twitter/X and Reddit first
+    const livePlatforms = PLATFORMS.filter(p => p.status === 'live');
+    const priorityOrder = ['twitter', 'reddit'];
     
-    if (platform.status !== 'live') {
-        showComingSoonModal(platform.name, platform.icon);
+    livePlatforms.sort((a, b) => {
+        const aIndex = priorityOrder.indexOf(a.id);
+        const bIndex = priorityOrder.indexOf(b.id);
+        if (aIndex !== -1 && bIndex !== -1) return aIndex - bIndex;
+        if (aIndex !== -1) return -1;
+        if (bIndex !== -1) return 1;
+        return 0;
+    });
+    
+    // Show first 7 platforms + "more" chip
+    const displayPlatforms = livePlatforms.slice(0, 7);
+    const remainingCount = PLATFORMS.length - 7;
+    
+    let html = displayPlatforms.map(p => `
+        <span class="platform-chip" data-platform="${p.id}" title="${p.name}">${p.icon}</span>
+    `).join('');
+    
+    if (remainingCount > 0) {
+        html += `<span class="platform-chip coming" id="show-more-platforms" title="View all platforms">+${remainingCount}</span>`;
+    }
+    
+    container.innerHTML = html;
+    
+    // Add click handlers
+    container.querySelectorAll('.platform-chip[data-platform]').forEach(chip => {
+        chip.addEventListener('click', () => {
+            showPlatformInfoModal(chip.dataset.platform);
+        });
+    });
+    
+    // Show more platforms handler
+    const showMore = document.getElementById('show-more-platforms');
+    showMore?.addEventListener('click', showAllPlatformsModal);
+}
+
+function handlePlatformChange(platformId) {
+    if (!platformId) {
+        selectedPlatform = null;
+        updatePlatformStatus();
+        updateCheckButton();
         return;
     }
     
-    if (platform.name === 'Twitter/X') {
-        showTwitterModal();
-    } else if (platform.name === 'Reddit') {
-        showRedditModal();
-    }
-}
-
-function showTwitterModal() {
-    const modal = document.getElementById('platform-modal');
-    if (!modal) return;
+    const platform = PLATFORMS.find(p => p.id === platformId);
+    if (!platform) return;
     
-    const modalBody = modal.querySelector('#modal-body');
-    modalBody.innerHTML = `
-        <div class="modal-platform-check">
-            <span class="modal-platform-icon">🐦</span>
-            <h3>Check Twitter / X Account</h3>
-            <p>Enter your Twitter/X username to check for shadow bans</p>
-            
-            <div class="modal-checks-preview">
-                <h4>What we'll check:</h4>
-                <ul>
-                    <li>✓ Search visibility status</li>
-                    <li>✓ Reply deboosting (QFD)</li>
-                    <li>✓ Engagement rate patterns</li>
-                    <li>✓ Account status & flags</li>
-                </ul>
-            </div>
-            
-            <div class="modal-input-group">
-                <input type="text" id="modal-username-input" placeholder="Enter @username or username..." />
-            </div>
-            
-            <button class="btn btn-primary btn-full" id="modal-check-btn">
-                Check Account →
-            </button>
-            
-            <p class="modal-note">Powered by our 5-Factor Detection Engine (4 factors active)</p>
-        </div>
-    `;
-    
-    modal.classList.remove('hidden');
-    document.body.style.overflow = 'hidden';
-    
-    setTimeout(() => document.getElementById('modal-username-input')?.focus(), 100);
-    
-    const checkBtn = document.getElementById('modal-check-btn');
-    const usernameInput = document.getElementById('modal-username-input');
-    
-    const handleCheck = () => {
-        const username = usernameInput?.value.trim().replace('@', '');
-        if (!username) {
-            alert('Please enter a username');
-            return;
-        }
-        
-        if (getRemainingSearches() <= 0) {
-            modal.classList.add('hidden');
-            showUpgradeModal();
-            return;
-        }
-        
-        incrementSearchCount();
-        runCheck('Twitter/X', username);
-    };
-    
-    checkBtn?.addEventListener('click', handleCheck);
-    usernameInput?.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') handleCheck();
-    });
-    
-    setupModalCloseHandlers(modal);
-}
-
-function showRedditModal() {
-    const modal = document.getElementById('platform-modal');
-    if (!modal) return;
-    
-    const modalBody = modal.querySelector('#modal-body');
-    modalBody.innerHTML = `
-        <div class="modal-platform-check">
-            <span class="modal-platform-icon">🤖</span>
-            <h3>Check Reddit Account</h3>
-            <p>Enter your Reddit username to check for shadow bans</p>
-            
-            <div class="modal-checks-preview">
-                <h4>What we'll check:</h4>
-                <ul>
-                    <li>✓ Site-wide shadowban status</li>
-                    <li>✓ Subreddit-specific bans</li>
-                    <li>✓ Post/comment visibility</li>
-                    <li>✓ Karma restrictions</li>
-                </ul>
-            </div>
-            
-            <div class="modal-input-group">
-                <input type="text" id="modal-username-input" placeholder="Enter u/username or username..." />
-            </div>
-            
-            <button class="btn btn-primary btn-full" id="modal-check-btn">
-                Check Account →
-            </button>
-            
-            <p class="modal-note">Powered by our 5-Factor Detection Engine (4 factors active)</p>
-        </div>
-    `;
-    
-    modal.classList.remove('hidden');
-    document.body.style.overflow = 'hidden';
-    
-    setTimeout(() => document.getElementById('modal-username-input')?.focus(), 100);
-    
-    const checkBtn = document.getElementById('modal-check-btn');
-    const usernameInput = document.getElementById('modal-username-input');
-    
-    const handleCheck = () => {
-        const username = usernameInput?.value.trim().replace('u/', '');
-        if (!username) {
-            alert('Please enter a username');
-            return;
-        }
-        
-        if (getRemainingSearches() <= 0) {
-            modal.classList.add('hidden');
-            showUpgradeModal();
-            return;
-        }
-        
-        incrementSearchCount();
-        runCheck('Reddit', username);
-    };
-    
-    checkBtn?.addEventListener('click', handleCheck);
-    usernameInput?.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') handleCheck();
-    });
-    
-    setupModalCloseHandlers(modal);
-}
-
-function showComingSoonModal(platformName, icon) {
-    const modal = document.getElementById('platform-modal');
-    if (!modal) return;
-    
-    const modalBody = modal.querySelector('#modal-body');
-    modalBody.innerHTML = `
-        <div class="modal-icon">${icon}</div>
-        <h3 class="modal-title">Check ${platformName}</h3>
-        <p class="modal-status"><span class="status-badge soon">● Coming Soon</span></p>
-        <div class="modal-body coming-soon">
-            <p>We're working hard to add ${platformName} support!</p>
-            <p style="margin-top: var(--space-md);">Want to be notified when it's ready? <a href="login.html">Create an account</a> to get notified when we launch support for this platform.</p>
-        </div>
-    `;
-    
-    modal.classList.remove('hidden');
-    document.body.style.overflow = 'hidden';
-    
-    setupModalCloseHandlers(modal);
-}
-
-function showUpgradeModal() {
-    const modal = document.getElementById('platform-modal');
-    if (!modal) return;
-    
-    const modalBody = modal.querySelector('#modal-body');
-    modalBody.innerHTML = `
-        <div class="modal-platform-check">
-            <span class="modal-platform-icon">🔒</span>
-            <h3>Daily Limit Reached</h3>
-            <p>You've used all 3 free checks for today. Upgrade for unlimited access!</p>
-            
-            <div class="upgrade-benefits" style="background: var(--bg); border-radius: var(--radius-md); padding: var(--space-lg); margin: var(--space-lg) 0; text-align: left;">
-                <h4 style="margin-bottom: var(--space-md);">Pro Benefits:</h4>
-                <p style="padding: var(--space-xs) 0;">✓ Unlimited checks</p>
-                <p style="padding: var(--space-xs) 0;">✓ 24/7 monitoring</p>
-                <p style="padding: var(--space-xs) 0;">✓ Instant alerts</p>
-                <p style="padding: var(--space-xs) 0;">✓ Historical tracking</p>
-            </div>
-            
-            <a href="index.html#pricing" class="btn btn-primary btn-full">
-                View Plans - From $4.99/mo
-            </a>
-            
-            <button class="btn btn-ghost" style="margin-top: var(--space-md); width: 100%;" onclick="document.getElementById('platform-modal').classList.add('hidden'); document.body.style.overflow = '';">
-                Maybe Later
-            </button>
-        </div>
-    `;
-    
-    modal.classList.remove('hidden');
-    document.body.style.overflow = 'hidden';
-    
-    setupModalCloseHandlers(modal);
-}
-
-function setupModalCloseHandlers(modal) {
-    const closeBtn = modal.querySelector('.modal-close');
-    const overlay = modal.querySelector('.modal-overlay');
-    
-    const closeModal = () => {
-        modal.classList.add('hidden');
-        document.body.style.overflow = '';
-    };
-    
-    closeBtn?.addEventListener('click', closeModal);
-    overlay?.addEventListener('click', closeModal);
-    
-    document.addEventListener('keydown', function escHandler(e) {
-        if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
-            closeModal();
-            document.removeEventListener('keydown', escHandler);
-        }
-    });
-}
-
-/* =============================================================================
-   RUN CHECK & REDIRECT
-   ============================================================================= */
-function runCheck(platform, identifier) {
-    showCheckingState(platform);
-    
-    // Get IP data for scoring
-    const ipData = window.ShadowBan?.getUserIPData?.() || null;
-    
-    setTimeout(() => {
-        const results = generateDemoResults(platform, identifier, ipData);
-        sessionStorage.setItem('shadowban_results', JSON.stringify(results));
-        window.location.href = 'results.html';
-    }, 2500);
-}
-
-function generateDemoResults(platform, identifier, ipData) {
-    const random = Math.random();
-    
-    // Factor in IP risk
-    let ipRiskBonus = 0;
-    if (ipData) {
-        if (ipData.isVPN) ipRiskBonus = 15;
-        else if (ipData.isDatacenter) ipRiskBonus = 10;
-    }
-    
-    let probability, status, statusText;
-    if (random < 0.65) {
-        probability = Math.floor(Math.random() * 10) + 90 - ipRiskBonus;
-        status = 'clean';
-        statusText = 'No Shadow Ban Detected';
-    } else if (random < 0.85) {
-        probability = Math.floor(Math.random() * 25) + 60 - ipRiskBonus;
-        status = 'warning';
-        statusText = 'Potential Issues Detected';
+    if (platform.status !== 'live') {
+        showComingSoonToast(platform.name);
+        document.getElementById('platform-select').value = '';
+        selectedPlatform = null;
     } else {
-        probability = Math.floor(Math.random() * 40) + 20 - ipRiskBonus;
-        status = 'restricted';
-        statusText = 'Shadow Ban Likely';
+        selectedPlatform = platform;
     }
     
-    // Ensure probability stays in valid range
-    probability = Math.max(5, Math.min(99, probability));
+    updatePlatformStatus();
+    updateCheckButton();
+}
+
+function updatePlatformStatus() {
+    const statusEl = document.getElementById('platform-status');
+    if (!statusEl) return;
     
-    let checks = [];
-    if (platform === 'Twitter/X') {
-        checks = [
-            { name: 'Search Visibility', status: random < 0.7 ? 'passed' : 'warning', description: random < 0.7 ? 'Account appears in search' : 'Reduced visibility', citation: 'Twitter/X API v2 search endpoint' },
-            { name: 'Reply Visibility (QFD)', status: random < 0.75 ? 'passed' : 'failed', description: random < 0.75 ? 'Replies visible' : 'Quality Filter active', citation: 'Third-party QFD detection' },
-            { name: 'Engagement Rate', status: random < 0.7 ? 'passed' : 'warning', description: random < 0.7 ? 'Normal patterns' : 'Below average', citation: 'Historical baseline comparison' },
-            { name: 'Account Status', status: random < 0.8 ? 'passed' : 'warning', description: random < 0.8 ? 'No restrictions' : 'Some flags detected', citation: 'Twitter/X API v2 user lookup' }
-        ];
-    } else if (platform === 'Reddit') {
-        checks = [
-            { name: 'Site-wide Shadowban', status: random < 0.8 ? 'passed' : 'failed', description: random < 0.8 ? 'Not shadowbanned' : 'Shadowbanned', citation: 'Reddit API + /r/ShadowBan' },
-            { name: 'Subreddit Bans', status: random < 0.75 ? 'passed' : 'warning', description: random < 0.75 ? 'No bans' : 'Some bans', citation: 'Subreddit API' },
-            { name: 'Post Visibility', status: random < 0.7 ? 'passed' : 'warning', description: random < 0.7 ? 'Posts visible' : 'Some hidden', citation: 'Post crawl test' },
-            { name: 'Karma Status', status: random < 0.85 ? 'passed' : 'warning', description: random < 0.85 ? 'Normal karma' : 'Low karma', citation: 'Reddit API' }
-        ];
+    if (selectedPlatform) {
+        statusEl.textContent = `${selectedPlatform.icon} ${selectedPlatform.name} selected`;
+        statusEl.classList.add('ready');
+    } else {
+        statusEl.textContent = 'Select a platform to continue';
+        statusEl.classList.remove('ready');
+    }
+}
+
+function updateCheckButton() {
+    const btn = document.getElementById('check-account-btn');
+    const usernameInput = document.getElementById('username-input');
+    
+    if (!btn || !usernameInput) return;
+    
+    const hasUsername = usernameInput.value.trim().length > 0;
+    const hasPlatform = selectedPlatform !== null;
+    
+    btn.disabled = !hasUsername || !hasPlatform;
+}
+
+// ============================================
+// IP DETECTION
+// ============================================
+async function detectIP() {
+    const ipAddress = document.getElementById('ip-address');
+    const ipType = document.getElementById('ip-type');
+    const ipFlag = document.getElementById('ip-flag');
+    
+    try {
+        const response = await fetch('https://ipapi.co/json/');
+        const data = await response.json();
+        
+        if (data && data.ip) {
+            userIPData = data;
+            
+            // Display IP
+            if (ipAddress) {
+                ipAddress.textContent = `Your IP: ${data.ip}`;
+            }
+            
+            // Determine IP type
+            if (ipType) {
+                const orgLower = (data.org || '').toLowerCase();
+                let type = 'residential';
+                let typeClass = '';
+                
+                if (orgLower.includes('vpn') || orgLower.includes('proxy') || orgLower.includes('tunnel')) {
+                    type = 'VPN';
+                    typeClass = 'vpn';
+                } else if (orgLower.includes('hosting') || orgLower.includes('cloud') || orgLower.includes('amazon') || orgLower.includes('google') || orgLower.includes('microsoft') || orgLower.includes('digital ocean')) {
+                    type = 'Datacenter';
+                    typeClass = 'datacenter';
+                }
+                
+                ipType.textContent = type.toUpperCase();
+                ipType.className = 'ip-type' + (typeClass ? ' ' + typeClass : '');
+                
+                userIPData.type = type;
+                userIPData.typeClass = typeClass;
+            }
+            
+            // Country flag
+            if (ipFlag && data.country_code) {
+                const flag = countryCodeToFlag(data.country_code);
+                ipFlag.textContent = flag;
+                ipFlag.title = data.country_name || data.country_code;
+                userIPData.flag = flag;
+            }
+        }
+    } catch (error) {
+        console.log('IP detection failed:', error);
+        if (ipAddress) {
+            ipAddress.textContent = 'IP: Unable to detect';
+        }
+    }
+}
+
+function countryCodeToFlag(countryCode) {
+    if (!countryCode) return '';
+    const codePoints = countryCode
+        .toUpperCase()
+        .split('')
+        .map(char => 127397 + char.charCodeAt(0));
+    return String.fromCodePoint(...codePoints);
+}
+
+// ============================================
+// CHECK ACCOUNT
+// ============================================
+async function checkAccount(username) {
+    // Clean username
+    username = username.replace(/^@/, '').trim();
+    
+    if (!username || !selectedPlatform) {
+        showToast('Please select a platform and enter a username');
+        return;
     }
     
-    // Add IP check to results
-    if (ipData) {
-        checks.push({
-            name: 'IP Analysis',
-            status: ipData.isVPN ? 'warning' : ipData.isDatacenter ? 'warning' : 'passed',
-            description: ipData.isVPN ? 'VPN/Proxy detected' : ipData.isDatacenter ? 'Datacenter IP detected' : 'Residential IP',
-            citation: 'IP reputation analysis'
-        });
+    // Check limits
+    if (!canCheck()) {
+        showLimitReachedModal();
+        return;
     }
     
-    const recommendations = status === 'clean' 
-        ? [{ type: 'success', text: 'Account performing well. Keep following guidelines.' }, { type: 'info', text: 'Consider setting up monitoring alerts.' }]
-        : status === 'warning'
-        ? [{ type: 'warning', text: 'Review recent content for violations.' }, { type: 'info', text: 'Monitor engagement over 48-72 hours.' }]
-        : [{ type: 'danger', text: 'Remove violating content immediately.' }, { type: 'warning', text: 'Submit an appeal if this is an error.' }];
+    const checkBtn = document.getElementById('check-account-btn');
+    checkBtn.classList.add('loading');
+    checkBtn.disabled = true;
     
-    return { 
-        platform, 
-        identifier, 
-        timestamp: new Date().toISOString(), 
-        ipUsed: ipData?.ip || 'Unknown',
-        ipType: ipData?.typeLabel || 'Unknown',
-        results: { probability, status, statusText, checks, recommendations },
-        engineFactors: {
-            platformAPIs: true,
+    try {
+        // Simulate analysis (replace with real API call)
+        await simulateAnalysis();
+        
+        // Increment check count
+        incrementCheckCount();
+        
+        // Build results and redirect
+        const results = buildResults(username);
+        
+        // Store results and redirect to results page
+        sessionStorage.setItem('checkResults', JSON.stringify(results));
+        window.location.href = 'results.html';
+        
+    } catch (error) {
+        console.error('Check failed:', error);
+        showToast('Analysis failed. Please try again.');
+    } finally {
+        checkBtn.classList.remove('loading');
+        checkBtn.disabled = false;
+    }
+}
+
+async function simulateAnalysis() {
+    return new Promise(resolve => setTimeout(resolve, 2000 + Math.random() * 1000));
+}
+
+function buildResults(username) {
+    // Generate mock probability score (replace with real analysis)
+    const probability = Math.floor(Math.random() * 35) + 5; // 5-40%
+    
+    // Determine status based on probability
+    let status, statusClass;
+    if (probability < 15) {
+        status = 'Account in Good Standing';
+        statusClass = 'good';
+    } else if (probability < 40) {
+        status = 'Possible Visibility Issues';
+        statusClass = 'warning';
+    } else {
+        status = 'Likely Restricted';
+        statusClass = 'bad';
+    }
+    
+    return {
+        type: 'username',
+        platform: selectedPlatform.name,
+        platformIcon: selectedPlatform.icon,
+        platformKey: selectedPlatform.id,
+        query: `@${username}`,
+        timestamp: new Date().toISOString(),
+        probability: probability,
+        status: status,
+        statusClass: statusClass,
+        factors: {
+            platformAPI: true,
             webAnalysis: true,
             historicalData: true,
             hashtagDatabase: false,
             ipAnalysis: true
-        }
+        },
+        factorsUsed: '4/5',
+        ipData: userIPData ? {
+            ip: userIPData.ip,
+            type: userIPData.type || 'Residential',
+            country: userIPData.country_name,
+            countryCode: userIPData.country_code,
+            flag: userIPData.flag || countryCodeToFlag(userIPData.country_code || 'US')
+        } : null,
+        checks: [
+            {
+                name: 'Account Status',
+                status: probability < 20 ? 'pass' : 'warning',
+                icon: '👤',
+                detail: probability < 20 
+                    ? 'Account is active and accessible' 
+                    : 'Account may have some restrictions'
+            },
+            {
+                name: 'Search Visibility',
+                status: probability < 25 ? 'pass' : 'warning',
+                icon: '🔍',
+                detail: probability < 25 
+                    ? 'Account appears in search results' 
+                    : 'Limited visibility in search'
+            },
+            {
+                name: 'Profile Accessibility',
+                status: 'pass',
+                icon: '🌐',
+                detail: 'Profile is publicly accessible'
+            },
+            {
+                name: 'Engagement Baseline',
+                status: probability < 30 ? 'pass' : 'info',
+                icon: '📊',
+                detail: probability < 30 
+                    ? 'Engagement metrics within normal range' 
+                    : 'Engagement below expected baseline'
+            },
+            {
+                name: 'IP/Location Risk',
+                status: userIPData?.type === 'VPN' ? 'warning' : 'pass',
+                icon: '🌐',
+                detail: userIPData 
+                    ? `${userIPData.country_name || 'Unknown'} • ${userIPData.type || 'Residential'} IP` 
+                    : 'IP analysis unavailable'
+            }
+        ],
+        recommendations: [
+            probability < 20 
+                ? 'Your account appears to be in good standing. Continue following platform guidelines.' 
+                : 'Review recent activity for potential policy violations.',
+            'Avoid using VPNs when posting content for better reach.',
+            'Check your posts individually using our Post URL Checker.',
+            'Verify your hashtags with our Hashtag Checker before posting.'
+        ]
     };
 }
 
-function showCheckingState(platform) {
-    const overlay = document.createElement('div');
-    overlay.className = 'checking-overlay';
-    overlay.innerHTML = `
-        <div class="checking-content">
-            <div class="checking-spinner"></div>
-            <h3>Analyzing ${platform}...</h3>
-            <p>Querying APIs, testing visibility, analyzing IP...</p>
-        </div>
-    `;
-    document.body.appendChild(overlay);
+// ============================================
+// RATE LIMITING
+// ============================================
+function getCheckCount() {
+    const today = new Date().toDateString();
+    const storedDate = localStorage.getItem(DATE_KEY);
+    
+    if (storedDate !== today) {
+        localStorage.setItem(DATE_KEY, today);
+        localStorage.setItem(STORAGE_KEY, '0');
+        return 0;
+    }
+    
+    return parseInt(localStorage.getItem(STORAGE_KEY) || '0', 10);
 }
 
-/* =============================================================================
-   INITIALIZE
-   ============================================================================= */
-document.addEventListener('DOMContentLoaded', function() {
-    // Build grid once platformData is available
-    if (window.platformData) {
-        buildPlatformGrid();
-    } else {
-        window.addEventListener('load', () => {
-            if (window.platformData) buildPlatformGrid();
-        });
+function canCheck() {
+    return getCheckCount() < DAILY_FREE_CHECKS;
+}
+
+function incrementCheckCount() {
+    const count = getCheckCount() + 1;
+    localStorage.setItem(STORAGE_KEY, count.toString());
+    updateChecksDisplay();
+}
+
+function updateChecksDisplay() {
+    const display = document.getElementById('checks-remaining-display');
+    if (display) {
+        const remaining = DAILY_FREE_CHECKS - getCheckCount();
+        display.textContent = `${remaining} free check${remaining !== 1 ? 's' : ''} left today`;
     }
+}
+
+function showLimitReachedModal() {
+    showToast('Daily limit reached! Upgrade to Pro for unlimited checks.');
+}
+
+// ============================================
+// MODALS
+// ============================================
+function initInfoModals() {
+    // Checker info button
+    const checkerInfoBtn = document.getElementById('checker-info-btn');
+    const engineModal = document.getElementById('engine-info-modal');
     
-    // Click handler for platforms
-    document.addEventListener('click', function(e) {
-        const platformItem = e.target.closest('.platform-item');
-        if (platformItem) {
-            showPlatformModal(platformItem.dataset.platform);
-        }
+    checkerInfoBtn?.addEventListener('click', () => {
+        engineModal?.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
     });
     
-    // Check URL params for direct platform open
-    const params = new URLSearchParams(window.location.search);
-    const platform = params.get('platform');
-    if (platform) {
-        setTimeout(() => showPlatformModal(platform), 500);
+    // Engine info button
+    const engineInfoBtn = document.getElementById('engine-info-btn');
+    engineInfoBtn?.addEventListener('click', () => {
+        engineModal?.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    });
+    
+    // Close handlers for all modals
+    document.querySelectorAll('.modal').forEach(modal => {
+        const closeBtn = modal.querySelector('.modal-close');
+        const overlay = modal.querySelector('.modal-overlay');
+        
+        const closeModal = () => {
+            modal.classList.add('hidden');
+            document.body.style.overflow = '';
+        };
+        
+        closeBtn?.addEventListener('click', closeModal);
+        overlay?.addEventListener('click', closeModal);
+    });
+    
+    // Escape key closes modals
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            document.querySelectorAll('.modal:not(.hidden)').forEach(modal => {
+                modal.classList.add('hidden');
+            });
+            document.body.style.overflow = '';
+        }
+    });
+}
+
+function showPlatformInfoModal(platformId) {
+    const platform = PLATFORMS.find(p => p.id === platformId);
+    if (!platform) return;
+    
+    const modal = document.getElementById('platform-info-modal');
+    const iconEl = document.getElementById('platform-modal-icon');
+    const titleEl = document.getElementById('platform-modal-title');
+    const bodyEl = document.getElementById('platform-modal-body');
+    
+    if (!modal || !bodyEl) return;
+    
+    iconEl.textContent = platform.icon;
+    titleEl.textContent = `${platform.name} - What We Check`;
+    
+    if (platform.status === 'live' && platform.checks) {
+        bodyEl.innerHTML = `
+            <p class="modal-intro">For ${platform.name}, our 5-Factor Engine analyzes:</p>
+            <ul class="platform-checks-list">
+                ${platform.checks.map(check => `<li>✓ ${check}</li>`).join('')}
+            </ul>
+            <p style="margin-top: var(--space-md); color: var(--text-muted); font-size: 0.875rem;">
+                Results include probability score with detailed breakdown and citations.
+            </p>
+        `;
+    } else {
+        bodyEl.innerHTML = `
+            <p class="modal-intro">${platform.name} support is coming soon!</p>
+            <p style="color: var(--text-muted);">We're working hard to add ${platform.name} to our detection engine. Create an account to get notified when it launches.</p>
+        `;
     }
     
-    console.log('✅ Checker initialized');
-});
+    modal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+}
+
+function showAllPlatformsModal() {
+    const modal = document.getElementById('platform-info-modal');
+    const iconEl = document.getElementById('platform-modal-icon');
+    const titleEl = document.getElementById('platform-modal-title');
+    const bodyEl = document.getElementById('platform-modal-body');
+    
+    if (!modal || !bodyEl) return;
+    
+    iconEl.textContent = '🌐';
+    titleEl.textContent = 'All Supported Platforms';
+    
+    const livePlatforms = PLATFORMS.filter(p => p.status === 'live');
+    const comingSoon = PLATFORMS.filter(p => p.status !== 'live');
+    
+    let html = '<div class="all-platforms-grid">';
+    
+    if (livePlatforms.length > 0) {
+        html += '<div class="platforms-section"><h4>✓ Available Now</h4><div class="platforms-list">';
+        html += livePlatforms.map(p => `
+            <div class="platform-list-item">
+                <span class="platform-list-icon">${p.icon}</span>
+                <span class="platform-list-name">${p.name}</span>
+            </div>
+        `).join('');
+        html += '</div></div>';
+    }
+    
+    if (comingSoon.length > 0) {
+        html += '<div class="platforms-section"><h4>● Coming Soon</h4><div class="platforms-list">';
+        html += comingSoon.map(p => `
+            <div class="platform-list-item coming">
+                <span class="platform-list-icon">${p.icon}</span>
+                <span class="platform-list-name">${p.name}</span>
+            </div>
+        `).join('');
+        html += '</div></div>';
+    }
+    
+    html += '</div>';
+    bodyEl.innerHTML = html;
+    
+    modal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+}
+
+function closePlatformInfoModal() {
+    const modal = document.getElementById('platform-info-modal');
+    modal?.classList.add('hidden');
+    document.body.style.overflow = '';
+}
+
+// Make it globally available
+window.closePlatformInfoModal = closePlatformInfoModal;
+
+function showComingSoonToast(platformName) {
+    showToast(`${platformName} coming soon! Create an account to get notified.`);
+}
+
+// ============================================
+// TOAST NOTIFICATION
+// ============================================
+function showToast(message) {
+    if (typeof window.ShadowBan?.showToast === 'function') {
+        window.ShadowBan.showToast(message);
+        return;
+    }
+    
+    let toast = document.getElementById('toast');
+    if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'toast';
+        toast.className = 'toast';
+        document.body.appendChild(toast);
+    }
+    
+    toast.textContent = message;
+    toast.classList.add('visible');
+    
+    setTimeout(() => {
+        toast.classList.remove('visible');
+    }, 3000);
+}
+
+})();

@@ -10,7 +10,11 @@
 // ============================================
 // CONFIGURATION
 // ============================================
-const SHARED_PATH = './shared/';
+// Detect if we're in a subfolder and adjust paths accordingly
+const currentPath = window.location.pathname;
+const isInSubfolder = currentPath.includes('/legal/');
+const SHARED_PATH = isInSubfolder ? '../shared/' : './shared/';
+const ROOT_PATH = isInSubfolder ? '../' : './';
 
 const COMPONENTS = {
     header: {
@@ -41,7 +45,19 @@ async function loadComponent(name, config) {
             throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
         
-        const html = await response.text();
+        let html = await response.text();
+        
+        // Fix relative paths if in subfolder
+        if (isInSubfolder) {
+            // Fix links like href="index.html" to href="../index.html"
+            html = html.replace(/href="((?!http|#|mailto:|tel:)[^"]+)"/g, (match, path) => {
+                // Don't modify already-relative paths or anchors
+                if (path.startsWith('../') || path.startsWith('/')) {
+                    return match;
+                }
+                return `href="${ROOT_PATH}${path}"`;
+            });
+        }
         
         // Find target element
         let target = document.querySelector(config.target);
@@ -150,13 +166,6 @@ function hideHomeOnHomePage() {
         }
     }
 }
-
-// ============================================
-// COOKIE POLICY FUNCTION
-// ============================================
-window.showCookiePolicy = function() {
-    alert('Cookie Policy\n\nWe use cookies to:\n• Remember your preferences\n• Track free searches\n• Improve your experience');
-};
 
 // ============================================
 // MAIN INITIALIZATION

@@ -14,21 +14,28 @@ function buildPlatformGrid() {
     // Clear any existing content first
     grid.innerHTML = '';
     
-    const platforms = window.platformData;
+    // Sort: live platforms first, then alphabetically (matches main.js)
+    const sortedPlatforms = [...window.platformData].sort((a, b) => {
+        if (a.status === 'live' && b.status !== 'live') return -1;
+        if (a.status !== 'live' && b.status === 'live') return 1;
+        return a.name.localeCompare(b.name);
+    });
     
-    platforms.forEach(platform => {
+    sortedPlatforms.forEach(platform => {
         const item = document.createElement('div');
         item.className = 'platform-item';
-        item.dataset.platform = platform.name.toLowerCase().replace(/\s+/g, '-').replace(/\//g, '-');
+        item.dataset.platform = platform.name.toLowerCase().replace(/[^a-z0-9]/g, '');
         item.dataset.status = platform.status;
         
-        const badgeClass = platform.status === 'live' ? 'badge-live' : 'badge-soon';
-        const badgeText = platform.status === 'live' ? 'Live' : 'Soon';
+        // Use same badge classes as main.js for consistency
+        const statusBadge = platform.status === 'live' 
+            ? '<span class="platform-badge live">Live</span>'
+            : '<span class="platform-badge soon">Soon</span>';
         
         item.innerHTML = `
             <span class="platform-icon">${platform.icon}</span>
             <span class="platform-name">${platform.name}</span>
-            <span class="badge ${badgeClass}">${badgeText}</span>
+            ${statusBadge}
         `;
         
         grid.appendChild(item);

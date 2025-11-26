@@ -10,7 +10,7 @@
 // ============================================
 // CONFIGURATION
 // ============================================
-const DAILY_FREE_CHECKS = 3;
+const DAILY_FREE_CHECKS = 1;
 const STORAGE_KEY = 'postChecks';
 const DATE_KEY = 'postCheckDate';
 
@@ -60,6 +60,8 @@ let userIPData = null;
 document.addEventListener('DOMContentLoaded', function() {
     initPostChecker();
     initInfoModal();
+    initSupportedPlatforms();
+    initEngineModal();
     updateChecksDisplay();
     detectIP();
 });
@@ -462,6 +464,187 @@ function showToast(message) {
     setTimeout(() => {
         toast.classList.remove('visible');
     }, 3000);
+}
+
+// ============================================
+// SUPPORTED PLATFORMS
+// ============================================
+function initSupportedPlatforms() {
+    const container = document.querySelector('.platform-icons');
+    if (!container || typeof PLATFORMS === 'undefined') return;
+    
+    // Get live platforms - show Twitter/X and Reddit first
+    const livePlatforms = PLATFORMS.filter(p => p.status === 'live');
+    const priorityOrder = ['twitter', 'reddit'];
+    
+    livePlatforms.sort((a, b) => {
+        const aIndex = priorityOrder.indexOf(a.id);
+        const bIndex = priorityOrder.indexOf(b.id);
+        if (aIndex !== -1 && bIndex !== -1) return aIndex - bIndex;
+        if (aIndex !== -1) return -1;
+        if (bIndex !== -1) return 1;
+        return 0;
+    });
+    
+    // Show first 7 platforms + "more" chip
+    const displayPlatforms = livePlatforms.slice(0, 7);
+    const remainingCount = PLATFORMS.length - 7;
+    
+    let html = displayPlatforms.map(p => `
+        <span class="platform-chip" data-platform="${p.id}" title="${p.name}">${p.icon}</span>
+    `).join('');
+    
+    if (remainingCount > 0) {
+        html += `<span class="platform-chip coming" id="show-more-platforms" title="View all platforms">+${remainingCount}</span>`;
+    }
+    
+    container.innerHTML = html;
+    
+    // Add click handlers
+    container.querySelectorAll('.platform-chip[data-platform]').forEach(chip => {
+        chip.addEventListener('click', () => {
+            showPlatformInfoModal(chip.dataset.platform);
+        });
+    });
+    
+    // Show more platforms handler
+    const showMore = document.getElementById('show-more-platforms');
+    showMore?.addEventListener('click', showAllPlatformsModal);
+}
+
+// ============================================
+// PLATFORM INFO MODAL
+// ============================================
+function showPlatformInfoModal(platformId) {
+    const platform = PLATFORMS.find(p => p.id === platformId);
+    if (!platform) return;
+    
+    const modal = document.getElementById('platform-info-modal');
+    const iconEl = document.getElementById('platform-modal-icon');
+    const titleEl = document.getElementById('platform-modal-title');
+    const bodyEl = document.getElementById('platform-modal-body');
+    
+    if (!modal || !bodyEl) return;
+    
+    iconEl.textContent = platform.icon;
+    titleEl.textContent = `${platform.name} - What We Check`;
+    
+    if (platform.status === 'live' && platform.checks) {
+        bodyEl.innerHTML = `
+            <p class="modal-intro">For ${platform.name} posts, our 5-Factor Engine analyzes:</p>
+            <ul class="platform-checks-list">
+                ${platform.checks.map(check => `<li>✓ ${check}</li>`).join('')}
+            </ul>
+            <p style="margin-top: var(--space-md); color: var(--text-muted); font-size: 0.875rem;">
+                Results include probability score with detailed breakdown and citations.
+            </p>
+        `;
+    } else {
+        bodyEl.innerHTML = `
+            <p class="modal-intro">${platform.name} support is coming soon!</p>
+            <p style="color: var(--text-muted);">We're working hard to add ${platform.name} to our detection engine. Create an account to get notified when it launches.</p>
+        `;
+    }
+    
+    modal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+}
+
+function showAllPlatformsModal() {
+    const modal = document.getElementById('platform-info-modal');
+    const iconEl = document.getElementById('platform-modal-icon');
+    const titleEl = document.getElementById('platform-modal-title');
+    const bodyEl = document.getElementById('platform-modal-body');
+    
+    if (!modal || !bodyEl) return;
+    
+    iconEl.textContent = '🌐';
+    titleEl.textContent = 'All Supported Platforms';
+    
+    const livePlatforms = PLATFORMS.filter(p => p.status === 'live');
+    const comingSoon = PLATFORMS.filter(p => p.status !== 'live');
+    
+    let html = '<div class="all-platforms-grid">';
+    
+    if (livePlatforms.length > 0) {
+        html += '<div class="platforms-section"><h4>✓ Available Now</h4><div class="platforms-list">';
+        html += livePlatforms.map(p => `
+            <div class="platform-list-item">
+                <span class="platform-list-icon">${p.icon}</span>
+                <span class="platform-list-name">${p.name}</span>
+            </div>
+        `).join('');
+        html += '</div></div>';
+    }
+    
+    if (comingSoon.length > 0) {
+        html += '<div class="platforms-section"><h4>● Coming Soon</h4><div class="platforms-list">';
+        html += comingSoon.map(p => `
+            <div class="platform-list-item coming">
+                <span class="platform-list-icon">${p.icon}</span>
+                <span class="platform-list-name">${p.name}</span>
+            </div>
+        `).join('');
+        html += '</div></div>';
+    }
+    
+    html += '</div>';
+    bodyEl.innerHTML = html;
+    
+    modal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+}
+
+function closePlatformInfoModal() {
+    const modal = document.getElementById('platform-info-modal');
+    modal?.classList.add('hidden');
+    document.body.style.overflow = '';
+}
+
+// Make it globally available
+window.closePlatformInfoModal = closePlatformInfoModal;
+
+// ============================================
+// ENGINE INFO MODAL
+// ============================================
+function initEngineModal() {
+    const engineInfoBtn = document.getElementById('engine-info-btn');
+    const engineModal = document.getElementById('engine-info-modal');
+    
+    if (!engineInfoBtn || !engineModal) return;
+    
+    engineInfoBtn.addEventListener('click', function() {
+        engineModal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    });
+    
+    // Close handlers
+    const closeBtn = engineModal.querySelector('.modal-close');
+    const overlay = engineModal.querySelector('.modal-overlay');
+    
+    const closeModal = () => {
+        engineModal.classList.add('hidden');
+        document.body.style.overflow = '';
+    };
+    
+    closeBtn?.addEventListener('click', closeModal);
+    overlay?.addEventListener('click', closeModal);
+    
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && !engineModal.classList.contains('hidden')) {
+            closeModal();
+        }
+    });
+    
+    // Also handle platform info modal close
+    const platformModal = document.getElementById('platform-info-modal');
+    if (platformModal) {
+        const pCloseBtn = platformModal.querySelector('.modal-close');
+        const pOverlay = platformModal.querySelector('.modal-overlay');
+        
+        pCloseBtn?.addEventListener('click', closePlatformInfoModal);
+        pOverlay?.addEventListener('click', closePlatformInfoModal);
+    }
 }
 
 })();

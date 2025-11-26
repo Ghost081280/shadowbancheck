@@ -10,6 +10,30 @@
     <link rel="stylesheet" href="css/shadow-ai-admin.css">
 </head>
 <body class="dashboard-page">
+    <!-- Admin Auth Check - Redirect if not logged in as admin -->
+    <script>
+        (function() {
+            const session = localStorage.getItem('shadowban_session') || sessionStorage.getItem('shadowban_session');
+            if (!session) {
+                window.location.href = 'login.html';
+                return;
+            }
+            try {
+                const data = JSON.parse(session);
+                if (!data.loggedIn || !data.isAdmin) {
+                    // Not logged in or not an admin - redirect to login
+                    window.location.href = 'login.html';
+                    return;
+                }
+            } catch (e) {
+                // Invalid session data
+                localStorage.removeItem('shadowban_session');
+                sessionStorage.removeItem('shadowban_session');
+                window.location.href = 'login.html';
+            }
+        })();
+    </script>
+
     <div class="admin-layout">
         <!-- SIDEBAR -->
         <aside class="admin-sidebar">
@@ -62,6 +86,9 @@
                 <a href="index.html" class="sidebar-link">
                     <span>🏠</span> Back to Site
                 </a>
+                <button class="sidebar-link logout-btn" id="admin-logout-btn">
+                    <span>🚪</span> Logout
+                </button>
             </div>
         </aside>
         
@@ -998,8 +1025,25 @@
         </main>
     </div>
     
+    <!-- Toast Notification -->
+    <div class="toast hidden" id="toast">
+        <span id="toast-icon">✅</span>
+        <span id="toast-message">Success</span>
+    </div>
+    
     <!-- Scripts -->
     <script src="js/admin-dashboard.js"></script>
     <script src="js/shadow-ai-admin.js"></script>
+    
+    <!-- Logout Handler -->
+    <script>
+        document.getElementById('admin-logout-btn')?.addEventListener('click', function() {
+            if (confirm('Are you sure you want to logout?')) {
+                localStorage.removeItem('shadowban_session');
+                sessionStorage.removeItem('shadowban_session');
+                window.location.href = 'login.html';
+            }
+        });
+    </script>
 </body>
 </html>

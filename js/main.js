@@ -44,6 +44,7 @@ async function detectUserIP() {
             userIPData = {
                 ip: data.ip,
                 country: data.country_name,
+                countryCode: data.country_code,
                 city: data.city,
                 isp: data.org,
                 type: ipType,
@@ -82,6 +83,7 @@ async function detectUserIP() {
 function updateIPDisplay() {
     const ipValueEl = document.getElementById('user-ip-address');
     const ipTypeEl = document.getElementById('user-ip-type');
+    const ipFlagEl = document.getElementById('user-ip-flag');
     
     if (ipValueEl && userIPData) {
         ipValueEl.textContent = userIPData.ip;
@@ -90,7 +92,22 @@ function updateIPDisplay() {
             ipTypeEl.textContent = userIPData.typeLabel;
             ipTypeEl.className = 'ip-type ' + userIPData.type;
         }
+        
+        if (ipFlagEl && userIPData.countryCode) {
+            ipFlagEl.textContent = countryCodeToFlag(userIPData.countryCode);
+            ipFlagEl.title = userIPData.country || userIPData.countryCode;
+        }
     }
+}
+
+// Convert country code to flag emoji
+function countryCodeToFlag(countryCode) {
+    if (!countryCode) return '';
+    const codePoints = countryCode
+        .toUpperCase()
+        .split('')
+        .map(char => 127397 + char.charCodeAt(0));
+    return String.fromCodePoint(...codePoints);
 }
 
 function getUserIPData() {
@@ -1023,31 +1040,37 @@ function showToast(message) {
    ============================================================================= */
 function initCookiePopup() {
     const cookiePopup = document.getElementById('cookie-popup');
-    if (!cookiePopup) return;
-    
-    // Already accepted - remove popup entirely
-    if (localStorage.getItem('cookies_accepted')) {
-        cookiePopup.remove();
+    if (!cookiePopup) {
+        console.log('Cookie popup element not found');
         return;
     }
     
-    // Show after 1.5 second delay - just add visible class to trigger animation
-    setTimeout(() => {
-        cookiePopup.classList.add('visible');
-    }, 1500);
+    // Already accepted - hide immediately (prevent animation)
+    if (localStorage.getItem('cookies_accepted')) {
+        cookiePopup.style.display = 'none';
+        return;
+    }
     
+    console.log('Cookie popup will show in 1.5s');
+    
+    // Accept button
     const acceptBtn = document.getElementById('cookie-accept');
-    acceptBtn?.addEventListener('click', function() {
-        localStorage.setItem('cookies_accepted', 'true');
-        cookiePopup.classList.remove('visible');
-        setTimeout(() => cookiePopup.remove(), 400);
-    });
+    if (acceptBtn) {
+        acceptBtn.addEventListener('click', function() {
+            localStorage.setItem('cookies_accepted', 'true');
+            cookiePopup.classList.add('dismissed');
+            setTimeout(() => cookiePopup.style.display = 'none', 400);
+        });
+    }
     
+    // Dismiss button
     const dismissBtn = document.getElementById('cookie-dismiss');
-    dismissBtn?.addEventListener('click', function() {
-        cookiePopup.classList.remove('visible');
-        setTimeout(() => cookiePopup.remove(), 400);
-    });
+    if (dismissBtn) {
+        dismissBtn.addEventListener('click', function() {
+            cookiePopup.classList.add('dismissed');
+            setTimeout(() => cookiePopup.style.display = 'none', 400);
+        });
+    }
 }
 
 /* =============================================================================

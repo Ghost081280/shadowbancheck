@@ -828,77 +828,81 @@ function initPowerPlatforms() {
 
 // Open modal showing all platforms
 function openAllPlatformsModal() {
-    const modal = document.getElementById('platform-modal');
-    if (!modal) return;
-    
-    const modalIcon = document.getElementById('modal-icon');
-    const modalTitle = document.getElementById('modal-title');
-    const modalStatus = document.getElementById('modal-status');
-    const modalBody = document.getElementById('modal-body');
-    const modalFooter = document.getElementById('modal-footer');
-    
-    if (modalIcon) modalIcon.textContent = '🌐';
-    if (modalTitle) modalTitle.textContent = 'All Supported Platforms';
-    if (modalStatus) modalStatus.innerHTML = '';
-    
+    // Use platforms.js data
     const livePlatforms = PLATFORMS.filter(p => p.status === 'live');
     const comingSoon = PLATFORMS.filter(p => p.status !== 'live');
     
-    if (modalBody) {
-        let html = '<div class="all-platforms-list">';
+    // Create modal if doesn't exist
+    let modal = document.getElementById('all-platforms-modal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'all-platforms-modal';
+        modal.className = 'modal hidden';
+        modal.innerHTML = `
+            <div class="modal-overlay"></div>
+            <div class="modal-content">
+                <button class="modal-close">&times;</button>
+                <div class="modal-icon">🌐</div>
+                <h3 class="modal-title">All Supported Platforms</h3>
+                <div class="modal-body" id="all-platforms-body"></div>
+                <div class="modal-footer">
+                    <button class="btn btn-primary btn-lg" onclick="document.getElementById('all-platforms-modal').classList.add('hidden'); document.body.style.overflow = '';">Got It!</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
         
-        // Live platforms
-        html += '<div class="platforms-group"><h4 style="color: var(--success); margin-bottom: var(--space-sm);">✓ Available Now</h4>';
+        // Close handlers
+        modal.querySelector('.modal-close').addEventListener('click', () => {
+            modal.classList.add('hidden');
+            document.body.style.overflow = '';
+        });
+        modal.querySelector('.modal-overlay').addEventListener('click', () => {
+            modal.classList.add('hidden');
+            document.body.style.overflow = '';
+        });
+    }
+    
+    const bodyEl = document.getElementById('all-platforms-body');
+    let html = '<div class="all-platforms-list">';
+    
+    // Live platforms
+    html += '<div class="platforms-group"><h4 style="color: var(--success); margin-bottom: var(--space-sm);">✓ Available Now</h4>';
+    html += '<div class="platforms-grid">';
+    livePlatforms.forEach(p => {
+        html += `<div class="platform-item" data-platform="${p.id}" style="cursor: pointer;"><span class="platform-item-icon">${p.icon}</span><span>${p.name}</span></div>`;
+    });
+    html += '</div></div>';
+    
+    // Coming soon
+    if (comingSoon.length > 0) {
+        html += '<div class="platforms-group" style="margin-top: var(--space-lg);"><h4 style="color: var(--warning); margin-bottom: var(--space-sm);">◷ Coming Soon</h4>';
         html += '<div class="platforms-grid">';
-        livePlatforms.forEach(p => {
-            html += `<div class="platform-item"><span class="platform-item-icon">${p.icon}</span><span>${p.name}</span></div>`;
+        comingSoon.forEach(p => {
+            html += `<div class="platform-item coming"><span class="platform-item-icon">${p.icon}</span><span>${p.name}</span></div>`;
         });
         html += '</div></div>';
-        
-        // Coming soon
-        if (comingSoon.length > 0) {
-            html += '<div class="platforms-group" style="margin-top: var(--space-lg);"><h4 style="color: var(--warning); margin-bottom: var(--space-sm);">◷ Coming Soon</h4>';
-            html += '<div class="platforms-grid">';
-            comingSoon.forEach(p => {
-                html += `<div class="platform-item coming"><span class="platform-item-icon">${p.icon}</span><span>${p.name}</span></div>`;
-            });
-            html += '</div></div>';
-        }
-        
-        html += '</div>';
-        modalBody.innerHTML = html;
-        modalBody.className = 'modal-body';
     }
     
-    // Hide footer buttons for all platforms view
-    if (modalFooter) modalFooter.style.display = 'none';
+    html += '</div>';
+    bodyEl.innerHTML = html;
     
-    // Show modal
+    // Add click handlers to live platform items
+    bodyEl.querySelectorAll('.platform-item[data-platform]').forEach(item => {
+        item.addEventListener('click', () => {
+            modal.classList.add('hidden');
+            document.body.style.overflow = '';
+            setTimeout(() => {
+                const platform = PLATFORMS.find(p => p.id === item.dataset.platform);
+                if (platform) {
+                    openPlatformModal(platform);
+                }
+            }, 100);
+        });
+    });
+    
     modal.classList.remove('hidden');
     document.body.style.overflow = 'hidden';
-    
-    // Close handlers
-    const closeBtn = modal.querySelector('.modal-close');
-    const overlay = modal.querySelector('.modal-overlay');
-    
-    function closeModal() {
-        modal.classList.add('hidden');
-        document.body.style.overflow = '';
-    }
-    
-    closeBtn?.removeEventListener('click', closeModal);
-    overlay?.removeEventListener('click', closeModal);
-    closeBtn?.addEventListener('click', closeModal);
-    overlay?.addEventListener('click', closeModal);
-    
-    // ESC key
-    const escHandler = function(e) {
-        if (e.key === 'Escape') {
-            closeModal();
-            document.removeEventListener('keydown', escHandler);
-        }
-    };
-    document.addEventListener('keydown', escHandler);
 }
 
 function initPowerCheck() {

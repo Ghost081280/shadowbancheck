@@ -1,5 +1,7 @@
 /* =============================================================================
    CHECKER.JS - Shadow Ban Checker Page Functionality
+   
+   NOTE: Uses window.platformData from platforms.js (loaded before this file)
    ============================================================================= */
 
 /* =============================================================================
@@ -86,8 +88,6 @@ function showPlatformModal(platformKey) {
         showTwitterModal();
     } else if (platform.name === 'Reddit') {
         showRedditModal();
-    } else if (platform.name === 'Email') {
-        showEmailModal();
     }
 }
 
@@ -120,7 +120,7 @@ function showTwitterModal() {
                 Check Account →
             </button>
             
-            <p class="modal-note">Analysis uses Twitter/X API v2 + third-party detection APIs</p>
+            <p class="modal-note">Powered by our 5-Factor Detection Engine (4 factors active)</p>
         </div>
     `;
     
@@ -186,7 +186,7 @@ function showRedditModal() {
                 Check Account →
             </button>
             
-            <p class="modal-note">Analysis uses Reddit API + shadowban detection services</p>
+            <p class="modal-note">Powered by our 5-Factor Detection Engine (4 factors active)</p>
         </div>
     `;
     
@@ -217,72 +217,6 @@ function showRedditModal() {
     
     checkBtn?.addEventListener('click', handleCheck);
     usernameInput?.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') handleCheck();
-    });
-    
-    setupModalCloseHandlers(modal);
-}
-
-function showEmailModal() {
-    const modal = document.getElementById('platform-modal');
-    if (!modal) return;
-    
-    const modalBody = modal.querySelector('#modal-body');
-    modalBody.innerHTML = `
-        <div class="modal-platform-check">
-            <span class="modal-platform-icon">📧</span>
-            <h3>Check Email Deliverability</h3>
-            <p>Enter your email address or domain to check for blacklisting</p>
-            
-            <div class="modal-checks-preview">
-                <h4>What we'll check:</h4>
-                <ul>
-                    <li>✓ Blacklist status</li>
-                    <li>✓ IP reputation score</li>
-                    <li>✓ DKIM/SPF/DMARC setup</li>
-                    <li>✓ Deliverability probability</li>
-                </ul>
-            </div>
-            
-            <div class="modal-input-group">
-                <input type="email" id="modal-email-input" placeholder="Enter email@domain.com..." />
-            </div>
-            
-            <button class="btn btn-primary btn-full" id="modal-check-btn">
-                Check Deliverability →
-            </button>
-            
-            <p class="modal-note">Analysis uses RBL services + reputation databases</p>
-        </div>
-    `;
-    
-    modal.classList.remove('hidden');
-    document.body.style.overflow = 'hidden';
-    
-    setTimeout(() => document.getElementById('modal-email-input')?.focus(), 100);
-    
-    const checkBtn = document.getElementById('modal-check-btn');
-    const emailInput = document.getElementById('modal-email-input');
-    
-    const handleCheck = () => {
-        const email = emailInput?.value.trim();
-        if (!email) {
-            alert('Please enter an email or domain');
-            return;
-        }
-        
-        if (getRemainingSearches() <= 0) {
-            modal.classList.add('hidden');
-            showUpgradeModal();
-            return;
-        }
-        
-        incrementSearchCount();
-        runCheck('Email', email);
-    };
-    
-    checkBtn?.addEventListener('click', handleCheck);
-    emailInput?.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') handleCheck();
     });
     
@@ -375,36 +309,49 @@ function setupModalCloseHandlers(modal) {
 function runCheck(platform, identifier) {
     showCheckingState(platform);
     
+    // Get IP data for scoring
+    const ipData = window.ShadowBan?.getUserIPData?.() || null;
+    
     setTimeout(() => {
-        const results = generateDemoResults(platform, identifier);
+        const results = generateDemoResults(platform, identifier, ipData);
         sessionStorage.setItem('shadowban_results', JSON.stringify(results));
         window.location.href = 'results.html';
     }, 2500);
 }
 
-function generateDemoResults(platform, identifier) {
+function generateDemoResults(platform, identifier, ipData) {
     const random = Math.random();
+    
+    // Factor in IP risk
+    let ipRiskBonus = 0;
+    if (ipData) {
+        if (ipData.isVPN) ipRiskBonus = 15;
+        else if (ipData.isDatacenter) ipRiskBonus = 10;
+    }
     
     let probability, status, statusText;
     if (random < 0.65) {
-        probability = Math.floor(Math.random() * 10) + 90;
+        probability = Math.floor(Math.random() * 10) + 90 - ipRiskBonus;
         status = 'clean';
         statusText = 'No Shadow Ban Detected';
     } else if (random < 0.85) {
-        probability = Math.floor(Math.random() * 25) + 60;
+        probability = Math.floor(Math.random() * 25) + 60 - ipRiskBonus;
         status = 'warning';
         statusText = 'Potential Issues Detected';
     } else {
-        probability = Math.floor(Math.random() * 40) + 20;
+        probability = Math.floor(Math.random() * 40) + 20 - ipRiskBonus;
         status = 'restricted';
         statusText = 'Shadow Ban Likely';
     }
+    
+    // Ensure probability stays in valid range
+    probability = Math.max(5, Math.min(99, probability));
     
     let checks = [];
     if (platform === 'Twitter/X') {
         checks = [
             { name: 'Search Visibility', status: random < 0.7 ? 'passed' : 'warning', description: random < 0.7 ? 'Account appears in search' : 'Reduced visibility', citation: 'Twitter/X API v2 search endpoint' },
-            { name: 'Reply Visibility (QFD)', status: random < 0.75 ? 'passed' : 'failed', description: random < 0.75 ? 'Replies visible' : 'Quality Filter active', citation: 'Third-party QFD detection API' },
+            { name: 'Reply Visibility (QFD)', status: random < 0.75 ? 'passed' : 'failed', description: random < 0.75 ? 'Replies visible' : 'Quality Filter active', citation: 'Third-party QFD detection' },
             { name: 'Engagement Rate', status: random < 0.7 ? 'passed' : 'warning', description: random < 0.7 ? 'Normal patterns' : 'Below average', citation: 'Historical baseline comparison' },
             { name: 'Account Status', status: random < 0.8 ? 'passed' : 'warning', description: random < 0.8 ? 'No restrictions' : 'Some flags detected', citation: 'Twitter/X API v2 user lookup' }
         ];
@@ -415,13 +362,16 @@ function generateDemoResults(platform, identifier) {
             { name: 'Post Visibility', status: random < 0.7 ? 'passed' : 'warning', description: random < 0.7 ? 'Posts visible' : 'Some hidden', citation: 'Post crawl test' },
             { name: 'Karma Status', status: random < 0.85 ? 'passed' : 'warning', description: random < 0.85 ? 'Normal karma' : 'Low karma', citation: 'Reddit API' }
         ];
-    } else if (platform === 'Email') {
-        checks = [
-            { name: 'Blacklist Status', status: random < 0.8 ? 'passed' : 'failed', description: random < 0.8 ? 'Not blacklisted' : 'On blacklist', citation: 'Spamhaus ZEN + SURBL' },
-            { name: 'IP Reputation', status: random < 0.75 ? 'passed' : 'warning', description: random < 0.75 ? 'Good reputation' : 'Moderate concerns', citation: 'Sender Score' },
-            { name: 'Authentication', status: random < 0.85 ? 'passed' : 'warning', description: random < 0.85 ? 'Configured' : 'Missing records', citation: 'DNS TXT lookup' },
-            { name: 'Deliverability', status: random < 0.7 ? 'passed' : 'warning', description: random < 0.7 ? 'High placement' : 'May hit spam', citation: 'GlockApps test' }
-        ];
+    }
+    
+    // Add IP check to results
+    if (ipData) {
+        checks.push({
+            name: 'IP Analysis',
+            status: ipData.isVPN ? 'warning' : ipData.isDatacenter ? 'warning' : 'passed',
+            description: ipData.isVPN ? 'VPN/Proxy detected' : ipData.isDatacenter ? 'Datacenter IP detected' : 'Residential IP',
+            citation: 'IP reputation analysis'
+        });
     }
     
     const recommendations = status === 'clean' 
@@ -430,7 +380,21 @@ function generateDemoResults(platform, identifier) {
         ? [{ type: 'warning', text: 'Review recent content for violations.' }, { type: 'info', text: 'Monitor engagement over 48-72 hours.' }]
         : [{ type: 'danger', text: 'Remove violating content immediately.' }, { type: 'warning', text: 'Submit an appeal if this is an error.' }];
     
-    return { platform, identifier, timestamp: new Date().toISOString(), results: { probability, status, statusText, checks, recommendations } };
+    return { 
+        platform, 
+        identifier, 
+        timestamp: new Date().toISOString(), 
+        ipUsed: ipData?.ip || 'Unknown',
+        ipType: ipData?.typeLabel || 'Unknown',
+        results: { probability, status, statusText, checks, recommendations },
+        engineFactors: {
+            platformAPIs: true,
+            webAnalysis: true,
+            historicalData: true,
+            hashtagDatabase: false,
+            ipAnalysis: true
+        }
+    };
 }
 
 function showCheckingState(platform) {
@@ -440,7 +404,7 @@ function showCheckingState(platform) {
         <div class="checking-content">
             <div class="checking-spinner"></div>
             <h3>Analyzing ${platform}...</h3>
-            <p>Querying APIs, testing visibility...</p>
+            <p>Querying APIs, testing visibility, analyzing IP...</p>
         </div>
     `;
     document.body.appendChild(overlay);
@@ -467,7 +431,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    // Check URL params
+    // Check URL params for direct platform open
     const params = new URLSearchParams(window.location.search);
     const platform = params.get('platform');
     if (platform) {

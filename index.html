@@ -110,6 +110,14 @@
                         <span>✓ Results in 60 seconds</span>
                         <span>✓ 1 free check per day</span>
                     </div>
+                    
+                    <!-- Supported Platforms -->
+                    <div class="power-platforms">
+                        <span class="power-platforms-label">Supported:</span>
+                        <div class="platform-icons" id="power-platform-icons">
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
                 </div>
                 
                 <!-- Results Area (Hidden Initially) -->
@@ -952,7 +960,7 @@
     <!-- Platform Modal -->
     <div id="platform-modal" class="modal hidden">
         <div class="modal-overlay"></div>
-        <div class="modal-content">
+        <div class="modal-content modal-large">
             <button class="modal-close">&times;</button>
             <div class="modal-icon" id="modal-icon">🐦</div>
             <h3 class="modal-title" id="modal-title">Check Twitter/X</h3>
@@ -965,8 +973,22 @@
                     <!-- Populated by JS -->
                 </ul>
             </div>
-            <div class="modal-footer">
-                <a href="checker.html" id="modal-cta" class="btn btn-primary btn-lg">Check Twitter/X →</a>
+            <div class="modal-footer modal-footer-buttons" id="modal-footer">
+                <p class="modal-footer-label">What would you like to check?</p>
+                <div class="check-type-buttons">
+                    <a href="#" id="modal-btn-account" class="btn-check-type">
+                        <span class="btn-icon">👤</span>
+                        <span class="btn-label">Check Account</span>
+                    </a>
+                    <a href="#" id="modal-btn-post" class="btn-check-type">
+                        <span class="btn-icon">📝</span>
+                        <span class="btn-label">Check Post URL</span>
+                    </a>
+                    <a href="#" id="modal-btn-hashtag" class="btn-check-type">
+                        <span class="btn-icon">#️⃣</span>
+                        <span class="btn-label">Check Hashtags</span>
+                    </a>
+                </div>
             </div>
         </div>
     </div>

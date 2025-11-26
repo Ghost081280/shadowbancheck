@@ -23,7 +23,7 @@
         isDashboard: window.location.pathname.includes('dashboard'),
         
         // Question limits
-        freeQuestionsPerDay: 3,
+        freeQuestionsPerDay: 1,
         proQuestionsPerDay: 10,
         
         // Storage keys

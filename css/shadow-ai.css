@@ -666,6 +666,22 @@
 .demo-typing-indicator .demo-dots span:nth-child(2) { animation-delay: 0.2s; }
 .demo-typing-indicator .demo-dots span:nth-child(3) { animation-delay: 0.4s; }
 
+/* User typing cursor */
+.demo-user-typing {
+    min-width: 20px;
+}
+
+.demo-user-typing .typing-cursor {
+    animation: blink-cursor 0.7s infinite;
+    color: white;
+    font-weight: bold;
+}
+
+@keyframes blink-cursor {
+    0%, 50% { opacity: 1; }
+    51%, 100% { opacity: 0; }
+}
+
 /* =============================================================================
    RESPONSIVE - LARGE DESKTOP (1400px+)
    ============================================================================= */

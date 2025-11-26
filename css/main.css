@@ -1488,6 +1488,61 @@ strong, b {
     width: 100%;
 }
 
+/* Modal Footer with Check Type Buttons */
+.modal-footer-buttons {
+    padding-top: var(--space-md);
+    border-top: 1px solid var(--border);
+}
+
+.modal-footer-label {
+    text-align: center;
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    margin-bottom: var(--space-md);
+}
+
+.check-type-buttons {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-sm);
+}
+
+.btn-check-type {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-xs);
+    padding: var(--space-md);
+    background: var(--bg);
+    border: 2px solid var(--border);
+    border-radius: var(--radius-lg);
+    text-decoration: none;
+    color: var(--text);
+    transition: all var(--transition-base);
+}
+
+.btn-check-type:hover {
+    border-color: var(--primary);
+    background: rgba(99, 102, 241, 0.1);
+    transform: translateY(-2px);
+}
+
+.btn-check-type .btn-icon {
+    font-size: 1.5rem;
+}
+
+.btn-check-type .btn-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-align: center;
+}
+
+@media (max-width: 480px) {
+    .check-type-buttons {
+        grid-template-columns: 1fr;
+    }
+}
+
 /* Coming Soon Modal State */
 .modal-body.coming-soon {
     text-align: center;
@@ -2394,7 +2449,15 @@ strong, b {
     z-index: 9999;
     box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.4);
     transform: translateY(100%);
-    animation: cookieSlideUp 0.5s ease-out 1.5s forwards;
+    opacity: 0;
+    visibility: hidden;
+}
+
+.cookie-popup.show {
+    transform: translateY(0);
+    opacity: 1;
+    visibility: visible;
+    transition: transform 0.5s ease-out, opacity 0.5s ease-out;
 }
 
 @keyframes cookieSlideUp {
@@ -3001,6 +3064,39 @@ strong, b {
     display: flex;
     align-items: center;
     gap: var(--space-2xs);
+}
+
+/* Power Platforms */
+.power-platforms {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-sm);
+    margin-top: var(--space-sm);
+    padding-top: var(--space-sm);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.power-platforms-label {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.power-platforms .platform-icons {
+    display: flex;
+    gap: var(--space-2xs);
+}
+
+.power-platforms .platform-chip {
+    width: 28px;
+    height: 28px;
+    font-size: 0.875rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.power-platforms .platform-chip:hover {
+    border-color: var(--primary);
 }
 
 /* IP Display - Compact inline style */

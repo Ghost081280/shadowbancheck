@@ -279,7 +279,6 @@ function initHashtagForm() {
     const input = document.getElementById('hashtag-input');
     const checkBtn = document.getElementById('check-hashtags-btn');
     const clearBtn = document.getElementById('clear-btn');
-    const exampleBtn = document.getElementById('example-btn');
     
     if (!input || !checkBtn) return;
     
@@ -294,12 +293,6 @@ function initHashtagForm() {
         input.value = '';
         updateHashtagCount();
         document.getElementById('results-section')?.classList.add('hidden');
-    });
-    
-    // Example button
-    exampleBtn?.addEventListener('click', function() {
-        input.value = '#fitness #healthy #motivation #likeforlike #travel #food #photography #love #instagood #fyp';
-        updateHashtagCount();
     });
 }
 
@@ -537,11 +530,134 @@ function initResultsActions() {
 }
 
 /* =============================================================================
+   SUPPORTED PLATFORMS FOR HASHTAGS
+   ============================================================================= */
+function initSupportedPlatforms() {
+    const container = document.getElementById('hashtag-platform-icons');
+    if (!container) return;
+    
+    // For hashtag checking, we check these platforms (based on bannedHashtags database)
+    const hashtagPlatforms = [
+        { id: 'instagram', name: 'Instagram', icon: '📷' },
+        { id: 'tiktok', name: 'TikTok', icon: '🎵' },
+        { id: 'twitter', name: 'Twitter/X', icon: '𝕏' },
+        { id: 'facebook', name: 'Facebook', icon: '👤' },
+        { id: 'linkedin', name: 'LinkedIn', icon: '💼' },
+        { id: 'youtube', name: 'YouTube', icon: '▶️' },
+        { id: 'reddit', name: 'Reddit', icon: '🤖' }
+    ];
+    
+    let html = hashtagPlatforms.map(p => `
+        <span class="platform-chip" data-platform="${p.id}" title="${p.name}">${p.icon}</span>
+    `).join('');
+    
+    container.innerHTML = html;
+    
+    // Add click handlers to show what we check
+    container.querySelectorAll('.platform-chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+            showHashtagPlatformInfo(chip.dataset.platform);
+        });
+    });
+}
+
+function showHashtagPlatformInfo(platformId) {
+    const platformNames = {
+        'instagram': 'Instagram',
+        'tiktok': 'TikTok',
+        'twitter': 'Twitter/X',
+        'facebook': 'Facebook',
+        'linkedin': 'LinkedIn',
+        'youtube': 'YouTube',
+        'reddit': 'Reddit'
+    };
+    
+    const platformIcons = {
+        'instagram': '📷',
+        'tiktok': '🎵',
+        'twitter': '𝕏',
+        'facebook': '👤',
+        'linkedin': '💼',
+        'youtube': '▶️',
+        'reddit': '🤖'
+    };
+    
+    const name = platformNames[platformId] || platformId;
+    const icon = platformIcons[platformId] || '🔍';
+    
+    // Get banned/restricted hashtags for this platform
+    const platformData = bannedHashtags[platformId];
+    
+    if (!platformData) {
+        showToast(`${name} hashtag data not available yet`);
+        return;
+    }
+    
+    // Create and show modal
+    let modal = document.getElementById('platform-hashtag-modal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'platform-hashtag-modal';
+        modal.className = 'modal hidden';
+        modal.innerHTML = `
+            <div class="modal-overlay"></div>
+            <div class="modal-content">
+                <button class="modal-close">&times;</button>
+                <div class="modal-icon" id="hashtag-modal-icon"></div>
+                <h3 class="modal-title" id="hashtag-modal-title"></h3>
+                <div class="modal-body" id="hashtag-modal-body"></div>
+                <div class="modal-footer">
+                    <button class="btn btn-primary btn-lg" onclick="document.getElementById('platform-hashtag-modal').classList.add('hidden'); document.body.style.overflow = '';">Got It!</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+        
+        // Close handlers
+        modal.querySelector('.modal-close').addEventListener('click', () => {
+            modal.classList.add('hidden');
+            document.body.style.overflow = '';
+        });
+        modal.querySelector('.modal-overlay').addEventListener('click', () => {
+            modal.classList.add('hidden');
+            document.body.style.overflow = '';
+        });
+    }
+    
+    document.getElementById('hashtag-modal-icon').textContent = icon;
+    document.getElementById('hashtag-modal-title').textContent = `${name} Hashtags`;
+    
+    const bodyEl = document.getElementById('hashtag-modal-body');
+    bodyEl.innerHTML = `
+        <p class="modal-intro">We check your hashtags against our ${name} database:</p>
+        <div style="margin: var(--space-md) 0;">
+            <strong style="color: var(--danger);">🚫 ${platformData.banned.length} Banned Hashtags</strong>
+            <p style="font-size: 0.8125rem; color: var(--text-muted); margin-top: 4px;">
+                Examples: ${platformData.banned.slice(0, 5).map(h => '#' + h).join(', ')}${platformData.banned.length > 5 ? '...' : ''}
+            </p>
+        </div>
+        <div style="margin: var(--space-md) 0;">
+            <strong style="color: var(--warning);">⚠️ ${platformData.restricted.length} Restricted Hashtags</strong>
+            <p style="font-size: 0.8125rem; color: var(--text-muted); margin-top: 4px;">
+                Examples: ${platformData.restricted.slice(0, 5).map(h => '#' + h).join(', ')}${platformData.restricted.length > 5 ? '...' : ''}
+            </p>
+        </div>
+        <p style="margin-top: var(--space-md); font-size: 0.8125rem; color: var(--text-muted);">
+            Our database is updated regularly based on community reports and platform changes.
+        </p>
+    `;
+    
+    modal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+}
+
+/* =============================================================================
    INITIALIZE
    ============================================================================= */
 document.addEventListener('DOMContentLoaded', function() {
     initHashtagForm();
     initResultsActions();
+    initSupportedPlatforms();
     updateHashtagCount();
     updateHashtagCounterDisplay();
     

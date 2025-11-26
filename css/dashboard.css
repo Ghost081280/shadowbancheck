@@ -581,6 +581,214 @@ input, select, textarea {
 }
 
 /* -----------------------------------------------------------------------------
+   5-Factor Engine Banner
+   ----------------------------------------------------------------------------- */
+.engine-banner {
+    margin-bottom: 2rem;
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
+    border-color: var(--primary);
+}
+
+.engine-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.engine-icon {
+    font-size: 2.5rem;
+}
+
+.engine-header h3 {
+    margin: 0;
+    font-size: 1.125rem;
+}
+
+.engine-header p {
+    margin: 0.25rem 0 0 0;
+    color: var(--text-muted);
+    font-size: 0.875rem;
+}
+
+.engine-factors {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    padding: 1.25rem 1.5rem;
+}
+
+.factor {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    background: var(--bg);
+    border-radius: var(--radius-sm);
+    font-size: 0.875rem;
+}
+
+.factor-check {
+    color: var(--success);
+    font-weight: 700;
+}
+
+.factor-icon {
+    font-size: 1rem;
+}
+
+/* Power Badge */
+.power-badge {
+    background: var(--gradient-primary);
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+/* -----------------------------------------------------------------------------
+   Support Section Styles
+   ----------------------------------------------------------------------------- */
+.support-ai-card {
+    margin-bottom: 2rem;
+    border-color: var(--primary);
+    background: rgba(99, 102, 241, 0.05);
+}
+
+.support-ai-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.5rem;
+    gap: 1.5rem;
+}
+
+.support-ai-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.support-ai-info .big-icon {
+    font-size: 2.5rem;
+    margin-bottom: 0;
+}
+
+.support-ai-info h3 {
+    margin: 0;
+}
+
+.support-ai-info p {
+    margin: 0.25rem 0 0 0;
+    color: var(--text-muted);
+    font-size: 0.875rem;
+}
+
+.support-split {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+/* Admin Status */
+.admin-status {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+}
+
+.admin-status .status-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+}
+
+.admin-status .status-dot.online {
+    background: var(--success);
+    box-shadow: 0 0 8px var(--success);
+}
+
+.admin-status .status-dot.offline {
+    background: var(--danger);
+}
+
+/* Live Chat Body */
+.live-chat-body {
+    display: flex;
+    flex-direction: column;
+    height: 350px;
+    padding: 0 !important;
+}
+
+.live-chat-body .chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1.25rem;
+}
+
+.chat-welcome {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    text-align: center;
+    color: var(--text-muted);
+}
+
+.welcome-icon {
+    font-size: 3rem;
+    margin-bottom: 0.75rem;
+    opacity: 0.5;
+}
+
+.chat-welcome p {
+    margin: 0;
+    font-size: 0.9375rem;
+}
+
+.connect-dev {
+    text-align: center;
+}
+
+/* -----------------------------------------------------------------------------
+   Info Button & Toggle Label
+   ----------------------------------------------------------------------------- */
+.toggle-label-wrap {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.info-btn {
+    width: 20px;
+    height: 20px;
+    padding: 0;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.info-btn:hover {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: white;
+}
+
+/* Small Modal */
+.modal-sm {
+    max-width: 360px;
+}
+
+/* -----------------------------------------------------------------------------
    Tools Grid
    ----------------------------------------------------------------------------- */
 .tools-grid {
@@ -1414,7 +1622,7 @@ input:checked + .slider:before {
         grid-template-columns: 1fr;
     }
     
-    .support-grid {
+    .support-split {
         grid-template-columns: 1fr;
     }
 }
@@ -1492,6 +1700,24 @@ input:checked + .slider:before {
     
     .addon-price {
         flex-direction: column;
+    }
+    
+    .support-ai-content {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .support-ai-info {
+        flex-direction: column;
+    }
+    
+    .engine-factors {
+        justify-content: center;
+    }
+    
+    .engine-header {
+        flex-direction: column;
+        text-align: center;
     }
 }
 

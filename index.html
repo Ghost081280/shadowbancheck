@@ -93,6 +93,14 @@
                         </button>
                     </form>
                     
+                    <!-- IP Display -->
+                    <div class="power-ip-display" id="power-ip-display">
+                        <span class="ip-icon">🌐</span>
+                        <span class="ip-label">Your IP:</span>
+                        <span class="ip-value" id="user-ip-address">Detecting...</span>
+                        <span class="ip-type" id="user-ip-type"></span>
+                    </div>
+                    
                     <!-- Features -->
                     <div class="power-features">
                         <span>✓ 3 checks in 1 scan</span>
@@ -388,11 +396,11 @@
     <section class="platforms section" id="platforms">
         <div class="container">
             <div class="section-header">
-                <h2 class="section-title">We Check 26 Platforms</h2>
+                <h2 class="section-title">Platforms We Support</h2>
                 <p class="section-desc">Click any platform to see what we check for</p>
             </div>
             <div class="platform-grid" id="platform-grid">
-                <!-- Platforms injected via JS -->
+                <!-- Platforms injected via JS from platforms.js -->
             </div>
         </div>
     </section>
@@ -868,16 +876,37 @@
                 </div>
                 
                 <div class="modal-tech-note">
-                    <h4>🧠 How Our Engine Works</h4>
+                    <h4>🧠 Powered by Our 5-Factor Detection Engine</h4>
                     <div class="engine-description">
-                        <p>Our Shadow Ban Detection Engine collects data from multiple sources to give you the most accurate probability score possible:</p>
-                        <ul class="engine-sources">
-                            <li><strong>Platform APIs</strong> — Direct integration where available</li>
-                            <li><strong>AI-Powered Web Analysis</strong> — 3rd party scraping & pattern recognition</li>
-                            <li><strong>Historical Data</strong> — Comparing your metrics to known baselines</li>
-                            <li><strong>Community Reports</strong> — Cross-referencing with reported bans</li>
+                        <p>The Power Check uses <strong>all 5 factors</strong> of our detection engine for the most comprehensive analysis:</p>
+                        <ul class="engine-factors">
+                            <li class="factor-active">
+                                <span class="factor-check">✓</span>
+                                <strong>🔌 Platform APIs</strong>
+                                <span class="factor-desc">Direct integration with Twitter/X API, Reddit API, and more</span>
+                            </li>
+                            <li class="factor-active">
+                                <span class="factor-check">✓</span>
+                                <strong>🌐 Web Analysis</strong>
+                                <span class="factor-desc">Live scraping, logged-in/out tests, search visibility checks</span>
+                            </li>
+                            <li class="factor-active">
+                                <span class="factor-check">✓</span>
+                                <strong>📊 Historical Data</strong>
+                                <span class="factor-desc">Baseline comparisons from millions of tracked accounts</span>
+                            </li>
+                            <li class="factor-active">
+                                <span class="factor-check">✓</span>
+                                <strong>#️⃣ Hashtag Database</strong>
+                                <span class="factor-desc">500+ Instagram banned, 300+ TikTok restricted hashtags</span>
+                            </li>
+                            <li class="factor-active">
+                                <span class="factor-check">✓</span>
+                                <strong>🔍 IP Analysis</strong>
+                                <span class="factor-desc">VPN/proxy detection, datacenter flagging, location risk</span>
+                            </li>
                         </ul>
-                        <p class="engine-conclusion">After gathering all available signals, <strong>our Engine analyzes the data and assigns a Shadow Ban Probability Score</strong> with detailed breakdowns so you know exactly where you stand.</p>
+                        <p class="engine-conclusion">Our Engine combines all signals and assigns a <strong>Shadow Ban Probability Score</strong> with detailed breakdowns so you know exactly where you stand.</p>
                     </div>
                 </div>
             </div>
@@ -954,6 +983,7 @@
     <!-- Shadow AI Chatbot - Created dynamically by shadow-ai.js -->
 
     <!-- Scripts -->
+    <script src="js/platforms.js"></script>
     <script src="js/shared-components.js"></script>
     <script src="js/main.js"></script>
     <script src="js/shadow-ai.js"></script>

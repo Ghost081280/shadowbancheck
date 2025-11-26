@@ -12,8 +12,9 @@ window.platformData = [
     // =========================================================================
     { 
         name: 'Twitter/X', 
-        icon: '🐦', 
+        icon: '𝕏', 
         status: 'live',
+        id: 'twitter',
         checks: [
             'Search suggestion ban (account hidden from search)',
             'Reply deboosting (replies hidden behind "Show more")',
@@ -25,12 +26,25 @@ window.platformData = [
             'Engagement rate analysis vs. followers',
             'Hashtag visibility in trends',
             'Profile accessibility from logged-out view'
+        ],
+        hashtagChecks: [
+            'Banned hashtag detection',
+            'Restricted hashtag identification',
+            'Trending eligibility',
+            'Shadowban trigger hashtags'
+        ],
+        postChecks: [
+            'Tweet visibility in search',
+            'Reply visibility',
+            'Retweet reach analysis',
+            'Engagement suppression detection'
         ]
     },
     { 
         name: 'Reddit', 
-        icon: '🤖', 
+        icon: '🔴', 
         status: 'live',
+        id: 'reddit',
         checks: [
             'Shadowban status (posts/comments invisible)',
             'Subreddit-specific bans detection',
@@ -42,6 +56,16 @@ window.platformData = [
             'Comment visibility in threads',
             'Profile page accessibility',
             'Cross-posting restrictions'
+        ],
+        hashtagChecks: [
+            'Subreddit filter detection',
+            'Spam keyword identification',
+            'AutoMod trigger words'
+        ],
+        postChecks: [
+            'Post visibility in subreddit',
+            'Comment shadow removal',
+            'Upvote/downvote manipulation detection'
         ]
     },
     
@@ -50,8 +74,9 @@ window.platformData = [
     // =========================================================================
     { 
         name: 'Instagram', 
-        icon: '📸', 
+        icon: '📷', 
         status: 'soon',
+        id: 'instagram',
         checks: [
             'Explore page eligibility',
             'Hashtag search visibility',
@@ -63,12 +88,24 @@ window.platformData = [
             'Engagement rate anomalies',
             'Content recommendation eligibility',
             'Banned hashtag usage detection'
+        ],
+        hashtagChecks: [
+            'Banned hashtag detection',
+            'Restricted hashtag identification',
+            'Explore eligibility per hashtag',
+            'Hashtag reach analysis'
+        ],
+        postChecks: [
+            'Post visibility in Explore',
+            'Reel recommendation status',
+            'Story reach analysis'
         ]
     },
     { 
         name: 'TikTok', 
-        icon: '🎵', 
+        icon: '♪', 
         status: 'soon',
+        id: 'tiktok',
         checks: [
             'For You Page (FYP) eligibility',
             'Video visibility restrictions',
@@ -80,12 +117,24 @@ window.platformData = [
             'Live streaming eligibility',
             'Creator fund status',
             'Content warning flags'
+        ],
+        hashtagChecks: [
+            'Banned hashtag detection',
+            'FYP eligibility per hashtag',
+            'Shadowban trigger hashtags',
+            'Trend eligibility'
+        ],
+        postChecks: [
+            'FYP distribution status',
+            'Video reach analysis',
+            'Sound availability check'
         ]
     },
     { 
         name: 'Facebook', 
-        icon: '📘', 
+        icon: 'ⓕ', 
         status: 'soon',
+        id: 'facebook',
         checks: [
             'News Feed visibility',
             'Group post reach',
@@ -97,12 +146,23 @@ window.platformData = [
             'Event promotion reach',
             'Ad account restrictions',
             'Content recommendation status'
+        ],
+        hashtagChecks: [
+            'Banned hashtag detection',
+            'Group filter triggers',
+            'Spam keyword identification'
+        ],
+        postChecks: [
+            'News Feed distribution',
+            'Share reach analysis',
+            'Group visibility status'
         ]
     },
     { 
         name: 'YouTube', 
-        icon: '📺', 
+        icon: '▶', 
         status: 'soon',
+        id: 'youtube',
         checks: [
             'Search result visibility',
             'Recommendation algorithm status',
@@ -114,12 +174,23 @@ window.platformData = [
             'Video age-restriction flags',
             'Limited ads status',
             'Subscriber notification delivery'
+        ],
+        hashtagChecks: [
+            'Tag visibility in search',
+            'Banned tag detection',
+            'Trending eligibility'
+        ],
+        postChecks: [
+            'Video search visibility',
+            'Recommendation status',
+            'Comment section analysis'
         ]
     },
     { 
         name: 'LinkedIn', 
-        icon: '💼', 
+        icon: 'in', 
         status: 'soon',
+        id: 'linkedin',
         checks: [
             'Post visibility in feed',
             'Profile search ranking',
@@ -131,12 +202,21 @@ window.platformData = [
             'Company page reach',
             'Comment visibility',
             'Professional community access'
+        ],
+        hashtagChecks: [
+            'Professional hashtag reach',
+            'Industry tag visibility'
+        ],
+        postChecks: [
+            'Feed distribution analysis',
+            'Article reach status'
         ]
     },
     { 
         name: 'Threads', 
-        icon: '🧵', 
+        icon: '@', 
         status: 'soon',
+        id: 'threads',
         checks: [
             'Feed visibility status',
             'Reply visibility',
@@ -146,12 +226,21 @@ window.platformData = [
             'Cross-posting to Instagram',
             'Engagement throttling',
             'Content warning flags'
+        ],
+        hashtagChecks: [
+            'Tag visibility',
+            'Trending eligibility'
+        ],
+        postChecks: [
+            'Thread visibility',
+            'Reply reach analysis'
         ]
     },
     { 
         name: 'Pinterest', 
-        icon: '📌', 
+        icon: '📍', 
         status: 'soon',
+        id: 'pinterest',
         checks: [
             'Pin visibility in search',
             'Board discoverability',
@@ -161,12 +250,21 @@ window.platformData = [
             'Profile search ranking',
             'Spam flag detection',
             'Engagement rate analysis'
+        ],
+        hashtagChecks: [
+            'Pin tag visibility',
+            'Board discovery tags'
+        ],
+        postChecks: [
+            'Pin search visibility',
+            'Board reach analysis'
         ]
     },
     { 
         name: 'Snapchat', 
         icon: '👻', 
         status: 'soon',
+        id: 'snapchat',
         checks: [
             'Story visibility',
             'Spotlight eligibility',
@@ -176,12 +274,21 @@ window.platformData = [
             'Quick Add suggestions',
             'Lens/filter restrictions',
             'Account flags'
+        ],
+        hashtagChecks: [
+            'Story tag visibility',
+            'Spotlight tags'
+        ],
+        postChecks: [
+            'Story reach analysis',
+            'Spotlight distribution'
         ]
     },
     { 
         name: 'Twitch', 
-        icon: '🟣', 
+        icon: '🎮', 
         status: 'soon',
+        id: 'twitch',
         checks: [
             'Stream discoverability',
             'Category/tag visibility',
@@ -193,12 +300,21 @@ window.platformData = [
             'Ad revenue eligibility',
             'Recommendation placement',
             'Community guidelines strikes'
+        ],
+        hashtagChecks: [
+            'Stream tag visibility',
+            'Category tags'
+        ],
+        postChecks: [
+            'Clip discoverability',
+            'VOD visibility'
         ]
     },
     { 
         name: 'Discord', 
-        icon: '🎮', 
+        icon: '💬', 
         status: 'soon',
+        id: 'discord',
         checks: [
             'Server discovery visibility',
             'Message delivery status',
@@ -214,6 +330,7 @@ window.platformData = [
         name: 'Telegram', 
         icon: '✈️', 
         status: 'soon',
+        id: 'telegram',
         checks: [
             'Channel discoverability',
             'Group visibility in search',
@@ -229,6 +346,7 @@ window.platformData = [
         name: 'Bluesky', 
         icon: '🦋', 
         status: 'soon',
+        id: 'bluesky',
         checks: [
             'Feed visibility',
             'Search discoverability',
@@ -244,6 +362,7 @@ window.platformData = [
         name: 'Mastodon', 
         icon: '🐘', 
         status: 'soon',
+        id: 'mastodon',
         checks: [
             'Instance federation status',
             'Post visibility across instances',
@@ -257,8 +376,9 @@ window.platformData = [
     },
     { 
         name: 'Truth Social', 
-        icon: '🗽', 
+        icon: 'T', 
         status: 'soon',
+        id: 'truthsocial',
         checks: [
             'Truth visibility',
             'ReTruth reach',
@@ -272,8 +392,9 @@ window.platformData = [
     },
     { 
         name: 'Rumble', 
-        icon: '📹', 
+        icon: 'R', 
         status: 'soon',
+        id: 'rumble',
         checks: [
             'Video discoverability',
             'Search ranking',
@@ -287,8 +408,9 @@ window.platformData = [
     },
     { 
         name: 'Kick', 
-        icon: '💚', 
+        icon: 'K', 
         status: 'soon',
+        id: 'kick',
         checks: [
             'Stream discoverability',
             'Category placement',

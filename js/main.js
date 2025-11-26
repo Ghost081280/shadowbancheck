@@ -1030,22 +1030,28 @@ function initCookiePopup() {
         return;
     }
     
+    // Show after delay - remove hidden first, then add visible on next frame for animation
     setTimeout(() => {
         cookiePopup.classList.remove('hidden');
-        cookiePopup.classList.add('visible');
+        // Force reflow then add visible class for transition
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                cookiePopup.classList.add('visible');
+            });
+        });
     }, 1500);
     
     const acceptBtn = document.getElementById('cookie-accept');
     acceptBtn?.addEventListener('click', function() {
         localStorage.setItem('cookies_accepted', 'true');
         cookiePopup.classList.remove('visible');
-        setTimeout(() => cookiePopup.remove(), 300);
+        setTimeout(() => cookiePopup.remove(), 400);
     });
     
     const dismissBtn = document.getElementById('cookie-dismiss');
     dismissBtn?.addEventListener('click', function() {
         cookiePopup.classList.remove('visible');
-        setTimeout(() => cookiePopup.remove(), 300);
+        setTimeout(() => cookiePopup.remove(), 400);
     });
 }
 

@@ -2647,12 +2647,14 @@ strong, b {
 .power-badge-new {
     background: var(--gradient-primary);
     color: white;
-    font-size: 0.625rem;
+    font-size: 0.75rem;
     font-weight: 700;
-    padding: 3px 8px;
+    padding: var(--space-2xs) var(--space-sm);
     border-radius: var(--radius-full);
     text-transform: uppercase;
     letter-spacing: 0.05em;
+    vertical-align: middle;
+    margin-left: var(--space-xs);
 }
 
 .power-header p {
@@ -2819,18 +2821,23 @@ strong, b {
     gap: var(--space-2xs);
 }
 
-/* IP Display */
+/* IP Display - Compact inline style */
 .power-ip-display {
-    display: flex;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: var(--space-sm);
-    padding: var(--space-sm) var(--space-md);
+    padding: var(--space-xs) var(--space-md);
     background: rgba(99, 102, 241, 0.1);
     border: 1px solid rgba(99, 102, 241, 0.2);
-    border-radius: var(--radius-md);
-    margin-bottom: var(--space-md);
+    border-radius: var(--radius-full);
+    margin: 0 auto var(--space-md);
     font-size: 0.875rem;
+}
+
+/* Wrapper to center the inline-flex IP display */
+.power-ip-wrapper {
+    text-align: center;
 }
 
 .power-ip-display .ip-icon {

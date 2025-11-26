@@ -42,17 +42,29 @@
                 </div>
                 <div class="demo-credentials">
                     <div class="demo-cred">
-                        <span class="demo-label">Email:</span>
-                        <code class="demo-value" id="demo-email">demo@test.com</code>
+                        <span class="demo-label">User:</span>
+                        <code class="demo-value">demo@test.com</code>
                         <button class="demo-copy" onclick="copyToClipboard('demo@test.com', this)" title="Copy">📋</button>
                     </div>
                     <div class="demo-cred">
-                        <span class="demo-label">Password:</span>
-                        <code class="demo-value" id="demo-pass">password123</code>
+                        <span class="demo-label">Pass:</span>
+                        <code class="demo-value">password123</code>
                         <button class="demo-copy" onclick="copyToClipboard('password123', this)" title="Copy">📋</button>
                     </div>
                 </div>
-                <button class="demo-autofill" onclick="autofillDemo()">⚡ Auto-fill Demo Credentials</button>
+                <div class="demo-credentials" style="margin-top: 8px; padding-top: 8px; border-top: 1px dashed rgba(251, 191, 36, 0.3);">
+                    <div class="demo-cred">
+                        <span class="demo-label">Admin:</span>
+                        <code class="demo-value">admin@shadowbancheck.io</code>
+                        <button class="demo-copy" onclick="copyToClipboard('admin@shadowbancheck.io', this)" title="Copy">📋</button>
+                    </div>
+                    <div class="demo-cred">
+                        <span class="demo-label">Pass:</span>
+                        <code class="demo-value">admin</code>
+                        <button class="demo-copy" onclick="copyToClipboard('admin', this)" title="Copy">📋</button>
+                    </div>
+                </div>
+                <button class="demo-autofill" onclick="autofillDemo()">⚡ Auto-fill Demo User</button>
             </div>
             <!-- END Demo Notice -->
             
@@ -111,7 +123,7 @@
             <!-- Sign Up Link -->
             <div class="signup-prompt">
                 <span>Don't have an account?</span>
-                <a href="index.html#pricing" class="signup-link">Get Started →</a>
+                <a href="#" class="signup-link" onclick="showSignupModal(); return false;">Create Account →</a>
             </div>
         </div>
         
@@ -132,6 +144,93 @@
         </div>
     </div>
     
+    <!-- Signup Modal -->
+    <div class="modal-overlay hidden" id="signup-modal">
+        <div class="modal-login">
+            <div class="modal-header-login">
+                <h2 id="signup-modal-title">🚀 Create Your Account</h2>
+                <button class="modal-close-login" onclick="closeSignupModal()">&times;</button>
+            </div>
+            <div class="modal-body-login">
+                <!-- Step 1: Email & Password -->
+                <div id="signup-step-1">
+                    <p>Start monitoring your accounts for shadow bans today. It's free to get started!</p>
+                    <form id="signup-form">
+                        <div class="form-group">
+                            <label for="signup-email">Email Address</label>
+                            <input type="email" id="signup-email" name="signup-email" placeholder="you@example.com" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="signup-password">Password</label>
+                            <div class="password-input-wrap">
+                                <input type="password" id="signup-password" name="signup-password" placeholder="Min. 8 characters" minlength="8" required>
+                                <button type="button" class="toggle-password" onclick="toggleSignupPassword('signup-password')">👁️</button>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="signup-confirm">Confirm Password</label>
+                            <div class="password-input-wrap">
+                                <input type="password" id="signup-confirm" name="signup-confirm" placeholder="Confirm your password" required>
+                                <button type="button" class="toggle-password" onclick="toggleSignupPassword('signup-confirm')">👁️</button>
+                            </div>
+                        </div>
+                        <div class="signup-error hidden" id="signup-error">
+                            <span class="error-icon">⚠️</span>
+                            <span class="error-message" id="signup-error-message">Error</span>
+                        </div>
+                        <button type="submit" class="btn-login" id="signup-btn">
+                            <span class="btn-text">Create Account</span>
+                            <span class="btn-loading hidden"><span class="spinner"></span> Creating...</span>
+                        </button>
+                    </form>
+                    <p class="signup-terms">By creating an account, you agree to our <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>.</p>
+                </div>
+                
+                <!-- Step 2: Email Verification -->
+                <div id="signup-step-2" class="hidden">
+                    <div class="verify-header">
+                        <span class="verify-icon">📧</span>
+                        <h3>Check Your Email</h3>
+                        <p>We've sent a 6-digit verification code to:</p>
+                        <strong id="verify-email-display">you@example.com</strong>
+                    </div>
+                    <form id="verify-form">
+                        <div class="form-group">
+                            <label for="verify-code">Verification Code</label>
+                            <div class="code-input-group">
+                                <input type="text" id="verify-code" name="verify-code" placeholder="000000" maxlength="6" pattern="[0-9]{6}" inputmode="numeric" autocomplete="one-time-code" required>
+                            </div>
+                        </div>
+                        <div class="signup-error hidden" id="verify-error">
+                            <span class="error-icon">⚠️</span>
+                            <span class="error-message" id="verify-error-message">Invalid code</span>
+                        </div>
+                        <button type="submit" class="btn-login" id="verify-btn">
+                            <span class="btn-text">Verify & Create Account</span>
+                            <span class="btn-loading hidden"><span class="spinner"></span> Verifying...</span>
+                        </button>
+                    </form>
+                    <div class="resend-code">
+                        <span>Didn't receive the code?</span>
+                        <button type="button" class="link-btn" id="resend-btn" onclick="resendCode()">Resend Code</button>
+                        <span class="resend-timer hidden" id="resend-timer">(60s)</span>
+                    </div>
+                    <button type="button" class="back-step-btn" onclick="goBackToStep1()">← Back to signup</button>
+                </div>
+                
+                <!-- Step 3: Success -->
+                <div id="signup-step-3" class="hidden">
+                    <div class="success-header">
+                        <span class="success-icon">🎉</span>
+                        <h3>Account Created!</h3>
+                        <p>Your account has been verified and created successfully.</p>
+                    </div>
+                    <button type="button" class="btn-login" onclick="signupComplete()">Continue to Dashboard →</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
     <!-- Forgot Password Modal -->
     <div class="modal-overlay hidden" id="forgot-modal">
         <div class="modal-login">
@@ -144,16 +243,7 @@
                 <form id="forgot-form">
                     <div class="form-group">
                         <label for="forgot-email">Email Address</label>
-                        <div class="input-wrapper">
-                            <span class="input-icon">📧</span>
-                            <input 
-                                type="email" 
-                                id="forgot-email" 
-                                name="forgot-email" 
-                                placeholder="you@example.com"
-                                required
-                            >
-                        </div>
+                        <input type="email" id="forgot-email" name="forgot-email" placeholder="you@example.com" required>
                     </div>
                     <button type="submit" class="btn-login">Send Reset Link</button>
                 </form>

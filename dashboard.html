@@ -80,12 +80,12 @@
             
             <div class="sidebar-plan">
                 <div class="plan-header">
-                    <span id="sidebar-plan-name">⭐ Pro Plan</span>
-                    <a href="#settings" data-section="settings">Manage</a>
+                    <span id="sidebar-plan-name">🆓 Free Plan</span>
+                    <a href="#settings" data-section="settings">Upgrade</a>
                 </div>
                 <div class="plan-stats">
-                    <span>Accounts: <strong id="sidebar-accounts">8/15</strong></span>
-                    <span>AI: <strong id="sidebar-ai">0/10</strong></span>
+                    <span>Accounts: <strong id="sidebar-accounts">0/0</strong></span>
+                    <span>AI: <strong id="sidebar-ai">0/3</strong></span>
                 </div>
             </div>
             
@@ -93,8 +93,8 @@
                 <div class="user-info">
                     <span class="user-avatar">👤</span>
                     <div>
-                        <span class="user-name" id="sidebar-user-name">John Doe</span>
-                        <span class="user-email" id="sidebar-user-email">john@example.com</span>
+                        <span class="user-name" id="sidebar-user-name">User</span>
+                        <span class="user-email" id="sidebar-user-email">user@example.com</span>
                     </div>
                 </div>
                 <button class="btn-logout" id="logout-btn">🚪 Logout</button>
@@ -110,11 +110,113 @@
                 <button class="notif-btn" id="notif-btn">🔔</button>
             </header>
             
+            <!-- NO SUBSCRIPTION OVERLAY -->
+            <div class="no-subscription-overlay" id="no-subscription-overlay">
+                <div class="subscription-modal">
+                    <div class="subscription-header">
+                        <span class="subscription-icon">🔒</span>
+                        <h2>Choose Your Plan</h2>
+                        <p>Select a plan to start monitoring your accounts for shadow bans</p>
+                    </div>
+                    
+                    <div class="subscription-plans">
+                        <!-- Starter -->
+                        <div class="sub-plan-card">
+                            <span class="sub-plan-label">For Individuals</span>
+                            <h3>Starter</h3>
+                            <div class="sub-plan-price">
+                                <span class="currency">$</span>
+                                <span class="amount">4.99</span>
+                                <span class="period">/mo</span>
+                            </div>
+                            <p class="sub-plan-accounts">Up to 5 accounts</p>
+                            <ul class="sub-plan-features">
+                                <li>✓ Any 5 platforms/accounts</li>
+                                <li>✓ Text + Email alerts</li>
+                                <li>✓ Hashtag checker access</li>
+                                <li>✓ Recovery recommendations</li>
+                                <li>✓ 3 AI questions/day</li>
+                            </ul>
+                            <button class="btn-sub-plan" onclick="selectPlan('starter')">Start 7-Day Trial</button>
+                        </div>
+                        
+                        <!-- Pro -->
+                        <div class="sub-plan-card featured">
+                            <span class="sub-plan-badge">⭐ Most Popular</span>
+                            <h3>Pro</h3>
+                            <div class="sub-plan-price">
+                                <span class="currency">$</span>
+                                <span class="amount">9.99</span>
+                                <span class="period">/mo</span>
+                            </div>
+                            <p class="sub-plan-accounts">Up to 15 accounts</p>
+                            <ul class="sub-plan-features">
+                                <li>✓ Any 15 platforms/accounts</li>
+                                <li>✓ Text + Email alerts</li>
+                                <li>✓ Hashtag checker access</li>
+                                <li>✓ Recovery recommendations</li>
+                                <li>✓ 10 AI questions/day</li>
+                            </ul>
+                            <button class="btn-sub-plan btn-sub-featured" onclick="selectPlan('pro')">Start 7-Day Trial</button>
+                        </div>
+                        
+                        <!-- Premium -->
+                        <div class="sub-plan-card">
+                            <span class="sub-plan-label">Power Users</span>
+                            <h3>Premium</h3>
+                            <div class="sub-plan-price">
+                                <span class="currency">$</span>
+                                <span class="amount">14.99</span>
+                                <span class="period">/mo</span>
+                            </div>
+                            <p class="sub-plan-accounts">Up to 50 accounts</p>
+                            <ul class="sub-plan-features">
+                                <li>✓ Any 50 platforms/accounts</li>
+                                <li>✓ Text + Email alerts</li>
+                                <li>✓ Hashtag checker access</li>
+                                <li>✓ Recovery recommendations</li>
+                                <li>✓ 25 AI questions/day</li>
+                            </ul>
+                            <button class="btn-sub-plan" onclick="selectPlan('premium')">Start 7-Day Trial</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Add-ons -->
+                    <div class="subscription-addons">
+                        <h4>Optional Add-ons</h4>
+                        <div class="addon-grid">
+                            <div class="addon-card">
+                                <div class="addon-info">
+                                    <span class="addon-icon">🤖</span>
+                                    <div>
+                                        <strong>Shadow AI Pro</strong>
+                                        <p>100 AI questions/day instead of plan limits</p>
+                                    </div>
+                                </div>
+                                <span class="addon-price">+$9.99/mo</span>
+                            </div>
+                            <div class="addon-card">
+                                <div class="addon-info">
+                                    <span class="addon-icon">⚡</span>
+                                    <div>
+                                        <strong>Faster Check Frequency</strong>
+                                        <p>Upgrade from daily to every 6 hours or hourly</p>
+                                    </div>
+                                </div>
+                                <span class="addon-price">+$2.99-$4.99/mo</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <p class="subscription-note">Credit card required • Cancel anytime • 7-day free trial</p>
+                </div>
+            </div>
+            
             <!-- OVERVIEW -->
             <section class="dashboard-section active" id="section-overview">
                 <div class="section-header">
                     <div>
-                        <h1>Welcome back, <span id="user-first-name">John</span>! 👋</h1>
+                        <h1>Welcome back, <span id="user-first-name">there</span>! 👋</h1>
                         <p class="section-subtitle">Your visibility status across all platforms</p>
                     </div>
                 </div>
@@ -123,28 +225,28 @@
                     <div class="stat-card stat-healthy">
                         <div class="stat-icon">✓</div>
                         <div class="stat-content">
-                            <h3 id="stat-healthy">6</h3>
+                            <h3 id="stat-healthy">0</h3>
                             <p>Healthy</p>
                         </div>
                     </div>
                     <div class="stat-card stat-issues">
                         <div class="stat-icon">!</div>
                         <div class="stat-content">
-                            <h3 id="stat-issues">1</h3>
+                            <h3 id="stat-issues">0</h3>
                             <p>Issues</p>
                         </div>
                     </div>
                     <div class="stat-card stat-banned">
                         <div class="stat-icon">✕</div>
                         <div class="stat-content">
-                            <h3 id="stat-banned">1</h3>
+                            <h3 id="stat-banned">0</h3>
                             <p>Banned</p>
                         </div>
                     </div>
                     <div class="stat-card stat-total">
                         <div class="stat-icon">●</div>
                         <div class="stat-content">
-                            <h3 id="stat-total">8</h3>
+                            <h3 id="stat-total">0</h3>
                             <p>Total</p>
                         </div>
                     </div>
@@ -160,7 +262,7 @@
                     <button class="quick-btn" data-action="check-hashtags">
                         <span>🏷️</span> Hashtags
                     </button>
-                    <button class="quick-btn" data-action="ask-ai">
+                    <button class="quick-btn" data-action="ask-ai" id="quick-ask-ai">
                         <span>🤖</span> Ask Shadow AI
                     </button>
                 </div>
@@ -173,20 +275,9 @@
                         </div>
                         <div class="card-body">
                             <div class="alert-list" id="recent-alerts">
-                                <div class="alert-item danger">
-                                    <span class="alert-dot"></span>
-                                    <span class="alert-text">Shadow ban on TikTok</span>
-                                    <span class="alert-time">2h ago</span>
-                                </div>
-                                <div class="alert-item warning">
-                                    <span class="alert-dot"></span>
-                                    <span class="alert-text">Reduced reach on Instagram</span>
-                                    <span class="alert-time">1d ago</span>
-                                </div>
-                                <div class="alert-item success">
-                                    <span class="alert-dot"></span>
-                                    <span class="alert-text">Twitter restored</span>
-                                    <span class="alert-time">3d ago</span>
+                                <div class="empty-state-small">
+                                    <span>📭</span>
+                                    <p>No alerts yet. Add accounts to start monitoring.</p>
                                 </div>
                             </div>
                         </div>
@@ -198,7 +289,12 @@
                             <a href="#accounts" class="link-btn" data-section="accounts">Manage →</a>
                         </div>
                         <div class="card-body">
-                            <div class="mini-accounts" id="mini-accounts"></div>
+                            <div class="mini-accounts" id="mini-accounts">
+                                <div class="empty-state-small">
+                                    <span>👤</span>
+                                    <p>No accounts added yet.</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -209,7 +305,7 @@
                 <div class="section-header">
                     <div>
                         <h1>👥 Monitored Accounts</h1>
-                        <p class="section-subtitle"><span id="accounts-count">8</span> of <span id="accounts-limit">15</span> slots used</p>
+                        <p class="section-subtitle"><span id="accounts-count">0</span> of <span id="accounts-limit">0</span> slots used</p>
                     </div>
                     <button class="primary-btn" id="add-account-btn">➕ Add Account</button>
                 </div>
@@ -221,7 +317,25 @@
                     <button class="filter-btn" data-filter="banned">Banned</button>
                 </div>
                 
-                <div class="accounts-grid" id="accounts-grid"></div>
+                <div class="accounts-grid" id="accounts-grid">
+                    <div class="empty-state">
+                        <span class="empty-icon">👤</span>
+                        <h3>No Accounts Yet</h3>
+                        <p>Add your first account to start monitoring for shadow bans.</p>
+                        <button class="primary-btn" id="add-first-account-btn">➕ Add Your First Account</button>
+                    </div>
+                </div>
+                
+                <!-- Bulk Check - Moved here from Tools -->
+                <div class="card bulk-check-card">
+                    <div class="bulk-check-content">
+                        <div class="bulk-info">
+                            <h3>⚡ Bulk Check All Accounts</h3>
+                            <p>Check all <span id="bulk-count">0</span> monitored accounts at once</p>
+                        </div>
+                        <button class="primary-btn btn-lg" id="run-bulk">Run Bulk Check</button>
+                    </div>
+                </div>
             </section>
             
             <!-- TOOLS -->
@@ -233,49 +347,67 @@
                     </div>
                 </div>
                 
-                <!-- 5-Factor Engine Banner -->
-                <div class="card engine-banner">
-                    <div class="engine-header">
-                        <span class="engine-icon">🧠</span>
+                <!-- 5-Factor Engine Banner - Full Content -->
+                <div class="card engine-banner-full">
+                    <div class="engine-header-full">
+                        <span class="engine-icon-lg">🧠</span>
                         <div>
                             <h3>Powered by Our 5-Factor Detection Engine</h3>
-                            <p>Comprehensive analysis using multiple data sources</p>
+                            <p>The Power Check uses all 5 factors of our detection engine for the most comprehensive analysis:</p>
                         </div>
                     </div>
-                    <div class="engine-factors">
-                        <div class="factor">
+                    <div class="engine-factors-full">
+                        <div class="factor-full">
                             <span class="factor-check">✓</span>
                             <span class="factor-icon">🔌</span>
-                            <span class="factor-text">Platform APIs</span>
+                            <div class="factor-content">
+                                <strong>Platform APIs</strong>
+                                <p>Direct integration with Twitter/X API, Reddit API, and more</p>
+                            </div>
                         </div>
-                        <div class="factor">
+                        <div class="factor-full">
                             <span class="factor-check">✓</span>
                             <span class="factor-icon">🌐</span>
-                            <span class="factor-text">Web Analysis</span>
+                            <div class="factor-content">
+                                <strong>Web Analysis</strong>
+                                <p>Live scraping, logged-in/out tests, search visibility checks</p>
+                            </div>
                         </div>
-                        <div class="factor">
+                        <div class="factor-full">
                             <span class="factor-check">✓</span>
                             <span class="factor-icon">📊</span>
-                            <span class="factor-text">Historical Data</span>
+                            <div class="factor-content">
+                                <strong>Historical Data</strong>
+                                <p>Baseline comparisons from millions of tracked accounts</p>
+                            </div>
                         </div>
-                        <div class="factor">
+                        <div class="factor-full">
                             <span class="factor-check">✓</span>
                             <span class="factor-icon">#️⃣</span>
-                            <span class="factor-text">Hashtag Database</span>
+                            <div class="factor-content">
+                                <strong>Hashtag Database</strong>
+                                <p>500+ Instagram banned, 300+ TikTok restricted hashtags</p>
+                            </div>
                         </div>
-                        <div class="factor">
+                        <div class="factor-full">
                             <span class="factor-check">✓</span>
                             <span class="factor-icon">🔍</span>
-                            <span class="factor-text">IP Analysis</span>
+                            <div class="factor-content">
+                                <strong>IP Analysis</strong>
+                                <p>VPN/proxy detection, datacenter flagging, location risk</p>
+                            </div>
                         </div>
                     </div>
+                    <p class="engine-conclusion">Our Engine combines all signals and assigns a <strong>Shadow Ban Probability Score</strong> with detailed breakdowns so you know exactly where you stand.</p>
                 </div>
                 
-                <div class="tools-grid">
+                <!-- Tools Grid - 2x2 on Desktop -->
+                <div class="tools-grid-quad">
                     <!-- Account Check -->
                     <div class="card tool-card">
                         <div class="card-header">
                             <h2>🔍 Account Check</h2>
+                            <button class="info-btn" onclick="showToolInfo('account')">ⓘ</button>
                         </div>
                         <div class="card-body">
                             <p class="description">Check any username for shadow ban probability</p>
@@ -291,11 +423,12 @@
                         </div>
                     </div>
                     
-                    <!-- Post URL Check -->
-                    <div class="card tool-card">
+                    <!-- Post URL Check - With Power Check Badge -->
+                    <div class="card tool-card tool-card-featured">
+                        <span class="tool-badge">⚡ Power Check</span>
                         <div class="card-header">
                             <h2>📝 Post URL Check</h2>
-                            <span class="power-badge">⚡ Power Check</span>
+                            <button class="info-btn" onclick="showToolInfo('post')">ⓘ</button>
                         </div>
                         <div class="card-body">
                             <p class="description">Full 5-factor scan on any social media post</p>
@@ -303,7 +436,7 @@
                                 <label>Post URL</label>
                                 <input type="url" id="post-url" class="input" placeholder="https://twitter.com/user/status/123...">
                             </div>
-                            <button class="primary-btn full-width" id="run-post-check">⚡ Run Power Check</button>
+                            <button class="primary-btn full-width btn-power" id="run-post-check">⚡ Run Power Check</button>
                         </div>
                     </div>
                     
@@ -311,6 +444,7 @@
                     <div class="card tool-card">
                         <div class="card-header">
                             <h2>🏷️ Hashtag Check</h2>
+                            <button class="info-btn" onclick="showToolInfo('hashtag')">ⓘ</button>
                         </div>
                         <div class="card-body">
                             <p class="description">Check if hashtags are banned or restricted</p>
@@ -331,10 +465,11 @@
                         </div>
                     </div>
                     
-                    <!-- IP Check -->
+                    <!-- IP Check - With Platform Dropdown -->
                     <div class="card tool-card">
                         <div class="card-header">
                             <h2>🌐 IP Address Check</h2>
+                            <button class="info-btn" onclick="showToolInfo('ip')">ⓘ</button>
                         </div>
                         <div class="card-body">
                             <p class="description">VPN/proxy detection, datacenter flagging, location risk</p>
@@ -343,22 +478,15 @@
                                 <strong id="user-ip">Loading...</strong>
                             </div>
                             <div class="config-field">
+                                <label>Platform (for risk assessment)</label>
+                                <select id="ip-platform" class="input"></select>
+                            </div>
+                            <div class="config-field">
                                 <label>Custom IP (optional)</label>
                                 <input type="text" id="custom-ip" class="input" placeholder="Or enter custom IP...">
                             </div>
                             <button class="primary-btn full-width" id="run-ip-check">🌐 Check IP</button>
                         </div>
-                    </div>
-                </div>
-                
-                <!-- Bulk Check -->
-                <div class="card bulk-check-card">
-                    <div class="bulk-check-content">
-                        <div class="bulk-info">
-                            <h3>⚡ Bulk Check All Accounts</h3>
-                            <p>Check all <span id="bulk-count">8</span> monitored accounts at once</p>
-                        </div>
-                        <button class="primary-btn btn-lg" id="run-bulk">Run Bulk Check</button>
                     </div>
                 </div>
                 
@@ -433,13 +561,9 @@
                     </div>
                     <div class="card-body">
                         <div class="download-list">
-                            <div class="download-row">
-                                <span>📄 Status Report - Nov 24</span>
-                                <button class="icon-btn">⬇️</button>
-                            </div>
-                            <div class="download-row">
-                                <span>📊 History Export - Nov 20</span>
-                                <button class="icon-btn">⬇️</button>
+                            <div class="empty-state-small">
+                                <span>📄</span>
+                                <p>No reports generated yet.</p>
                             </div>
                         </div>
                     </div>
@@ -535,29 +659,9 @@
                     </div>
                     <div class="card-body">
                         <div class="history-list">
-                            <div class="history-item danger">
-                                <span class="history-dot"></span>
-                                <div class="history-text">
-                                    <strong>Shadow ban on TikTok</strong>
-                                    <span>@johndoe_tiktok • Nov 24</span>
-                                </div>
-                                <span class="badge danger">Active</span>
-                            </div>
-                            <div class="history-item warning">
-                                <span class="history-dot"></span>
-                                <div class="history-text">
-                                    <strong>Reduced reach on Instagram</strong>
-                                    <span>@johndoe • Nov 23</span>
-                                </div>
-                                <span class="badge warning">Active</span>
-                            </div>
-                            <div class="history-item success">
-                                <span class="history-dot"></span>
-                                <div class="history-text">
-                                    <strong>Twitter restored</strong>
-                                    <span>@johndoe_x • Nov 21</span>
-                                </div>
-                                <span class="badge success">Resolved</span>
+                            <div class="empty-state-small">
+                                <span>🔔</span>
+                                <p>No alerts yet. Add accounts to start monitoring.</p>
                             </div>
                         </div>
                     </div>
@@ -576,6 +680,7 @@
                 <div class="tabs">
                     <button class="tab-btn active" data-tab="profile">Profile</button>
                     <button class="tab-btn" data-tab="subscription">Subscription</button>
+                    <button class="tab-btn" data-tab="frequency">Check Frequency</button>
                     <button class="tab-btn" data-tab="billing">Billing</button>
                 </div>
                 
@@ -588,16 +693,16 @@
                             <div class="form-row">
                                 <div class="config-field">
                                     <label>First Name</label>
-                                    <input type="text" class="input" id="profile-fname" value="John">
+                                    <input type="text" class="input" id="profile-fname" value="">
                                 </div>
                                 <div class="config-field">
                                     <label>Last Name</label>
-                                    <input type="text" class="input" id="profile-lname" value="Doe">
+                                    <input type="text" class="input" id="profile-lname" value="">
                                 </div>
                             </div>
                             <div class="config-field">
                                 <label>Email</label>
-                                <input type="email" class="input" id="profile-email" value="john@example.com">
+                                <input type="email" class="input" id="profile-email" value="">
                             </div>
                             <div class="card-actions">
                                 <button class="primary-btn">Save Changes</button>
@@ -610,11 +715,11 @@
                     <div class="card current-plan-card">
                         <div class="plan-display">
                             <div>
-                                <span class="plan-name" id="current-plan-name">⭐ Pro Plan</span>
-                                <p id="current-plan-features">15 accounts • 10 AI questions/day • Email + SMS alerts</p>
-                                <p class="renewal">Next billing: Dec 24, 2025</p>
+                                <span class="plan-name" id="current-plan-name">🆓 Free Plan</span>
+                                <p id="current-plan-features">No active subscription</p>
+                                <p class="renewal" id="plan-renewal"></p>
                             </div>
-                            <span class="plan-price" id="current-plan-price">$9.99/mo</span>
+                            <span class="plan-price" id="current-plan-price">$0/mo</span>
                         </div>
                     </div>
                     
@@ -624,19 +729,19 @@
                             <h4>Starter</h4>
                             <span class="price">$4.99/mo</span>
                             <p>5 accounts • 3 AI/day</p>
-                            <button class="secondary-btn full-width">Downgrade</button>
+                            <button class="secondary-btn full-width" onclick="selectPlan('starter')">Select</button>
                         </div>
-                        <div class="card plan-card current">
+                        <div class="card plan-card">
                             <h4>Pro</h4>
                             <span class="price">$9.99/mo</span>
                             <p>15 accounts • 10 AI/day</p>
-                            <button class="secondary-btn full-width" disabled>Current</button>
+                            <button class="primary-btn full-width" onclick="selectPlan('pro')">Select</button>
                         </div>
                         <div class="card plan-card">
                             <h4>Premium</h4>
                             <span class="price">$14.99/mo</span>
                             <p>50 accounts • 25 AI/day</p>
-                            <button class="primary-btn full-width">Upgrade</button>
+                            <button class="secondary-btn full-width" onclick="selectPlan('premium')">Select</button>
                         </div>
                     </div>
                     
@@ -656,6 +761,57 @@
                     <button class="danger-btn" id="cancel-btn">Cancel Subscription</button>
                 </div>
                 
+                <!-- NEW: Check Frequency Tab -->
+                <div class="tab-panel" id="panel-frequency">
+                    <div class="card">
+                        <div class="card-header">
+                            <h2>⏰ Check Frequency</h2>
+                        </div>
+                        <div class="card-body">
+                            <p class="description">Choose how often we monitor your accounts for shadow bans.</p>
+                            
+                            <div class="frequency-options">
+                                <label class="frequency-option">
+                                    <input type="radio" name="frequency" value="daily" checked>
+                                    <div class="frequency-content">
+                                        <div class="frequency-header">
+                                            <strong>Daily</strong>
+                                            <span class="frequency-price included">Included</span>
+                                        </div>
+                                        <p>Accounts checked once every 24 hours</p>
+                                    </div>
+                                </label>
+                                
+                                <label class="frequency-option">
+                                    <input type="radio" name="frequency" value="6hours">
+                                    <div class="frequency-content">
+                                        <div class="frequency-header">
+                                            <strong>Every 6 Hours</strong>
+                                            <span class="frequency-price">+$2.99/mo</span>
+                                        </div>
+                                        <p>4x daily checks for faster detection</p>
+                                    </div>
+                                </label>
+                                
+                                <label class="frequency-option">
+                                    <input type="radio" name="frequency" value="hourly">
+                                    <div class="frequency-content">
+                                        <div class="frequency-header">
+                                            <strong>Hourly</strong>
+                                            <span class="frequency-price">+$4.99/mo</span>
+                                        </div>
+                                        <p>Maximum protection with 24 checks per day</p>
+                                    </div>
+                                </label>
+                            </div>
+                            
+                            <div class="card-actions">
+                                <button class="primary-btn" id="save-frequency">Save Frequency</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
                 <div class="tab-panel" id="panel-billing">
                     <div class="card">
                         <div class="card-header">
@@ -663,8 +819,8 @@
                         </div>
                         <div class="card-body">
                             <div class="payment-row">
-                                <span>💳 Visa •••• 4242</span>
-                                <button class="secondary-btn">Update</button>
+                                <span id="payment-method">No payment method on file</span>
+                                <button class="secondary-btn">Add Card</button>
                             </div>
                         </div>
                     </div>
@@ -675,15 +831,9 @@
                         </div>
                         <div class="card-body">
                             <div class="billing-list">
-                                <div class="billing-row">
-                                    <span>Nov 24, 2025</span>
-                                    <span>$9.99</span>
-                                    <button class="link-btn">Invoice</button>
-                                </div>
-                                <div class="billing-row">
-                                    <span>Oct 24, 2025</span>
-                                    <span>$9.99</span>
-                                    <button class="link-btn">Invoice</button>
+                                <div class="empty-state-small">
+                                    <span>📄</span>
+                                    <p>No billing history yet.</p>
                                 </div>
                             </div>
                         </div>
@@ -700,25 +850,52 @@
                     </div>
                 </div>
                 
-                <!-- Shadow AI Card -->
-                <div class="card support-ai-card">
-                    <div class="support-ai-content">
-                        <div class="support-ai-info">
-                            <span class="big-icon">🤖</span>
-                            <div>
-                                <h3>Shadow AI Pro</h3>
-                                <p>Instant answers about shadow bans, platform policies, and recovery tips</p>
-                                <p class="ai-remaining" id="ai-questions-left">10 questions/day remaining</p>
+                <!-- Shadow AI + Connect with Dev - Side by Side -->
+                <div class="support-top-row">
+                    <!-- Shadow AI Card -->
+                    <div class="card support-ai-card">
+                        <div class="support-ai-content">
+                            <div class="support-ai-info">
+                                <span class="big-icon">🤖</span>
+                                <div>
+                                    <h3>Shadow AI Pro</h3>
+                                    <p>Instant answers about shadow bans, platform policies, and recovery tips</p>
+                                    <p class="ai-remaining" id="ai-questions-left">3 questions/day remaining</p>
+                                </div>
+                            </div>
+                            <button class="primary-btn" id="open-ai">🤖 Open AI Chat</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Connect with Dev -->
+                    <div class="card connect-dev-card">
+                        <div class="connect-dev-content">
+                            <div class="connect-dev-info">
+                                <span class="big-icon">👨‍💻</span>
+                                <div>
+                                    <h3>Connect with the Dev</h3>
+                                    <p>Reach out directly to Andrew on social media</p>
+                                </div>
+                            </div>
+                            <div class="social-links">
+                                <a href="https://x.com/Ghost081280" target="_blank" class="social-btn" title="Twitter/X">
+                                    <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                                </a>
+                                <a href="https://linkedin.com/in/andrewcouch" target="_blank" class="social-btn" title="LinkedIn">
+                                    <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+                                </a>
+                                <a href="https://github.com/Ghost081280" target="_blank" class="social-btn" title="GitHub">
+                                    <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                                </a>
                             </div>
                         </div>
-                        <button class="primary-btn" id="open-ai">🤖 Open AI Chat</button>
                     </div>
                 </div>
                 
                 <!-- Message + Live Chat Side by Side -->
                 <div class="support-split">
                     <!-- Send Message -->
-                    <div class="card">
+                    <div class="card support-message-card">
                         <div class="card-header">
                             <h2>📝 Send Message</h2>
                         </div>
@@ -758,7 +935,7 @@
                             <div class="chat-messages" id="live-chat-messages">
                                 <div class="chat-welcome">
                                     <span class="welcome-icon">💬</span>
-                                    <p id="chat-welcome-text">Andrew is currently offline. Leave a message or try again later!</p>
+                                    <p id="chat-welcome-text">We are currently offline. Send us a message using the form, or try again later!</p>
                                 </div>
                             </div>
                             <div class="chat-input-area">
@@ -768,22 +945,23 @@
                         </div>
                     </div>
                 </div>
-                
-                <!-- Connect with Dev -->
-                <div class="card">
-                    <div class="card-header">
-                        <h2>👨‍💻 Connect with the Developer</h2>
+            </section>
+            
+            <!-- Tool Info Modal -->
+            <div class="modal-overlay hidden" id="tool-info-modal">
+                <div class="modal modal-lg">
+                    <div class="modal-header">
+                        <h2 id="tool-info-title">Tool Info</h2>
+                        <button class="modal-close" onclick="closeToolInfo()">×</button>
                     </div>
-                    <div class="card-body connect-dev">
-                        <p class="description">Reach Andrew directly on social media</p>
-                        <div class="social-links">
-                            <a href="https://x.com/Ghost081280" target="_blank" class="social-btn">𝕏</a>
-                            <a href="https://linkedin.com/in/andrewcouch" target="_blank" class="social-btn">in</a>
-                            <a href="https://github.com/Ghost081280" target="_blank" class="social-btn">GH</a>
-                        </div>
+                    <div class="modal-body" id="tool-info-body">
+                        <!-- Content injected by JS -->
+                    </div>
+                    <div class="modal-footer">
+                        <button class="primary-btn" onclick="closeToolInfo()">Got it</button>
                     </div>
                 </div>
-            </section>
+            </div>
             
             <!-- Alert Info Modal -->
             <div class="modal-overlay hidden" id="alert-info-modal">
@@ -823,15 +1001,7 @@
                 <div class="config-field">
                     <label>Platform</label>
                     <select id="new-platform" class="input">
-                        <option value="">Select Platform...</option>
-                        <option value="twitter">Twitter/X</option>
-                        <option value="instagram">Instagram</option>
-                        <option value="tiktok">TikTok</option>
-                        <option value="facebook">Facebook</option>
-                        <option value="youtube">YouTube</option>
-                        <option value="linkedin">LinkedIn</option>
-                        <option value="reddit">Reddit</option>
-                        <option value="threads">Threads</option>
+                        <!-- Populated from platforms.js -->
                     </select>
                 </div>
                 <div class="config-field">

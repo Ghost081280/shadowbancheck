@@ -10,13 +10,13 @@
 'use strict';
 
 // ============================================
-// CONFIGURATION - Same as Pro, but unlimited
+// CONFIGURATION - Admin version, unlimited
 // ============================================
 const CONFIG = {
-    title: 'Shadow AI Pro',
-    tooltip: 'Ask Shadow AI Pro',
-    storageKey: 'shadow_ai_pro_usage',
-    welcomeMessage: "👋 Welcome back! I'm Shadow AI Pro, your dedicated shadow ban assistant. How can I help you today?"
+    title: 'Shadow AI Admin',
+    tooltip: 'Ask Shadow AI Admin',
+    storageKey: 'shadow_ai_admin_usage',
+    welcomeMessage: "👋 Welcome Andrew! I'm your Shadow AI Admin assistant. What can I help you look up today?"
 };
 
 // State
@@ -38,7 +38,7 @@ function getRemainingDisplay() {
 // INITIALIZE
 // ============================================
 function init() {
-    console.log('🤖 Shadow AI Pro (Admin) v3.0 Initializing...');
+    console.log('🤖 Shadow AI Admin v3.0 Initializing...');
     
     // Add dashboard-page class to body for CSS targeting
     document.body.classList.add('dashboard-page');
@@ -48,7 +48,7 @@ function init() {
     initKeyboardHandler();
     initScrollIsolation();
     
-    console.log('✅ Shadow AI Pro (Admin) initialized - Unlimited Access');
+    console.log('✅ Shadow AI Admin initialized - Unlimited Access');
 }
 
 // ============================================
@@ -73,7 +73,7 @@ function createWidget() {
         <div class="shadow-ai-tooltip">${CONFIG.tooltip}</div>
         
         <!-- Floating Button -->
-        <button class="copilot-btn" id="shadow-ai-btn" aria-label="Open Shadow AI">
+        <button class="copilot-btn" id="shadow-ai-btn" aria-label="Open Shadow AI Admin">
             <span class="copilot-emoji">🤖</span>
         </button>
         
@@ -447,11 +447,11 @@ function generateResponse(message) {
     }
     
     if (lowerMsg.includes('hi') || lowerMsg.includes('hello') || lowerMsg.includes('hey')) {
-        return "Hello! 👋 I'm here to help you understand and resolve any shadow ban issues. What platform are you concerned about?";
+        return "Hello Andrew! 👋 I'm here to help you manage shadow ban issues for your users. What platform are you checking today?";
     }
     
     // Default response
-    return "I'm here to help with shadow ban detection and recovery. Could you tell me more about your situation?\n\n**I can help with:**\n• Checking if you're shadow banned\n• Platform-specific analysis\n• Recovery strategies\n• Understanding algorithm changes\n\nWhat would you like to know?";
+    return "I'm here to help with shadow ban detection and recovery. Could you tell me more about your situation?\n\n**I can help with:**\n• Checking if users are shadow banned\n• Platform-specific analysis\n• Recovery strategies\n• Understanding algorithm changes\n\nWhat would you like to know?";
 }
 
 // ============================================

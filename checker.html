@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Shadow Ban Checker - Check Any Platform | ShadowBanCheck.io</title>
-    <meta name="description" content="Free shadow ban checker for Twitter, Instagram, TikTok, Reddit, and 22+ more platforms. Instant results in 60 seconds.">
+    <meta name="description" content="Free shadow ban checker for Twitter, Instagram, TikTok, Reddit, and more social platforms. Instant results in 60 seconds.">
     
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔍</text></svg>">
@@ -32,8 +32,12 @@
     <!-- Platform Grid -->
     <section class="platforms-checker section">
         <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Platforms We Support</h2>
+                <p class="section-desc">Click any platform to check your account</p>
+            </div>
             <div class="platform-grid" id="platform-grid">
-                <!-- Platforms loaded dynamically from platformData via checker.js -->
+                <!-- Platforms loaded dynamically from platforms.js -->
             </div>
         </div>
     </section>
@@ -52,7 +56,7 @@
                     <span class="how-icon">1️⃣</span>
                     <div class="how-content">
                         <h4>Select Platform</h4>
-                        <p>Choose from 26 platforms we monitor</p>
+                        <p>Choose from the platforms we monitor</p>
                     </div>
                 </div>
                 <div class="how-item reveal">
@@ -73,14 +77,22 @@
             
             <!-- Detailed Methodology -->
             <div class="methodology-section reveal">
-                <h3 class="methodology-title">Our Detection Engine</h3>
-                <p class="methodology-intro">Platforms rarely admit to shadow banning. That's why we built a proprietary detection system that analyzes dozens of signals to calculate an accurate probability score—even when platforms won't tell you the truth.</p>
+                <div class="methodology-header">
+                    <h3 class="methodology-title">Our Detection Engine</h3>
+                    <button class="engine-info-btn" id="engine-info-btn" aria-label="Learn about our 5-Factor Engine" type="button">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+                            <path d="M12 16V12M12 8H12.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                    </button>
+                </div>
+                <p class="methodology-intro">Platforms rarely admit to shadow banning. That's why we built a proprietary detection system that analyzes multiple signals to calculate an accurate probability score—even when platforms won't tell you the truth.</p>
                 
                 <div class="methodology-grid">
                     <div class="method-card">
                         <span class="method-icon">🔌</span>
                         <h4>Platform API Analysis</h4>
-                        <p>We query official APIs (Twitter/X API v2, Reddit API, Email RBLs) to fetch real-time account status, engagement metrics, and visibility flags. This gives us direct data on reach patterns and content suppression.</p>
+                        <p>We query official APIs (Twitter/X API v2, Reddit API) to fetch real-time account status, engagement metrics, and visibility flags.</p>
                         <div class="method-details">
                             <strong>What we check:</strong>
                             <ul>
@@ -95,7 +107,7 @@
                     <div class="method-card">
                         <span class="method-icon">🌐</span>
                         <h4>Web Scraping & Search Tests</h4>
-                        <p>Our automated system performs live searches across platforms to verify if your content appears where it should. We test logged-in vs. logged-out visibility, hashtag reach, and explore page presence.</p>
+                        <p>Our automated system performs live searches across platforms to verify if your content appears where it should.</p>
                         <div class="method-details">
                             <strong>What we test:</strong>
                             <ul>
@@ -110,7 +122,7 @@
                     <div class="method-card">
                         <span class="method-icon">📊</span>
                         <h4>Historical Pattern Analysis</h4>
-                        <p>We maintain a database of millions of accounts and track visibility patterns over time. By comparing your metrics to historical norms, we can detect anomalies that indicate shadow banning.</p>
+                        <p>We maintain a database of accounts and track visibility patterns over time to detect anomalies.</p>
                         <div class="method-details">
                             <strong>What we compare:</strong>
                             <ul>
@@ -123,16 +135,16 @@
                     </div>
                     
                     <div class="method-card">
-                        <span class="method-icon">🤖</span>
-                        <h4>AI Probability Scoring</h4>
-                        <p>Our machine learning model processes 10+ data points to calculate a probability score. Even if platforms hide the truth, our AI can detect suppression patterns with 92% accuracy.</p>
+                        <span class="method-icon">🔍</span>
+                        <h4>IP Analysis</h4>
+                        <p>We check your connection for VPN/proxy usage, datacenter IPs, and location mismatches that platforms flag.</p>
                         <div class="method-details">
                             <strong>Factors analyzed:</strong>
                             <ul>
-                                <li>10+ visibility metrics</li>
-                                <li>Engagement velocity trends</li>
-                                <li>Content filter triggers</li>
-                                <li>Spam pattern detection</li>
+                                <li>VPN/Proxy detection</li>
+                                <li>Datacenter vs residential IP</li>
+                                <li>Geographic location risk</li>
+                                <li>ISP reputation</li>
                             </ul>
                         </div>
                     </div>
@@ -142,7 +154,7 @@
                     <span class="citation-icon">📄</span>
                     <div class="citation-content">
                         <h4>Full Citation Support</h4>
-                        <p>Every result includes detailed citations showing exactly where our data came from—API responses, search test results, historical comparisons, and algorithmic calculations. You'll never wonder if we "made it up."</p>
+                        <p>Every result includes detailed citations showing exactly where our data came from—API responses, search test results, historical comparisons, and algorithmic calculations.</p>
                     </div>
                 </div>
             </div>
@@ -160,7 +172,7 @@
                 <div class="source-card reveal">
                     <span class="source-icon">🔌</span>
                     <h4>Platform APIs</h4>
-                    <p>Official API data from Twitter/X, Reddit, and email reputation services</p>
+                    <p>Official API data from Twitter/X, Reddit, and more</p>
                 </div>
                 <div class="source-card reveal">
                     <span class="source-icon">🌐</span>
@@ -170,7 +182,7 @@
                 <div class="source-card reveal">
                     <span class="source-icon">📊</span>
                     <h4>Historical Database</h4>
-                    <p>Millions of accounts tracked for baseline comparisons</p>
+                    <p>Accounts tracked for baseline comparisons</p>
                 </div>
                 <div class="source-card reveal">
                     <span class="source-icon">👥</span>
@@ -178,14 +190,14 @@
                     <p>User-verified shadow ban patterns and recovery timelines</p>
                 </div>
                 <div class="source-card reveal">
-                    <span class="source-icon">🤖</span>
-                    <h4>AI Detection</h4>
-                    <p>ML model trained on 10+ factors for 92% accuracy</p>
+                    <span class="source-icon">🔍</span>
+                    <h4>IP Analysis</h4>
+                    <p>VPN/proxy detection and location risk assessment</p>
                 </div>
                 <div class="source-card reveal">
-                    <span class="source-icon">🔍</span>
-                    <h4>Third-Party APIs</h4>
-                    <p>Integration with shadowban.eu, hisubway, and RBL services</p>
+                    <span class="source-icon">🤖</span>
+                    <h4>AI Scoring</h4>
+                    <p>ML model combining all factors for probability score</p>
                 </div>
             </div>
         </div>
@@ -214,6 +226,52 @@
         </div>
     </div>
 
+    <!-- 5-Factor Engine Modal -->
+    <div id="engine-info-modal" class="modal hidden">
+        <div class="modal-overlay"></div>
+        <div class="modal-content modal-large">
+            <button class="modal-close">&times;</button>
+            <div class="modal-icon">🧠</div>
+            <h3 class="modal-title">Our 5-Factor Detection Engine</h3>
+            <div class="modal-body">
+                <p class="modal-intro">The Username Checker uses <strong>4 of our 5 factors</strong> to analyze your account:</p>
+                
+                <ul class="engine-factors">
+                    <li class="factor-active">
+                        <span class="factor-check">✓</span>
+                        <strong>🔌 Platform APIs</strong>
+                        <span class="factor-desc">Direct integration with Twitter/X API, Reddit API, and more</span>
+                    </li>
+                    <li class="factor-active">
+                        <span class="factor-check">✓</span>
+                        <strong>🌐 Web Analysis</strong>
+                        <span class="factor-desc">Live scraping, logged-in/out tests, search visibility checks</span>
+                    </li>
+                    <li class="factor-active">
+                        <span class="factor-check">✓</span>
+                        <strong>📊 Historical Data</strong>
+                        <span class="factor-desc">Baseline comparisons from tracked accounts</span>
+                    </li>
+                    <li class="factor-inactive">
+                        <span class="factor-check">○</span>
+                        <strong>#️⃣ Hashtag Database</strong>
+                        <span class="factor-desc">Not applicable for username-only checks</span>
+                    </li>
+                    <li class="factor-active">
+                        <span class="factor-check">✓</span>
+                        <strong>🔍 IP Analysis</strong>
+                        <span class="factor-desc">VPN/proxy detection, datacenter flagging, location risk</span>
+                    </li>
+                </ul>
+                
+                <p class="engine-conclusion">Our Engine combines all applicable signals and assigns a <strong>Shadow Ban Probability Score</strong> with detailed breakdowns.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary btn-lg" onclick="document.getElementById('engine-info-modal').classList.add('hidden'); document.body.style.overflow = '';">Got It!</button>
+            </div>
+        </div>
+    </div>
+
     <!-- ===================================
          FOOTER - Loaded by shared-components.js
          =================================== -->
@@ -222,9 +280,43 @@
     <button id="back-to-top" class="back-to-top" aria-label="Back to top">↑</button>
 
     <!-- Scripts -->
+    <script src="js/platforms.js"></script>
     <script src="js/shared-components.js"></script>
     <script src="js/main.js"></script>
     <script src="js/checker.js"></script>
     <script src="js/shadow-ai.js"></script>
+    
+    <script>
+        // Engine Info Modal Handler
+        document.addEventListener('DOMContentLoaded', function() {
+            const engineInfoBtn = document.getElementById('engine-info-btn');
+            const engineModal = document.getElementById('engine-info-modal');
+            
+            if (engineInfoBtn && engineModal) {
+                engineInfoBtn.addEventListener('click', function() {
+                    engineModal.classList.remove('hidden');
+                    document.body.style.overflow = 'hidden';
+                });
+                
+                // Close handlers
+                const closeBtn = engineModal.querySelector('.modal-close');
+                const overlay = engineModal.querySelector('.modal-overlay');
+                
+                const closeModal = () => {
+                    engineModal.classList.add('hidden');
+                    document.body.style.overflow = '';
+                };
+                
+                closeBtn?.addEventListener('click', closeModal);
+                overlay?.addEventListener('click', closeModal);
+                
+                document.addEventListener('keydown', function(e) {
+                    if (e.key === 'Escape' && !engineModal.classList.contains('hidden')) {
+                        closeModal();
+                    }
+                });
+            }
+        });
+    </script>
 </body>
 </html>

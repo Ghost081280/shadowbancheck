@@ -340,25 +340,21 @@ function getDemoDataForPlatform(platform) {
    LOAD AND DISPLAY RESULTS
    ============================================================================= */
 function loadResults() {
+    // Check for demo mode first
     if (loadDemoData()) {
         return;
     }
     
-    const storedData = sessionStorage.getItem('shadowban_results');
+    // Try multiple storage keys (different pages use different keys)
+    let storedData = sessionStorage.getItem('shadowban_results') || 
+                     sessionStorage.getItem('checkResults');
     
     if (!storedData) {
         console.log('No stored results, loading Power Check demo for preview');
         const powerDemo = getDemoDataForPlatform('power');
         if (powerDemo) {
             displayResults(powerDemo);
-            const resultsHeader = document.getElementById('results-header');
-            if (resultsHeader) {
-                const notice = document.createElement('div');
-                notice.className = 'demo-notice';
-                notice.style.cssText = 'background: rgba(99, 102, 241, 0.1); border: 1px solid var(--primary); border-radius: 8px; padding: 12px 16px; margin-bottom: 24px; text-align: center; font-size: 0.875rem; color: var(--text-secondary);';
-                notice.innerHTML = '📊 <strong>Demo Data</strong> - Try different check types: <a href="?demo=twitter" style="color: var(--primary-light); margin: 0 8px;">Username</a> | <a href="?demo=power" style="color: var(--primary-light); margin: 0 8px;">Power Check</a> | <a href="?demo=hashtag" style="color: var(--primary-light); margin: 0 8px;">Hashtag</a>';
-                resultsHeader.parentNode.insertBefore(notice, resultsHeader);
-            }
+            showDemoNotice();
             return;
         }
         window.location.href = 'checker.html';
@@ -367,14 +363,73 @@ function loadResults() {
     
     const data = JSON.parse(storedData);
     
-    const timestamp = new Date(data.timestamp).getTime();
+    // Convert new format to old format if needed
+    const normalizedData = normalizeResultsData(data);
+    
+    // Check timestamp - expire after 1 hour
+    const timestamp = new Date(normalizedData.timestamp).getTime();
     if (Date.now() - timestamp > 3600000) {
         sessionStorage.removeItem('shadowban_results');
+        sessionStorage.removeItem('checkResults');
         window.location.href = 'checker.html';
         return;
     }
     
-    displayResults(data);
+    displayResults(normalizedData);
+}
+
+// Normalize data from different sources into consistent format
+function normalizeResultsData(data) {
+    // If it's already in the old format, return as-is
+    if (data.results && data.results.probability !== undefined) {
+        return data;
+    }
+    
+    // Convert new post-checker format to results format
+    if (data.type === 'post' || data.type === 'username' || data.type === 'hashtag') {
+        return {
+            platform: data.platform || 'Unknown',
+            identifier: data.query || data.username || 'Unknown',
+            checkType: data.type || 'post',
+            timestamp: data.timestamp || Date.now(),
+            ipData: data.ipData || null,
+            results: {
+                probability: data.probability || 0,
+                status: data.statusClass || 'clean',
+                statusText: data.status || 'Analysis Complete',
+                engineFactors: convertFactors(data.factors),
+                checks: data.checks || [],
+                recommendations: (data.recommendations || []).map(r => 
+                    typeof r === 'string' ? { text: r, type: 'info' } : r
+                )
+            }
+        };
+    }
+    
+    return data;
+}
+
+function convertFactors(factors) {
+    if (!factors) return {};
+    
+    return {
+        api: { active: factors.platformAPI || false, detail: 'Platform API analysis' },
+        web: { active: factors.webAnalysis || false, detail: 'Web visibility tests' },
+        historical: { active: factors.historicalData || false, detail: 'Historical pattern comparison' },
+        hashtag: { active: factors.hashtagDatabase || false, detail: 'Hashtag database check' },
+        ip: { active: factors.ipAnalysis || false, detail: 'IP and location analysis' }
+    };
+}
+
+function showDemoNotice() {
+    const hero = document.querySelector('.hero .container');
+    if (hero) {
+        const notice = document.createElement('div');
+        notice.className = 'demo-notice';
+        notice.style.cssText = 'background: rgba(99, 102, 241, 0.1); border: 1px solid var(--primary); border-radius: 8px; padding: 12px 16px; margin-top: 16px; text-align: center; font-size: 0.875rem; color: var(--text-secondary);';
+        notice.innerHTML = '📊 <strong>Demo Data</strong> - Try different check types: <a href="?demo=twitter" style="color: var(--primary-light); margin: 0 8px;">Username</a> | <a href="?demo=power" style="color: var(--primary-light); margin: 0 8px;">Power Check</a> | <a href="?demo=hashtag" style="color: var(--primary-light); margin: 0 8px;">Hashtag</a>';
+        hero.appendChild(notice);
+    }
 }
 
 function displayResults(data) {
@@ -383,7 +438,7 @@ function displayResults(data) {
     const platformIcons = {
         'Instagram': '📸',
         'TikTok': '🎵',
-        'Twitter/X': '🐦',
+        'Twitter/X': '𝕏',
         'Facebook': '📘',
         'LinkedIn': '💼',
         'YouTube': '📺',
@@ -394,85 +449,107 @@ function displayResults(data) {
         'Unknown': '🔍'
     };
     
-    // Update header
-    const header = document.getElementById('results-header');
-    if (header) {
-        const checkTypeConfig = CHECK_TYPE_FACTORS[checkType] || CHECK_TYPE_FACTORS['username'];
-        header.innerHTML = `
-            <div class="platform-badge-large">
-                <span>${platformIcons[platform] || '🔍'}</span>
-                <span>${platform}</span>
-            </div>
-            <h1>Shadow Ban Analysis Results</h1>
-            <p class="results-meta">Checked: ${new Date(data.timestamp).toLocaleString()} • ${checkType === 'hashtag' ? 'Hashtags' : 'Account'}: ${identifier}</p>
-            <div class="engine-badge">
-                <span>🧠</span>
-                <span>${checkTypeConfig.count}/5 Factors Analyzed</span>
-            </div>
-        `;
+    const checkTypeConfig = CHECK_TYPE_FACTORS[checkType] || CHECK_TYPE_FACTORS['username'];
+    
+    // Update hero section
+    const heroBadge = document.getElementById('results-badge');
+    const heroTitle = document.getElementById('results-title');
+    const heroSubtitle = document.getElementById('results-subtitle');
+    
+    if (heroBadge) {
+        const checkTypeName = checkType === 'post' ? 'Post' : checkType === 'hashtag' ? 'Hashtag' : 'Account';
+        heroBadge.textContent = `📊 ${checkTypeName} Analysis Complete`;
+    }
+    if (heroTitle) heroTitle.textContent = `${platform} Results`;
+    if (heroSubtitle) heroSubtitle.textContent = `Analyzed with ${checkTypeConfig.count}/5 Detection Factors`;
+    
+    // Update status card
+    const statusIcon = document.getElementById('status-icon');
+    const statusPlatform = document.getElementById('status-platform');
+    const statusQuery = document.getElementById('status-query');
+    const probabilityCircle = document.getElementById('probability-circle');
+    const probabilityValue = document.getElementById('probability-value');
+    const verdictBadge = document.getElementById('verdict-badge');
+    const verdictText = document.getElementById('verdict-text');
+    
+    if (statusIcon) statusIcon.textContent = platformIcons[platform] || '🔍';
+    if (statusPlatform) statusPlatform.textContent = platform;
+    if (statusQuery) statusQuery.textContent = identifier;
+    
+    // Status class based on probability
+    let statusClass = 'good';
+    let statusLabel = 'Likely Visible';
+    let statusDescription = 'Your content appears to be in good standing.';
+    
+    if (results.probability >= 50) {
+        statusClass = 'bad';
+        statusLabel = 'Likely Restricted';
+        statusDescription = 'Significant visibility issues detected. Review recommendations below.';
+    } else if (results.probability >= 20) {
+        statusClass = 'warning';
+        statusLabel = 'Possibly Limited';
+        statusDescription = 'Some factors may be affecting your reach. Review the analysis.';
     }
     
-    // Update overall status
-    const overallStatus = document.getElementById('overall-status');
-    if (overallStatus) {
-        const statusConfig = {
-            'clean': {
-                icon: '✅',
-                title: 'No Shadow Ban Detected',
-                description: 'Your account appears to be in good standing. Your content is being distributed normally.',
-                class: 'clean'
-            },
-            'warning': {
-                icon: '⚠️',
-                title: 'Potential Issues Found',
-                description: 'Some aspects of your account may have reduced visibility. Review the recommendations below.',
-                class: 'issues'
-            },
-            'restricted': {
-                icon: '🚫',
-                title: 'Restrictions Detected',
-                description: 'Your account appears to have significant visibility restrictions. Immediate action recommended.',
-                class: 'restricted'
-            }
-        };
-        
-        const config = statusConfig[results.status] || statusConfig.clean;
-        
-        overallStatus.innerHTML = `
-            <span class="status-icon">${config.icon}</span>
-            <h2 class="status-title ${config.class}">${config.title}</h2>
-            <p class="status-description">${config.description}</p>
-            <div class="probability-score">
-                <span class="score-value">${results.probability}%</span>
-                <span class="score-label">Shadow Ban Probability</span>
-            </div>
-        `;
+    if (probabilityCircle) {
+        probabilityCircle.className = `probability-circle ${statusClass}`;
+        probabilityCircle.style.setProperty('--probability', results.probability);
     }
+    if (probabilityValue) probabilityValue.textContent = `${results.probability}%`;
+    if (verdictBadge) {
+        verdictBadge.textContent = statusLabel;
+        verdictBadge.className = `verdict-badge ${statusClass}`;
+    }
+    if (verdictText) verdictText.textContent = statusDescription;
     
     // Update 5-Factor Engine Summary
     displayEngineFactors(results.engineFactors, checkType, ipData);
     
-    // Update checks grid with citations and factor badges
+    // Update checks grid
     const checksGrid = document.getElementById('checks-grid');
     if (checksGrid && results.checks) {
         checksGrid.innerHTML = results.checks.map(check => {
-            const statusIcon = check.status === 'passed' ? '✅' : 
-                              check.status === 'warning' ? '⚠️' : '❌';
+            const checkStatus = check.status === 'passed' || check.status === 'pass' ? 'pass' : 
+                               check.status === 'warning' ? 'warning' : 
+                               check.status === 'info' ? 'info' : 'fail';
             
-            const factorInfo = ENGINE_FACTORS.find(f => f.id === check.factor);
-            const factorBadge = factorInfo ? `
-                <div class="check-factor-badge">
-                    <span>${factorInfo.icon}</span>
-                    <span>${factorInfo.shortName}</span>
-                </div>
-            ` : '';
+            const statusLabel = checkStatus === 'pass' ? 'Pass' : 
+                               checkStatus === 'warning' ? 'Warning' : 
+                               checkStatus === 'info' ? 'Info' : 'Issue';
             
             return `
-                <div class="check-card ${check.status}">
-                    <div class="check-header">
-                        <span class="check-name">${check.name}</span>
-                        <span class="check-status-icon">${statusIcon}</span>
+                <div class="check-card ${checkStatus}">
+                    <span class="check-icon">${check.icon || '🔍'}</span>
+                    <div class="check-content">
+                        <div class="check-name">
+                            ${check.name}
+                            <span class="check-status ${checkStatus}">${statusLabel}</span>
+                        </div>
+                        <p class="check-detail">${check.detail || check.description || ''}</p>
                     </div>
+                </div>
+            `;
+        }).join('');
+    }
+    
+    // Update recommendations
+    const recommendationsList = document.getElementById('recommendations-list');
+    if (recommendationsList && results.recommendations) {
+        recommendationsList.innerHTML = results.recommendations.map((rec, index) => {
+            const text = typeof rec === 'string' ? rec : rec.text;
+            const icons = ['💡', '🎯', '📋', '🔧', '⚡'];
+            return `
+                <div class="recommendation-item">
+                    <span class="recommendation-icon">${icons[index % icons.length]}</span>
+                    <p class="recommendation-text">${text}</p>
+                </div>
+            `;
+        }).join('');
+    }
+    
+    // Store data for sharing/download
+    window.currentResults = data;
+}
                     <p class="check-description">${check.description}</p>
                     ${factorBadge}
                     ${check.citation ? `
@@ -504,19 +581,33 @@ function displayResults(data) {
    5-FACTOR ENGINE DISPLAY
    ============================================================================= */
 function displayEngineFactors(engineFactors, checkType, ipData) {
-    const factorsInline = document.getElementById('engine-factors-inline');
-    const ipDisplay = document.getElementById('ip-analysis-display');
+    const factorsRow = document.getElementById('engine-factors-row');
+    const factorsBadge = document.getElementById('factors-badge');
+    const ipDisplay = document.getElementById('ip-display');
     
-    if (factorsInline && engineFactors) {
-        factorsInline.innerHTML = ENGINE_FACTORS.map(factor => {
+    // Count active factors
+    let activeCount = 0;
+    if (engineFactors) {
+        Object.values(engineFactors).forEach(f => {
+            if (f && f.active) activeCount++;
+        });
+    }
+    
+    // Update factors badge
+    if (factorsBadge) {
+        factorsBadge.textContent = `${activeCount}/5 Factors`;
+    }
+    
+    // Display factor chips
+    if (factorsRow && engineFactors) {
+        factorsRow.innerHTML = ENGINE_FACTORS.map(factor => {
             const factorData = engineFactors[factor.id];
             const isActive = factorData?.active || false;
             
             return `
                 <div class="factor-chip ${isActive ? 'active' : 'inactive'}">
-                    <span class="factor-check">${isActive ? '✓' : '○'}</span>
-                    <span class="factor-icon">${factor.icon}</span>
-                    <span class="factor-name">${factor.shortName}</span>
+                    <span>${factor.icon}</span>
+                    <span>${factor.shortName}</span>
                 </div>
             `;
         }).join('');
@@ -524,16 +615,22 @@ function displayEngineFactors(engineFactors, checkType, ipData) {
     
     // Display IP if IP analysis was used
     if (ipDisplay && ipData && engineFactors?.ip?.active) {
-        const typeClass = ipData.type || 'residential';
+        const typeClass = (ipData.type || 'residential').toLowerCase();
         ipDisplay.innerHTML = `
-            <span class="ip-label">🔍 IP Analyzed:</span>
-            <span class="ip-value">${ipData.ip}</span>
-            <span class="ip-type ${typeClass}">${ipData.typeLabel}</span>
-            ${ipData.location ? `<span class="ip-label">(${ipData.location})</span>` : ''}
+            <span class="ip-label">🌐 Your IP:</span>
+            <div class="ip-value">
+                ${ipData.flag ? `<span class="ip-flag">${ipData.flag}</span>` : ''}
+                <span>${ipData.ip || 'Unknown'}</span>
+                <span class="ip-type-badge ${typeClass}">${ipData.type || 'Residential'}</span>
+            </div>
+            ${ipData.country ? `<span class="ip-label">${ipData.country}</span>` : ''}
         `;
     } else if (ipDisplay) {
-        ipDisplay.innerHTML = '';
+        ipDisplay.style.display = 'none';
     }
+    
+    // Setup engine info modal
+    setupEngineInfoModal(engineFactors, checkType);
 }
 
 function setupEngineInfoModal(engineFactors, checkType) {

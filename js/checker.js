@@ -130,10 +130,12 @@ function initSupportedPlatforms() {
     const container = document.getElementById('supported-platform-icons');
     if (!container || typeof PLATFORMS === 'undefined') return;
     
-    // Get live platforms - show Twitter/X and Reddit first
+    // Get live and coming soon platforms from platforms.js
     const livePlatforms = PLATFORMS.filter(p => p.status === 'live');
-    const priorityOrder = ['twitter', 'reddit'];
+    const comingSoonCount = PLATFORMS.filter(p => p.status !== 'live').length;
     
+    // Sort live platforms - prioritize Twitter/X and Reddit
+    const priorityOrder = ['twitter', 'reddit'];
     livePlatforms.sort((a, b) => {
         const aIndex = priorityOrder.indexOf(a.id);
         const bIndex = priorityOrder.indexOf(b.id);
@@ -143,16 +145,13 @@ function initSupportedPlatforms() {
         return 0;
     });
     
-    // Show first 7 platforms + "more" chip
-    const displayPlatforms = livePlatforms.slice(0, 7);
-    const remainingCount = PLATFORMS.length - 7;
-    
-    let html = displayPlatforms.map(p => `
+    // Show all live platforms + "+X more" for coming soon
+    let html = livePlatforms.map(p => `
         <span class="platform-chip" data-platform="${p.id}" title="${p.name}">${p.icon}</span>
     `).join('');
     
-    if (remainingCount > 0) {
-        html += `<span class="platform-chip coming" id="show-more-platforms" title="View all platforms">+${remainingCount}</span>`;
+    if (comingSoonCount > 0) {
+        html += `<span class="platform-chip coming" id="show-more-platforms" title="View all platforms">+${comingSoonCount}</span>`;
     }
     
     container.innerHTML = html;
@@ -520,21 +519,21 @@ function showPlatformInfoModal(platformId) {
     if (!modal || !bodyEl) return;
     
     iconEl.textContent = platform.icon;
-    titleEl.textContent = `${platform.name} - What We Check`;
+    titleEl.textContent = `${platform.name} - Account Checks`;
     
     if (platform.status === 'live' && platform.checks) {
         bodyEl.innerHTML = `
-            <p class="modal-intro">For ${platform.name}, our 5-Factor Engine analyzes:</p>
+            <p class="modal-intro">For ${platform.name} accounts, our 5-Factor Engine analyzes:</p>
             <ul class="platform-checks-list">
-                ${platform.checks.map(check => `<li>✓ ${check}</li>`).join('')}
+                ${platform.checks.slice(0, 8).map(check => `<li>✓ ${check}</li>`).join('')}
             </ul>
             <p style="margin-top: var(--space-md); color: var(--text-muted); font-size: 0.875rem;">
-                Results include probability score with detailed breakdown and citations.
+                Results include shadow ban probability, detailed breakdown, and recovery tips.
             </p>
         `;
     } else {
         bodyEl.innerHTML = `
-            <p class="modal-intro">${platform.name} support is coming soon!</p>
+            <p class="modal-intro">${platform.name} account checking is coming soon!</p>
             <p style="color: var(--text-muted);">We're working hard to add ${platform.name} to our detection engine. Create an account to get notified when it launches.</p>
         `;
     }

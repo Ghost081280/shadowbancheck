@@ -229,7 +229,45 @@
                 <div class="section-header">
                     <div>
                         <h1>🔧 Check Tools</h1>
-                        <p class="section-subtitle">Check accounts, hashtags, IP, email, phone & websites</p>
+                        <p class="section-subtitle">Check accounts, posts, hashtags & IP addresses</p>
+                    </div>
+                </div>
+                
+                <!-- 5-Factor Engine Banner -->
+                <div class="card engine-banner">
+                    <div class="engine-header">
+                        <span class="engine-icon">🧠</span>
+                        <div>
+                            <h3>Powered by Our 5-Factor Detection Engine</h3>
+                            <p>Comprehensive analysis using multiple data sources</p>
+                        </div>
+                    </div>
+                    <div class="engine-factors">
+                        <div class="factor">
+                            <span class="factor-check">✓</span>
+                            <span class="factor-icon">🔌</span>
+                            <span class="factor-text">Platform APIs</span>
+                        </div>
+                        <div class="factor">
+                            <span class="factor-check">✓</span>
+                            <span class="factor-icon">🌐</span>
+                            <span class="factor-text">Web Analysis</span>
+                        </div>
+                        <div class="factor">
+                            <span class="factor-check">✓</span>
+                            <span class="factor-icon">📊</span>
+                            <span class="factor-text">Historical Data</span>
+                        </div>
+                        <div class="factor">
+                            <span class="factor-check">✓</span>
+                            <span class="factor-icon">#️⃣</span>
+                            <span class="factor-text">Hashtag Database</span>
+                        </div>
+                        <div class="factor">
+                            <span class="factor-check">✓</span>
+                            <span class="factor-icon">🔍</span>
+                            <span class="factor-text">IP Analysis</span>
+                        </div>
                     </div>
                 </div>
                 
@@ -240,25 +278,32 @@
                             <h2>🔍 Account Check</h2>
                         </div>
                         <div class="card-body">
-                            <p class="description">Check any username for shadow ban</p>
+                            <p class="description">Check any username for shadow ban probability</p>
                             <div class="config-field">
                                 <label>Platform</label>
-                                <select id="tool-platform" class="input">
-                                    <option value="">Select Platform...</option>
-                                    <option value="twitter">Twitter/X</option>
-                                    <option value="instagram">Instagram</option>
-                                    <option value="tiktok">TikTok</option>
-                                    <option value="facebook">Facebook</option>
-                                    <option value="youtube">YouTube</option>
-                                    <option value="linkedin">LinkedIn</option>
-                                    <option value="reddit">Reddit</option>
-                                </select>
+                                <select id="tool-platform" class="input"></select>
                             </div>
                             <div class="config-field">
                                 <label>Username</label>
-                                <input type="text" id="tool-username" class="input" placeholder="@username or profile URL">
+                                <input type="text" id="tool-username" class="input" placeholder="@username">
                             </div>
-                            <button class="primary-btn" id="run-check">Check Now</button>
+                            <button class="primary-btn full-width" id="run-check">🔍 Check Account</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Post URL Check -->
+                    <div class="card tool-card">
+                        <div class="card-header">
+                            <h2>📝 Post URL Check</h2>
+                            <span class="power-badge">⚡ Power Check</span>
+                        </div>
+                        <div class="card-body">
+                            <p class="description">Full 5-factor scan on any social media post</p>
+                            <div class="config-field">
+                                <label>Post URL</label>
+                                <input type="url" id="post-url" class="input" placeholder="https://twitter.com/user/status/123...">
+                            </div>
+                            <button class="primary-btn full-width" id="run-post-check">⚡ Run Power Check</button>
                         </div>
                     </div>
                     
@@ -268,21 +313,21 @@
                             <h2>🏷️ Hashtag Check</h2>
                         </div>
                         <div class="card-body">
-                            <p class="description">Verify hashtags aren't banned</p>
+                            <p class="description">Check if hashtags are banned or restricted</p>
                             <div class="config-field">
                                 <label>Platform</label>
                                 <select id="hashtag-platform" class="input">
                                     <option value="">Select Platform...</option>
-                                    <option value="instagram">Instagram</option>
-                                    <option value="tiktok">TikTok</option>
-                                    <option value="twitter">Twitter/X</option>
+                                    <option value="instagram">📸 Instagram (500+ banned)</option>
+                                    <option value="tiktok">🎵 TikTok (300+ restricted)</option>
+                                    <option value="twitter">🐦 Twitter/X</option>
                                 </select>
                             </div>
                             <div class="config-field">
                                 <label>Hashtags</label>
                                 <textarea id="hashtag-input" class="input" placeholder="#fitness #motivation #health" rows="2"></textarea>
                             </div>
-                            <button class="primary-btn" id="run-hashtag-check">Check Hashtags</button>
+                            <button class="primary-btn full-width" id="run-hashtag-check">🏷️ Check Hashtags</button>
                         </div>
                     </div>
                     
@@ -292,7 +337,7 @@
                             <h2>🌐 IP Address Check</h2>
                         </div>
                         <div class="card-body">
-                            <p class="description">Check if your IP is flagged</p>
+                            <p class="description">VPN/proxy detection, datacenter flagging, location risk</p>
                             <div class="ip-display">
                                 <span>Your IP:</span>
                                 <strong id="user-ip">Loading...</strong>
@@ -301,52 +346,7 @@
                                 <label>Custom IP (optional)</label>
                                 <input type="text" id="custom-ip" class="input" placeholder="Or enter custom IP...">
                             </div>
-                            <button class="primary-btn" id="run-ip-check">Check IP</button>
-                        </div>
-                    </div>
-                    
-                    <!-- Email Check -->
-                    <div class="card tool-card">
-                        <div class="card-header">
-                            <h2>📧 Email Check</h2>
-                        </div>
-                        <div class="card-body">
-                            <p class="description">Check if email is blacklisted</p>
-                            <div class="config-field">
-                                <label>Email Address</label>
-                                <input type="email" id="check-email" class="input" placeholder="you@example.com">
-                            </div>
-                            <button class="primary-btn" id="run-email-check">Check Email</button>
-                        </div>
-                    </div>
-                    
-                    <!-- Phone Check -->
-                    <div class="card tool-card">
-                        <div class="card-header">
-                            <h2>📱 Phone Check</h2>
-                        </div>
-                        <div class="card-body">
-                            <p class="description">Check if phone number is flagged</p>
-                            <div class="config-field">
-                                <label>Phone Number</label>
-                                <input type="tel" id="check-phone" class="input" placeholder="+1 555 123 4567">
-                            </div>
-                            <button class="primary-btn" id="run-phone-check">Check Phone</button>
-                        </div>
-                    </div>
-                    
-                    <!-- Website Check -->
-                    <div class="card tool-card">
-                        <div class="card-header">
-                            <h2>🔗 Website Check</h2>
-                        </div>
-                        <div class="card-body">
-                            <p class="description">Check if your domain is blocked</p>
-                            <div class="config-field">
-                                <label>Website URL</label>
-                                <input type="url" id="check-website" class="input" placeholder="https://yoursite.com">
-                            </div>
-                            <button class="primary-btn" id="run-website-check">Check Website</button>
+                            <button class="primary-btn full-width" id="run-ip-check">🌐 Check IP</button>
                         </div>
                     </div>
                 </div>
@@ -451,23 +451,35 @@
                 <div class="section-header">
                     <div>
                         <h1>🔔 Alerts & Notifications</h1>
-                        <p class="section-subtitle">Configure your notification preferences</p>
+                        <p class="section-subtitle">Configure how we notify you about account status changes</p>
                     </div>
                 </div>
                 
                 <div class="two-column">
                     <div class="card">
                         <div class="card-header">
-                            <h2>📱 Channels</h2>
+                            <h2>📱 Notification Channels</h2>
                         </div>
                         <div class="card-body">
-                            <div class="toggle-row">
-                                <span>📧 Email</span>
-                                <label class="toggle"><input type="checkbox" checked><span class="slider"></span></label>
+                            <p class="description">Where should we send your alerts?</p>
+                            <div class="config-field">
+                                <label>📧 Email Address</label>
+                                <input type="email" id="alert-email" class="input" placeholder="you@example.com">
+                            </div>
+                            <div class="config-field">
+                                <label>📱 Phone Number (for SMS)</label>
+                                <input type="tel" id="alert-phone" class="input" placeholder="+1 555 123 4567">
                             </div>
                             <div class="toggle-row">
-                                <span>📱 SMS</span>
-                                <label class="toggle"><input type="checkbox" checked><span class="slider"></span></label>
+                                <span>📧 Email Alerts</span>
+                                <label class="toggle"><input type="checkbox" id="toggle-email" checked><span class="slider"></span></label>
+                            </div>
+                            <div class="toggle-row">
+                                <span>📱 SMS Alerts</span>
+                                <label class="toggle"><input type="checkbox" id="toggle-sms"><span class="slider"></span></label>
+                            </div>
+                            <div class="card-actions">
+                                <button class="primary-btn" id="save-alert-channels">Save Settings</button>
                             </div>
                         </div>
                     </div>
@@ -477,16 +489,40 @@
                             <h2>🔔 Alert Types</h2>
                         </div>
                         <div class="card-body">
+                            <p class="description">What events should trigger notifications?</p>
                             <div class="toggle-row">
-                                <span>Shadow Ban</span>
+                                <div class="toggle-label-wrap">
+                                    <span>🚫 Shadow Ban Detected</span>
+                                    <button class="info-btn" onclick="showAlertInfo('shadowban')">ⓘ</button>
+                                </div>
                                 <label class="toggle"><input type="checkbox" checked><span class="slider"></span></label>
                             </div>
                             <div class="toggle-row">
-                                <span>Reduced Reach</span>
+                                <div class="toggle-label-wrap">
+                                    <span>⚠️ Reduced Reach</span>
+                                    <button class="info-btn" onclick="showAlertInfo('reach')">ⓘ</button>
+                                </div>
                                 <label class="toggle"><input type="checkbox" checked><span class="slider"></span></label>
                             </div>
                             <div class="toggle-row">
-                                <span>Restored</span>
+                                <div class="toggle-label-wrap">
+                                    <span>✅ Account Restored</span>
+                                    <button class="info-btn" onclick="showAlertInfo('restored')">ⓘ</button>
+                                </div>
+                                <label class="toggle"><input type="checkbox" checked><span class="slider"></span></label>
+                            </div>
+                            <div class="toggle-row">
+                                <div class="toggle-label-wrap">
+                                    <span>📊 Weekly Report</span>
+                                    <button class="info-btn" onclick="showAlertInfo('weekly')">ⓘ</button>
+                                </div>
+                                <label class="toggle"><input type="checkbox"><span class="slider"></span></label>
+                            </div>
+                            <div class="toggle-row">
+                                <div class="toggle-label-wrap">
+                                    <span>🏷️ Banned Hashtag Used</span>
+                                    <button class="info-btn" onclick="showAlertInfo('hashtag')">ⓘ</button>
+                                </div>
                                 <label class="toggle"><input type="checkbox" checked><span class="slider"></span></label>
                             </div>
                         </div>
@@ -664,76 +700,72 @@
                     </div>
                 </div>
                 
-                <div class="support-grid">
-                    <div class="card support-card highlight">
-                        <span class="big-icon">🤖</span>
-                        <h3>Shadow AI Pro</h3>
-                        <p>Instant answers about shadow bans</p>
-                        <p class="ai-remaining" id="ai-questions-left">10 questions/day remaining</p>
-                        <button class="primary-btn" id="open-ai">Open AI Chat</button>
-                    </div>
-                    
-                    <div class="card support-card">
-                        <span class="big-icon">💬</span>
-                        <h3>Live Chat</h3>
-                        <p>Chat with our support team</p>
-                        <button class="primary-btn" id="open-live-chat">Start Chat</button>
-                    </div>
-                    
-                    <div class="card support-card">
-                        <span class="big-icon">📧</span>
-                        <h3>Email</h3>
-                        <p>We respond within 24 hours</p>
-                        <a href="mailto:andrew@ghost081280.com" class="secondary-btn">andrew@ghost081280.com</a>
+                <!-- Shadow AI Card -->
+                <div class="card support-ai-card">
+                    <div class="support-ai-content">
+                        <div class="support-ai-info">
+                            <span class="big-icon">🤖</span>
+                            <div>
+                                <h3>Shadow AI Pro</h3>
+                                <p>Instant answers about shadow bans, platform policies, and recovery tips</p>
+                                <p class="ai-remaining" id="ai-questions-left">10 questions/day remaining</p>
+                            </div>
+                        </div>
+                        <button class="primary-btn" id="open-ai">🤖 Open AI Chat</button>
                     </div>
                 </div>
                 
-                <!-- Live Chat Window -->
-                <div class="card live-chat-card hidden" id="live-chat-window">
-                    <div class="card-header">
-                        <h2>💬 Live Chat with Support</h2>
-                        <div class="chat-status">
-                            <span class="status-dot online"></span>
-                            <span>Support Online</span>
+                <!-- Message + Live Chat Side by Side -->
+                <div class="support-split">
+                    <!-- Send Message -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h2>📝 Send Message</h2>
+                        </div>
+                        <div class="card-body">
+                            <p class="description">Send us a message and we'll respond within 24 hours</p>
+                            <form id="support-form">
+                                <div class="config-field">
+                                    <label>Topic</label>
+                                    <select class="input" id="support-topic">
+                                        <option value="">Select topic...</option>
+                                        <option value="bug">🐛 Bug Report</option>
+                                        <option value="feature">💡 Feature Request</option>
+                                        <option value="billing">💳 Billing</option>
+                                        <option value="account">👤 Account Issue</option>
+                                        <option value="other">📝 Other</option>
+                                    </select>
+                                </div>
+                                <div class="config-field">
+                                    <label>Message</label>
+                                    <textarea class="input" id="support-msg" placeholder="How can we help?" rows="4"></textarea>
+                                </div>
+                                <button type="submit" class="primary-btn full-width">📤 Send Message</button>
+                            </form>
                         </div>
                     </div>
-                    <div class="chat-window">
-                        <div class="chat-messages" id="live-chat-messages">
-                            <div class="chat-bubble admin">
-                                <span class="bubble-text">Hi! 👋 How can I help you today?</span>
-                                <span class="bubble-time">Just now</span>
+                    
+                    <!-- Live Chat -->
+                    <div class="card live-chat-card">
+                        <div class="card-header">
+                            <h2>💬 Live Chat</h2>
+                            <div class="admin-status" id="admin-status">
+                                <span class="status-dot offline" id="admin-status-dot"></span>
+                                <span id="admin-status-text">Offline</span>
                             </div>
                         </div>
-                        <div class="chat-input-area">
-                            <input type="text" id="live-chat-input" placeholder="Type your message...">
-                            <button class="send-btn" id="live-chat-send">Send</button>
+                        <div class="card-body live-chat-body">
+                            <div class="chat-messages" id="live-chat-messages">
+                                <div class="chat-welcome">
+                                    <span class="welcome-icon">💬</span>
+                                    <p id="chat-welcome-text">Andrew is currently offline. Leave a message or try again later!</p>
+                                </div>
+                            </div>
+                            <div class="chat-input-area">
+                                <input type="text" id="live-chat-input" placeholder="Type your message..." disabled>
+                                <button class="send-btn" id="live-chat-send" disabled>Send</button>
+                            </div>
                         </div>
-                    </div>
-                </div>
-                
-                <!-- Send Message Form -->
-                <div class="card">
-                    <div class="card-header">
-                        <h2>📝 Send Message</h2>
-                    </div>
-                    <div class="card-body">
-                        <form id="support-form">
-                            <div class="config-field">
-                                <label>Topic</label>
-                                <select class="input" id="support-topic">
-                                    <option value="">Select topic...</option>
-                                    <option value="bug">Bug Report</option>
-                                    <option value="feature">Feature Request</option>
-                                    <option value="billing">Billing</option>
-                                    <option value="other">Other</option>
-                                </select>
-                            </div>
-                            <div class="config-field">
-                                <label>Message</label>
-                                <textarea class="input" id="support-msg" placeholder="How can we help?" rows="4"></textarea>
-                            </div>
-                            <button type="submit" class="primary-btn">Send Message</button>
-                        </form>
                     </div>
                 </div>
                 
@@ -742,8 +774,8 @@
                     <div class="card-header">
                         <h2>👨‍💻 Connect with the Developer</h2>
                     </div>
-                    <div class="card-body">
-                        <p class="description">Reach Andrew directly</p>
+                    <div class="card-body connect-dev">
+                        <p class="description">Reach Andrew directly on social media</p>
                         <div class="social-links">
                             <a href="https://x.com/Ghost081280" target="_blank" class="social-btn">𝕏</a>
                             <a href="https://linkedin.com/in/andrewcouch" target="_blank" class="social-btn">in</a>
@@ -752,6 +784,22 @@
                     </div>
                 </div>
             </section>
+            
+            <!-- Alert Info Modal -->
+            <div class="modal-overlay hidden" id="alert-info-modal">
+                <div class="modal modal-sm">
+                    <div class="modal-header">
+                        <h2 id="alert-info-title">Alert Info</h2>
+                        <button class="modal-close" onclick="closeAlertInfo()">×</button>
+                    </div>
+                    <div class="modal-body">
+                        <p id="alert-info-text"></p>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="primary-btn" onclick="closeAlertInfo()">Got it</button>
+                    </div>
+                </div>
+            </div>
             
             <!-- FOOTER -->
             <footer class="dashboard-footer">
@@ -809,6 +857,7 @@
     </div>
     
     <!-- Scripts -->
+    <script src="js/platforms.js"></script>
     <script src="js/dashboard.js"></script>
     <script src="js/shadow-ai-dashboard.js"></script>
 </body>

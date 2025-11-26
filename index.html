@@ -283,6 +283,12 @@
             
             <div class="audience-grid">
                 <div class="audience-card reveal">
+                    <button class="audience-info-btn" data-audience="influencer" aria-label="Why this matters for influencers">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+                            <path d="M12 16V12M12 8H12.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                    </button>
                     <span class="audience-icon">📱</span>
                     <div class="audience-content">
                         <h4>Influencers & Creators</h4>
@@ -291,6 +297,12 @@
                     <a href="#pricing" class="audience-btn">Get Started →</a>
                 </div>
                 <div class="audience-card reveal">
+                    <button class="audience-info-btn" data-audience="politician" aria-label="Why this matters for politicians">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+                            <path d="M12 16V12M12 8H12.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                    </button>
                     <span class="audience-icon">🗳️</span>
                     <div class="audience-content">
                         <h4>Politicians & Officials</h4>
@@ -299,10 +311,16 @@
                     <a href="#pricing" class="audience-btn">Get Started →</a>
                 </div>
                 <div class="audience-card reveal">
-                    <span class="audience-icon">💰</span>
+                    <button class="audience-info-btn" data-audience="public-figure" aria-label="Why this matters for public figures">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+                            <path d="M12 16V12M12 8H12.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                    </button>
+                    <span class="audience-icon">⭐</span>
                     <div class="audience-content">
-                        <h4>Online Sellers</h4>
-                        <p>Sales down? Products hidden? We check if platforms are suppressing your content.</p>
+                        <h4>Public Figures</h4>
+                        <p>Actors, athletes, royalty—ensure your voice reaches your audience without hidden restrictions.</p>
                     </div>
                     <a href="#pricing" class="audience-btn">Get Started →</a>
                 </div>
@@ -957,6 +975,22 @@
             <div class="modal-footer">
                 <a href="#pricing" class="btn btn-primary btn-lg" onclick="closeLimitModal()">View Pricing →</a>
                 <button class="btn btn-ghost" onclick="closeLimitModal()">Maybe Later</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Audience Info Modal -->
+    <div id="audience-modal" class="modal hidden">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <button class="modal-close">&times;</button>
+            <div class="modal-icon" id="audience-modal-icon">📱</div>
+            <h3 class="modal-title" id="audience-modal-title">Why This Matters</h3>
+            <div class="modal-body" id="audience-modal-body">
+                <!-- Content populated by JS -->
+            </div>
+            <div class="modal-footer">
+                <a href="#pricing" class="btn btn-primary btn-lg" onclick="document.getElementById('audience-modal').classList.add('hidden'); document.body.style.overflow = '';">Get Protected →</a>
             </div>
         </div>
     </div>

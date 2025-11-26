@@ -2627,6 +2627,94 @@ strong, b {
 }
 
 /* =============================================================================
+   SUPPORTED PLATFORMS (Universal)
+   ============================================================================= */
+.supported-platforms {
+    text-align: center;
+    margin-top: var(--space-lg);
+    padding-top: var(--space-md);
+}
+
+.supported-platforms p {
+    font-size: 0.8125rem;
+    color: var(--text-muted);
+    margin-bottom: var(--space-sm);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 500;
+}
+
+.platform-icons {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--space-xs);
+}
+
+.platform-chip {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
+    border: 1.5px solid rgba(99, 102, 241, 0.25);
+    border-radius: var(--radius-lg);
+    font-size: 1.25rem;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    position: relative;
+}
+
+.platform-chip:hover {
+    border-color: var(--primary);
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.2) 0%, rgba(139, 92, 246, 0.2) 100%);
+    transform: translateY(-3px);
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25);
+}
+
+.platform-chip:active {
+    transform: translateY(-1px);
+}
+
+/* Platform chip with logo placeholder */
+.platform-chip img {
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+    border-radius: 4px;
+}
+
+/* "+X more" chip */
+.platform-chip.more-chip {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--primary-light);
+    background: rgba(99, 102, 241, 0.15);
+    border-color: rgba(99, 102, 241, 0.4);
+    min-width: 44px;
+    padding: 0 var(--space-xs);
+}
+
+.platform-chip.more-chip:hover {
+    background: rgba(99, 102, 241, 0.3);
+    color: var(--text);
+}
+
+@media (max-width: 480px) {
+    .platform-chip {
+        width: 40px;
+        height: 40px;
+        font-size: 1.125rem;
+    }
+    
+    .platform-chip.more-chip {
+        font-size: 0.6875rem;
+    }
+}
+
+/* =============================================================================
    METHODOLOGY SECTION (Detection Engine)
    ============================================================================= */
 .methodology-section {

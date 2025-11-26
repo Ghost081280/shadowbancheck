@@ -1215,6 +1215,9 @@ strong, b {
     position: relative;
     animation: modalSlideIn var(--transition-base);
     text-align: center;
+    align-self: flex-start;
+    margin-top: 5vh;
+    transition: opacity 0.15s ease, transform 0.15s ease;
 }
 
 .modal-content.modal-large {

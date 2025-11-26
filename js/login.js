@@ -1,12 +1,12 @@
 /* =============================================================================
-   LOGIN.JS - Login Page Functionality
+   LOGIN.JS - Login Page Functionality with Signup & Verification
    ============================================================================= */
 
 // =============================================================================
 // CREDENTIALS
 // =============================================================================
 const ADMIN_CREDENTIALS = {
-    email: 'admin',
+    email: 'admin@shadowbancheck.io',
     password: 'admin'
 };
 
@@ -16,6 +16,13 @@ const DEMO_CREDENTIALS = {
 };
 
 // =============================================================================
+// PENDING SIGNUPS STORAGE (Simulates backend)
+// In production, this would be server-side
+// =============================================================================
+let pendingSignup = null;  // Stores current signup attempt
+let resendCooldown = 0;    // Cooldown timer for resend
+
+// =============================================================================
 // INITIALIZATION
 // =============================================================================
 document.addEventListener('DOMContentLoaded', () => {
@@ -23,6 +30,8 @@ document.addEventListener('DOMContentLoaded', () => {
     initGoogleSignIn();
     initPasswordToggle();
     initForgotPassword();
+    initSignupForm();
+    initVerifyForm();
 });
 
 // =============================================================================
@@ -50,7 +59,7 @@ function initLoginForm() {
         // Check if admin
         const isAdmin = validateAdmin(email, password);
         
-        // Check if regular user
+        // Check if regular user (demo or registered)
         const isValidUser = validateCredentials(email, password);
         
         if (isAdmin) {
@@ -101,10 +110,21 @@ function validateAdmin(email, password) {
 }
 
 function validateCredentials(email, password) {
-    // For demo, check against demo credentials
-    // In production, this would be an API call
-    return email.toLowerCase() === DEMO_CREDENTIALS.email.toLowerCase() && 
-           password === DEMO_CREDENTIALS.password;
+    // Check demo credentials
+    if (email.toLowerCase() === DEMO_CREDENTIALS.email.toLowerCase() && 
+        password === DEMO_CREDENTIALS.password) {
+        return true;
+    }
+    
+    // Check registered users from localStorage
+    const users = JSON.parse(localStorage.getItem('shadowban_users') || '[]');
+    const user = users.find(u => u.email.toLowerCase() === email.toLowerCase());
+    
+    if (user && user.password === password && user.verified) {
+        return true;
+    }
+    
+    return false;
 }
 
 function setLoading(isLoading) {
@@ -139,6 +159,325 @@ function hideError() {
 }
 
 // =============================================================================
+// SIGNUP MODAL
+// =============================================================================
+function showSignupModal() {
+    document.getElementById('signup-modal')?.classList.remove('hidden');
+    // Reset to step 1
+    showSignupStep(1);
+    // Focus email field
+    setTimeout(() => {
+        document.getElementById('signup-email')?.focus();
+    }, 100);
+}
+
+function closeSignupModal() {
+    document.getElementById('signup-modal')?.classList.add('hidden');
+    // Reset forms
+    document.getElementById('signup-form')?.reset();
+    document.getElementById('verify-form')?.reset();
+    hideSignupError();
+    hideVerifyError();
+    pendingSignup = null;
+}
+
+function showSignupStep(step) {
+    document.getElementById('signup-step-1')?.classList.toggle('hidden', step !== 1);
+    document.getElementById('signup-step-2')?.classList.toggle('hidden', step !== 2);
+    document.getElementById('signup-step-3')?.classList.toggle('hidden', step !== 3);
+    
+    // Update modal title
+    const title = document.getElementById('signup-modal-title');
+    if (title) {
+        if (step === 1) title.textContent = '🚀 Create Your Account';
+        if (step === 2) title.textContent = '📧 Verify Your Email';
+        if (step === 3) title.textContent = '🎉 Welcome!';
+    }
+}
+
+function goBackToStep1() {
+    showSignupStep(1);
+    pendingSignup = null;
+}
+
+// =============================================================================
+// SIGNUP FORM HANDLING
+// =============================================================================
+function initSignupForm() {
+    const form = document.getElementById('signup-form');
+    
+    form?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const email = document.getElementById('signup-email').value.trim();
+        const password = document.getElementById('signup-password').value;
+        const confirm = document.getElementById('signup-confirm').value;
+        
+        // Hide previous errors
+        hideSignupError();
+        
+        // Validation
+        if (!isValidEmail(email)) {
+            showSignupError('Please enter a valid email address.');
+            return;
+        }
+        
+        if (password.length < 8) {
+            showSignupError('Password must be at least 8 characters.');
+            return;
+        }
+        
+        if (password !== confirm) {
+            showSignupError('Passwords do not match.');
+            return;
+        }
+        
+        // Check if email already registered
+        const users = JSON.parse(localStorage.getItem('shadowban_users') || '[]');
+        if (users.some(u => u.email.toLowerCase() === email.toLowerCase())) {
+            showSignupError('An account with this email already exists.');
+            return;
+        }
+        
+        // Show loading
+        setSignupLoading(true);
+        
+        // Simulate sending email (1-2 second delay)
+        await delay(1500);
+        
+        // Generate 6-digit code
+        const verificationCode = generateCode();
+        
+        // Store pending signup
+        pendingSignup = {
+            email: email,
+            password: password,
+            code: verificationCode,
+            timestamp: Date.now()
+        };
+        
+        // In production, send email here via your email service
+        // For now, we'll show it in a toast (REMOVE IN PRODUCTION)
+        console.log(`📧 Verification code for ${email}: ${verificationCode}`);
+        showToast('📧', `Code sent! (Dev: ${verificationCode})`);
+        
+        // Reset loading
+        setSignupLoading(false);
+        
+        // Show verification step
+        document.getElementById('verify-email-display').textContent = email;
+        showSignupStep(2);
+        
+        // Focus code input
+        setTimeout(() => {
+            document.getElementById('verify-code')?.focus();
+        }, 100);
+        
+        // Start resend cooldown
+        startResendCooldown();
+    });
+}
+
+function setSignupLoading(isLoading) {
+    const btn = document.getElementById('signup-btn');
+    const btnText = btn?.querySelector('.btn-text');
+    const btnLoading = btn?.querySelector('.btn-loading');
+    
+    if (isLoading) {
+        btn.disabled = true;
+        btnText?.classList.add('hidden');
+        btnLoading?.classList.remove('hidden');
+    } else {
+        btn.disabled = false;
+        btnText?.classList.remove('hidden');
+        btnLoading?.classList.add('hidden');
+    }
+}
+
+function showSignupError(message) {
+    const errorDiv = document.getElementById('signup-error');
+    const errorMsg = document.getElementById('signup-error-message');
+    
+    if (errorDiv && errorMsg) {
+        errorMsg.textContent = message;
+        errorDiv.classList.remove('hidden');
+    }
+}
+
+function hideSignupError() {
+    document.getElementById('signup-error')?.classList.add('hidden');
+}
+
+function generateCode() {
+    return Math.floor(100000 + Math.random() * 900000).toString();
+}
+
+function isValidEmail(email) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+// =============================================================================
+// VERIFICATION FORM HANDLING
+// =============================================================================
+function initVerifyForm() {
+    const form = document.getElementById('verify-form');
+    
+    form?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const code = document.getElementById('verify-code').value.trim();
+        
+        // Hide previous errors
+        hideVerifyError();
+        
+        if (!pendingSignup) {
+            showVerifyError('Session expired. Please start over.');
+            return;
+        }
+        
+        // Check if code expired (10 minutes)
+        if (Date.now() - pendingSignup.timestamp > 10 * 60 * 1000) {
+            showVerifyError('Code expired. Please request a new one.');
+            return;
+        }
+        
+        // Validate code format
+        if (!/^\d{6}$/.test(code)) {
+            showVerifyError('Please enter a valid 6-digit code.');
+            return;
+        }
+        
+        // Show loading
+        setVerifyLoading(true);
+        
+        await delay(1000);
+        
+        // Check code
+        if (code !== pendingSignup.code) {
+            setVerifyLoading(false);
+            showVerifyError('Invalid verification code. Please try again.');
+            return;
+        }
+        
+        // Success! Create the user account
+        const users = JSON.parse(localStorage.getItem('shadowban_users') || '[]');
+        users.push({
+            email: pendingSignup.email,
+            password: pendingSignup.password,
+            verified: true,
+            createdAt: Date.now()
+        });
+        localStorage.setItem('shadowban_users', JSON.stringify(users));
+        
+        // Clear pending signup
+        const completedEmail = pendingSignup.email;
+        pendingSignup = null;
+        
+        // Reset loading
+        setVerifyLoading(false);
+        
+        // Show success
+        showSignupStep(3);
+        
+        // Store in session so they're logged in
+        sessionStorage.setItem('shadowban_session', JSON.stringify({
+            email: completedEmail,
+            loggedIn: true,
+            isAdmin: false,
+            timestamp: Date.now()
+        }));
+    });
+}
+
+function setVerifyLoading(isLoading) {
+    const btn = document.getElementById('verify-btn');
+    const btnText = btn?.querySelector('.btn-text');
+    const btnLoading = btn?.querySelector('.btn-loading');
+    
+    if (isLoading) {
+        btn.disabled = true;
+        btnText?.classList.add('hidden');
+        btnLoading?.classList.remove('hidden');
+    } else {
+        btn.disabled = false;
+        btnText?.classList.remove('hidden');
+        btnLoading?.classList.add('hidden');
+    }
+}
+
+function showVerifyError(message) {
+    const errorDiv = document.getElementById('verify-error');
+    const errorMsg = document.getElementById('verify-error-message');
+    
+    if (errorDiv && errorMsg) {
+        errorMsg.textContent = message;
+        errorDiv.classList.remove('hidden');
+    }
+}
+
+function hideVerifyError() {
+    document.getElementById('verify-error')?.classList.add('hidden');
+}
+
+// =============================================================================
+// RESEND CODE FUNCTIONALITY
+// =============================================================================
+function resendCode() {
+    if (resendCooldown > 0 || !pendingSignup) return;
+    
+    // Generate new code
+    const newCode = generateCode();
+    pendingSignup.code = newCode;
+    pendingSignup.timestamp = Date.now();
+    
+    // In production, send email here
+    console.log(`📧 New verification code for ${pendingSignup.email}: ${newCode}`);
+    showToast('📧', `New code sent! (Dev: ${newCode})`);
+    
+    // Start cooldown
+    startResendCooldown();
+}
+
+function startResendCooldown() {
+    resendCooldown = 60;
+    const resendBtn = document.getElementById('resend-btn');
+    const resendTimer = document.getElementById('resend-timer');
+    
+    resendBtn.disabled = true;
+    resendTimer?.classList.remove('hidden');
+    
+    const interval = setInterval(() => {
+        resendCooldown--;
+        if (resendTimer) resendTimer.textContent = `(${resendCooldown}s)`;
+        
+        if (resendCooldown <= 0) {
+            clearInterval(interval);
+            resendBtn.disabled = false;
+            resendTimer?.classList.add('hidden');
+        }
+    }, 1000);
+}
+
+function signupComplete() {
+    // Redirect to dashboard
+    window.location.href = 'dashboard.html';
+}
+
+// =============================================================================
+// PASSWORD TOGGLE FOR SIGNUP
+// =============================================================================
+function toggleSignupPassword(inputId) {
+    const input = document.getElementById(inputId);
+    const btn = input?.nextElementSibling;
+    
+    if (input) {
+        const type = input.type === 'password' ? 'text' : 'password';
+        input.type = type;
+        if (btn) btn.textContent = type === 'password' ? '👁️' : '🙈';
+    }
+}
+
+// =============================================================================
 // GOOGLE SIGN IN
 // =============================================================================
 function initGoogleSignIn() {
@@ -156,7 +495,7 @@ function initGoogleSignIn() {
 }
 
 // =============================================================================
-// PASSWORD TOGGLE
+// PASSWORD TOGGLE (Login)
 // =============================================================================
 function initPasswordToggle() {
     const toggleBtn = document.getElementById('toggle-password');
@@ -305,8 +644,16 @@ function delay(ms) {
     }
 })();
 
-// Make functions globally available
+// =============================================================================
+// MAKE FUNCTIONS GLOBALLY AVAILABLE
+// =============================================================================
 window.autofillDemo = autofillDemo;
 window.copyToClipboard = copyToClipboard;
 window.showForgotPassword = showForgotPassword;
 window.closeForgotPassword = closeForgotPassword;
+window.showSignupModal = showSignupModal;
+window.closeSignupModal = closeSignupModal;
+window.goBackToStep1 = goBackToStep1;
+window.toggleSignupPassword = toggleSignupPassword;
+window.resendCode = resendCode;
+window.signupComplete = signupComplete;

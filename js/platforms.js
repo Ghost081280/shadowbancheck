@@ -348,6 +348,6 @@ window.getPlatformCount = function() {
 
 console.log('✅ Platforms loaded:', window.platformData.length, 'social media platforms');
 
-// Alias for backwards compatibility
+// Alias for backwards compatibility - make PLATFORMS globally available
 window.PLATFORMS = window.platformData;
-const PLATFORMS = window.platformData;
+var PLATFORMS = window.platformData;

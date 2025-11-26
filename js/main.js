@@ -280,7 +280,7 @@ function openPlatformModal(platform) {
     const modalTitle = document.getElementById('modal-title');
     const modalStatus = document.getElementById('modal-status');
     const modalBody = document.getElementById('modal-body');
-    const modalCta = document.getElementById('modal-cta');
+    const modalFooter = document.getElementById('modal-footer');
     
     if (modalIcon) modalIcon.textContent = platform.icon;
     if (modalTitle) modalTitle.textContent = `Check ${platform.name}`;
@@ -313,15 +313,27 @@ function openPlatformModal(platform) {
         }
     }
     
-    // Update CTA button
-    if (modalCta) {
+    // Update footer - show check type buttons for live platforms
+    if (modalFooter) {
         if (platform.status === 'live') {
-            const platformSlug = platform.name.toLowerCase().replace(/[^a-z0-9]/g, '');
-            modalCta.href = `checker.html?platform=${platformSlug}`;
-            modalCta.textContent = `Check ${platform.name} →`;
-            modalCta.style.display = 'block';
+            modalFooter.style.display = 'flex';
+            
+            // Set up button links
+            const btnAccount = document.getElementById('modal-btn-account');
+            const btnPost = document.getElementById('modal-btn-post');
+            const btnHashtag = document.getElementById('modal-btn-hashtag');
+            
+            if (btnAccount) {
+                btnAccount.href = `checker.html?platform=${platform.id}`;
+            }
+            if (btnPost) {
+                btnPost.href = 'post-checker.html';
+            }
+            if (btnHashtag) {
+                btnHashtag.href = 'hashtag-checker.html';
+            }
         } else {
-            modalCta.style.display = 'none';
+            modalFooter.style.display = 'none';
         }
     }
     
@@ -767,6 +779,48 @@ function setupModalClose(modal) {
 
 window.closeLimitModal = closeLimitModal;
 
+function initPowerPlatforms() {
+    const container = document.getElementById('power-platform-icons');
+    if (!container || typeof PLATFORMS === 'undefined') return;
+    
+    // Get live platforms - show Twitter/X and Reddit first
+    const livePlatforms = PLATFORMS.filter(p => p.status === 'live');
+    const priorityOrder = ['twitter', 'reddit'];
+    
+    livePlatforms.sort((a, b) => {
+        const aIndex = priorityOrder.indexOf(a.id);
+        const bIndex = priorityOrder.indexOf(b.id);
+        if (aIndex !== -1 && bIndex !== -1) return aIndex - bIndex;
+        if (aIndex !== -1) return -1;
+        if (bIndex !== -1) return 1;
+        return 0;
+    });
+    
+    // Show first 6 platforms + "more" chip
+    const displayPlatforms = livePlatforms.slice(0, 6);
+    const remainingCount = PLATFORMS.length - 6;
+    
+    let html = displayPlatforms.map(p => `
+        <span class="platform-chip" data-platform="${p.id}" title="${p.name}">${p.icon}</span>
+    `).join('');
+    
+    if (remainingCount > 0) {
+        html += `<span class="platform-chip coming" title="More platforms">+${remainingCount}</span>`;
+    }
+    
+    container.innerHTML = html;
+    
+    // Add click handlers
+    container.querySelectorAll('.platform-chip[data-platform]').forEach(chip => {
+        chip.addEventListener('click', () => {
+            const platform = PLATFORMS.find(p => p.id === chip.dataset.platform);
+            if (platform) {
+                openPlatformModal(platform);
+            }
+        });
+    });
+}
+
 function initPowerCheck() {
     const form = document.getElementById('power-check-form');
     const input = document.getElementById('power-url-input');
@@ -774,6 +828,9 @@ function initPowerCheck() {
     const infoBtn = document.getElementById('power-info-btn');
     const checkAnotherBtn = document.getElementById('power-check-another-btn');
     const resultsSection = document.getElementById('power-results');
+    
+    // Initialize power platforms display
+    initPowerPlatforms();
     
     // Info button
     infoBtn?.addEventListener('click', function(e) {
@@ -831,6 +888,24 @@ function runPowerCheck(url) {
     const button = document.getElementById('power-analyze-btn');
     const resultsSection = document.getElementById('power-results');
     
+    // Detect platform first
+    const detectedPlatform = detectPlatformFromUrl(url);
+    
+    // Check if platform is supported (live)
+    if (detectedPlatform.key === 'unknown') {
+        showToast('Sorry, we don\'t recognize this URL. Please enter a valid social media post URL.');
+        return;
+    }
+    
+    // Check if platform is live in platforms.js
+    if (typeof PLATFORMS !== 'undefined') {
+        const platformData = PLATFORMS.find(p => p.id === detectedPlatform.key);
+        if (!platformData || platformData.status !== 'live') {
+            showToast(`${detectedPlatform.name} support coming soon! Currently we support Twitter/X, Reddit, and more.`);
+            return;
+        }
+    }
+    
     // Set loading state
     button?.classList.add('loading');
     button?.setAttribute('disabled', 'true');
@@ -840,7 +915,7 @@ function runPowerCheck(url) {
     
     // Simulate analysis delay
     setTimeout(() => {
-        const platform = detectPlatformFromUrl(url);
+        const platform = detectedPlatform;
         const username = extractUsernameFromUrl(url, platform);
         const hashtags = generateDemoHashtags(platform);
         const results = generateDemoResults(platform, username, hashtags);
@@ -1045,19 +1120,24 @@ function initCookiePopup() {
         return;
     }
     
-    // Already accepted - hide immediately (prevent animation)
+    // Already accepted - hide immediately
     if (localStorage.getItem('cookies_accepted')) {
         cookiePopup.style.display = 'none';
         return;
     }
     
-    console.log('Cookie popup will show in 1.5s');
+    // Show cookie popup after 1.5 seconds
+    setTimeout(() => {
+        cookiePopup.classList.add('show');
+        console.log('Cookie popup shown');
+    }, 1500);
     
     // Accept button
     const acceptBtn = document.getElementById('cookie-accept');
     if (acceptBtn) {
         acceptBtn.addEventListener('click', function() {
             localStorage.setItem('cookies_accepted', 'true');
+            cookiePopup.classList.remove('show');
             cookiePopup.classList.add('dismissed');
             setTimeout(() => cookiePopup.style.display = 'none', 400);
         });
@@ -1067,6 +1147,7 @@ function initCookiePopup() {
     const dismissBtn = document.getElementById('cookie-dismiss');
     if (dismissBtn) {
         dismissBtn.addEventListener('click', function() {
+            cookiePopup.classList.remove('show');
             cookiePopup.classList.add('dismissed');
             setTimeout(() => cookiePopup.style.display = 'none', 400);
         });

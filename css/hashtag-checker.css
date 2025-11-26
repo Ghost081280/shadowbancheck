@@ -600,13 +600,45 @@
     margin: 0;
 }
 
-/* Methodology Section - Matching checker.css */
+/* Methodology Section - With Engine Info Button */
 .methodology-section {
     margin-top: var(--space-3xl);
     padding: var(--space-2xl);
     background: var(--card);
     border: 2px solid var(--border);
     border-radius: var(--radius-2xl);
+    position: relative;
+}
+
+/* Engine Info Button - Top Right of Methodology Section */
+.engine-info-btn {
+    position: absolute;
+    top: var(--space-lg);
+    right: var(--space-lg);
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(99, 102, 241, 0.15);
+    border: 2px solid rgba(99, 102, 241, 0.4);
+    border-radius: 50%;
+    color: var(--primary-light);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    z-index: 10;
+}
+
+.engine-info-btn:hover {
+    background: rgba(99, 102, 241, 0.25);
+    border-color: var(--primary);
+    transform: scale(1.08);
+    box-shadow: 0 0 16px rgba(99, 102, 241, 0.4);
+}
+
+.engine-info-btn svg {
+    width: 20px;
+    height: 20px;
 }
 
 .methodology-title {
@@ -734,6 +766,73 @@
 
 .citation-content p:last-child {
     margin-bottom: 0;
+}
+
+/* =============================================================================
+   5-FACTOR ENGINE LIST STYLING (for modals)
+   ============================================================================= */
+.engine-factors {
+    list-style: none;
+    padding: 0;
+    margin: var(--space-lg) 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+}
+
+.engine-factors li {
+    display: grid;
+    grid-template-columns: 24px 32px 1fr;
+    gap: var(--space-sm);
+    align-items: center;
+    padding: var(--space-md);
+    border-radius: var(--radius-md);
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+}
+
+.engine-factors .factor-active {
+    border-color: rgba(16, 185, 129, 0.4);
+    background: rgba(16, 185, 129, 0.05);
+}
+
+.engine-factors .factor-inactive {
+    opacity: 0.6;
+    border-color: var(--border);
+}
+
+.engine-factors .factor-check {
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+.engine-factors .factor-active .factor-check {
+    color: var(--success);
+}
+
+.engine-factors .factor-inactive .factor-check {
+    color: var(--text-muted);
+}
+
+.engine-factors .factor-icon {
+    font-size: 1.25rem;
+}
+
+.engine-factors .factor-content {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.engine-factors .factor-name {
+    font-weight: 600;
+    color: var(--text);
+    font-size: 0.9375rem;
+}
+
+.engine-factors .factor-desc {
+    font-size: 0.8125rem;
+    color: var(--text-muted);
 }
 
 /* =============================================================================
@@ -975,6 +1074,38 @@
     .legend-item {
         flex-wrap: wrap;
         justify-content: center;
+    }
+    
+    /* Engine info button - mobile */
+    .engine-info-btn {
+        top: var(--space-md);
+        right: var(--space-md);
+        width: 36px;
+        height: 36px;
+    }
+    
+    .engine-info-btn svg {
+        width: 18px;
+        height: 18px;
+    }
+    
+    /* Engine factors list - mobile */
+    .engine-factors li {
+        grid-template-columns: 20px 28px 1fr;
+        padding: var(--space-sm);
+        gap: var(--space-xs);
+    }
+    
+    .engine-factors .factor-icon {
+        font-size: 1.125rem;
+    }
+    
+    .engine-factors .factor-name {
+        font-size: 0.875rem;
+    }
+    
+    .engine-factors .factor-desc {
+        font-size: 0.75rem;
     }
 }
 

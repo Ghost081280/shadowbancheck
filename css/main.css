@@ -1484,6 +1484,81 @@ strong, b {
     gap: var(--space-sm);
 }
 
+/* Platform Checks List (used in modals) */
+.platform-checks-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+}
+
+.platform-checks-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-sm);
+    padding: var(--space-sm);
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: var(--radius-md);
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    line-height: 1.4;
+}
+
+/* All Platforms List (used in "+X more" modals) */
+.all-platforms-list {
+    text-align: left;
+}
+
+.platforms-group {
+    margin-bottom: var(--space-lg);
+}
+
+.platforms-group:last-child {
+    margin-bottom: 0;
+}
+
+.platforms-group h4 {
+    font-size: 0.875rem;
+    margin-bottom: var(--space-sm);
+    font-weight: 600;
+}
+
+.platforms-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-xs);
+}
+
+.platform-item-icon {
+    font-size: 1.125rem;
+    margin-right: var(--space-xs);
+}
+
+.all-platforms-list .platform-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: var(--space-sm) var(--space-md);
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    font-size: 0.8125rem;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    min-height: auto;
+}
+
+.all-platforms-list .platform-item:hover {
+    border-color: var(--primary);
+    background: rgba(99, 102, 241, 0.1);
+}
+
+.all-platforms-list .platform-item.coming {
+    opacity: 0.6;
+}
+
 .modal-footer .btn {
     width: 100%;
 }
@@ -2699,6 +2774,20 @@ strong, b {
 
 .platform-chip.more-chip:hover {
     background: rgba(99, 102, 241, 0.3);
+    color: var(--text);
+}
+
+/* Coming soon chip (used for "+X more" and coming soon platforms) */
+.platform-chip.coming {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    background: rgba(255, 255, 255, 0.05);
+    border-color: var(--border);
+}
+
+.platform-chip.coming:hover {
+    border-color: var(--primary);
     color: var(--text);
 }
 

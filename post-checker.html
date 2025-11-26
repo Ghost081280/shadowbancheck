@@ -316,39 +316,57 @@
         <div class="modal-content">
             <button class="modal-close">&times;</button>
             <div class="modal-icon">🧠</div>
-            <h3 class="modal-title">Our 5-Factor Detection Engine</h3>
+            <h3 class="modal-title">Powered by Our 5-Factor Detection Engine</h3>
             <div class="modal-body">
-                <p class="modal-intro">The Post URL Checker uses <strong>4 of our 5 factors</strong> to analyze your post:</p>
+                <p class="modal-intro">The Post URL Checker uses <strong>4 of our 5 detection factors</strong>:</p>
                 
                 <ul class="engine-factors">
                     <li class="factor-active">
                         <span class="factor-check">✓</span>
-                        <strong>🔌 Platform APIs</strong>
-                        <span class="factor-desc">Fetch post engagement metrics and visibility status</span>
+                        <span class="factor-icon">🔌</span>
+                        <div class="factor-content">
+                            <span class="factor-name">Platform APIs</span>
+                            <span class="factor-desc">Fetch post engagement metrics and visibility</span>
+                        </div>
                     </li>
                     <li class="factor-active">
                         <span class="factor-check">✓</span>
-                        <strong>🌐 Web Analysis</strong>
-                        <span class="factor-desc">Search visibility and hashtag feed appearance tests</span>
+                        <span class="factor-icon">🌐</span>
+                        <div class="factor-content">
+                            <span class="factor-name">Web Analysis</span>
+                            <span class="factor-desc">Search visibility and feed appearance tests</span>
+                        </div>
                     </li>
                     <li class="factor-inactive">
                         <span class="factor-check">○</span>
-                        <strong>📊 Historical Data</strong>
-                        <span class="factor-desc">Not applicable for single post checks</span>
+                        <span class="factor-icon">📊</span>
+                        <div class="factor-content">
+                            <span class="factor-name">Historical Data</span>
+                            <span class="factor-desc">Not applicable for single post checks</span>
+                        </div>
                     </li>
                     <li class="factor-active">
                         <span class="factor-check">✓</span>
-                        <strong>#️⃣ Hashtag Database</strong>
-                        <span class="factor-desc">Cross-reference hashtags against banned/restricted database</span>
+                        <span class="factor-icon">#️⃣</span>
+                        <div class="factor-content">
+                            <span class="factor-name">Hashtag Database</span>
+                            <span class="factor-desc">Cross-reference against banned/restricted tags</span>
+                        </div>
                     </li>
                     <li class="factor-active">
                         <span class="factor-check">✓</span>
-                        <strong>🔍 IP Analysis</strong>
-                        <span class="factor-desc">VPN/proxy detection, location risk assessment</span>
+                        <span class="factor-icon">🔍</span>
+                        <div class="factor-content">
+                            <span class="factor-name">IP Analysis</span>
+                            <span class="factor-desc">VPN/proxy detection, location risk assessment</span>
+                        </div>
                     </li>
                 </ul>
                 
-                <p class="engine-conclusion">Our Engine combines all applicable signals and assigns a <strong>Shadow Ban Probability Score</strong> with detailed breakdowns.</p>
+                <div class="modal-tech-note">
+                    <h4>💡 Our Engine combines all applicable signals</h4>
+                    <p>Each post is analyzed for suppression indicators and assigned a probability score with detailed breakdowns.</p>
+                </div>
             </div>
             <div class="modal-footer">
                 <button class="btn btn-primary btn-lg" onclick="document.getElementById('engine-info-modal').classList.add('hidden'); document.body.style.overflow = '';">Got It!</button>

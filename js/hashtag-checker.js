@@ -64,7 +64,7 @@ window.bannedHashtags = bannedHashtags;
    SEARCH COUNTER - HASHTAG SPECIFIC
    ============================================================================= */
 const HASHTAG_STORAGE_KEY = 'shadowban_hashtag_searches';
-const MAX_FREE_HASHTAG_SEARCHES = 3;
+const MAX_FREE_HASHTAG_SEARCHES = 1;
 
 function getHashtagSearchCount() {
     const data = JSON.parse(localStorage.getItem(HASHTAG_STORAGE_KEY) || '{}');
@@ -326,22 +326,123 @@ function handleHashtagCheck() {
         return;
     }
     
-    // Increment search count
-    incrementHashtagSearchCount();
-    
-    // Check hashtags
-    const results = checkAllHashtags(hashtags);
-    
-    // Display results
-    displayResults(results);
-    
-    // Check if this was the last free search
-    if (getRemainingHashtagSearches() <= 0) {
-        // Show modal after results are displayed
-        setTimeout(() => {
-            showLimitModal();
-        }, 1500);
+    // Show loading state
+    const checkBtn = document.getElementById('check-hashtags-btn');
+    if (checkBtn) {
+        checkBtn.disabled = true;
+        checkBtn.innerHTML = '<span>Analyzing...</span><span>⏳</span>';
     }
+    
+    // Simulate analysis delay
+    setTimeout(() => {
+        // Increment search count
+        incrementHashtagSearchCount();
+        
+        // Check hashtags
+        const rawResults = checkAllHashtags(hashtags);
+        
+        // Build results for results page
+        const results = buildHashtagResults(hashtags, rawResults);
+        
+        // Store results and redirect
+        sessionStorage.setItem('checkResults', JSON.stringify(results));
+        window.location.href = 'results.html';
+    }, 1500);
+}
+
+function buildHashtagResults(hashtags, rawResults) {
+    // Count statuses
+    const counts = { safe: 0, restricted: 0, banned: 0 };
+    rawResults.forEach(r => counts[r.status]++);
+    
+    // Calculate probability (higher = worse)
+    const totalChecked = rawResults.length;
+    const probability = Math.round(
+        ((counts.banned * 100) + (counts.restricted * 50)) / totalChecked
+    );
+    
+    // Determine overall status
+    let status, statusClass;
+    if (counts.banned > 0) {
+        status = 'Banned Hashtags Found';
+        statusClass = 'bad';
+    } else if (counts.restricted > 0) {
+        status = 'Restricted Hashtags Found';
+        statusClass = 'warning';
+    } else {
+        status = 'All Hashtags Safe';
+        statusClass = 'good';
+    }
+    
+    // Build checks from raw results
+    const checks = rawResults.map(r => {
+        let checkStatus = r.status === 'safe' ? 'pass' : r.status === 'restricted' ? 'warning' : 'fail';
+        let detail = '';
+        
+        // Build platform-specific detail
+        const platformStatuses = Object.entries(r.platforms)
+            .filter(([_, s]) => s !== 'safe')
+            .map(([p, s]) => `${p}: ${s}`)
+            .join(', ');
+        
+        if (r.status === 'banned') {
+            detail = `Banned on: ${platformStatuses || 'multiple platforms'}`;
+        } else if (r.status === 'restricted') {
+            detail = `Restricted on: ${platformStatuses || 'some platforms'}`;
+        } else {
+            detail = 'Safe to use on all platforms';
+        }
+        
+        return {
+            name: r.hashtag,
+            status: checkStatus,
+            icon: r.status === 'banned' ? '🚫' : r.status === 'restricted' ? '⚠️' : '✅',
+            detail: detail
+        };
+    });
+    
+    // Build recommendations
+    const recommendations = [];
+    if (counts.banned > 0) {
+        recommendations.push(`Remove ${counts.banned} banned hashtag${counts.banned > 1 ? 's' : ''} to avoid shadow bans.`);
+    }
+    if (counts.restricted > 0) {
+        recommendations.push(`Consider replacing ${counts.restricted} restricted hashtag${counts.restricted > 1 ? 's' : ''} for better reach.`);
+    }
+    if (counts.safe > 0) {
+        recommendations.push(`${counts.safe} hashtag${counts.safe > 1 ? 's are' : ' is'} safe to use.`);
+    }
+    recommendations.push('Check your account status with our Account Checker.');
+    recommendations.push('Verify specific posts with our Post URL Checker.');
+    
+    return {
+        type: 'hashtag',
+        platform: 'Multi-Platform',
+        platformIcon: '#️⃣',
+        platformKey: 'hashtag',
+        query: hashtags.map(h => `#${h}`).join(' '),
+        timestamp: new Date().toISOString(),
+        probability: probability,
+        status: status,
+        statusClass: statusClass,
+        factors: {
+            platformAPI: false,
+            webAnalysis: true,
+            historicalData: true,
+            hashtagDatabase: true,
+            ipAnalysis: false
+        },
+        factorsUsed: '3/5',
+        ipData: null,
+        checks: checks,
+        recommendations: recommendations,
+        summary: {
+            total: totalChecked,
+            safe: counts.safe,
+            restricted: counts.restricted,
+            banned: counts.banned
+        }
+    };
 }
 
 /* =============================================================================

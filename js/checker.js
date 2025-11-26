@@ -81,7 +81,7 @@ function incrementSearchCount() {
    ============================================================================= */
 function showPlatformModal(platformKey) {
     const platform = window.platformData?.find(p => 
-        p.name.toLowerCase().replace(/\s+/g, '-').replace(/\//g, '-') === platformKey
+        p.name.toLowerCase().replace(/[^a-z0-9]/g, '') === platformKey
     );
     
     if (!platform) return;

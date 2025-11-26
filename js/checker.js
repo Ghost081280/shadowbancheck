@@ -543,45 +543,75 @@ function showPlatformInfoModal(platformId) {
 }
 
 function showAllPlatformsModal() {
-    const modal = document.getElementById('platform-info-modal');
-    const iconEl = document.getElementById('platform-modal-icon');
-    const titleEl = document.getElementById('platform-modal-title');
-    const bodyEl = document.getElementById('platform-modal-body');
-    
-    if (!modal || !bodyEl) return;
-    
-    iconEl.textContent = '🌐';
-    titleEl.textContent = 'All Supported Platforms';
-    
+    // Use platforms.js data
     const livePlatforms = PLATFORMS.filter(p => p.status === 'live');
     const comingSoon = PLATFORMS.filter(p => p.status !== 'live');
     
-    let html = '<div class="all-platforms-grid">';
-    
-    if (livePlatforms.length > 0) {
-        html += '<div class="platforms-section"><h4>✓ Available Now</h4><div class="platforms-list">';
-        html += livePlatforms.map(p => `
-            <div class="platform-list-item">
-                <span class="platform-list-icon">${p.icon}</span>
-                <span class="platform-list-name">${p.name}</span>
+    // Create modal if doesn't exist
+    let modal = document.getElementById('all-platforms-modal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'all-platforms-modal';
+        modal.className = 'modal hidden';
+        modal.innerHTML = `
+            <div class="modal-overlay"></div>
+            <div class="modal-content">
+                <button class="modal-close">&times;</button>
+                <div class="modal-icon">🌐</div>
+                <h3 class="modal-title">Account Checking Platforms</h3>
+                <div class="modal-body" id="all-platforms-body"></div>
+                <div class="modal-footer">
+                    <button class="btn btn-primary btn-lg" onclick="document.getElementById('all-platforms-modal').classList.add('hidden'); document.body.style.overflow = '';">Got It!</button>
+                </div>
             </div>
-        `).join('');
-        html += '</div></div>';
+        `;
+        document.body.appendChild(modal);
+        
+        // Close handlers
+        modal.querySelector('.modal-close').addEventListener('click', () => {
+            modal.classList.add('hidden');
+            document.body.style.overflow = '';
+        });
+        modal.querySelector('.modal-overlay').addEventListener('click', () => {
+            modal.classList.add('hidden');
+            document.body.style.overflow = '';
+        });
     }
     
+    const bodyEl = document.getElementById('all-platforms-body');
+    let html = '<div class="all-platforms-list">';
+    
+    // Live platforms
+    html += '<div class="platforms-group"><h4 style="color: var(--success); margin-bottom: var(--space-sm);">✓ Account Checking Available</h4>';
+    html += '<div class="platforms-grid">';
+    livePlatforms.forEach(p => {
+        html += `<div class="platform-item" data-platform="${p.id}" style="cursor: pointer;"><span class="platform-item-icon">${p.icon}</span><span>${p.name}</span></div>`;
+    });
+    html += '</div></div>';
+    
+    // Coming soon
     if (comingSoon.length > 0) {
-        html += '<div class="platforms-section"><h4>● Coming Soon</h4><div class="platforms-list">';
-        html += comingSoon.map(p => `
-            <div class="platform-list-item coming">
-                <span class="platform-list-icon">${p.icon}</span>
-                <span class="platform-list-name">${p.name}</span>
-            </div>
-        `).join('');
+        html += '<div class="platforms-group" style="margin-top: var(--space-lg);"><h4 style="color: var(--warning); margin-bottom: var(--space-sm);">◷ Coming Soon</h4>';
+        html += '<div class="platforms-grid">';
+        comingSoon.forEach(p => {
+            html += `<div class="platform-item coming"><span class="platform-item-icon">${p.icon}</span><span>${p.name}</span></div>`;
+        });
         html += '</div></div>';
     }
     
     html += '</div>';
     bodyEl.innerHTML = html;
+    
+    // Add click handlers to live platform items
+    bodyEl.querySelectorAll('.platform-item[data-platform]').forEach(item => {
+        item.addEventListener('click', () => {
+            modal.classList.add('hidden');
+            document.body.style.overflow = '';
+            setTimeout(() => {
+                showPlatformInfoModal(item.dataset.platform);
+            }, 100);
+        });
+    });
     
     modal.classList.remove('hidden');
     document.body.style.overflow = 'hidden';

@@ -55,46 +55,15 @@
 
 /* =============================================================================
    PLATFORM GRID - CHECKER PAGE
+   Uses main.css .platform-item, .platform-icon, .platform-name, .platform-badge
+   Only overrides for checker-specific behavior
    ============================================================================= */
-.platforms-checker .platform-grid {
-    gap: var(--space-sm);
-}
-
 .platforms-checker .platform-item {
-    padding: var(--space-sm) var(--space-md);
-    min-height: 52px;
     cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--space-sm);
-}
-
-.platforms-checker .platform-icon {
-    flex-shrink: 0;
-}
-
-.platforms-checker .platform-name {
-    flex: 1;
-    font-weight: 600;
-    font-size: 0.875rem;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.platforms-checker .badge {
-    flex-shrink: 0;
-    font-size: 0.625rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    padding: 2px 6px;
-    border-radius: var(--radius-sm);
 }
 
 .platforms-checker .platform-item[data-status="live"]:hover {
-    border-color: var(--primary);
-    transform: translateY(-2px);
+    border-color: var(--success);
 }
 
 .platforms-checker .platform-item[data-status="soon"] {
@@ -178,29 +147,35 @@
     background-clip: text;
 }
 
-/* Engine Info Button */
+/* Engine Info Button - Matches input card info buttons (48px) */
 .engine-info-btn {
     position: absolute;
-    right: 0;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 40px;
-    height: 40px;
+    top: var(--space-md);
+    right: var(--space-md);
+    width: 48px;
+    height: 48px;
     border-radius: 50%;
-    background: rgba(99, 102, 241, 0.1);
-    border: 2px solid rgba(99, 102, 241, 0.3);
+    background: rgba(99, 102, 241, 0.15);
+    border: 2px solid rgba(99, 102, 241, 0.4);
     color: var(--primary-light);
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
     transition: all var(--transition-fast);
+    z-index: 10;
 }
 
 .engine-info-btn:hover {
-    background: rgba(99, 102, 241, 0.2);
+    background: rgba(99, 102, 241, 0.25);
     border-color: var(--primary);
-    transform: translateY(-50%) scale(1.08);
+    transform: scale(1.08);
+    box-shadow: 0 0 16px rgba(99, 102, 241, 0.4);
+}
+
+.engine-info-btn svg {
+    width: 26px;
+    height: 26px;
 }
 
 .methodology-intro {
@@ -550,11 +525,19 @@
     .methodology-header {
         flex-direction: column;
         gap: var(--space-sm);
+        padding-right: var(--space-3xl);
     }
     
     .engine-info-btn {
-        position: static;
-        transform: none;
+        top: var(--space-sm);
+        right: var(--space-sm);
+        width: 44px;
+        height: 44px;
+    }
+    
+    .engine-info-btn svg {
+        width: 22px;
+        height: 22px;
     }
     
     .engine-info-btn:hover {

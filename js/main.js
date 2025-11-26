@@ -2,121 +2,100 @@
    MAIN.JS - SHARED FUNCTIONALITY
    All global functionality for ShadowBanCheck.io
    
+   NOTE: platformData is now loaded from platforms.js (loaded before this file)
    NOTE: Demo chat animation moved to shadow-ai.js
    ============================================================================= */
 
 /* =============================================================================
-   PLATFORM DATA - SINGLE SOURCE OF TRUTH
-   Status: 'live' = Twitter/X, Reddit, Email | 'soon' = everything else
+   IP DETECTION
+   Fetches user's IP and determines if VPN/Datacenter/Residential
    ============================================================================= */
-const platformData = [
-    // LIVE Platforms (3)
-    { 
-        name: 'Twitter/X', 
-        icon: '🐦', 
-        category: 'social', 
-        status: 'live',
-        checks: [
-            'Search suggestion ban (account hidden from search)',
-            'Reply deboosting (replies hidden behind "Show more")',
-            'Ghost ban (tweets invisible to others)',
-            'Search ban (tweets hidden from search results)',
-            'Quality Filter Detection (QFD) status',
-            'Sensitive media flags on profile',
-            'Age-restricted content warnings',
-            'Engagement rate analysis vs. followers',
-            'Hashtag visibility in trends',
-            'Profile accessibility from logged-out view'
-        ]
-    },
-    { 
-        name: 'Reddit', 
-        icon: '🤖', 
-        category: 'social', 
-        status: 'live',
-        checks: [
-            'Shadowban status (posts/comments invisible)',
-            'Subreddit-specific bans detection',
-            'Karma threshold restrictions',
-            'Account age restrictions',
-            'Spam filter triggering',
-            'AutoModerator removal patterns',
-            'Post visibility in subreddit listings',
-            'Comment visibility in threads',
-            'Profile page accessibility',
-            'Cross-posting restrictions'
-        ]
-    },
-    { 
-        name: 'Email', 
-        icon: '📧', 
-        category: 'other', 
-        status: 'live',
-        checks: [
-            'Domain blacklist status (Spamhaus, SURBL)',
-            'IP reputation score',
-            'DKIM/SPF/DMARC configuration',
-            'Email deliverability rate',
-            'Spam folder placement probability',
-            'Bounce rate analysis',
-            'Sender reputation score',
-            'Content spam trigger analysis',
-            'Gmail/Outlook/Yahoo inbox placement',
-            'Unsubscribe compliance status'
-        ]
-    },
-    
-    // COMING SOON - Social Media (13)
-    { name: 'Instagram', icon: '📸', category: 'social', status: 'soon' },
-    { name: 'TikTok', icon: '🎵', category: 'social', status: 'soon' },
-    { name: 'Facebook', icon: '📘', category: 'social', status: 'soon' },
-    { name: 'LinkedIn', icon: '💼', category: 'social', status: 'soon' },
-    { name: 'YouTube', icon: '📺', category: 'social', status: 'soon' },
-    { name: 'Pinterest', icon: '📌', category: 'social', status: 'soon' },
-    { name: 'Snapchat', icon: '👻', category: 'social', status: 'soon' },
-    { name: 'Threads', icon: '🧵', category: 'social', status: 'soon' },
-    { name: 'Bluesky', icon: '🦋', category: 'social', status: 'soon' },
-    { name: 'Truth Social', icon: '🗽', category: 'social', status: 'soon' },
-    { name: 'Rumble', icon: '📹', category: 'social', status: 'soon' },
-    { name: 'Kick', icon: '⚡', category: 'social', status: 'soon' },
-    
-    // COMING SOON - Messaging (2)
-    { name: 'Telegram', icon: '✈️', category: 'messaging', status: 'soon' },
-    { name: 'Discord', icon: '🎮', category: 'messaging', status: 'soon' },
-    
-    // COMING SOON - E-Commerce (3)
-    { name: 'Amazon', icon: '📦', category: 'ecommerce', status: 'soon' },
-    { name: 'eBay', icon: '🏷️', category: 'ecommerce', status: 'soon' },
-    { name: 'Etsy', icon: '🛍️', category: 'ecommerce', status: 'soon' },
-    
-    // COMING SOON - Other (5)
-    { name: 'Twitch', icon: '🟣', category: 'other', status: 'soon' },
-    { name: 'Phone', icon: '📱', category: 'other', status: 'soon' },
-    { name: 'Domain', icon: '🌐', category: 'other', status: 'soon' },
-    { name: 'IP Address', icon: '🖥️', category: 'other', status: 'soon' },
-    { name: 'Google Business', icon: '📍', category: 'other', status: 'soon' },
-    { 
-        name: 'Bing', 
-        icon: '🔎', 
-        category: 'other', 
-        status: 'soon',
-        checks: [
-            'Site indexing status (are your pages indexed?)',
-            'Search result visibility',
-            'Crawler access and errors',
-            'Domain reputation score',
-            'Spam flag detection',
-            'Content quality penalties',
-            'Manual action notifications',
-            'Backlink profile analysis',
-            'DuckDuckGo visibility (Bing-powered)',
-            'Webmaster tools integration status'
-        ]
-    }
-];
+let userIPData = null;
 
-// Export for use in other files
-window.platformData = platformData;
+async function detectUserIP() {
+    try {
+        // Use ipapi.co for HTTPS-compatible IP info (includes VPN detection)
+        const response = await fetch('https://ipapi.co/json/');
+        const data = await response.json();
+        
+        if (data && data.ip) {
+            let ipType = 'residential';
+            let typeLabel = 'Residential';
+            
+            // ipapi.co doesn't have proxy detection in free tier, but we can infer from org/ASN
+            const orgLower = (data.org || '').toLowerCase();
+            const asnLower = (data.asn || '').toLowerCase();
+            
+            // Check for common VPN/datacenter indicators
+            const vpnKeywords = ['vpn', 'proxy', 'tunnel', 'anonymous', 'private'];
+            const datacenterKeywords = ['hosting', 'cloud', 'server', 'data center', 'datacenter', 'amazon', 'google', 'microsoft', 'digitalocean', 'linode', 'vultr', 'ovh', 'hetzner'];
+            
+            const isLikelyVPN = vpnKeywords.some(kw => orgLower.includes(kw) || asnLower.includes(kw));
+            const isLikelyDatacenter = datacenterKeywords.some(kw => orgLower.includes(kw) || asnLower.includes(kw));
+            
+            if (isLikelyVPN) {
+                ipType = 'vpn';
+                typeLabel = 'VPN/Proxy';
+            } else if (isLikelyDatacenter) {
+                ipType = 'datacenter';
+                typeLabel = 'Datacenter';
+            }
+            
+            userIPData = {
+                ip: data.ip,
+                country: data.country_name,
+                city: data.city,
+                isp: data.org,
+                type: ipType,
+                typeLabel: typeLabel,
+                isVPN: isLikelyVPN,
+                isDatacenter: isLikelyDatacenter,
+                isMobile: false
+            };
+            
+            // Update display if element exists
+            updateIPDisplay();
+            
+            return userIPData;
+        }
+    } catch (error) {
+        console.log('IP detection failed, using fallback');
+        // Fallback - try ipify for just the IP
+        try {
+            const fallback = await fetch('https://api.ipify.org?format=json');
+            const fallbackData = await fallback.json();
+            userIPData = {
+                ip: fallbackData.ip,
+                type: 'unknown',
+                typeLabel: 'Unknown'
+            };
+            updateIPDisplay();
+            return userIPData;
+        } catch (e) {
+            userIPData = { ip: 'Unable to detect', type: 'unknown', typeLabel: '' };
+            updateIPDisplay();
+        }
+    }
+    return userIPData;
+}
+
+function updateIPDisplay() {
+    const ipValueEl = document.getElementById('user-ip-address');
+    const ipTypeEl = document.getElementById('user-ip-type');
+    
+    if (ipValueEl && userIPData) {
+        ipValueEl.textContent = userIPData.ip;
+        
+        if (ipTypeEl && userIPData.typeLabel) {
+            ipTypeEl.textContent = userIPData.typeLabel;
+            ipTypeEl.className = 'ip-type ' + userIPData.type;
+        }
+    }
+}
+
+function getUserIPData() {
+    return userIPData;
+}
 
 /* =============================================================================
    MOBILE NAVIGATION
@@ -1091,6 +1070,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // Update search counter display
     updateSearchCounterDisplay();
     
+    // Detect user IP (async, updates display when ready)
+    detectUserIP();
+    
     console.log('✅ ShadowBanCheck.io initialized');
 });
 
@@ -1098,11 +1080,13 @@ document.addEventListener('DOMContentLoaded', function() {
    UTILITY EXPORTS
    ============================================================================= */
 window.ShadowBan = {
-    platformData,
+    platformData: window.platformData, // from platforms.js
     getSearchCount,
     incrementSearchCount,
     getRemainingSearches,
     updateSearchCounterDisplay,
     openPlatformModal,
-    showToast
+    showToast,
+    detectUserIP,
+    getUserIPData
 };

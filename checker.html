@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shadow Ban Checker - Check Any Platform | ShadowBanCheck.io</title>
+    <title>Account Shadow Ban Checker - Check Any Platform | ShadowBanCheck.io</title>
     <meta name="description" content="Free shadow ban checker for Twitter, Instagram, TikTok, Reddit, and more social platforms. Instant results in 60 seconds.">
     
     <!-- Favicon -->
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔍</text></svg>">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>👤</text></svg>">
     
     <!-- CSS -->
     <link rel="stylesheet" href="css/main.css">
@@ -23,47 +23,108 @@
     <!-- Hero - Compact -->
     <section class="hero">
         <div class="container">
-            <div class="hero-badge">🔍 Free Shadow Ban Checker</div>
-            <h1 class="hero-title">Check Any Platform</h1>
-            <p class="hero-subtitle">Select a platform below to check if you're shadow banned. 3 free checks per day.</p>
+            <div class="hero-badge">👤 Account Shadow Ban Checker</div>
+            <h1 class="hero-title">Check Your Account</h1>
+            <p class="hero-subtitle">Enter your username to check if your account is shadow banned. Instant results powered by our 5-Factor Detection Engine.</p>
+            <p class="text-muted text-center">Powered by our 5-Factor Detection Engine</p>
         </div>
     </section>
 
-    <!-- Platform Grid -->
-    <section class="platforms-checker section">
+    <!-- Account Checker Form -->
+    <section class="section">
         <div class="container">
-            <div class="section-header">
-                <h2 class="section-title">Platforms We Support</h2>
-                <p class="section-desc">Click any platform to check your account</p>
+            <div class="account-checker-card">
+                <!-- Info Button -->
+                <button class="checker-info-btn" id="checker-info-btn" aria-label="What we check" type="button">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+                        <path d="M12 16V12M12 8H12.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </button>
+                
+                <div class="checker-header">
+                    <div class="checker-header-content">
+                        <span class="checker-icon">👤</span>
+                        <div>
+                            <h3>Enter Your Username</h3>
+                            <p>Select a platform and enter your username to check your account status</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="input-group">
+                    <div class="input-row">
+                        <div class="platform-select-wrapper">
+                            <select id="platform-select" class="platform-select">
+                                <option value="">Select Platform</option>
+                                <!-- Populated by JS from platforms.js -->
+                            </select>
+                        </div>
+                        <input type="text" id="username-input" placeholder="@username or profile URL" class="username-input">
+                    </div>
+                    <div class="input-meta">
+                        <span id="platform-status">Select a platform to continue</span>
+                        <span id="checks-remaining-display">1 free check left today</span>
+                    </div>
+                </div>
+                
+                <!-- IP Display -->
+                <div class="ip-display-section">
+                    <div class="ip-badge" id="ip-badge">
+                        <span class="ip-icon">🌐</span>
+                        <span id="ip-address">Detecting IP...</span>
+                        <span class="ip-type" id="ip-type"></span>
+                        <span class="ip-flag" id="ip-flag"></span>
+                    </div>
+                </div>
+                
+                <button id="check-account-btn" class="btn-check-account" disabled>
+                    <span>Check Account</span>
+                    <span>🔍</span>
+                </button>
+                
+                <div class="checker-features">
+                    <span>✓ Account visibility check</span>
+                    <span>✓ IP risk analysis</span>
+                    <span>✓ Results in 60 seconds</span>
+                </div>
+                
+                <div class="quick-actions">
+                    <button id="clear-btn" class="btn-text-link">Clear</button>
+                </div>
             </div>
-            <div class="platform-grid" id="platform-grid">
-                <!-- Platforms loaded dynamically from platforms.js -->
+            
+            <!-- Supported Platforms -->
+            <div class="supported-platforms">
+                <p>Supported platforms:</p>
+                <div class="platform-icons" id="supported-platform-icons">
+                    <!-- Populated by JS -->
+                </div>
             </div>
         </div>
     </section>
 
-    <!-- How It Works - Enhanced -->
-    <section class="section section-alt how-works-section">
+    <!-- How It Works -->
+    <section class="section section-alt">
         <div class="container">
             <div class="section-header">
                 <h2 class="section-title">How It Works</h2>
-                <p class="section-desc">Our comprehensive shadow ban detection system</p>
+                <p class="section-desc">Get your account status in 3 simple steps</p>
             </div>
             
-            <!-- Quick Steps -->
             <div class="how-grid">
                 <div class="how-item reveal">
                     <span class="how-icon">1️⃣</span>
                     <div class="how-content">
                         <h4>Select Platform</h4>
-                        <p>Choose from the platforms we monitor</p>
+                        <p>Choose your social media platform</p>
                     </div>
                 </div>
                 <div class="how-item reveal">
                     <span class="how-icon">2️⃣</span>
                     <div class="how-content">
                         <h4>Enter Username</h4>
-                        <p>Provide your account info</p>
+                        <p>Type your username or profile URL</p>
                     </div>
                 </div>
                 <div class="how-item reveal">
@@ -74,10 +135,13 @@
                     </div>
                 </div>
             </div>
-            
-            <!-- Detailed Methodology -->
+        </div>
+    </section>
+
+    <!-- Our Detection Engine -->
+    <section class="section">
+        <div class="container">
             <div class="methodology-section reveal">
-                <!-- Engine Info Button - positioned top-right -->
                 <button class="engine-info-btn" id="engine-info-btn" aria-label="Learn about our 5-Factor Engine" type="button">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
@@ -92,137 +156,73 @@
                     <div class="method-card">
                         <span class="method-icon">🔌</span>
                         <h4>Platform API Analysis</h4>
-                        <p>We query official APIs (Twitter/X API v2, Reddit API) to fetch real-time account status, engagement metrics, and visibility flags.</p>
-                        <div class="method-details">
-                            <strong>What we check:</strong>
-                            <ul>
-                                <li>Account suspension status</li>
-                                <li>Content visibility flags</li>
-                                <li>Engagement rate baselines</li>
-                                <li>Quality filter status (Twitter QFD)</li>
-                            </ul>
-                        </div>
+                        <p>We query official APIs (Twitter/X API v2, Reddit API) to fetch real-time account status and visibility flags.</p>
                     </div>
                     
                     <div class="method-card">
                         <span class="method-icon">🌐</span>
                         <h4>Web Scraping & Search Tests</h4>
-                        <p>Our automated system performs live searches across platforms to verify if your content appears where it should.</p>
-                        <div class="method-details">
-                            <strong>What we test:</strong>
-                            <ul>
-                                <li>Hashtag search results placement</li>
-                                <li>Chronological feed appearance</li>
-                                <li>Explore/FYP eligibility</li>
-                                <li>Incognito mode visibility</li>
-                            </ul>
-                        </div>
+                        <p>Our automated system performs live searches to verify if your profile appears where it should.</p>
                     </div>
                     
                     <div class="method-card">
                         <span class="method-icon">📊</span>
                         <h4>Historical Pattern Analysis</h4>
-                        <p>We maintain a database of accounts and track visibility patterns over time to detect anomalies.</p>
-                        <div class="method-details">
-                            <strong>What we compare:</strong>
-                            <ul>
-                                <li>Engagement drop-off speed</li>
-                                <li>Follower-to-reach ratios</li>
-                                <li>Content decay rates</li>
-                                <li>Platform algorithm changes</li>
-                            </ul>
-                        </div>
+                        <p>We track visibility patterns over time to detect anomalies in your account's reach.</p>
                     </div>
                     
                     <div class="method-card">
                         <span class="method-icon">🔍</span>
                         <h4>IP Analysis</h4>
-                        <p>We check your connection for VPN/proxy usage, datacenter IPs, and location mismatches that platforms flag.</p>
-                        <div class="method-details">
-                            <strong>Factors analyzed:</strong>
-                            <ul>
-                                <li>VPN/Proxy detection</li>
-                                <li>Datacenter vs residential IP</li>
-                                <li>Geographic location risk</li>
-                                <li>ISP reputation</li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="citation-info">
-                    <span class="citation-icon">📄</span>
-                    <div class="citation-content">
-                        <h4>Full Citation Support</h4>
-                        <p>Every result includes detailed citations showing exactly where our data came from—API responses, search test results, historical comparisons, and algorithmic calculations.</p>
+                        <p>We check for VPN/proxy usage, datacenter IPs, and location mismatches that platforms flag.</p>
                     </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Data Sources -->
-    <section class="section">
-        <div class="container">
-            <div class="section-header">
-                <h2 class="section-title">Our Data Sources</h2>
-                <p class="section-desc">Multi-layered analysis for maximum accuracy</p>
-            </div>
-            <div class="sources-grid">
-                <div class="source-card reveal">
-                    <span class="source-icon">🔌</span>
-                    <h4>Platform APIs</h4>
-                    <p>Official API data from Twitter/X, Reddit, and more</p>
-                </div>
-                <div class="source-card reveal">
-                    <span class="source-icon">🌐</span>
-                    <h4>Live Search Tests</h4>
-                    <p>Real-time visibility checks across search and feed systems</p>
-                </div>
-                <div class="source-card reveal">
-                    <span class="source-icon">📊</span>
-                    <h4>Historical Database</h4>
-                    <p>Accounts tracked for baseline comparisons</p>
-                </div>
-                <div class="source-card reveal">
-                    <span class="source-icon">👥</span>
-                    <h4>Community Reports</h4>
-                    <p>User-verified shadow ban patterns and recovery timelines</p>
-                </div>
-                <div class="source-card reveal">
-                    <span class="source-icon">🔍</span>
-                    <h4>IP Analysis</h4>
-                    <p>VPN/proxy detection and location risk assessment</p>
-                </div>
-                <div class="source-card reveal">
-                    <span class="source-icon">🤖</span>
-                    <h4>AI Scoring</h4>
-                    <p>ML model combining all factors for probability score</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Cross-Promote: Hashtag Checker -->
+    <!-- Cross-Promote: Other Tools -->
     <section class="section section-alt">
         <div class="container">
-            <div class="cross-promote">
-                <span class="cross-promote-icon">🚫</span>
-                <div class="cross-promote-content">
-                    <h3>Also Check Your Hashtags</h3>
-                    <p>Using banned hashtags can trigger shadow bans. Check if your hashtags are safe before posting.</p>
-                </div>
-                <a href="hashtag-checker.html" class="btn-cross-promote">Check Hashtags →</a>
+            <div class="section-header">
+                <h2 class="section-title">Also Check</h2>
+                <p class="section-desc">Get a complete picture of your social media health</p>
+            </div>
+            
+            <div class="cross-promote-grid">
+                <a href="post-checker.html" class="cross-promote-card">
+                    <span class="cross-promote-icon">📝</span>
+                    <div class="cross-promote-content">
+                        <h3>Post URL Checker</h3>
+                        <p>Check if a specific post is being shown or restricted</p>
+                    </div>
+                    <span class="cross-promote-arrow">→</span>
+                </a>
+                <a href="hashtag-checker.html" class="cross-promote-card">
+                    <span class="cross-promote-icon">🚫</span>
+                    <div class="cross-promote-content">
+                        <h3>Hashtag Checker</h3>
+                        <p>Verify hashtags before posting to avoid reach penalties</p>
+                    </div>
+                    <span class="cross-promote-arrow">→</span>
+                </a>
             </div>
         </div>
     </section>
 
-    <!-- Platform Modal -->
-    <div id="platform-modal" class="modal hidden">
+    <!-- Platform Info Modal -->
+    <div id="platform-info-modal" class="modal hidden">
         <div class="modal-overlay"></div>
-        <div class="modal-content">
+        <div class="modal-content modal-large">
             <button class="modal-close">&times;</button>
-            <div id="modal-body"></div>
+            <div class="modal-icon" id="platform-modal-icon">🔍</div>
+            <h3 class="modal-title" id="platform-modal-title">Platform Checks</h3>
+            <div class="modal-body" id="platform-modal-body">
+                <!-- Populated by JS -->
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary btn-lg" onclick="closePlatformInfoModal()">Got It!</button>
+            </div>
         </div>
     </div>
 
@@ -234,7 +234,7 @@
             <div class="modal-icon">🧠</div>
             <h3 class="modal-title">Our 5-Factor Detection Engine</h3>
             <div class="modal-body">
-                <p class="modal-intro">The Username Checker uses <strong>4 of our 5 factors</strong> to analyze your account:</p>
+                <p class="modal-intro">The Account Checker uses <strong>4 of our 5 factors</strong> to analyze your account:</p>
                 
                 <ul class="engine-factors">
                     <li class="factor-active">
@@ -255,7 +255,7 @@
                     <li class="factor-inactive">
                         <span class="factor-check">○</span>
                         <strong>#️⃣ Hashtag Database</strong>
-                        <span class="factor-desc">Not applicable for username-only checks</span>
+                        <span class="factor-desc">Not applicable for account-only checks</span>
                     </li>
                     <li class="factor-active">
                         <span class="factor-check">✓</span>
@@ -300,38 +300,5 @@
     <script src="js/main.js"></script>
     <script src="js/checker.js"></script>
     <script src="js/shadow-ai.js"></script>
-    
-    <script>
-        // Engine Info Modal Handler
-        document.addEventListener('DOMContentLoaded', function() {
-            const engineInfoBtn = document.getElementById('engine-info-btn');
-            const engineModal = document.getElementById('engine-info-modal');
-            
-            if (engineInfoBtn && engineModal) {
-                engineInfoBtn.addEventListener('click', function() {
-                    engineModal.classList.remove('hidden');
-                    document.body.style.overflow = 'hidden';
-                });
-                
-                // Close handlers
-                const closeBtn = engineModal.querySelector('.modal-close');
-                const overlay = engineModal.querySelector('.modal-overlay');
-                
-                const closeModal = () => {
-                    engineModal.classList.add('hidden');
-                    document.body.style.overflow = '';
-                };
-                
-                closeBtn?.addEventListener('click', closeModal);
-                overlay?.addEventListener('click', closeModal);
-                
-                document.addEventListener('keydown', function(e) {
-                    if (e.key === 'Escape' && !engineModal.classList.contains('hidden')) {
-                        closeModal();
-                    }
-                });
-            }
-        });
-    </script>
 </body>
 </html>

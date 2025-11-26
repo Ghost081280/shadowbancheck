@@ -611,12 +611,13 @@
 }
 
 /* Engine Info Button - Top Right of Methodology Section */
+/* Matches .checker-info-btn size (48px) for consistency */
 .engine-info-btn {
     position: absolute;
-    top: var(--space-lg);
-    right: var(--space-lg);
-    width: 40px;
-    height: 40px;
+    top: var(--space-md);
+    right: var(--space-md);
+    width: 48px;
+    height: 48px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -637,8 +638,8 @@
 }
 
 .engine-info-btn svg {
-    width: 20px;
-    height: 20px;
+    width: 26px;
+    height: 26px;
 }
 
 .methodology-title {
@@ -1078,15 +1079,15 @@
     
     /* Engine info button - mobile */
     .engine-info-btn {
-        top: var(--space-md);
-        right: var(--space-md);
-        width: 36px;
-        height: 36px;
+        top: var(--space-sm);
+        right: var(--space-sm);
+        width: 44px;
+        height: 44px;
     }
     
     .engine-info-btn svg {
-        width: 18px;
-        height: 18px;
+        width: 22px;
+        height: 22px;
     }
     
     /* Engine factors list - mobile */

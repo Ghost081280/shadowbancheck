@@ -186,6 +186,43 @@ input, select, textarea {
     color: var(--text);
 }
 
+/* Logout button in sidebar */
+.sidebar-link.logout-btn {
+    width: 100%;
+    text-align: left;
+    border: none;
+    cursor: pointer;
+    color: var(--text-muted);
+}
+
+.sidebar-link.logout-btn:hover {
+    background: var(--danger);
+    color: white;
+}
+
+/* -----------------------------------------------------------------------------
+   Toast Notification
+   ----------------------------------------------------------------------------- */
+.toast {
+    position: fixed;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 0.75rem 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    z-index: 9999;
+}
+
+.toast.hidden {
+    display: none;
+}
+
 /* -----------------------------------------------------------------------------
    Page Header
    ----------------------------------------------------------------------------- */

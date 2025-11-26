@@ -414,6 +414,23 @@
 }
 
 .message-text strong { color: var(--primary-light); }
+.message-text em { color: var(--text-muted); font-style: italic; }
+
+/* Chat links */
+.message-text .chat-link,
+.message-text a {
+    color: var(--primary-light);
+    text-decoration: underline;
+    text-decoration-color: rgba(99, 102, 241, 0.5);
+    text-underline-offset: 2px;
+    transition: all var(--transition-fast);
+}
+
+.message-text .chat-link:hover,
+.message-text a:hover {
+    color: var(--primary);
+    text-decoration-color: var(--primary);
+}
 
 /* Typing indicator */
 .typing-indicator .typing-dots {

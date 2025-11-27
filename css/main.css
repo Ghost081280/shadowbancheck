@@ -3960,85 +3960,64 @@ strong, b {
     html { scroll-behavior: auto; }
 }
 /* =============================================================================
-   DEV DIRECT CONTACT MODULE - Additional CSS
-   Add this to the end of main.css
+   PRO REPORT UPSELL - Power Check Results
    ============================================================================= */
 
-/* Dev Direct Contact Module */
-.dev-direct-contact {
+.pro-report-upsell {
     margin-top: var(--space-lg);
     padding: var(--space-lg);
     background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(168, 85, 247, 0.1) 100%);
-    border: 2px solid rgba(99, 102, 241, 0.3);
-    border-radius: var(--radius-xl);
-    text-align: center;
+    border: 1px solid rgba(99, 102, 241, 0.3);
+    border-radius: var(--radius-lg);
+    text-align: left;
 }
 
-.dev-contact-header {
+.pro-report-header {
     display: flex;
     align-items: center;
-    justify-content: center;
     gap: var(--space-sm);
     margin-bottom: var(--space-sm);
 }
 
-.dev-flag {
-    font-size: 1.5rem;
+.pro-report-header .pro-badge {
+    background: var(--gradient-primary);
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.75rem;
+    font-weight: 600;
 }
 
-.dev-title {
-    font-size: 1rem;
-    font-weight: 700;
+.pro-report-header strong {
     color: var(--text);
 }
 
-.dev-bio {
+.pro-report-upsell > p {
+    color: var(--text-muted);
+    margin-bottom: var(--space-md);
+    font-size: 0.9rem;
+}
+
+.pro-report-features {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 var(--space-md) 0;
+    display: grid;
+    gap: var(--space-xs);
+}
+
+.pro-report-features li {
     color: var(--text-muted);
     font-size: 0.875rem;
-    margin-bottom: var(--space-md);
-    font-style: italic;
 }
 
-.btn-email-andrew {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: var(--space-sm);
-    padding: var(--space-sm) var(--space-xl);
-    background: var(--gradient-primary);
-    color: white !important;
-    border: none;
-    border-radius: var(--radius-md);
-    font-size: 0.9375rem;
-    font-weight: 600;
-    text-decoration: none;
-    cursor: pointer;
-    transition: all var(--transition-base);
-    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
-}
-
-.btn-email-andrew:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(99, 102, 241, 0.5);
-    color: white !important;
-}
-
-.btn-email-andrew .email-icon {
-    font-size: 1.125rem;
-}
-
-/* Responsive adjustments */
+/* Responsive */
 @media (max-width: 768px) {
-    .dev-direct-contact {
+    .pro-report-upsell {
         padding: var(--space-md);
     }
     
-    .dev-contact-header {
-        flex-direction: column;
-        gap: var(--space-xs);
-    }
-    
-    .btn-email-andrew {
-        width: 100%;
+    .pro-report-header {
+        flex-wrap: wrap;
     }
 }

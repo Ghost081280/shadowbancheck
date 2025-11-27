@@ -26,7 +26,6 @@
             <div class="hero-badge">👤 Account Shadow Ban Checker</div>
             <h1 class="hero-title">Check Your Account</h1>
             <p class="hero-subtitle">Enter your username to check if your account is shadow banned. Instant results powered by our 5-Factor Detection Engine.</p>
-            <p class="text-muted text-center">Powered by our 5-Factor Detection Engine</p>
         </div>
     </section>
 
@@ -150,7 +149,7 @@
                 </button>
                 
                 <h3 class="methodology-title">Our Detection Engine</h3>
-                <p class="methodology-intro">Platforms rarely admit to shadow banning. That's why we built a proprietary detection system that analyzes multiple signals to calculate an accurate probability score—even when platforms won't tell you the truth.</p>
+                <p class="methodology-intro">Platforms rarely admit to shadow banning. That's why we built a proprietary detection system that analyzes multiple signals to calculate an accurate probability score.</p>
                 
                 <div class="methodology-grid">
                     <div class="method-card">
@@ -290,27 +289,42 @@
         </div>
     </div>
 
-    <!-- ===================================
-         FOOTER - Loaded by shared-components.js
-         =================================== -->
-
-    <!-- Cookie Popup -->
-    <div id="cookie-popup" class="cookie-popup">
-        <div class="cookie-content">
-            <span class="cookie-icon">🍪</span>
-            <div class="cookie-text">
-                <h4>We Use Cookies</h4>
-                <p>We use cookies to enhance your experience and remember your preferences. <a href="legal/cookie-policy.html" style="color: var(--primary-light);">View Cookie Policy</a></p>
+    <!-- Checker Info Modal -->
+    <div id="checker-info-modal" class="modal hidden">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <button class="modal-close">&times;</button>
+            <div class="modal-icon">👤</div>
+            <h3 class="modal-title">Account Check - What We Analyze</h3>
+            <div class="modal-body">
+                <p class="modal-intro">Our Account Checker performs a comprehensive analysis of your social media presence:</p>
+                
+                <ul class="check-list">
+                    <li>Profile accessibility and visibility status</li>
+                    <li>Search ban detection (hidden from search)</li>
+                    <li>Reply deboosting and QFD status</li>
+                    <li>Ghost ban detection (invisible posts)</li>
+                    <li>Account trust signals and history</li>
+                    <li>IP-based risk assessment</li>
+                </ul>
+                
+                <div class="modal-tech-note">
+                    <h4>💡 Platform-Specific Checks</h4>
+                    <p>Each platform has unique shadow ban mechanisms. We adapt our analysis based on the platform you select.</p>
+                </div>
             </div>
-            <div class="cookie-actions">
-                <button id="cookie-accept" class="btn-cookie btn-cookie-accept">Accept</button>
-                <button id="cookie-dismiss" class="btn-cookie btn-cookie-dismiss">Dismiss</button>
+            <div class="modal-footer">
+                <button class="btn btn-primary btn-lg" onclick="document.getElementById('checker-info-modal').classList.add('hidden'); document.body.style.overflow = '';">Got It!</button>
             </div>
         </div>
     </div>
 
-    <!-- Back to Top Button -->
-    <button id="back-to-top" class="back-to-top" aria-label="Back to top">↑</button>
+    <!-- ===================================
+         SHARED COMPONENTS (Loaded by shared-components.js):
+         - Footer
+         - Cookie Popup
+         - Back to Top Button
+         =================================== -->
 
     <!-- Scripts -->
     <script src="js/platforms.js"></script>

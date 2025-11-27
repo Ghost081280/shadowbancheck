@@ -1,305 +1,562 @@
 /* =============================================================================
-   SHADOW AI ADMIN - Unlimited Version v3.0
-   ShadowBanCheck.io - Admin Dashboard AI Assistant
-   
-   IDENTICAL to regular Shadow AI Pro, just with NO daily limits.
-   Uses same CSS classes from shadow-ai.css
+   SHADOW AI - ADMIN VERSION v1.0
+   ShadowBanCheck.io - Admin Command Center (Unlimited)
    ============================================================================= */
 
 (function() {
 'use strict';
 
-// ============================================
-// CONFIGURATION - Admin version, unlimited
-// ============================================
+// =============================================================================
+// CONFIGURATION
+// =============================================================================
 const CONFIG = {
-    title: 'Shadow AI Admin',
-    tooltip: 'Ask Shadow AI Admin',
-    storageKey: 'shadow_ai_admin_usage',
-    welcomeMessage: "👋 Welcome Andrew! I'm your Shadow AI Admin assistant. What can I help you look up today?"
+    demoUsername: '@ghost081280',
+    storageKey: 'shadow_ai_admin_v1'
 };
 
-// State
-let conversationHistory = [];
+// Demo users database for lookup
+const DEMO_USERS = {
+    'john@example.com': {
+        name: 'John Smith',
+        plan: 'Pro',
+        joined: '2025-09-15',
+        scans: 47,
+        lastScan: '2025-11-26',
+        accounts: ['@johnsmith (Twitter)', '@john.smith (Instagram)']
+    },
+    'sarah@agency.com': {
+        name: 'Sarah Marketing',
+        plan: 'Agency',
+        joined: '2025-08-01',
+        scans: 312,
+        lastScan: '2025-11-27',
+        accounts: ['Multiple agency clients']
+    },
+    'demo@test.com': {
+        name: 'Demo User',
+        plan: 'Pro',
+        joined: '2025-11-01',
+        scans: 12,
+        lastScan: '2025-11-27',
+        accounts: [`${CONFIG.demoUsername} (Twitter)`]
+    }
+};
+
+// =============================================================================
+// UI STATE
+// =============================================================================
+let isOpen = false;
 let isTyping = false;
+let conversationHistory = [];
 
-// ============================================
-// UNLIMITED ACCESS - No limits for admin
-// ============================================
-function canAskQuestion() {
-    return true; // Always allowed
-}
-
-function getRemainingDisplay() {
-    return '∞ Unlimited';
-}
-
-// ============================================
-// INITIALIZE
-// ============================================
-function init() {
-    console.log('🤖 Shadow AI Admin v3.0 Initializing...');
+// =============================================================================
+// COMMAND PROCESSING
+// =============================================================================
+function processCommand(input) {
+    const cmd = input.toLowerCase().trim();
     
-    // Add dashboard-page class to body for CSS targeting
-    document.body.classList.add('dashboard-page');
-    
-    createWidget();
-    bindEvents();
-    initKeyboardHandler();
-    initScrollIsolation();
-    
-    console.log('✅ Shadow AI Admin initialized - Unlimited Access');
-}
-
-// ============================================
-// CREATE WIDGET - Same structure as regular version
-// ============================================
-function createWidget() {
-    // Check if widget already exists
-    if (document.querySelector('.shadow-ai-container')) {
-        console.log('Widget already exists, skipping');
-        return;
+    // Engine check command
+    if (cmd.startsWith('check ')) {
+        return processCheckCommand(input.substring(6));
     }
     
-    const widget = document.createElement('div');
-    widget.className = 'shadow-ai-container';
-    widget.id = 'shadow-ai-container';
+    // User lookup command
+    if (cmd.startsWith('lookup ')) {
+        return processLookupCommand(input.substring(7));
+    }
     
-    widget.innerHTML = `
-        <!-- Glow Effect -->
-        <div class="shadow-ai-glow"></div>
-        
-        <!-- Tooltip -->
-        <div class="shadow-ai-tooltip">${CONFIG.tooltip}</div>
-        
+    // Stats command
+    if (cmd === 'stats' || cmd === 'dashboard' || cmd === 'status') {
+        return generateStatsResponse();
+    }
+    
+    // Messages/support command
+    if (cmd === 'messages' || cmd === 'support' || cmd === 'tickets') {
+        return generateMessagesResponse();
+    }
+    
+    // Help command
+    if (cmd === 'help' || cmd === 'commands' || cmd === '?') {
+        return generateHelpResponse();
+    }
+    
+    // Users command
+    if (cmd === 'users' || cmd === 'subscribers') {
+        return generateUsersResponse();
+    }
+    
+    // Revenue command
+    if (cmd === 'revenue' || cmd === 'billing' || cmd === 'mrr') {
+        return generateRevenueResponse();
+    }
+    
+    // Otherwise, treat as regular AI question
+    return generateAIResponse(input);
+}
+
+function processCheckCommand(query) {
+    // Parse: @username on platform
+    const match = query.match(/@?(\w+)\s+(?:on\s+)?(\w+)/i);
+    
+    if (!match) {
+        return `⚠️ **Invalid check command format**\n\nUsage: \`check @username on platform\`\n\nExamples:\n• \`check ${CONFIG.demoUsername} on twitter\`\n• \`check @acmecorp on instagram\``;
+    }
+    
+    const username = match[1];
+    const platform = match[2].toLowerCase();
+    
+    // Simulate engine scan
+    return simulateEngineScan(username, platform);
+}
+
+function simulateEngineScan(username, platform) {
+    // Generate realistic scores
+    const factors = {
+        search: Math.floor(Math.random() * 30) + 70,
+        reply: Math.floor(Math.random() * 50) + 50,
+        suggestion: Math.floor(Math.random() * 25) + 75,
+        distribution: Math.floor(Math.random() * 40) + 60,
+        standing: Math.floor(Math.random() * 15) + 85
+    };
+    
+    const overall = Math.floor((factors.search + factors.reply + factors.suggestion + factors.distribution + factors.standing) / 5);
+    const score = 100 - overall;
+    
+    const getStatus = (val) => {
+        if (val >= 90) return '✅ PASS';
+        if (val >= 70) return '⚠️ WARN';
+        return '❌ FAIL';
+    };
+    
+    const getOverallStatus = (s) => {
+        if (s <= 25) return { emoji: '🟢', text: 'HEALTHY', color: 'healthy' };
+        if (s <= 50) return { emoji: '🟡', text: 'MILD ISSUES', color: 'warning' };
+        if (s <= 75) return { emoji: '🟠', text: 'RESTRICTED', color: 'issues' };
+        return { emoji: '🔴', text: 'SEVERE', color: 'critical' };
+    };
+    
+    const status = getOverallStatus(score);
+    const platformNames = {
+        twitter: 'Twitter/X',
+        instagram: 'Instagram',
+        tiktok: 'TikTok',
+        reddit: 'Reddit',
+        youtube: 'YouTube',
+        facebook: 'Facebook',
+        linkedin: 'LinkedIn'
+    };
+    
+    return `## 🔍 Engine Scan Results
+
+**Account:** @${username}
+**Platform:** ${platformNames[platform] || platform}
+**Scanned:** ${new Date().toLocaleString()}
+
+---
+
+### Factor Analysis:
+
+\`\`\`
+Search Visibility:    ${getStatus(factors.search)} (${factors.search}%)
+Reply Visibility:     ${getStatus(factors.reply)} (${factors.reply}%)
+Suggestions:          ${getStatus(factors.suggestion)} (${factors.suggestion}%)
+Distribution:         ${getStatus(factors.distribution)} (${factors.distribution}%)
+Account Standing:     ${getStatus(factors.standing)} (${factors.standing}%)
+─────────────────────────────────────────
+Overall Score:        ${score}% ${status.emoji} ${status.text}
+\`\`\`
+
+### Diagnosis:
+${score <= 25 ? 
+    'No significant restrictions detected. Account appears to have normal visibility.' :
+score <= 50 ?
+    'Minor signals detected. Could be temporary algorithm fluctuation. Recommend monitoring.' :
+score <= 75 ?
+    'Multiple restriction indicators present. Likely experiencing reduced visibility. Recovery steps recommended.' :
+    'Severe restrictions detected. Account appears to be heavily suppressed. Immediate action required.'
+}
+
+### Admin Actions:
+• \`lookup user@email.com\` - Find user by email
+• \`messages\` - View support tickets for this issue
+• \`stats\` - View platform-wide statistics`;
+}
+
+function processLookupCommand(email) {
+    const user = DEMO_USERS[email.toLowerCase().trim()];
+    
+    if (!user) {
+        return `⚠️ **User not found:** ${email}\n\nTry one of these demo users:\n• john@example.com\n• sarah@agency.com\n• demo@test.com`;
+    }
+    
+    return `## 👤 User Lookup: ${email}
+
+**Name:** ${user.name}
+**Plan:** ${user.plan}
+**Joined:** ${user.joined}
+**Total Scans:** ${user.scans}
+**Last Scan:** ${user.lastScan}
+
+### Monitored Accounts:
+${user.accounts.map(a => `• ${a}`).join('\n')}
+
+### Admin Actions:
+• View full scan history
+• Modify subscription
+• Send direct message
+• Reset usage limits`;
+}
+
+function generateStatsResponse() {
+    return `## 📊 Dashboard Stats
+
+### Users
+• **Total Users:** 1,247
+• **Pro Subscribers:** 312
+• **Agency Accounts:** 28
+• **Free Users:** 907
+
+### Activity (Today)
+• **Scans Run:** 847
+• **AI Questions:** 234
+• **New Signups:** 18
+• **Disputes Filed:** 7
+
+### Activity (This Month)
+• **Total Scans:** 24,891
+• **AI Questions:** 6,432
+• **New Signups:** 412
+• **Disputes Filed:** 89
+• **Successful Appeals:** 41 (46%)
+
+### Revenue
+• **MRR:** $4,891
+• **Pro Revenue:** $2,808 (312 × $9)
+• **Agency Revenue:** $1,820 (28 × $29 + clients)
+• **Overage:** $263
+
+---
+*Type \`revenue\` for detailed breakdown*`;
+}
+
+function generateMessagesResponse() {
+    return `## 📬 Recent Support Messages
+
+### Priority Tickets:
+
+**🔴 HIGH** - 2 hours ago
+*From: enterprise@bigcorp.com*
+"Our agency account scans are failing. Need immediate assistance."
+→ **Action:** Investigate API limits
+
+**🟡 MEDIUM** - 5 hours ago
+*From: john@example.com*
+"My Pro subscription didn't renew correctly. Being charged twice."
+→ **Action:** Check Stripe webhook
+
+**🟡 MEDIUM** - 8 hours ago
+*From: creator@youtube.com*
+"False positive on my YouTube scan. I'm definitely not shadow banned."
+→ **Action:** Review detection algorithm
+
+### Resolved Today: 12
+### Open Tickets: 7
+### Avg Response Time: 2.4 hours
+
+---
+*Reply to ticket: \`reply <ticket-id> <message>\`*`;
+}
+
+function generateUsersResponse() {
+    return `## 👥 User Overview
+
+### By Plan:
+\`\`\`
+Free Users:     907  (72.8%)
+Pro ($9/mo):    312  (25.0%)
+Agency ($29+):   28  (2.2%)
+─────────────────────────
+Total:        1,247
+\`\`\`
+
+### Growth (Last 30 Days):
+• New signups: 412
+• Upgrades to Pro: 47
+• Upgrades to Agency: 3
+• Churned: 18
+• Net growth: +394
+
+### Top Users by Scans:
+1. sarah@agency.com - 312 scans (Agency)
+2. marketing@acme.com - 189 scans (Agency)
+3. social@brand.com - 156 scans (Agency)
+4. john@example.com - 47 scans (Pro)
+5. demo@test.com - 12 scans (Pro)
+
+---
+*Use \`lookup email@domain.com\` for user details*`;
+}
+
+function generateRevenueResponse() {
+    return `## 💰 Revenue Dashboard
+
+### Monthly Recurring Revenue:
+\`\`\`
+Pro Subscriptions:    $2,808  (312 × $9)
+Agency Base:          $  812  (28 × $29)
+Agency Per-Client:    $  420  (84 clients × $5)
+─────────────────────────────────────────
+Subscription MRR:     $4,040
+\`\`\`
+
+### Usage Revenue (This Month):
+\`\`\`
+Overage Scans:        $  156  (1,950 × $0.08)
+Overage AI:           $   48  (1,200 × $0.04)
+Agency Usage:         $  587  (scans + AI)
+Dispute Submissions:  $   89  (89 × $1)
+─────────────────────────────────────────
+Usage Revenue:        $  880
+\`\`\`
+
+### Total MRR: $4,920
+
+### Month-over-Month:
+• Revenue: +12.3%
+• Users: +8.7%
+• Scans: +15.2%
+
+### Stripe Status:
+• ✅ All webhooks healthy
+• ✅ No failed charges today
+• ⚠️ 3 cards expiring this week`;
+}
+
+function generateHelpResponse() {
+    return `## 🛠️ Admin Command Center
+
+### Engine Commands:
+• \`check @username on platform\` - Run shadow ban scan
+  *Example: check ${CONFIG.demoUsername} on twitter*
+
+### User Commands:
+• \`lookup email@domain.com\` - Find user by email
+• \`users\` - View user statistics
+
+### Dashboard Commands:
+• \`stats\` - View dashboard overview
+• \`revenue\` or \`mrr\` - Revenue breakdown
+• \`messages\` - Support ticket queue
+
+### Examples:
+\`\`\`
+check @acmecorp on instagram
+lookup john@example.com
+stats
+revenue
+messages
+\`\`\`
+
+---
+*You can also ask me anything about shadow bans, the platform, or users!*`;
+}
+
+function generateAIResponse(question) {
+    const q = question.toLowerCase();
+    
+    // Platform questions
+    if (q.includes('twitter') || q.includes('instagram') || q.includes('tiktok')) {
+        return `## Platform Intelligence\n\nAs an admin, you have full access to all platform detection algorithms.\n\n**Quick Engine Check:**\n\`check @username on twitter\`\n\n**View Aggregate Data:**\n\`stats\`\n\nWhat specific platform data do you need?`;
+    }
+    
+    // User questions
+    if (q.includes('user') || q.includes('subscriber') || q.includes('customer')) {
+        return generateUsersResponse();
+    }
+    
+    // Revenue questions
+    if (q.includes('revenue') || q.includes('money') || q.includes('earning')) {
+        return generateRevenueResponse();
+    }
+    
+    // Default
+    return `## 🤖 Admin AI Assistant
+
+I'm your admin command center assistant. I can help with:
+
+**Engine Operations:**
+• Run shadow ban scans on any account
+• View detection algorithm results
+• Analyze platform-specific signals
+
+**User Management:**
+• Look up user accounts
+• View subscription status
+• Check scan history
+
+**Business Intelligence:**
+• Revenue analytics
+• User growth metrics
+• Support ticket management
+
+**Try these commands:**
+• \`check ${CONFIG.demoUsername} on twitter\`
+• \`lookup demo@test.com\`
+• \`stats\`
+• \`revenue\`
+• \`messages\`
+
+---
+*Type \`help\` for full command list*`;
+}
+
+// =============================================================================
+// UI FUNCTIONS
+// =============================================================================
+function createUI() {
+    if (document.getElementById('shadow-ai-admin-container')) return;
+    
+    const container = document.createElement('div');
+    container.id = 'shadow-ai-admin-container';
+    container.innerHTML = `
         <!-- Floating Button -->
-        <button class="copilot-btn" id="shadow-ai-btn" aria-label="Open Shadow AI Admin">
-            <span class="copilot-emoji">🤖</span>
+        <button class="shadow-ai-fab admin-fab" id="shadow-ai-fab" title="Admin Command Center">
+            <span class="fab-icon">🛠️</span>
+            <span class="fab-pulse"></span>
         </button>
         
-        <!-- Chat Window -->
-        <div class="copilot-chat hidden" id="shadow-ai-chat">
-            <!-- Header -->
-            <div class="copilot-header">
-                <div class="copilot-header-left">
-                    <span class="copilot-header-emoji">🤖</span>
-                    <div class="copilot-header-text">
-                        <h3>${CONFIG.title}</h3>
-                        <p class="copilot-usage" id="shadow-ai-usage">${getRemainingDisplay()}</p>
+        <!-- Chat Panel -->
+        <div class="shadow-ai-panel admin-panel hidden" id="shadow-ai-panel">
+            <div class="shadow-ai-header admin-header">
+                <div class="header-left">
+                    <span class="header-icon">🛠️</span>
+                    <div class="header-info">
+                        <span class="header-title">Command Center</span>
+                        <span class="header-subtitle">Admin • Unlimited Access</span>
                     </div>
                 </div>
-                <div class="copilot-header-right">
-                    <span class="copilot-status">
-                        <span class="copilot-status-dot online"></span>
-                        Online
-                    </span>
-                    <button class="copilot-close" id="shadow-ai-close" aria-label="Close chat">×</button>
+                <button class="header-close" id="shadow-ai-close">&times;</button>
+            </div>
+            
+            <div class="shadow-ai-messages" id="shadow-ai-messages">
+                <div class="ai-message">
+                    <div class="message-avatar">🛠️</div>
+                    <div class="message-content">
+                        <p><strong>Admin Command Center Online</strong></p>
+                        <p>Quick commands:</p>
+                        <ul>
+                            <li><code>check @user on platform</code> - Engine scan</li>
+                            <li><code>lookup email</code> - User lookup</li>
+                            <li><code>stats</code> - Dashboard metrics</li>
+                            <li><code>help</code> - All commands</li>
+                        </ul>
+                        <p>Try: <code>check ${CONFIG.demoUsername} on twitter</code></p>
+                    </div>
                 </div>
             </div>
             
-            <!-- Messages -->
-            <div class="copilot-messages" id="shadow-ai-messages">
-                <!-- Messages injected here -->
-            </div>
-            
-            <!-- Input -->
-            <div class="copilot-input-area">
-                <input type="text" 
-                       id="shadow-ai-input" 
-                       placeholder="Ask about shadow bans..." 
-                       autocomplete="off"
-                       enterkeyhint="send">
-                <button class="copilot-send" id="shadow-ai-send">Send</button>
+            <div class="shadow-ai-input-area">
+                <div class="input-wrapper">
+                    <textarea 
+                        id="shadow-ai-input" 
+                        placeholder="Enter command or ask a question..."
+                        rows="1"
+                    ></textarea>
+                    <button class="send-btn" id="shadow-ai-send">
+                        <span>➤</span>
+                    </button>
+                </div>
+                <div class="input-hint">
+                    Enter to send • Try: stats, revenue, messages
+                </div>
             </div>
         </div>
     `;
     
-    document.body.appendChild(widget);
-    
-    // Show widget after small delay
-    setTimeout(() => {
-        widget.classList.add('ready');
-    }, 500);
-    
-    // Show welcome message
-    setTimeout(() => {
-        addMessage(CONFIG.welcomeMessage, 'assistant');
-    }, 800);
+    document.body.appendChild(container);
+    bindEvents();
 }
 
-// ============================================
-// EVENT BINDING
-// ============================================
 function bindEvents() {
-    // Toggle button
-    document.getElementById('shadow-ai-btn')?.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        toggleChat();
+    const fab = document.getElementById('shadow-ai-fab');
+    const panel = document.getElementById('shadow-ai-panel');
+    const closeBtn = document.getElementById('shadow-ai-close');
+    const input = document.getElementById('shadow-ai-input');
+    const sendBtn = document.getElementById('shadow-ai-send');
+    
+    fab?.addEventListener('click', () => {
+        isOpen = !isOpen;
+        panel?.classList.toggle('hidden', !isOpen);
+        fab?.classList.toggle('active', isOpen);
+        if (isOpen) input?.focus();
     });
     
-    // Close button
-    document.getElementById('shadow-ai-close')?.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        closeChat();
+    closeBtn?.addEventListener('click', () => {
+        isOpen = false;
+        panel?.classList.add('hidden');
+        fab?.classList.remove('active');
     });
     
-    // Send button
-    document.getElementById('shadow-ai-send')?.addEventListener('click', (e) => {
-        e.preventDefault();
-        sendMessage();
-    });
+    sendBtn?.addEventListener('click', sendMessage);
     
-    // Enter key
-    document.getElementById('shadow-ai-input')?.addEventListener('keypress', (e) => {
+    input?.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
             sendMessage();
         }
     });
     
-    // Click outside to close
-    document.addEventListener('click', (e) => {
-        const container = document.getElementById('shadow-ai-container');
-        const chat = document.getElementById('shadow-ai-chat');
-        if (container && chat && !chat.classList.contains('hidden')) {
-            if (!container.contains(e.target)) {
-                closeChat();
-            }
-        }
+    input?.addEventListener('input', () => {
+        input.style.height = 'auto';
+        input.style.height = Math.min(input.scrollHeight, 120) + 'px';
     });
-    
-    // Scroll-based tooltip hiding
-    let scrollTimeout;
-    window.addEventListener('scroll', () => {
-        const tooltip = document.querySelector('.shadow-ai-tooltip');
-        if (tooltip) {
-            tooltip.classList.add('scrolled');
-            clearTimeout(scrollTimeout);
-            scrollTimeout = setTimeout(() => {
-                tooltip.classList.remove('scrolled');
-            }, 1500);
-        }
-    }, { passive: true });
 }
 
-// ============================================
-// CHAT TOGGLE
-// ============================================
-function toggleChat() {
-    const chat = document.getElementById('shadow-ai-chat');
-    if (chat?.classList.contains('hidden')) {
-        openChat();
-    } else {
-        closeChat();
-    }
-}
-
-function openChat() {
-    const chat = document.getElementById('shadow-ai-chat');
-    const container = document.getElementById('shadow-ai-container');
+async function sendMessage() {
     const input = document.getElementById('shadow-ai-input');
+    const messagesContainer = document.getElementById('shadow-ai-messages');
     
-    if (chat) {
-        chat.classList.remove('hidden');
-        chat.classList.add('active');
-    }
-    if (container) {
-        container.classList.add('chat-active');
-    }
+    if (!input || !messagesContainer) return;
     
-    // Focus input after animation
-    setTimeout(() => {
-        input?.focus();
-    }, 300);
-}
-
-function closeChat() {
-    const chat = document.getElementById('shadow-ai-chat');
-    const container = document.getElementById('shadow-ai-container');
-    const input = document.getElementById('shadow-ai-input');
+    const question = input.value.trim();
+    if (!question || isTyping) return;
     
-    if (chat) {
-        chat.classList.remove('active');
-        chat.classList.add('hidden');
-        chat.classList.remove('keyboard-visible');
-    }
-    if (container) {
-        container.classList.remove('chat-active');
-    }
-    
-    // Blur input to close keyboard
-    input?.blur();
-}
-
-// ============================================
-// SEND MESSAGE
-// ============================================
-function sendMessage() {
-    const input = document.getElementById('shadow-ai-input');
-    const message = input?.value?.trim();
-    
-    if (!message) {
-        input?.classList.add('blink-empty');
-        setTimeout(() => input?.classList.remove('blink-empty'), 1200);
-        return;
-    }
-    
-    if (isTyping) return;
-    
-    // Add user message
-    addMessage(message, 'user');
+    addMessage('user', question);
     input.value = '';
+    input.style.height = 'auto';
     
-    // Add to history
-    conversationHistory.push({ role: 'user', content: message });
-    
-    // Show typing indicator
-    showTypingIndicator();
     isTyping = true;
+    const typingId = addTypingIndicator();
     
-    // Disable input while processing
-    input.disabled = true;
-    document.getElementById('shadow-ai-send').disabled = true;
+    await new Promise(r => setTimeout(r, 500 + Math.random() * 500));
     
-    // Generate response (replace with actual API call)
-    setTimeout(() => {
-        hideTypingIndicator();
-        isTyping = false;
-        
-        const response = generateResponse(message);
-        addMessage(response, 'assistant');
-        conversationHistory.push({ role: 'assistant', content: response });
-        
-        input.disabled = false;
-        document.getElementById('shadow-ai-send').disabled = false;
-        input.focus();
-    }, 800 + Math.random() * 800);
+    const response = processCommand(question);
+    
+    document.getElementById(typingId)?.remove();
+    isTyping = false;
+    
+    addMessage('ai', response);
+    
+    conversationHistory.push({ role: 'user', content: question });
+    conversationHistory.push({ role: 'assistant', content: response });
 }
 
-// ============================================
-// MESSAGE HANDLING
-// ============================================
-function addMessage(text, role) {
+function addMessage(type, content) {
     const messagesContainer = document.getElementById('shadow-ai-messages');
     if (!messagesContainer) return;
     
     const messageDiv = document.createElement('div');
-    messageDiv.className = `chat-message ${role}-message`;
+    messageDiv.className = type === 'user' ? 'user-message' : 'ai-message';
     
-    if (role === 'assistant') {
+    if (type === 'user') {
         messageDiv.innerHTML = `
-            <div class="message-content">
-                <div class="message-avatar">🤖</div>
-                <div class="message-text">${formatMessage(text)}</div>
-            </div>
+            <div class="message-content">${escapeHtml(content)}</div>
+            <div class="message-avatar">👑</div>
         `;
     } else {
         messageDiv.innerHTML = `
-            <div class="message-content">
-                <div class="message-text">${escapeHtml(text)}</div>
-            </div>
+            <div class="message-avatar">🛠️</div>
+            <div class="message-content">${formatMarkdown(content)}</div>
         `;
     }
     
@@ -307,10 +564,25 @@ function addMessage(text, role) {
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }
 
-function formatMessage(text) {
-    return text
-        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-        .replace(/\n/g, '<br>');
+function addTypingIndicator() {
+    const messagesContainer = document.getElementById('shadow-ai-messages');
+    if (!messagesContainer) return '';
+    
+    const id = 'typing-' + Date.now();
+    const typingDiv = document.createElement('div');
+    typingDiv.id = id;
+    typingDiv.className = 'ai-message typing-indicator';
+    typingDiv.innerHTML = `
+        <div class="message-avatar">🛠️</div>
+        <div class="message-content">
+            <div class="typing-dots"><span></span><span></span><span></span></div>
+        </div>
+    `;
+    
+    messagesContainer.appendChild(typingDiv);
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    
+    return id;
 }
 
 function escapeHtml(text) {
@@ -319,154 +591,62 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
-// ============================================
-// TYPING INDICATOR
-// ============================================
-function showTypingIndicator() {
-    const messagesContainer = document.getElementById('shadow-ai-messages');
-    if (!messagesContainer) return;
-    
-    const typingDiv = document.createElement('div');
-    typingDiv.className = 'chat-message assistant-message typing-indicator';
-    typingDiv.innerHTML = `
-        <div class="message-content">
-            <div class="message-avatar">🤖</div>
-            <div class="typing-dots">
-                <span></span>
-                <span></span>
-                <span></span>
-            </div>
-        </div>
-    `;
-    
-    messagesContainer.appendChild(typingDiv);
-    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+function formatMarkdown(text) {
+    return text
+        .replace(/^## (.*$)/gm, '<h3>$1</h3>')
+        .replace(/^### (.*$)/gm, '<h4>$1</h4>')
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.*?)\*/g, '<em>$1</em>')
+        .replace(/`([^`]+)`/g, '<code>$1</code>')
+        .replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>')
+        .replace(/^• (.*$)/gm, '<li>$1</li>')
+        .replace(/^(\d+)\. (.*$)/gm, '<li>$2</li>')
+        .replace(/\n\n/g, '</p><p>')
+        .replace(/\n/g, '<br>')
+        .replace(/^/, '<p>')
+        .replace(/$/, '</p>')
+        .replace(/<p><\/p>/g, '')
+        .replace(/<p>(<h[34]>)/g, '$1')
+        .replace(/(<\/h[34]>)<\/p>/g, '$1')
+        .replace(/<p>(<pre>)/g, '$1')
+        .replace(/(<\/pre>)<\/p>/g, '$1')
+        .replace(/<p>(<li>)/g, '<ul>$1')
+        .replace(/(<\/li>)<\/p>/g, '$1</ul>')
+        .replace(/---/g, '<hr>');
 }
 
-function hideTypingIndicator() {
-    const indicator = document.querySelector('.typing-indicator');
-    if (indicator) indicator.remove();
-}
-
-// ============================================
-// KEYBOARD HANDLER (for mobile landscape)
-// ============================================
-function initKeyboardHandler() {
-    const input = document.getElementById('shadow-ai-input');
-    const chat = document.getElementById('shadow-ai-chat');
-    
-    if (!input || !chat) return;
-    
-    // Detect keyboard on mobile landscape
-    input.addEventListener('focus', () => {
-        if (window.innerWidth <= 926 && window.innerHeight <= 500 && 
-            window.matchMedia('(orientation: landscape)').matches) {
-            chat.classList.add('keyboard-visible');
-        }
-    });
-    
-    input.addEventListener('blur', () => {
-        setTimeout(() => {
-            chat.classList.remove('keyboard-visible');
-        }, 100);
-    });
-    
-    // Handle orientation change
-    window.addEventListener('orientationchange', () => {
-        setTimeout(() => {
-            chat.classList.remove('keyboard-visible');
-            if (document.activeElement === input) {
-                input.blur();
-            }
-        }, 300);
-    });
-    
-    // Handle resize
-    let lastHeight = window.innerHeight;
-    window.addEventListener('resize', () => {
-        const isLandscape = window.matchMedia('(orientation: landscape)').matches;
-        if (window.innerWidth <= 926 && window.innerHeight <= 500 && isLandscape) {
-            if (lastHeight - window.innerHeight > 100 && document.activeElement === input) {
-                chat.classList.add('keyboard-visible');
-            } else if (window.innerHeight - lastHeight > 100) {
-                chat.classList.remove('keyboard-visible');
-            }
-        } else {
-            chat.classList.remove('keyboard-visible');
-        }
-        lastHeight = window.innerHeight;
-    }, { passive: true });
-}
-
-// ============================================
-// SCROLL ISOLATION
-// ============================================
-function initScrollIsolation() {
-    const messages = document.getElementById('shadow-ai-messages');
-    if (!messages) return;
-    
-    messages.addEventListener('wheel', (e) => {
-        const { scrollTop, scrollHeight, clientHeight } = messages;
-        const atTop = scrollTop === 0;
-        const atBottom = scrollTop + clientHeight >= scrollHeight - 1;
-        
-        if ((atTop && e.deltaY < 0) || (atBottom && e.deltaY > 0)) {
-            e.preventDefault();
-        }
-    }, { passive: false });
-}
-
-// ============================================
-// RESPONSE GENERATOR (Replace with actual API)
-// ============================================
-function generateResponse(message) {
-    const lowerMsg = message.toLowerCase();
-    
-    if (lowerMsg.includes('shadow') && lowerMsg.includes('ban')) {
-        return "Shadow banning is when a platform limits your content's visibility without notifying you. Your posts appear normal to you, but others can't see them in searches, feeds, or recommendations.\n\n**Common signs:**\n• Sudden engagement drop\n• Hashtags not working\n• Posts not appearing in Explore/For You\n\nWould you like me to check a specific platform for you?";
-    }
-    
-    if (lowerMsg.includes('check') || lowerMsg.includes('test') || lowerMsg.includes('account')) {
-        return "I can check your accounts across multiple platforms. To start, please tell me:\n\n1. Which platform (Twitter/X, Instagram, TikTok, etc.)?\n2. Your username or profile URL\n\nI'll analyze visibility factors and give you a detailed report.";
-    }
-    
-    if (lowerMsg.includes('twitter') || lowerMsg.includes('x.com') || lowerMsg.includes(' x ')) {
-        return "For **Twitter/X** shadow bans, I check:\n\n• Search suggestion ban\n• Search ban\n• Ghost ban (replies hidden)\n• Reply deboosting\n\nPaste your Twitter username and I'll analyze it!";
-    }
-    
-    if (lowerMsg.includes('instagram') || lowerMsg.includes('ig')) {
-        return "For **Instagram** shadow bans, I analyze:\n\n• Hashtag reach\n• Explore page visibility\n• Story views vs followers ratio\n• Engagement patterns\n\nWhat's your Instagram username?";
-    }
-    
-    if (lowerMsg.includes('tiktok')) {
-        return "For **TikTok** shadow bans, I check:\n\n• For You Page distribution\n• Video view patterns\n• Comment visibility\n• Sound restrictions\n\nWhat's your TikTok username?";
-    }
-    
-    if (lowerMsg.includes('fix') || lowerMsg.includes('recover') || lowerMsg.includes('help')) {
-        return "Here are general **recovery strategies**:\n\n1. **Take a break** - Stop posting for 24-48 hours\n2. **Review content** - Remove anything potentially violating guidelines\n3. **Avoid spam behavior** - Don't mass-like, follow, or use bots\n4. **Diversify hashtags** - Don't use the same ones repeatedly\n5. **Engage authentically** - Focus on genuine interactions\n\nWant platform-specific advice?";
-    }
-    
-    if (lowerMsg.includes('hi') || lowerMsg.includes('hello') || lowerMsg.includes('hey')) {
-        return "Hello Andrew! 👋 I'm here to help you manage shadow ban issues for your users. What platform are you checking today?";
-    }
-    
-    // Default response
-    return "I'm here to help with shadow ban detection and recovery. Could you tell me more about your situation?\n\n**I can help with:**\n• Checking if users are shadow banned\n• Platform-specific analysis\n• Recovery strategies\n• Understanding algorithm changes\n\nWhat would you like to know?";
-}
-
-// ============================================
-// EXPORT API for external use
-// ============================================
+// =============================================================================
+// PUBLIC API
+// =============================================================================
 window.ShadowAI = {
-    open: openChat,
-    close: closeChat,
-    toggle: toggleChat,
-    canAsk: canAskQuestion
+    open: () => { 
+        const fab = document.getElementById('shadow-ai-fab');
+        if (fab && !isOpen) fab.click();
+    },
+    close: () => {
+        const closeBtn = document.getElementById('shadow-ai-close');
+        if (closeBtn && isOpen) closeBtn.click();
+    },
+    runCommand: (cmd) => {
+        if (!isOpen) window.ShadowAI.open();
+        const input = document.getElementById('shadow-ai-input');
+        if (input) {
+            input.value = cmd;
+            document.getElementById('shadow-ai-send')?.click();
+        }
+    },
+    isOpen: () => isOpen
 };
 
-// ============================================
-// INIT ON DOM READY
-// ============================================
+// =============================================================================
+// INITIALIZATION
+// =============================================================================
+function init() {
+    console.log('🛠️ Shadow AI Admin v1.0 Initializing...');
+    createUI();
+    console.log('✅ Admin Command Center loaded');
+}
+
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
 } else {

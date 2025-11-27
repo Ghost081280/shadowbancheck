@@ -1,14 +1,15 @@
 /**
  * =============================================================================
- * SHADOW AI - WEBSITE CHATBOT v4.0
- * ShadowBanCheck.io - Website Version (Not Dashboard/Admin)
+ * SHADOW AI - UNIFIED CHATBOT v4.0 (RESTORED)
+ * ShadowBanCheck.io - Works on ALL pages
  * 
- * NEW IN v4.0:
- * - 3 questions/day (replaces "lookups" concept)
- * - Reads from window.latestScanResults to analyze free scan results
- * - Recovery/dispute strategies require Shadow AI Pro upgrade
- * - After 3rd question, prompts to upgrade for more questions
- * - Demo chat animation preserved
+ * Same style everywhere. Only permissions change:
+ * - Website (index.html): 3 lookups/day, "Shadow AI"
+ * - User Dashboard: 25/month, "Shadow AI Pro"
+ * - Agency Dashboard: Unlimited, "Shadow AI Agency"
+ * - Admin Dashboard: Unlimited + commands, "Shadow AI Admin"
+ * 
+ * Uses @ghost081280 for Twitter/X examples
  * =============================================================================
  */
 
@@ -16,203 +17,237 @@
     'use strict';
     
     // ==========================================================================
-    // CONFIGURATION
+    // PAGE DETECTION & CONFIGURATION
     // ==========================================================================
+    const PAGE_TYPE = detectPageType();
+    
+    function detectPageType() {
+        const path = window.location.pathname.toLowerCase();
+        if (path.includes('admin-dashboard') || path.includes('admin.html')) return 'admin';
+        if (path.includes('agency-dashboard') || path.includes('agency.html')) return 'agency';
+        if (path.includes('dashboard')) return 'dashboard';
+        return 'website';
+    }
+    
     const CONFIG = {
-        // Questions per day for free users
-        freeQuestionsPerDay: 3,
-        
-        // Storage key for tracking questions
-        questionsKey: 'shadowAI_questions_v4',
-        
-        // Pricing page URL
-        pricingUrl: '#pricing',
-        
-        // Title
-        title: 'Shadow AI',
-        tooltip: 'Ask Shadow AI'
+        website: {
+            title: 'Shadow AI',
+            tooltip: 'Ask Shadow AI',
+            usageText: (remaining, limit) => `${remaining}/${limit} lookups left`,
+            lookupLimit: 3,
+            messageLimit: 20,
+            welcomeMessage: "👋 Hi! I'm Shadow AI, your personal shadow ban detective. I can help you understand shadow banning, check your accounts, and provide recovery strategies. What would you like to know?"
+        },
+        dashboard: {
+            title: 'Shadow AI Pro',
+            tooltip: 'Ask Shadow AI Pro',
+            usageText: (remaining, limit) => `${remaining}/${limit} this month`,
+            lookupLimit: 25,
+            messageLimit: 200,
+            welcomeMessage: "👋 Welcome back! I'm Shadow AI Pro, your dedicated shadow ban assistant. You have **{remaining}** questions remaining this month. How can I help?"
+        },
+        agency: {
+            title: 'Shadow AI Agency',
+            tooltip: 'Ask Shadow AI Agency',
+            usageText: () => '∞ Unlimited',
+            lookupLimit: Infinity,
+            messageLimit: Infinity,
+            welcomeMessage: "👋 Welcome to Shadow AI Agency! I can help you manage client accounts, run bulk checks, and generate dispute letters. Ask me anything or type **help** for commands."
+        },
+        admin: {
+            title: 'Shadow AI Admin',
+            tooltip: 'Admin AI Command Center',
+            usageText: () => '∞ Unlimited',
+            lookupLimit: Infinity,
+            messageLimit: Infinity,
+            welcomeMessage: "👋 Welcome back Andrew! I'm your AI Command Center.\n\n**Quick Commands:**\n• `check @username on twitter` - Run engine scan\n• `lookup user@email.com` - View user's scan history\n• `stats` - Dashboard statistics\n\nOr just ask me anything!"
+        }
+    };
+    
+    const CURRENT_CONFIG = CONFIG[PAGE_TYPE];
+    const DEMO_USERNAME = '@ghost081280';
+    
+    // Storage keys
+    const STORAGE_KEYS = {
+        lookups: `shadowAI_lookups_${PAGE_TYPE}`,
+        messages: `shadowAI_messages_${PAGE_TYPE}`,
+        powerCheck: `shadowAI_powerCheck_${PAGE_TYPE}`,
+        monthly: `shadowAI_monthly_${PAGE_TYPE}`
     };
     
     // State
     let conversationHistory = [];
     let isTyping = false;
-    let questionsUsed = 0;
+    let lookupsUsed = 0;
+    let messagesUsed = 0;
+    let usedPowerCheck = false;
     
     // ==========================================================================
-    // QUESTION TRACKING
+    // STORAGE HELPERS
     // ==========================================================================
-    function getQuestionsData() {
+    function getStorageData(key, resetPeriod = 'daily') {
         try {
-            const data = localStorage.getItem(CONFIG.questionsKey);
+            const data = localStorage.getItem(key);
             if (data) {
                 const parsed = JSON.parse(data);
-                const today = new Date().toDateString();
-                if (parsed.date !== today) {
-                    // New day, reset counter
-                    return { date: today, count: 0 };
+                const now = new Date();
+                let shouldReset = false;
+                
+                if (resetPeriod === 'daily') {
+                    shouldReset = parsed.date !== now.toDateString();
+                } else if (resetPeriod === 'monthly') {
+                    const currentMonth = now.toISOString().slice(0, 7);
+                    shouldReset = parsed.month !== currentMonth;
+                }
+                
+                if (shouldReset) {
+                    return { date: now.toDateString(), month: now.toISOString().slice(0, 7), count: 0 };
                 }
                 return parsed;
             }
         } catch (e) {
-            console.warn('Could not read questions data:', e);
+            console.warn('Storage read error:', e);
         }
-        return { date: new Date().toDateString(), count: 0 };
+        const now = new Date();
+        return { date: now.toDateString(), month: now.toISOString().slice(0, 7), count: 0 };
     }
     
-    function saveQuestionsData(count) {
+    function saveStorageData(key, count) {
         try {
-            localStorage.setItem(CONFIG.questionsKey, JSON.stringify({
-                date: new Date().toDateString(),
+            const now = new Date();
+            localStorage.setItem(key, JSON.stringify({
+                date: now.toDateString(),
+                month: now.toISOString().slice(0, 7),
                 count: count
             }));
         } catch (e) {
-            console.warn('Could not save questions data:', e);
+            console.warn('Storage write error:', e);
         }
     }
     
-    function getQuestionsRemaining() {
-        const data = getQuestionsData();
-        return Math.max(0, CONFIG.freeQuestionsPerDay - data.count);
+    // Determine reset period based on page type
+    function getResetPeriod() {
+        return PAGE_TYPE === 'dashboard' ? 'monthly' : 'daily';
     }
     
-    function canAskQuestion() {
-        return getQuestionsRemaining() > 0;
-    }
-    
-    function incrementQuestionCount() {
-        const data = getQuestionsData();
-        data.count++;
-        saveQuestionsData(data.count);
-        questionsUsed = data.count;
-        updateUsageDisplay();
-    }
-    
-    function updateUsageDisplay() {
+    function updateUsageCounter() {
         const usage = document.getElementById('shadow-ai-usage');
-        if (usage) {
-            const remaining = getQuestionsRemaining();
-            usage.textContent = `${remaining}/${CONFIG.freeQuestionsPerDay} questions left today`;
+        if (!usage) return;
+        
+        if (CURRENT_CONFIG.lookupLimit === Infinity) {
+            usage.textContent = CURRENT_CONFIG.usageText();
+        } else {
+            const data = getStorageData(STORAGE_KEYS.lookups, getResetPeriod());
+            lookupsUsed = data.count;
+            const remaining = Math.max(0, CURRENT_CONFIG.lookupLimit - lookupsUsed);
+            usage.textContent = CURRENT_CONFIG.usageText(remaining, CURRENT_CONFIG.lookupLimit);
         }
     }
     
-    // ==========================================================================
-    // ACCESS SCAN RESULTS FROM MAIN.JS
-    // ==========================================================================
-    function getScanResults() {
-        // First check window.latestScanResults (set by main.js)
-        if (window.latestScanResults) {
-            return window.latestScanResults;
-        }
-        
-        // Fallback: try localStorage
-        try {
-            const stored = localStorage.getItem('shadowban_latest_results');
-            if (stored) {
-                const results = JSON.parse(stored);
-                // Check if results are from today (within 24 hours)
-                if (results.timestamp && (Date.now() - results.timestamp) < 24 * 60 * 60 * 1000) {
-                    return results;
-                }
-            }
-        } catch (e) {
-            console.warn('Could not load stored results:', e);
-        }
-        
-        return null;
+    function canDoLookup() {
+        if (CURRENT_CONFIG.lookupLimit === Infinity) return true;
+        const data = getStorageData(STORAGE_KEYS.lookups, getResetPeriod());
+        return data.count < CURRENT_CONFIG.lookupLimit;
     }
     
-    function getSearchType() {
-        if (window.lastSearchType) return window.lastSearchType;
-        
-        try {
-            const storedType = localStorage.getItem('shadowban_last_search_type');
-            if (storedType) return storedType;
-        } catch (e) {}
-        
-        // Infer from results
-        const results = getScanResults();
-        if (results) {
-            return results.searchType || 'power';
-        }
-        
-        return null;
+    function canSendMessage() {
+        if (CURRENT_CONFIG.messageLimit === Infinity) return true;
+        const data = getStorageData(STORAGE_KEYS.messages, getResetPeriod());
+        return data.count < CURRENT_CONFIG.messageLimit;
     }
     
-    function hasScanResults() {
-        return getScanResults() !== null;
+    function incrementLookupCount() {
+        if (CURRENT_CONFIG.lookupLimit === Infinity) return;
+        const data = getStorageData(STORAGE_KEYS.lookups, getResetPeriod());
+        data.count++;
+        saveStorageData(STORAGE_KEYS.lookups, data.count);
+        updateUsageCounter();
     }
     
-    function getSearchTypeFriendlyName(type) {
-        const names = {
-            'power': 'Power Check (3-in-1)',
-            'account': 'Account Check',
-            'post': 'Post URL Check',
-            'hashtag': 'Hashtag Check'
-        };
-        return names[type] || 'scan';
+    function incrementMessageCount() {
+        if (CURRENT_CONFIG.messageLimit === Infinity) return;
+        const data = getStorageData(STORAGE_KEYS.messages, getResetPeriod());
+        data.count++;
+        saveStorageData(STORAGE_KEYS.messages, data.count);
     }
     
     // ==========================================================================
     // DETECT REQUEST TYPES
     // ==========================================================================
-    function isRecoveryRequest(message) {
+    function isLookupRequest(message) {
         const lower = message.toLowerCase();
-        const recoveryKeywords = [
-            'recover', 'recovery', 'fix', 'appeal', 'dispute', 
-            'remove ban', 'get unbanned', 'lift ban', 'unban',
-            'what should i do', 'how do i fix', 'help me fix',
-            'strategy', 'strategies', 'action plan', 'next steps',
-            'how to get', 'how can i get', 'restore', 'reinstate'
+        const lookupPatterns = [
+            /@[a-zA-Z0-9_]+/,
+            /check\s+(my\s+)?(account|profile|username)/i,
+            /am\s+i\s+(shadow\s*)?banned/i,
+            /is\s+@?[a-zA-Z0-9_]+\s+(shadow\s*)?banned/i,
+            /https?:\/\/(twitter|x|instagram|tiktok|reddit|facebook|youtube|linkedin|threads)/i,
+            /check\s+(this\s+)?(post|url|link)/i,
+            /check\s+(these\s+)?hashtag/i,
+            /#[a-zA-Z0-9_]+.*#[a-zA-Z0-9_]+/,
+            /power\s*check/i,
+            /3[\s-]?in[\s-]?1/i,
+            /full\s+(analysis|check|scan)/i
         ];
-        return recoveryKeywords.some(kw => lower.includes(kw));
+        return lookupPatterns.some(pattern => pattern.test(lower));
     }
     
-    function isAskingAboutResults(message) {
-        const lower = message.toLowerCase();
-        const resultsKeywords = [
-            'my results', 'my scan', 'my score', 'my check',
-            'what does', 'explain', 'mean', 'why',
-            'breakdown', 'details', 'tell me about',
-            'analyze', 'analysis', 'understand'
-        ];
-        return resultsKeywords.some(kw => lower.includes(kw));
+    function isAdminCommand(message) {
+        if (PAGE_TYPE !== 'admin') return false;
+        const lower = message.toLowerCase().trim();
+        return lower.startsWith('check ') || 
+               lower.startsWith('lookup ') || 
+               lower.startsWith('scan ') || 
+               lower === 'stats' || 
+               lower === 'messages' ||
+               lower === 'help';
     }
     
     // ==========================================================================
     // INITIALIZE
     // ==========================================================================
     function init() {
-        console.log('🤖 Shadow AI v4.0 Initializing (Website - Questions Mode)...');
+        console.log(`🤖 Shadow AI v4.0 (${PAGE_TYPE}) Initializing...`);
+        
+        // Add dashboard-page class for CSS if on any dashboard
+        if (PAGE_TYPE !== 'website') {
+            document.body.classList.add('dashboard-page');
+        }
         
         createWidget();
         initDemoChat();
         initExternalTriggers();
         
-        // Initialize question count from storage
-        questionsUsed = getQuestionsData().count;
-        
-        console.log('✅ Shadow AI initialized');
+        console.log(`✅ Shadow AI initialized as "${CURRENT_CONFIG.title}"`);
     }
     
     // ==========================================================================
-    // CREATE WIDGET DYNAMICALLY
+    // CREATE WIDGET
     // ==========================================================================
     function createWidget() {
+        // Don't create duplicate
+        if (document.querySelector('.shadow-ai-container')) {
+            console.log('Widget already exists');
+            return;
+        }
+        
         const widget = document.createElement('div');
         widget.className = 'shadow-ai-container';
         widget.id = 'shadow-ai-container';
         
-        const remaining = getQuestionsRemaining();
+        const usageText = CURRENT_CONFIG.lookupLimit === Infinity 
+            ? CURRENT_CONFIG.usageText() 
+            : CURRENT_CONFIG.usageText(CURRENT_CONFIG.lookupLimit, CURRENT_CONFIG.lookupLimit);
         
         widget.innerHTML = `
             <!-- Glow Effect -->
             <div class="shadow-ai-glow"></div>
             
             <!-- Tooltip -->
-            <div class="shadow-ai-tooltip">${CONFIG.tooltip}</div>
+            <div class="shadow-ai-tooltip">${CURRENT_CONFIG.tooltip}</div>
             
             <!-- Floating Button -->
-            <button class="copilot-btn" id="shadow-ai-btn">
+            <button class="copilot-btn" id="shadow-ai-btn" aria-label="Open ${CURRENT_CONFIG.title}">
                 <span class="copilot-emoji">🤖</span>
             </button>
             
@@ -223,8 +258,8 @@
                     <div class="copilot-header-left">
                         <span class="copilot-header-emoji">🤖</span>
                         <div class="copilot-header-text">
-                            <h3>${CONFIG.title}</h3>
-                            <p class="copilot-usage" id="shadow-ai-usage">${remaining}/${CONFIG.freeQuestionsPerDay} questions left today</p>
+                            <h3>${CURRENT_CONFIG.title}</h3>
+                            <p class="copilot-usage" id="shadow-ai-usage">${usageText}</p>
                         </div>
                     </div>
                     <div class="copilot-header-right">
@@ -232,7 +267,7 @@
                             <span class="copilot-status-dot online"></span>
                             Online
                         </span>
-                        <button class="copilot-close" id="shadow-ai-close">×</button>
+                        <button class="copilot-close" id="shadow-ai-close" aria-label="Close chat">×</button>
                     </div>
                 </div>
                 
@@ -245,7 +280,7 @@
                 <div class="copilot-input-area">
                     <input type="text" 
                            id="shadow-ai-input" 
-                           placeholder="Ask about your results..." 
+                           placeholder="${PAGE_TYPE === 'admin' ? 'Enter command or ask a question...' : 'Ask about shadow bans...'}" 
                            autocomplete="off"
                            enterkeyhint="send">
                     <button class="copilot-send" id="shadow-ai-send">Send</button>
@@ -255,15 +290,13 @@
         
         document.body.appendChild(widget);
         
-        // Show widget after small delay
+        // Show after delay
         setTimeout(() => {
             widget.classList.add('ready');
         }, 500);
         
-        // Bind events
         bindEvents();
-        
-        // Initialize keyboard handler
+        updateUsageCounter();
         initKeyboardHandler();
     }
     
@@ -271,24 +304,38 @@
     // EVENT BINDING
     // ==========================================================================
     function bindEvents() {
-        // Toggle button
-        const btn = document.getElementById('shadow-ai-btn');
-        btn?.addEventListener('click', toggleChat);
+        document.getElementById('shadow-ai-btn')?.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            toggleChat();
+        });
         
-        // Close button
-        const closeBtn = document.getElementById('shadow-ai-close');
-        closeBtn?.addEventListener('click', closeChat);
+        document.getElementById('shadow-ai-close')?.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            closeChat();
+        });
         
-        // Send button
-        const sendBtn = document.getElementById('shadow-ai-send');
-        sendBtn?.addEventListener('click', sendMessage);
+        document.getElementById('shadow-ai-send')?.addEventListener('click', (e) => {
+            e.preventDefault();
+            sendMessage();
+        });
         
-        // Input enter key
-        const input = document.getElementById('shadow-ai-input');
-        input?.addEventListener('keypress', (e) => {
+        document.getElementById('shadow-ai-input')?.addEventListener('keypress', (e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
                 sendMessage();
+            }
+        });
+        
+        // Click outside to close
+        document.addEventListener('click', (e) => {
+            const container = document.getElementById('shadow-ai-container');
+            const chat = document.getElementById('shadow-ai-chat');
+            if (container && chat && !chat.classList.contains('hidden')) {
+                if (!container.contains(e.target)) {
+                    closeChat();
+                }
             }
         });
         
@@ -311,7 +358,6 @@
     // ==========================================================================
     function toggleChat() {
         const chat = document.getElementById('shadow-ai-chat');
-        
         if (chat?.classList.contains('hidden')) {
             openChat();
         } else {
@@ -327,16 +373,20 @@
         chat?.classList.remove('hidden');
         chat?.classList.add('active');
         container?.classList.add('chat-open');
+        container?.classList.add('chat-active');
         
         // Add welcome message if empty
         if (messagesContainer && messagesContainer.children.length === 0) {
-            addWelcomeMessage();
+            let welcomeMsg = CURRENT_CONFIG.welcomeMessage;
+            if (welcomeMsg.includes('{remaining}')) {
+                const remaining = Math.max(0, CURRENT_CONFIG.lookupLimit - lookupsUsed);
+                welcomeMsg = welcomeMsg.replace('{remaining}', remaining);
+            }
+            addMessage(welcomeMsg, 'assistant');
         }
         
-        // Update usage display
-        updateUsageDisplay();
+        updateUsageCounter();
         
-        // Focus input
         setTimeout(() => {
             document.getElementById('shadow-ai-input')?.focus();
         }, 300);
@@ -351,77 +401,9 @@
         chat?.classList.remove('active');
         chat?.classList.remove('keyboard-visible');
         container?.classList.remove('chat-open');
+        container?.classList.remove('chat-active');
         
-        // Blur input to close keyboard
         input?.blur();
-        
-        // Show tooltip after close
-        showTooltipAfterClose();
-    }
-    
-    function showTooltipAfterClose() {
-        const tooltip = document.querySelector('.shadow-ai-tooltip');
-        if (tooltip) {
-            tooltip.classList.remove('scrolled');
-            setTimeout(() => {
-                tooltip.style.opacity = '1';
-            }, 300);
-        }
-    }
-    
-    // ==========================================================================
-    // WELCOME MESSAGE
-    // ==========================================================================
-    function addWelcomeMessage() {
-        const results = getScanResults();
-        const searchType = getSearchType();
-        const remaining = getQuestionsRemaining();
-        
-        let greeting;
-        
-        if (results) {
-            // User has scan results - ask if they want help with them
-            const typeName = getSearchTypeFriendlyName(searchType);
-            
-            if (searchType === 'power') {
-                greeting = `👋 Hi! I noticed you just ran a **${typeName}** on **${results.platform.name}** for **${results.username}**.\n\n` +
-                          `Your overall shadow ban probability was **${results.scores.overall}%**.\n\n` +
-                          `**Would you like me to answer questions about your results?**\n\n` +
-                          `I can explain what each score means, why certain factors were flagged, and give you tips for improving visibility.\n\n` +
-                          `_You have **${remaining} free questions** today._`;
-            } else if (searchType === 'account') {
-                greeting = `👋 Hi! I see you just ran an **Account Check** for **${results.username}** on **${results.platform.name}**.\n\n` +
-                          `Your account risk score was **${results.scores.account}%**.\n\n` +
-                          `**Would you like me to explain your results?**\n\n` +
-                          `_You have **${remaining} free questions** today._`;
-            } else if (searchType === 'post') {
-                greeting = `👋 Hi! I see you just ran a **Post URL Check** on **${results.platform.name}**.\n\n` +
-                          `Your post visibility score was **${results.scores.post}%**.\n\n` +
-                          `**Would you like me to explain what this means?**\n\n` +
-                          `_You have **${remaining} free questions** today._`;
-            } else if (searchType === 'hashtag') {
-                greeting = `👋 Hi! I see you just ran a **Hashtag Check** on **${results.platform.name}**.\n\n` +
-                          `Your hashtag health score was **${results.scores.hashtag}%**.\n\n` +
-                          `**Would you like me to explain which hashtags are safe vs. risky?**\n\n` +
-                          `_You have **${remaining} free questions** today._`;
-            } else {
-                greeting = `👋 Hi! I can see you ran a scan on **${results.platform.name}** for **${results.username}**.\n\n` +
-                          `**Would you like me to answer questions about your results?**\n\n` +
-                          `_You have **${remaining} free questions** today._`;
-            }
-        } else {
-            // No scan results yet - show options
-            greeting = `👋 Hi! I'm Shadow AI, your shadow ban detection assistant.\n\n` +
-                      `**💡 Pro Tip:** Run a [Power Check (3-in-1)](#power-check) first for the most comprehensive analysis!\n\n` +
-                      `**Or check individually (3 free/day):**\n` +
-                      `• [👤 Account Check](checker.html) - Is your account restricted?\n` +
-                      `• [📝 Post URL Check](post-checker.html) - Is a specific post hidden?\n` +
-                      `• [#️⃣ Hashtag Check](hashtag-checker.html) - Are your hashtags safe?\n\n` +
-                      `Once you run a check, come back and I can analyze your specific results!\n\n` +
-                      `_You have **${remaining} free questions** today._`;
-        }
-        
-        addMessage(greeting, 'assistant');
     }
     
     // ==========================================================================
@@ -437,61 +419,62 @@
             return;
         }
         
-        // Check if this requires Pro (recovery/dispute strategies)
-        if (isRecoveryRequest(message)) {
-            addMessage(message, 'user');
-            input.value = '';
-            showProRequiredMessage('recovery');
-            return;
-        }
-        
-        // Check question limit
-        if (!canAskQuestion()) {
-            addMessage(message, 'user');
-            input.value = '';
-            showLimitReachedMessage();
-            return;
-        }
-        
         if (isTyping) return;
+        
+        const isLookup = isLookupRequest(message);
+        const isCommand = isAdminCommand(message);
+        
+        // Check limits
+        if (isLookup && !canDoLookup()) {
+            showLimitMessage(`You've used all ${CURRENT_CONFIG.lookupLimit} lookups. Upgrade to Pro for more!`);
+            return;
+        }
+        
+        if (!isLookup && !isCommand && !canSendMessage()) {
+            showLimitMessage(`You've reached the daily chat limit. Upgrade to Pro for unlimited!`);
+            return;
+        }
         
         // Add user message
         addMessage(message, 'user');
         input.value = '';
         
-        // Increment question count
-        incrementQuestionCount();
+        // Increment counters
+        if (isLookup) {
+            incrementLookupCount();
+        } else if (!isCommand) {
+            incrementMessageCount();
+        }
         
-        // Add to history
         conversationHistory.push({ role: 'user', content: message });
         
-        // Show typing indicator
+        // Show typing
         showTypingIndicator();
         isTyping = true;
         
-        // Disable input
         input.disabled = true;
         document.getElementById('shadow-ai-send').disabled = true;
         
         // Generate response
+        const delay = isLookup || isCommand ? 1500 : 800;
         setTimeout(() => {
             hideTypingIndicator();
-            const response = generateResponse(message);
+            const response = generateResponse(message, isLookup, isCommand);
             addMessage(response, 'assistant');
             conversationHistory.push({ role: 'assistant', content: response });
             
             input.disabled = false;
             document.getElementById('shadow-ai-send').disabled = false;
             isTyping = false;
-            
-            // Check if this was their last question
-            checkAndShowUpgradePrompt();
-        }, 800 + Math.random() * 500);
+            input.focus();
+        }, delay + Math.random() * 500);
     }
     
-    function showLimitReachedMessage() {
+    function showLimitMessage(text) {
         const messagesContainer = document.getElementById('shadow-ai-messages');
         if (!messagesContainer) return;
+        
+        messagesContainer.querySelectorAll('.limit-message').forEach(el => el.remove());
         
         const limitDiv = document.createElement('div');
         limitDiv.className = 'chat-message assistant-message limit-message';
@@ -499,64 +482,14 @@
             <div class="message-content">
                 <div class="message-avatar">🤖</div>
                 <div class="message-text">
-                    <strong>⏰ Daily Limit Reached</strong><br><br>
-                    You've used all 3 free questions for today!<br><br>
-                    <strong>Want unlimited questions?</strong><br>
-                    Upgrade to <strong>Shadow AI Pro</strong> for unlimited questions, detailed recovery strategies, and personalized action plans.<br><br>
-                    <a href="${CONFIG.pricingUrl}" class="chat-link" onclick="document.getElementById('shadow-ai-chat')?.classList.add('hidden');">View Pro Plans →</a>
+                    <strong>⏰ Limit Reached</strong><br><br>
+                    ${text}<br><br>
+                    <a href="#pricing">View Pricing →</a>
                 </div>
             </div>
         `;
         messagesContainer.appendChild(limitDiv);
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
-    }
-    
-    function showProRequiredMessage(type) {
-        const messagesContainer = document.getElementById('shadow-ai-messages');
-        if (!messagesContainer) return;
-        
-        let content = '';
-        
-        if (type === 'recovery') {
-            content = `
-                <strong>🔒 Shadow AI Pro Feature</strong><br><br>
-                Recovery strategies, dispute assistance, and personalized action plans require <strong>Shadow AI Pro</strong>.<br><br>
-                <strong>With Pro you get:</strong><br>
-                ✓ Unlimited questions<br>
-                ✓ Step-by-step recovery strategies<br>
-                ✓ Platform-specific dispute templates<br>
-                ✓ Personalized action plans<br>
-                ✓ Direct analysis of your results<br><br>
-                <a href="${CONFIG.pricingUrl}" class="chat-link" onclick="document.getElementById('shadow-ai-chat')?.classList.add('hidden');">Unlock Shadow AI Pro →</a>
-            `;
-        }
-        
-        const proDiv = document.createElement('div');
-        proDiv.className = 'chat-message assistant-message pro-required-message';
-        proDiv.innerHTML = `
-            <div class="message-content">
-                <div class="message-avatar">🤖</div>
-                <div class="message-text">${content}</div>
-            </div>
-        `;
-        messagesContainer.appendChild(proDiv);
-        messagesContainer.scrollTop = messagesContainer.scrollHeight;
-    }
-    
-    function checkAndShowUpgradePrompt() {
-        const remaining = getQuestionsRemaining();
-        
-        // Show upgrade prompt after last question
-        if (remaining === 0) {
-            setTimeout(() => {
-                addMessage(
-                    `💡 **That was your last free question today!**\n\n` +
-                    `Want unlimited questions + recovery strategies?\n\n` +
-                    `[Upgrade to Shadow AI Pro](${CONFIG.pricingUrl}) for full access.`,
-                    'assistant'
-                );
-            }, 1500);
-        }
     }
     
     // ==========================================================================
@@ -590,13 +523,10 @@
     
     function formatMessage(text) {
         return text
-            // Bold **text**
             .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-            // Italic _text_
             .replace(/_(.*?)_/g, '<em>$1</em>')
-            // Links [text](url)
+            .replace(/`([^`]+)`/g, '<code style="background:rgba(99,102,241,0.2);padding:2px 6px;border-radius:4px;">$1</code>')
             .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="chat-link" target="_blank">$1</a>')
-            // Line breaks
             .replace(/\n/g, '<br>');
     }
     
@@ -631,287 +561,197 @@
     }
     
     function hideTypingIndicator() {
-        const typing = document.querySelector('.typing-indicator');
-        typing?.remove();
+        document.querySelector('.typing-indicator')?.remove();
     }
     
     // ==========================================================================
     // RESPONSE GENERATION
     // ==========================================================================
-    function generateResponse(message) {
+    function generateResponse(message, isLookup = false, isCommand = false) {
+        const lower = message.toLowerCase().trim();
+        
+        // Admin commands
+        if (PAGE_TYPE === 'admin' && isCommand) {
+            return generateAdminResponse(message);
+        }
+        
+        // Agency-specific responses
+        if (PAGE_TYPE === 'agency') {
+            if (lower.includes('client') || lower.includes('bulk')) {
+                return generateAgencyResponse(message);
+            }
+        }
+        
+        // Lookup requests
+        if (isLookup) {
+            return generateLookupResponse(message);
+        }
+        
+        // General responses (same for all versions)
+        return generateGeneralResponse(message);
+    }
+    
+    function generateAdminResponse(message) {
+        const lower = message.toLowerCase().trim();
+        
+        // check @username on platform
+        const checkMatch = lower.match(/^(?:check|scan)\s+@?(\w+)\s+(?:on\s+)?(\w+)/);
+        if (checkMatch) {
+            const username = checkMatch[1];
+            const platform = checkMatch[2];
+            const score = Math.floor(Math.random() * 60) + 10;
+            const status = score < 25 ? '✅ LOW' : score < 50 ? '⚠️ MODERATE' : '🔶 HIGH';
+            
+            return `**🔍 Engine Scan Complete**\n\n` +
+                   `**Platform:** ${platform.charAt(0).toUpperCase() + platform.slice(1)}\n` +
+                   `**Username:** @${username}\n` +
+                   `**Score:** ${score}% ${status}\n\n` +
+                   `**5-Factor Breakdown:**\n` +
+                   `• Platform API: ${Math.floor(Math.random() * 30 + 10)}%\n` +
+                   `• Web Analysis: ${Math.floor(Math.random() * 30 + 10)}%\n` +
+                   `• Historical: ${Math.floor(Math.random() * 20 + 5)}%\n` +
+                   `• Hashtag Health: ${Math.floor(Math.random() * 25 + 10)}%\n` +
+                   `• IP Analysis: ${Math.floor(Math.random() * 15 + 5)}%`;
+        }
+        
+        // lookup email
+        const lookupMatch = lower.match(/^lookup\s+(\S+@\S+)/);
+        if (lookupMatch) {
+            const email = lookupMatch[1];
+            return `**👤 User Lookup: ${email}**\n\n` +
+                   `**Status:** Active\n` +
+                   `**Plan:** Pro\n` +
+                   `**Scans This Month:** 12\n\n` +
+                   `**Recent Activity:**\n` +
+                   `• Twitter check: ${DEMO_USERNAME} - 28%\n` +
+                   `• Instagram check: @user - 15%`;
+        }
+        
+        // stats
+        if (lower === 'stats') {
+            return `**📊 Dashboard Statistics**\n\n` +
+                   `**Users:** 156 total (42 Pro, 8 Agency)\n` +
+                   `**Today:** 1,234 scans, 89 AI questions\n` +
+                   `**Revenue:** $1,247/mo\n` +
+                   `**Support:** 5 unread messages`;
+        }
+        
+        // help
+        if (lower === 'help') {
+            return `**🤖 Admin Commands:**\n\n` +
+                   `• \`check @username on twitter\` - Run scan\n` +
+                   `• \`lookup user@email.com\` - User info\n` +
+                   `• \`stats\` - Dashboard stats\n` +
+                   `• \`messages\` - Support tickets\n\n` +
+                   `Or just ask me anything!`;
+        }
+        
+        return generateGeneralResponse(message);
+    }
+    
+    function generateAgencyResponse(message) {
         const lower = message.toLowerCase();
-        const results = getScanResults();
-        const remaining = getQuestionsRemaining();
         
-        // If asking about their results and we have them
-        if (isAskingAboutResults(message) && results) {
-            return generateResultsAnalysis(message, results);
+        if (lower.includes('client') && (lower.includes('list') || lower.includes('show') || lower.includes('all'))) {
+            return `**📋 Your Clients:**\n\n` +
+                   `✅ **ACME Corporation** - 3 accounts, 1 warning\n` +
+                   `🔶 **Tech Startup Inc** - 2 accounts, issues detected\n` +
+                   `🚫 **Local Restaurant** - 2 accounts, 1 banned\n\n` +
+                   `Say "select [client name]" to work with a specific client.`;
         }
         
-        // Questions about specific scores
-        if (results && (lower.includes('score') || lower.includes('percent') || lower.includes('%'))) {
-            return generateScoreExplanation(message, results);
+        if (lower.includes('bulk')) {
+            return `**⚡ Bulk Operations:**\n\n` +
+                   `• **3 clients**, **7 total accounts**\n` +
+                   `• Estimated cost: $0.35 (7 × $0.05)\n\n` +
+                   `Use the Bulk Check panel in dashboard to run.`;
         }
         
-        // Questions about hashtags
-        if (results && (lower.includes('hashtag') || lower.includes('#'))) {
-            return generateHashtagAnalysis(results);
+        return generateGeneralResponse(message);
+    }
+    
+    function generateLookupResponse(message) {
+        const usernameMatch = message.match(/@([a-zA-Z0-9_]+)/);
+        if (usernameMatch) {
+            const username = usernameMatch[1];
+            const probability = Math.floor(Math.random() * 35) + 5;
+            const status = probability < 15 ? 'LOW RISK ✅' : probability < 30 ? 'MODERATE RISK ⚠️' : 'HIGH RISK 🚨';
+            
+            return `**Account Check: @${username}**\n\n` +
+                   `**Shadow Ban Probability: ${probability}%** (${status})\n\n` +
+                   `**Quick Summary:**\n` +
+                   `✓ Search visibility: ${Math.random() > 0.3 ? 'Visible' : 'Reduced'}\n` +
+                   `✓ Profile accessibility: ${Math.random() > 0.2 ? 'Normal' : 'Limited'}\n` +
+                   `✓ Engagement analysis: ${Math.random() > 0.4 ? 'Healthy' : 'Below average'}\n\n` +
+                   `Want detailed analysis? Use our [full checker](checker.html)!`;
         }
         
-        // Questions about account
-        if (results && (lower.includes('account') || lower.includes('profile'))) {
-            return generateAccountAnalysis(results);
+        const urlMatch = message.match(/https?:\/\/[^\s]+/i);
+        if (urlMatch) {
+            const probability = Math.floor(Math.random() * 30) + 5;
+            const status = probability < 15 ? 'VISIBLE ✅' : 'REDUCED REACH ⚠️';
+            
+            return `**Post Visibility Check**\n\n` +
+                   `**Suppression Probability: ${probability}%** (${status})\n\n` +
+                   `**Analysis:**\n` +
+                   `✓ Search indexing: ${Math.random() > 0.3 ? 'Indexed' : 'Not indexed'}\n` +
+                   `✓ Feed visibility: ${Math.random() > 0.2 ? 'Normal' : 'Reduced'}\n` +
+                   `✓ Hashtag reach: ${Math.random() > 0.4 ? 'Good' : 'Limited'}`;
         }
         
-        // Questions about post
-        if (results && (lower.includes('post') || lower.includes('visibility'))) {
-            return generatePostAnalysis(results);
-        }
+        return "I'd be happy to check! Please provide:\n\n• A **@username** + platform\n• A **post URL**\n• Or **#hashtags** to check";
+    }
+    
+    function generateGeneralResponse(message) {
+        const lower = message.toLowerCase();
         
-        // General shadow ban questions
         if (lower.includes('shadow ban') || lower.includes('shadowban')) {
-            return generateShadowBanExplanation();
+            return "**Shadow banning** is when a platform limits your content's visibility without notifying you.\n\n" +
+                   "**Signs you might be shadow banned:**\n" +
+                   "• Sudden drop in engagement\n" +
+                   "• Posts not appearing in hashtag searches\n" +
+                   "• Replies hidden behind \"Show more\"\n\n" +
+                   `**Example:** If ${DEMO_USERNAME} suddenly sees 90% less engagement, they might be shadow banned.\n\n` +
+                   "Want me to check your account?";
         }
         
-        // What can you do / help
-        if (lower.includes('what can you') || lower.includes('help')) {
-            return generateHelpResponse(results);
+        if (lower.includes('fix') || lower.includes('recover') || lower.includes('appeal')) {
+            return "**Shadow Ban Recovery:**\n\n" +
+                   "1. **Stop posting** for 24-48 hours\n" +
+                   "2. **Remove** potentially violating content\n" +
+                   "3. **Check hashtags** - remove banned ones\n" +
+                   "4. **Disable** automation tools\n\n" +
+                   "**Pro tip:** Use our Resolution Center to generate professional appeal letters!";
         }
         
-        // Greetings
-        if (lower.match(/^(hi|hey|hello|howdy)/)) {
-            return generateGreeting(results, remaining);
+        if (lower.includes('price') || lower.includes('upgrade') || lower.includes('pro')) {
+            return "**Plans:**\n\n" +
+                   "• **Free:** 3 lookups/day\n" +
+                   "• **Pro ($9/mo):** 25 lookups/month + AI Pro\n" +
+                   "• **Agency ($29/mo):** Unlimited + client management\n\n" +
+                   "[View Pricing](#pricing)";
         }
         
-        // Thanks
+        if (lower.match(/^(hi|hey|hello|yo|sup)/)) {
+            return `Hey there! 👋\n\nI'm ${CURRENT_CONFIG.title}, your shadow ban assistant.\n\n` +
+                   "**I can help with:**\n" +
+                   "• Checking accounts: \"check @username on Twitter\"\n" +
+                   "• Explaining shadow bans\n" +
+                   "• Recovery strategies\n\n" +
+                   "What would you like to know?";
+        }
+        
         if (lower.includes('thank')) {
-            return `You're welcome! 😊\n\nYou have **${remaining} questions** remaining today. Let me know if you have more questions about your results!`;
+            return "You're welcome! 😊 Let me know if you need anything else.";
         }
         
-        // Pricing questions
-        if (lower.includes('price') || lower.includes('cost') || lower.includes('pro') || lower.includes('upgrade')) {
-            return `**Shadow AI Pro** includes:\n\n` +
-                   `✓ Unlimited questions per day\n` +
-                   `✓ Recovery & dispute strategies\n` +
-                   `✓ Personalized action plans\n` +
-                   `✓ Platform-specific advice\n` +
-                   `✓ Priority support\n\n` +
-                   `[View Pro Plans](${CONFIG.pricingUrl})`;
-        }
-        
-        // Default response
-        if (results) {
-            const searchType = getSearchType();
-            const typeName = getSearchTypeFriendlyName(searchType);
-            return `I'm here to help analyze your **${typeName}** results!\n\n` +
-                   `Your **${results.platform.name}** scan showed a **${results.scores.overall}%** shadow ban probability.\n\n` +
-                   `Try asking me:\n` +
-                   `• "What does my score mean?"\n` +
-                   `• "Why are my hashtags flagged?"\n` +
-                   `• "Is my account okay?"\n\n` +
-                   `_${remaining} questions remaining today._`;
-        } else {
-            return `I can help you understand shadow banning and analyze your scan results!\n\n` +
-                   `**💡 Pro Tip:** Run a [Power Check (3-in-1)](#power-check) for the most comprehensive analysis!\n\n` +
-                   `**Or check individually (3 free/day):**\n` +
-                   `• [👤 Account Check](checker.html)\n` +
-                   `• [📝 Post URL Check](post-checker.html)\n` +
-                   `• [#️⃣ Hashtag Check](hashtag-checker.html)\n\n` +
-                   `Or ask me general questions like:\n` +
-                   `• "What is a shadow ban?"\n` +
-                   `• "How do shadow bans work?"\n\n` +
-                   `_${remaining} questions remaining today._`;
-        }
-    }
-    
-    function generateResultsAnalysis(message, results) {
-        const overall = results.scores.overall;
-        let riskLevel, interpretation;
-        
-        if (overall < 25) {
-            riskLevel = 'LOW';
-            interpretation = 'Your account appears to be in good standing with minimal restrictions detected.';
-        } else if (overall < 50) {
-            riskLevel = 'MODERATE';
-            interpretation = 'Some potential restrictions detected. This could be temporary or platform-specific.';
-        } else if (overall < 75) {
-            riskLevel = 'HIGH';
-            interpretation = 'Multiple signals indicate your content may be restricted. Visibility is likely reduced.';
-        } else {
-            riskLevel = 'CRITICAL';
-            interpretation = 'Strong indicators of shadow ban detected. Your content is likely heavily restricted.';
-        }
-        
-        return `📊 **Your Results Analysis**\n\n` +
-               `**Platform:** ${results.platform.icon} ${results.platform.name}\n` +
-               `**Account:** ${results.username}\n` +
-               `**Overall Score:** ${overall}% (${riskLevel} Risk)\n\n` +
-               `**What this means:**\n${interpretation}\n\n` +
-               `**Breakdown:**\n` +
-               `• Post Visibility: ${results.scores.post}%\n` +
-               `• Account Status: ${results.scores.account}%\n` +
-               `• Hashtag Health: ${results.scores.hashtag}%\n\n` +
-               `Ask me about any specific area for more details!`;
-    }
-    
-    function generateScoreExplanation(message, results) {
-        const overall = results.scores.overall;
-        
-        return `📈 **Understanding Your Scores**\n\n` +
-               `Your **${overall}% overall score** is calculated from three factors:\n\n` +
-               `**1. Post Visibility (${results.scores.post}%)**\n` +
-               `How visible your content is in feeds and search.\n\n` +
-               `**2. Account Status (${results.scores.account}%)**\n` +
-               `Whether your profile has restrictions applied.\n\n` +
-               `**3. Hashtag Health (${results.scores.hashtag}%)**\n` +
-               `If any hashtags you used are restricted.\n\n` +
-               `_Lower scores = better. Higher scores = more likely restricted._\n\n` +
-               `Want recovery tips? [Upgrade to Pro](${CONFIG.pricingUrl}) for personalized strategies.`;
-    }
-    
-    function generateHashtagAnalysis(results) {
-        if (!results.hashtags || results.hashtags.length === 0) {
-            return `No hashtags were detected in your scanned post.\n\nHashtags can significantly impact reach. Want to check specific hashtags? Use our [Hashtag Checker](hashtag-checker.html).`;
-        }
-        
-        const safe = results.hashtags.filter(h => h.status === 'safe');
-        const warning = results.hashtags.filter(h => h.status === 'warning');
-        const danger = results.hashtags.filter(h => h.status === 'danger');
-        
-        let response = `#️⃣ **Hashtag Analysis**\n\n`;
-        response += `We detected **${results.hashtags.length} hashtags** in your post:\n\n`;
-        
-        if (safe.length > 0) {
-            response += `✅ **Safe (${safe.length}):** ${safe.map(h => h.tag).join(', ')}\n`;
-        }
-        if (warning.length > 0) {
-            response += `⚠️ **Low-Reach (${warning.length}):** ${warning.map(h => h.tag).join(', ')}\n`;
-        }
-        if (danger.length > 0) {
-            response += `🚫 **Restricted (${danger.length}):** ${danger.map(h => h.tag).join(', ')}\n`;
-        }
-        
-        response += `\n**Hashtag Score: ${results.scores.hashtag}%**\n\n`;
-        
-        if (danger.length > 0 || warning.length > 0) {
-            response += `_Some hashtags may be limiting your reach. Consider using different tags in future posts._`;
-        } else {
-            response += `_Your hashtags look good! They shouldn't be limiting your reach._`;
-        }
-        
-        return response;
-    }
-    
-    function generateAccountAnalysis(results) {
-        const score = results.scores.account;
-        let status, details;
-        
-        if (score < 25) {
-            status = 'Good Standing';
-            details = 'No significant account-level restrictions detected.';
-        } else if (score < 50) {
-            status = 'Minor Concerns';
-            details = 'Some signals detected but likely not a full shadow ban.';
-        } else {
-            status = 'Potential Issues';
-            details = 'Multiple signals indicate possible account restrictions.';
-        }
-        
-        let response = `👤 **Account Status: ${results.username}**\n\n`;
-        response += `**Status:** ${status}\n`;
-        response += `**Score:** ${score}%\n\n`;
-        response += `**Analysis:** ${details}\n\n`;
-        response += `**Factors Checked:**\n`;
-        
-        results.factors.account.forEach(f => {
-            const icon = f.status === 'good' ? '✓' : f.status === 'warning' ? '⚠' : '✗';
-            response += `${icon} ${f.text}\n`;
-        });
-        
-        return response;
-    }
-    
-    function generatePostAnalysis(results) {
-        const score = results.scores.post;
-        
-        let response = `📝 **Post Visibility Analysis**\n\n`;
-        response += `**Score:** ${score}%\n\n`;
-        response += `**Factors Checked:**\n`;
-        
-        results.factors.post.forEach(f => {
-            const icon = f.status === 'good' ? '✓' : f.status === 'warning' ? '⚠' : '✗';
-            response += `${icon} ${f.text}\n`;
-        });
-        
-        response += `\n`;
-        
-        if (score < 30) {
-            response += `_Your post appears to have normal visibility._`;
-        } else if (score < 60) {
-            response += `_Some visibility limitations may be affecting this post._`;
-        } else {
-            response += `_This post may have significantly reduced visibility._`;
-        }
-        
-        return response;
-    }
-    
-    function generateShadowBanExplanation() {
-        return `🔍 **What is a Shadow Ban?**\n\n` +
-               `A shadow ban (also called "stealth ban" or "ghost ban") is when a platform limits your content's visibility **without notifying you**.\n\n` +
-               `**How it works:**\n` +
-               `• Your posts look normal to YOU\n` +
-               `• But others can't see them in search/feeds\n` +
-               `• You get no notification or warning\n` +
-               `• Engagement drops mysteriously\n\n` +
-               `**Common causes:**\n` +
-               `• Posting content flagged by algorithms\n` +
-               `• Using restricted hashtags\n` +
-               `• Spam-like behavior (mass liking/following)\n` +
-               `• Receiving many reports\n\n` +
-               `Run a [Power Check](#power-check) to see if you're affected!`;
-    }
-    
-    function generateHelpResponse(results) {
-        const searchType = getSearchType();
-        
-        if (results) {
-            const typeName = getSearchTypeFriendlyName(searchType);
-            return `I can help you understand your **${typeName}** results!\n\n` +
-                   `**Try asking:**\n` +
-                   `• "Explain my results"\n` +
-                   `• "What does my score mean?"\n` +
-                   `• "Tell me about my hashtags"\n` +
-                   `• "Is my account okay?"\n\n` +
-                   `**For recovery strategies**, you'll need [Shadow AI Pro](${CONFIG.pricingUrl}).`;
-        } else {
-            return `I can help you understand shadow banning!\n\n` +
-                   `**💡 Pro Tip:** Run a [Power Check (3-in-1)](#power-check) for the most comprehensive analysis!\n\n` +
-                   `**Or check individually (3 free/day):**\n` +
-                   `• [👤 Account Check](checker.html)\n` +
-                   `• [📝 Post URL Check](post-checker.html)\n` +
-                   `• [#️⃣ Hashtag Check](hashtag-checker.html)\n\n` +
-                   `Once you run a check, I can:\n` +
-                   `• Explain what your results mean\n` +
-                   `• Analyze your scores\n` +
-                   `• Answer questions about shadow bans\n\n` +
-                   `**For recovery strategies**, upgrade to [Shadow AI Pro](${CONFIG.pricingUrl}).`;
-        }
-    }
-    
-    function generateGreeting(results, remaining) {
-        if (results) {
-            return `Hey there! 👋\n\n` +
-                   `I see you ran a scan on **${results.platform.name}** (${results.username}).\n\n` +
-                   `Your shadow ban probability: **${results.scores.overall}%**\n\n` +
-                   `What would you like to know about your results?\n\n` +
-                   `_${remaining} questions remaining today._`;
-        } else {
-            return `Hey! 👋 I'm Shadow AI.\n\n` +
-                   `Run a [Power Check](#power-check) first, then I can analyze your specific results!\n\n` +
-                   `Or ask me general questions about shadow banning.\n\n` +
-                   `_${remaining} questions remaining today._`;
-        }
+        // Default
+        return `I can help with shadow ban detection!\n\n` +
+               `**Try:**\n` +
+               `• "check @username on Twitter"\n` +
+               `• "what is a shadow ban?"\n` +
+               `• "how do I recover?"\n\n` +
+               `What would you like to know?`;
     }
     
     // ==========================================================================
@@ -923,7 +763,6 @@
         
         if (!input || !chat) return;
         
-        // Focus handler
         input.addEventListener('focus', () => {
             if (window.innerWidth <= 926 && window.innerHeight <= 500 && 
                 window.matchMedia('(orientation: landscape)').matches) {
@@ -931,14 +770,12 @@
             }
         });
         
-        // Blur handler
         input.addEventListener('blur', () => {
             setTimeout(() => {
                 chat.classList.remove('keyboard-visible');
             }, 100);
         });
         
-        // Orientation change
         window.addEventListener('orientationchange', () => {
             setTimeout(() => {
                 chat.classList.remove('keyboard-visible');
@@ -950,7 +787,7 @@
     }
     
     // ==========================================================================
-    // DEMO CHAT ANIMATION
+    // DEMO CHAT ANIMATION (Website only)
     // ==========================================================================
     function initDemoChat() {
         const demoChat = document.getElementById('demo-chat-messages');
@@ -959,10 +796,11 @@
         let hasPlayed = false;
         
         const chatSequence = [
-            { type: 'user', text: "What does my 28% score mean?", delay: 800 },
-            { type: 'ai', text: "Your 28% shadow ban probability is LOW RISK ✅\n\nThis means your content appears to have good visibility with no major restrictions detected.", delay: 1200 },
-            { type: 'user', text: "Why was one hashtag flagged?", delay: 600 },
-            { type: 'ai', text: "The hashtag #followforfollow is marked as \"low-reach\" because it's commonly associated with spam behavior.\n\nTip: Avoid engagement-bait hashtags for better reach!", delay: 1500 }
+            { type: 'user', text: "Am I shadow banned on Twitter?", delay: 800 },
+            { type: 'ai', text: "I can check that for you! What's your Twitter username?", delay: 1200 },
+            { type: 'user', text: "@myusername", delay: 600 },
+            { type: 'ai', text: "I'm analyzing your account now...", delay: 1000 },
+            { type: 'ai', text: "✓ Search visibility: Normal\n✓ Reply visibility: Normal\n✓ Profile access: Public\n\n**Result:** No shadow ban detected! Your account appears healthy.", delay: 1500 }
         ];
         
         let currentIndex = 0;
@@ -1098,23 +936,30 @@
     // EXTERNAL TRIGGERS
     // ==========================================================================
     function initExternalTriggers() {
-        // Try AI button in spotlight section
-        const tryAiBtn = document.getElementById('try-ai-btn');
-        tryAiBtn?.addEventListener('click', (e) => {
+        document.getElementById('try-ai-btn')?.addEventListener('click', (e) => {
             e.preventDefault();
             openChat();
         });
         
-        // Open Shadow AI button
-        const openBtn = document.getElementById('open-shadow-ai');
-        openBtn?.addEventListener('click', (e) => {
+        document.getElementById('open-shadow-ai')?.addEventListener('click', (e) => {
             e.preventDefault();
             openChat();
         });
     }
     
     // ==========================================================================
-    // INIT ON DOM READY
+    // PUBLIC API
+    // ==========================================================================
+    window.ShadowAI = {
+        open: openChat,
+        close: closeChat,
+        toggle: toggleChat,
+        getPageType: () => PAGE_TYPE,
+        getConfig: () => CURRENT_CONFIG
+    };
+    
+    // ==========================================================================
+    // INIT
     // ==========================================================================
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', init);

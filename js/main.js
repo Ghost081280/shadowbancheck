@@ -1381,20 +1381,106 @@ function initCookiePopup() {
 /* =============================================================================
    INITIALIZE ALL
    ============================================================================= */
-document.addEventListener('DOMContentLoaded', function() {
-    // Core functionality
+
+// Generic modal close handler - works for any modal with standard structure
+function initGenericModalHandlers() {
+    // Close any modal when clicking its close button or overlay
+    document.addEventListener('click', function(e) {
+        // Close button clicked
+        if (e.target.classList.contains('modal-close')) {
+            const modal = e.target.closest('.modal');
+            if (modal) {
+                modal.classList.add('hidden');
+                document.body.style.overflow = '';
+            }
+        }
+        
+        // Overlay clicked
+        if (e.target.classList.contains('modal-overlay')) {
+            const modal = e.target.closest('.modal');
+            if (modal) {
+                modal.classList.add('hidden');
+                document.body.style.overflow = '';
+            }
+        }
+    });
+    
+    // ESC key closes all modals
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            document.querySelectorAll('.modal:not(.hidden)').forEach(modal => {
+                modal.classList.add('hidden');
+            });
+            document.body.style.overflow = '';
+        }
+    });
+}
+
+// Generic info button handler - opens modal with matching ID pattern
+function initInfoButtonHandlers() {
+    // Pattern: button with id="X-info-btn" opens modal with id="X-info-modal"
+    document.querySelectorAll('[id$="-info-btn"]').forEach(btn => {
+        const modalId = btn.id.replace('-btn', '-modal');
+        const modal = document.getElementById(modalId);
+        
+        if (modal) {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                modal.classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+            });
+        }
+    });
+}
+
+// Platform tabs handler (used on hashtag-checker.html)
+function initPlatformTabs() {
+    const tabs = document.querySelectorAll('.platform-tab');
+    const panels = document.querySelectorAll('.hashtag-panel');
+    
+    if (tabs.length === 0) return;
+    
+    tabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+            const platform = this.dataset.platform;
+            
+            // Update active tab
+            tabs.forEach(t => t.classList.remove('active'));
+            this.classList.add('active');
+            
+            // Update active panel
+            panels.forEach(p => {
+                if (p.dataset.platform === platform) {
+                    p.classList.add('active');
+                } else {
+                    p.classList.remove('active');
+                }
+            });
+        });
+    });
+}
+
+// Main initialization function
+function initializeApp() {
+    // Core functionality (elements loaded by shared-components.js)
     initMobileNav();
     initBackToTop();
+    initCookiePopup();
+    
+    // Always-available functionality
     initScrollReveal();
     initHeaderScroll();
     initSmoothScroll();
+    initGenericModalHandlers();
+    initInfoButtonHandlers();
+    initPlatformTabs();
     
-    // Page-specific
+    // Page-specific (only runs if elements exist)
     initPlatformGrid();
     initPowerCheck();
     initFAQAccordion();
     initSocialShare();
-    initCookiePopup();
     initAudienceModals();
     
     // Update search counter display
@@ -1404,6 +1490,26 @@ document.addEventListener('DOMContentLoaded', function() {
     detectUserIP();
     
     console.log('✅ ShadowBanCheck.io initialized');
+}
+
+// Wait for shared components to load, then initialize
+document.addEventListener('sharedComponentsLoaded', initializeApp);
+
+// Fallback: if shared components already loaded or not used, init on DOMContentLoaded
+document.addEventListener('DOMContentLoaded', function() {
+    // Give shared-components.js a moment to dispatch its event
+    setTimeout(function() {
+        // Check if already initialized
+        if (!window._appInitialized) {
+            window._appInitialized = true;
+            initializeApp();
+        }
+    }, 100);
+});
+
+// Mark as initialized when sharedComponentsLoaded fires
+document.addEventListener('sharedComponentsLoaded', function() {
+    window._appInitialized = true;
 });
 
 /* =============================================================================

@@ -216,7 +216,7 @@
                             <div class="source-item">
                                 <span class="source-icon">🐦</span>
                                 <div>
-                                    <strong>Twitter/X API v2</strong>
+                                    <strong>Platform API</strong>
                                     <p>QFD status, search visibility, logged-out test</p>
                                 </div>
                             </div>
@@ -231,11 +231,18 @@
                                 <span class="source-icon">#️⃣</span>
                                 <div>
                                     <strong>Hashtag Database</strong>
-                                    <p>500+ banned Instagram, 300+ TikTok restricted</p>
+                                    <p>1,800+ banned/restricted tags across platforms</p>
+                                </div>
+                            </div>
+                            <div class="source-item">
+                                <span class="source-icon">🌐</span>
+                                <div>
+                                    <strong>IP Analysis</strong>
+                                    <p>Your IP type factored into score calculation</p>
                                 </div>
                             </div>
                         </div>
-                        <p class="engine-note">Our 5-Factor Engine combines all signals and assigns a <strong>Shadow Ban Probability Score</strong> based on multiple detection signals.</p>
+                        <p class="engine-note">Our 5-Factor Engine combines all signals and assigns a <strong>Shadow Ban Probability Score</strong>. We check from U.S.-based servers—platforms may treat regional, VPN, or datacenter IPs differently, which our engine accounts for.</p>
                     </div>
                     
                     <!-- Results CTA -->
@@ -366,8 +373,8 @@
                 </div>
                 <div class="trust-divider">•</div>
                 <div class="trust-item-inline">
-                    <span>💰</span>
-                    <span>Cancel Anytime</span>
+                    <span>🇺🇸</span>
+                    <span>U.S.-Based Servers</span>
                 </div>
                 <div class="trust-divider">•</div>
                 <div class="trust-item-inline">
@@ -383,7 +390,7 @@
         <div class="container">
             <div class="spotlight-grid">
                 <div class="spotlight-content">
-                    <div class="spotlight-tag">🤖 Powered by Shadow AI Pro <button class="ai-info-btn" id="ai-info-btn" aria-label="How Shadow AI differs from AI chatbots" type="button" style="background: none; border: none; cursor: pointer; margin-left: 8px; vertical-align: middle;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M12 16V12M12 8H12.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button></div>
+                    <div class="spotlight-tag">🤖 Powered by Shadow AI Pro</div>
                     <h2>Your AI Shadow Ban Detective</h2>
                     <p class="lead">Unlike generic AI chatbots, Shadow AI Pro is purpose-built for shadow ban detection. It has direct access to our 5-Factor Detection Engine data and platform-specific knowledge that general AI simply doesn't have.</p>
                     
@@ -425,7 +432,7 @@
                             <span class="demo-status online">● Online</span>
                         </div>
                         <div class="demo-messages" id="demo-chat-messages">
-                            <!-- Chat messages injected by JS -->
+                            <!-- Chat messages injected by shadow-ai.js -->
                         </div>
                     </div>
                 </div>
@@ -552,6 +559,13 @@
     <section class="shadow-ai-section" id="shadow-ai-pro">
         <div class="container">
             <div class="ai-wrapper">
+                <!-- Info Button -->
+                <button class="ai-info-btn" id="ai-info-btn" aria-label="How Shadow AI differs from AI chatbots" type="button" style="position: absolute; top: 1rem; right: 1rem; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; background: rgba(99, 102, 241, 0.15); border: 2px solid rgba(99, 102, 241, 0.4); border-radius: 50%; color: var(--primary-light); cursor: pointer; transition: all 0.15s ease; z-index: 10;">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+                        <path d="M12 16V12M12 8H12.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </button>
                 <span class="ai-badge-top">🤖 Included with Pro</span>
                 <div class="ai-header">
                     <h2 class="text-gradient">Shadow AI Pro</h2>
@@ -714,6 +728,16 @@
                     
                     <div class="faq-item">
                         <button class="faq-question">
+                            💬 Why not just ask ChatGPT or other AI chatbots?
+                            <span class="faq-toggle">+</span>
+                        </button>
+                        <div class="faq-answer">
+                            <p>AI chatbots don't have access to real-time platform data or your actual account status. They can only give generic advice like "try posting less" or "check your settings." Shadow AI Pro is fundamentally different: it reads results from our 5-Factor Detection Engine, knows your actual probability scores, understands which specific factors triggered detection, and provides recovery steps tailored to YOUR exact situation. It's the difference between "shadow bans might be caused by..." and "your account shows 78% probability because of these 5 specific signals we detected."</p>
+                        </div>
+                    </div>
+                    
+                    <div class="faq-item">
+                        <button class="faq-question">
                             🔒 Is my data safe?
                             <span class="faq-toggle">+</span>
                         </button>
@@ -810,6 +834,7 @@
                             <div>
                                 <strong>Connect with the Dev</strong>
                                 <p>Reach out directly to Andrew on social media</p>
+                                <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.5rem;">🫡 Proud U.S. Army Veteran specializing in gathering and analyzing evidence.</p>
                                 <div class="social-links">
                                     <a href="https://x.com/Ghost081280" target="_blank" rel="noopener" class="social-link" title="Twitter/X">
                                         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
@@ -1132,9 +1157,10 @@
     <script src="js/main.js"></script>
     <script src="js/shadow-ai.js"></script>
     
-    <!-- AI Info Modal Handler -->
+    <!-- AI Info Modal Handler & Coming Soon Platform Handler -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // AI Info Modal
             const aiInfoBtn = document.getElementById('ai-info-btn');
             const aiInfoModal = document.getElementById('ai-info-modal');
             
@@ -1163,6 +1189,21 @@
                         document.body.style.overflow = '';
                     });
                 }
+            }
+            
+            // Handle "Coming Soon" platforms - redirect to login
+            // This intercepts platform modal for non-live platforms
+            const platformGrid = document.getElementById('platform-grid');
+            if (platformGrid) {
+                platformGrid.addEventListener('click', function(e) {
+                    const platformItem = e.target.closest('.platform-item');
+                    if (platformItem && platformItem.dataset.status === 'soon') {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        // Redirect to login page for coming soon platforms
+                        window.location.href = 'https://ghost081280.github.io/shadowbancheck/login.html';
+                    }
+                });
             }
         });
     </script>

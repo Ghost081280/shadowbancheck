@@ -121,8 +121,35 @@
         return null;
     }
     
+    function getSearchType() {
+        if (window.lastSearchType) return window.lastSearchType;
+        
+        try {
+            const storedType = localStorage.getItem('shadowban_last_search_type');
+            if (storedType) return storedType;
+        } catch (e) {}
+        
+        // Infer from results
+        const results = getScanResults();
+        if (results) {
+            return results.searchType || 'power';
+        }
+        
+        return null;
+    }
+    
     function hasScanResults() {
         return getScanResults() !== null;
+    }
+    
+    function getSearchTypeFriendlyName(type) {
+        const names = {
+            'power': 'Power Check (3-in-1)',
+            'account': 'Account Check',
+            'post': 'Post URL Check',
+            'hashtag': 'Hashtag Check'
+        };
+        return names[type] || 'scan';
     }
     
     // ==========================================================================
@@ -347,24 +374,50 @@
     // ==========================================================================
     function addWelcomeMessage() {
         const results = getScanResults();
+        const searchType = getSearchType();
         const remaining = getQuestionsRemaining();
         
         let greeting;
         
         if (results) {
-            // User has scan results - personalized greeting
-            greeting = `👋 Hi! I'm Shadow AI. I can see you ran a scan on **${results.platform.name}** for **${results.username}**.\n\n` +
-                      `Your overall shadow ban probability was **${results.scores.overall}%**.\n\n` +
-                      `Ask me anything about your results! I can help you understand:\n` +
-                      `• What each score means\n` +
-                      `• Why certain factors were flagged\n` +
-                      `• General tips for improving visibility\n\n` +
-                      `_You have **${remaining} free questions** today._`;
+            // User has scan results - ask if they want help with them
+            const typeName = getSearchTypeFriendlyName(searchType);
+            
+            if (searchType === 'power') {
+                greeting = `👋 Hi! I noticed you just ran a **${typeName}** on **${results.platform.name}** for **${results.username}**.\n\n` +
+                          `Your overall shadow ban probability was **${results.scores.overall}%**.\n\n` +
+                          `**Would you like me to answer questions about your results?**\n\n` +
+                          `I can explain what each score means, why certain factors were flagged, and give you tips for improving visibility.\n\n` +
+                          `_You have **${remaining} free questions** today._`;
+            } else if (searchType === 'account') {
+                greeting = `👋 Hi! I see you just ran an **Account Check** for **${results.username}** on **${results.platform.name}**.\n\n` +
+                          `Your account risk score was **${results.scores.account}%**.\n\n` +
+                          `**Would you like me to explain your results?**\n\n` +
+                          `_You have **${remaining} free questions** today._`;
+            } else if (searchType === 'post') {
+                greeting = `👋 Hi! I see you just ran a **Post URL Check** on **${results.platform.name}**.\n\n` +
+                          `Your post visibility score was **${results.scores.post}%**.\n\n` +
+                          `**Would you like me to explain what this means?**\n\n` +
+                          `_You have **${remaining} free questions** today._`;
+            } else if (searchType === 'hashtag') {
+                greeting = `👋 Hi! I see you just ran a **Hashtag Check** on **${results.platform.name}**.\n\n` +
+                          `Your hashtag health score was **${results.scores.hashtag}%**.\n\n` +
+                          `**Would you like me to explain which hashtags are safe vs. risky?**\n\n` +
+                          `_You have **${remaining} free questions** today._`;
+            } else {
+                greeting = `👋 Hi! I can see you ran a scan on **${results.platform.name}** for **${results.username}**.\n\n` +
+                          `**Would you like me to answer questions about your results?**\n\n` +
+                          `_You have **${remaining} free questions** today._`;
+            }
         } else {
-            // No scan results yet
+            // No scan results yet - show options
             greeting = `👋 Hi! I'm Shadow AI, your shadow ban detection assistant.\n\n` +
-                      `I can help you understand shadow banning and analyze your scan results.\n\n` +
-                      `**Tip:** Run a free [Power Check](#power-check) first, then come back and I can analyze your specific results!\n\n` +
+                      `**💡 Pro Tip:** Run a [Power Check (3-in-1)](#power-check) first for the most comprehensive analysis!\n\n` +
+                      `**Or check individually (3 free/day):**\n` +
+                      `• [👤 Account Check](checker.html) - Is your account restricted?\n` +
+                      `• [📝 Post URL Check](post-checker.html) - Is a specific post hidden?\n` +
+                      `• [#️⃣ Hashtag Check](hashtag-checker.html) - Are your hashtags safe?\n\n` +
+                      `Once you run a check, come back and I can analyze your specific results!\n\n` +
                       `_You have **${remaining} free questions** today._`;
         }
         
@@ -648,7 +701,9 @@
         
         // Default response
         if (results) {
-            return `I'm here to help analyze your scan results!\n\n` +
+            const searchType = getSearchType();
+            const typeName = getSearchTypeFriendlyName(searchType);
+            return `I'm here to help analyze your **${typeName}** results!\n\n` +
                    `Your **${results.platform.name}** scan showed a **${results.scores.overall}%** shadow ban probability.\n\n` +
                    `Try asking me:\n` +
                    `• "What does my score mean?"\n` +
@@ -657,7 +712,11 @@
                    `_${remaining} questions remaining today._`;
         } else {
             return `I can help you understand shadow banning and analyze your scan results!\n\n` +
-                   `**Tip:** Run a [Power Check](#power-check) first, then come back and I can give you specific insights about your results.\n\n` +
+                   `**💡 Pro Tip:** Run a [Power Check (3-in-1)](#power-check) for the most comprehensive analysis!\n\n` +
+                   `**Or check individually (3 free/day):**\n` +
+                   `• [👤 Account Check](checker.html)\n` +
+                   `• [📝 Post URL Check](post-checker.html)\n` +
+                   `• [#️⃣ Hashtag Check](hashtag-checker.html)\n\n` +
                    `Or ask me general questions like:\n` +
                    `• "What is a shadow ban?"\n` +
                    `• "How do shadow bans work?"\n\n` +
@@ -814,8 +873,11 @@
     }
     
     function generateHelpResponse(results) {
+        const searchType = getSearchType();
+        
         if (results) {
-            return `I can help you understand your scan results!\n\n` +
+            const typeName = getSearchTypeFriendlyName(searchType);
+            return `I can help you understand your **${typeName}** results!\n\n` +
                    `**Try asking:**\n` +
                    `• "Explain my results"\n` +
                    `• "What does my score mean?"\n` +
@@ -824,8 +886,12 @@
                    `**For recovery strategies**, you'll need [Shadow AI Pro](${CONFIG.pricingUrl}).`;
         } else {
             return `I can help you understand shadow banning!\n\n` +
-                   `**First**, run a [Power Check](#power-check) to scan your account.\n\n` +
-                   `**Then** come back and I can:\n` +
+                   `**💡 Pro Tip:** Run a [Power Check (3-in-1)](#power-check) for the most comprehensive analysis!\n\n` +
+                   `**Or check individually (3 free/day):**\n` +
+                   `• [👤 Account Check](checker.html)\n` +
+                   `• [📝 Post URL Check](post-checker.html)\n` +
+                   `• [#️⃣ Hashtag Check](hashtag-checker.html)\n\n` +
+                   `Once you run a check, I can:\n` +
                    `• Explain what your results mean\n` +
                    `• Analyze your scores\n` +
                    `• Answer questions about shadow bans\n\n` +

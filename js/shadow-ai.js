@@ -1,15 +1,14 @@
 /**
  * =============================================================================
- * SHADOW AI - UNIFIED CHATBOT v3.1
- * ShadowBanCheck.io - Website & Dashboard (Identical Behavior)
+ * SHADOW AI - WEBSITE CHATBOT v4.0
+ * ShadowBanCheck.io - Website Version (Not Dashboard/Admin)
  * 
- * Features:
- * - Lookup counter (3 single lookups/day OR 1 power check/day)
- * - Message limit (20 general messages/day to prevent bot abuse)
- * - Dynamic widget creation
- * - Keyboard handler for mobile
- * - Demo chat animation
- * - Responsive design support
+ * NEW IN v4.0:
+ * - 3 questions/day (replaces "lookups" concept)
+ * - Reads from window.latestScanResults to analyze free scan results
+ * - Recovery/dispute strategies require Shadow AI Pro upgrade
+ * - After 3rd question, prompts to upgrade for more questions
+ * - Demo chat animation preserved
  * =============================================================================
  */
 
@@ -20,205 +19,150 @@
     // CONFIGURATION
     // ==========================================================================
     const CONFIG = {
-        // Detect if we're on dashboard
-        isDashboard: window.location.pathname.includes('dashboard'),
+        // Questions per day for free users
+        freeQuestionsPerDay: 3,
         
-        // Lookup limits (actual shadow ban checks)
-        freeLookupsPerDay: 3,         // Single lookups (username, post, hashtag)
-        freePowerCheckPerDay: 1,      // 3-in-1 Power Check (uses ALL daily lookups)
-        proLookupsPerDay: 50,
-        proPowerChecksPerDay: 25,
+        // Storage key for tracking questions
+        questionsKey: 'shadowAI_questions_v4',
         
-        // Message limits (general chat - prevents bot abuse)
-        freeMessagesPerDay: 20,
-        proMessagesPerDay: 200,
+        // Pricing page URL
+        pricingUrl: '#pricing',
         
-        // Storage keys
-        lookupKey: 'shadowAI_lookups',
-        messageKey: 'shadowAI_messages',
-        powerCheckKey: 'shadowAI_usedPowerCheck',
-        
-        // Title based on context
-        get title() {
-            return this.isDashboard ? 'Shadow AI Pro' : 'Shadow AI';
-        },
-        
-        // Tooltip text
-        get tooltip() {
-            return this.isDashboard ? 'Ask Shadow AI Pro' : 'Ask Shadow AI';
-        },
-        
-        // Limits based on context
-        get lookupLimit() {
-            return this.isDashboard ? this.proLookupsPerDay : this.freeLookupsPerDay;
-        },
-        
-        get messageLimit() {
-            return this.isDashboard ? this.proMessagesPerDay : this.freeMessagesPerDay;
-        }
+        // Title
+        title: 'Shadow AI',
+        tooltip: 'Ask Shadow AI'
     };
     
     // State
     let conversationHistory = [];
     let isTyping = false;
-    let lookupsUsed = 0;
-    let messagesUsed = 0;
-    let usedPowerCheck = false;
+    let questionsUsed = 0;
     
     // ==========================================================================
-    // LOOKUP & MESSAGE TRACKING
+    // QUESTION TRACKING
     // ==========================================================================
-    function getStorageData(key) {
+    function getQuestionsData() {
         try {
-            const data = localStorage.getItem(key);
+            const data = localStorage.getItem(CONFIG.questionsKey);
             if (data) {
                 const parsed = JSON.parse(data);
                 const today = new Date().toDateString();
                 if (parsed.date !== today) {
+                    // New day, reset counter
                     return { date: today, count: 0 };
                 }
                 return parsed;
             }
         } catch (e) {
-            console.warn('Could not read storage data:', e);
+            console.warn('Could not read questions data:', e);
         }
         return { date: new Date().toDateString(), count: 0 };
     }
     
-    function saveStorageData(key, count) {
+    function saveQuestionsData(count) {
         try {
-            localStorage.setItem(key, JSON.stringify({
+            localStorage.setItem(CONFIG.questionsKey, JSON.stringify({
                 date: new Date().toDateString(),
                 count: count
             }));
         } catch (e) {
-            console.warn('Could not save storage data:', e);
+            console.warn('Could not save questions data:', e);
         }
     }
     
-    function getPowerCheckStatus() {
-        try {
-            const data = localStorage.getItem(CONFIG.powerCheckKey);
-            if (data) {
-                const parsed = JSON.parse(data);
-                const today = new Date().toDateString();
-                if (parsed.date !== today) {
-                    return false; // New day, reset
-                }
-                return parsed.used;
-            }
-        } catch (e) {
-            console.warn('Could not read power check status:', e);
-        }
-        return false;
+    function getQuestionsRemaining() {
+        const data = getQuestionsData();
+        return Math.max(0, CONFIG.freeQuestionsPerDay - data.count);
     }
     
-    function setPowerCheckUsed() {
-        try {
-            localStorage.setItem(CONFIG.powerCheckKey, JSON.stringify({
-                date: new Date().toDateString(),
-                used: true
-            }));
-            usedPowerCheck = true;
-        } catch (e) {
-            console.warn('Could not save power check status:', e);
-        }
+    function canAskQuestion() {
+        return getQuestionsRemaining() > 0;
     }
     
-    function updateUsageCounter() {
+    function incrementQuestionCount() {
+        const data = getQuestionsData();
+        data.count++;
+        saveQuestionsData(data.count);
+        questionsUsed = data.count;
+        updateUsageDisplay();
+    }
+    
+    function updateUsageDisplay() {
         const usage = document.getElementById('shadow-ai-usage');
         if (usage) {
-            const lookupData = getStorageData(CONFIG.lookupKey);
-            lookupsUsed = lookupData.count;
-            usedPowerCheck = getPowerCheckStatus();
-            
-            if (usedPowerCheck) {
-                usage.textContent = `Power Check used today`;
-            } else {
-                const remaining = CONFIG.lookupLimit - lookupsUsed;
-                usage.textContent = `${remaining}/${CONFIG.lookupLimit} lookups left`;
-            }
+            const remaining = getQuestionsRemaining();
+            usage.textContent = `${remaining}/${CONFIG.freeQuestionsPerDay} questions left today`;
         }
     }
     
-    function canDoLookup() {
-        if (usedPowerCheck || getPowerCheckStatus()) return false;
-        const data = getStorageData(CONFIG.lookupKey);
-        return data.count < CONFIG.lookupLimit;
-    }
-    
-    function canDoPowerCheck() {
-        if (getPowerCheckStatus()) return false;
-        const lookupData = getStorageData(CONFIG.lookupKey);
-        return lookupData.count === 0; // Can only do power check if no single lookups used
-    }
-    
-    function canSendMessage() {
-        const data = getStorageData(CONFIG.messageKey);
-        return data.count < CONFIG.messageLimit;
-    }
-    
-    function incrementLookupCount() {
-        const data = getStorageData(CONFIG.lookupKey);
-        data.count++;
-        saveStorageData(CONFIG.lookupKey, data.count);
-        updateUsageCounter();
-    }
-    
-    function incrementMessageCount() {
-        const data = getStorageData(CONFIG.messageKey);
-        data.count++;
-        saveStorageData(CONFIG.messageKey, data.count);
-    }
-    
     // ==========================================================================
-    // DETECT LOOKUP REQUESTS
+    // ACCESS SCAN RESULTS FROM MAIN.JS
     // ==========================================================================
-    function isLookupRequest(message) {
-        const lower = message.toLowerCase();
+    function getScanResults() {
+        // First check window.latestScanResults (set by main.js)
+        if (window.latestScanResults) {
+            return window.latestScanResults;
+        }
         
-        // Patterns that indicate a lookup request
-        const lookupPatterns = [
-            // Direct check requests with username
-            /@[a-zA-Z0-9_]+/,                           // @username
-            /check\s+(my\s+)?(account|profile|username)/i,
-            /am\s+i\s+(shadow\s*)?banned/i,
-            /is\s+@?[a-zA-Z0-9_]+\s+(shadow\s*)?banned/i,
-            
-            // URL patterns
-            /https?:\/\/(twitter|x|instagram|tiktok|reddit|facebook|youtube|linkedin|threads)/i,
-            /check\s+(this\s+)?(post|url|link)/i,
-            
-            // Hashtag check requests
-            /check\s+(these\s+)?hashtag/i,
-            /are\s+(these\s+)?hashtag/i,
-            /#[a-zA-Z0-9_]+.*#[a-zA-Z0-9_]+/,          // Multiple hashtags
-            
-            // Power check / 3-in-1 requests
-            /power\s*check/i,
-            /3[\s-]?in[\s-]?1/i,
-            /full\s+(analysis|check|scan)/i
+        // Fallback: try localStorage
+        try {
+            const stored = localStorage.getItem('shadowban_latest_results');
+            if (stored) {
+                const results = JSON.parse(stored);
+                // Check if results are from today (within 24 hours)
+                if (results.timestamp && (Date.now() - results.timestamp) < 24 * 60 * 60 * 1000) {
+                    return results;
+                }
+            }
+        } catch (e) {
+            console.warn('Could not load stored results:', e);
+        }
+        
+        return null;
+    }
+    
+    function hasScanResults() {
+        return getScanResults() !== null;
+    }
+    
+    // ==========================================================================
+    // DETECT REQUEST TYPES
+    // ==========================================================================
+    function isRecoveryRequest(message) {
+        const lower = message.toLowerCase();
+        const recoveryKeywords = [
+            'recover', 'recovery', 'fix', 'appeal', 'dispute', 
+            'remove ban', 'get unbanned', 'lift ban', 'unban',
+            'what should i do', 'how do i fix', 'help me fix',
+            'strategy', 'strategies', 'action plan', 'next steps',
+            'how to get', 'how can i get', 'restore', 'reinstate'
         ];
-        
-        return lookupPatterns.some(pattern => pattern.test(lower));
+        return recoveryKeywords.some(kw => lower.includes(kw));
     }
     
-    function isPowerCheckRequest(message) {
+    function isAskingAboutResults(message) {
         const lower = message.toLowerCase();
-        return /power\s*check/i.test(lower) || 
-               /3[\s-]?in[\s-]?1/i.test(lower) || 
-               /full\s+(analysis|check|scan)/i.test(lower);
+        const resultsKeywords = [
+            'my results', 'my scan', 'my score', 'my check',
+            'what does', 'explain', 'mean', 'why',
+            'breakdown', 'details', 'tell me about',
+            'analyze', 'analysis', 'understand'
+        ];
+        return resultsKeywords.some(kw => lower.includes(kw));
     }
     
     // ==========================================================================
     // INITIALIZE
     // ==========================================================================
     function init() {
-        console.log(`🤖 Shadow AI v3.0 Initializing (${CONFIG.isDashboard ? 'Dashboard' : 'Website'})...`);
+        console.log('🤖 Shadow AI v4.0 Initializing (Website - Questions Mode)...');
         
         createWidget();
         initDemoChat();
         initExternalTriggers();
+        
+        // Initialize question count from storage
+        questionsUsed = getQuestionsData().count;
         
         console.log('✅ Shadow AI initialized');
     }
@@ -230,6 +174,8 @@
         const widget = document.createElement('div');
         widget.className = 'shadow-ai-container';
         widget.id = 'shadow-ai-container';
+        
+        const remaining = getQuestionsRemaining();
         
         widget.innerHTML = `
             <!-- Glow Effect -->
@@ -251,7 +197,7 @@
                         <span class="copilot-header-emoji">🤖</span>
                         <div class="copilot-header-text">
                             <h3>${CONFIG.title}</h3>
-                            <p class="copilot-usage" id="shadow-ai-usage">${CONFIG.lookupLimit}/${CONFIG.lookupLimit} lookups left</p>
+                            <p class="copilot-usage" id="shadow-ai-usage">${remaining}/${CONFIG.freeQuestionsPerDay} questions left today</p>
                         </div>
                     </div>
                     <div class="copilot-header-right">
@@ -272,7 +218,7 @@
                 <div class="copilot-input-area">
                     <input type="text" 
                            id="shadow-ai-input" 
-                           placeholder="Ask about shadow bans..." 
+                           placeholder="Ask about your results..." 
                            autocomplete="off"
                            enterkeyhint="send">
                     <button class="copilot-send" id="shadow-ai-send">Send</button>
@@ -289,9 +235,6 @@
         
         // Bind events
         bindEvents();
-        
-        // Update usage counter
-        updateUsageCounter();
         
         // Initialize keyboard handler
         initKeyboardHandler();
@@ -341,7 +284,6 @@
     // ==========================================================================
     function toggleChat() {
         const chat = document.getElementById('shadow-ai-chat');
-        const container = document.getElementById('shadow-ai-container');
         
         if (chat?.classList.contains('hidden')) {
             openChat();
@@ -363,6 +305,9 @@
         if (messagesContainer && messagesContainer.children.length === 0) {
             addWelcomeMessage();
         }
+        
+        // Update usage display
+        updateUsageDisplay();
         
         // Focus input
         setTimeout(() => {
@@ -401,9 +346,27 @@
     // WELCOME MESSAGE
     // ==========================================================================
     function addWelcomeMessage() {
-        const greeting = CONFIG.isDashboard 
-            ? "👋 Welcome back! I'm Shadow AI Pro, your dedicated shadow ban assistant. How can I help you today?"
-            : "👋 Hi! I'm Shadow AI, your personal shadow ban detective. I can help you understand shadow banning, check your accounts, and provide recovery strategies. What would you like to know?";
+        const results = getScanResults();
+        const remaining = getQuestionsRemaining();
+        
+        let greeting;
+        
+        if (results) {
+            // User has scan results - personalized greeting
+            greeting = `👋 Hi! I'm Shadow AI. I can see you ran a scan on **${results.platform.name}** for **${results.username}**.\n\n` +
+                      `Your overall shadow ban probability was **${results.scores.overall}%**.\n\n` +
+                      `Ask me anything about your results! I can help you understand:\n` +
+                      `• What each score means\n` +
+                      `• Why certain factors were flagged\n` +
+                      `• General tips for improving visibility\n\n` +
+                      `_You have **${remaining} free questions** today._`;
+        } else {
+            // No scan results yet
+            greeting = `👋 Hi! I'm Shadow AI, your shadow ban detection assistant.\n\n` +
+                      `I can help you understand shadow banning and analyze your scan results.\n\n` +
+                      `**Tip:** Run a free [Power Check](#power-check) first, then come back and I can analyze your specific results!\n\n` +
+                      `_You have **${remaining} free questions** today._`;
+        }
         
         addMessage(greeting, 'assistant');
     }
@@ -421,35 +384,20 @@
             return;
         }
         
-        // Check if this is a lookup request
-        const isLookup = isLookupRequest(message);
-        const isPowerCheck = isPowerCheckRequest(message);
+        // Check if this requires Pro (recovery/dispute strategies)
+        if (isRecoveryRequest(message)) {
+            addMessage(message, 'user');
+            input.value = '';
+            showProRequiredMessage('recovery');
+            return;
+        }
         
-        // Check limits based on request type
-        if (isPowerCheck) {
-            if (!canDoPowerCheck()) {
-                if (getPowerCheckStatus()) {
-                    showLimitMessage("You've already used your daily Power Check. Try again tomorrow or upgrade to Pro!");
-                } else {
-                    showLimitMessage("Power Check requires no prior lookups today. You've already used single lookups. Try again tomorrow!");
-                }
-                return;
-            }
-        } else if (isLookup) {
-            if (!canDoLookup()) {
-                if (usedPowerCheck || getPowerCheckStatus()) {
-                    showLimitMessage("You've used your Power Check today, which includes all lookups. Try again tomorrow or upgrade to Pro!");
-                } else {
-                    showLimitMessage(`You've used all ${CONFIG.lookupLimit} lookups for today. Upgrade to Pro for more!`);
-                }
-                return;
-            }
-        } else {
-            // General chat message
-            if (!canSendMessage()) {
-                showLimitMessage(`You've reached the daily chat limit (${CONFIG.messageLimit} messages). Upgrade to Pro for unlimited chat!`);
-                return;
-            }
+        // Check question limit
+        if (!canAskQuestion()) {
+            addMessage(message, 'user');
+            input.value = '';
+            showLimitReachedMessage();
+            return;
         }
         
         if (isTyping) return;
@@ -458,14 +406,8 @@
         addMessage(message, 'user');
         input.value = '';
         
-        // Increment appropriate counter
-        if (isPowerCheck) {
-            setPowerCheckUsed();
-        } else if (isLookup) {
-            incrementLookupCount();
-        } else {
-            incrementMessageCount();
-        }
+        // Increment question count
+        incrementQuestionCount();
         
         // Add to history
         conversationHistory.push({ role: 'user', content: message });
@@ -478,25 +420,25 @@
         input.disabled = true;
         document.getElementById('shadow-ai-send').disabled = true;
         
-        // Generate response (simulate for now)
+        // Generate response
         setTimeout(() => {
             hideTypingIndicator();
-            const response = generateResponse(message, isLookup, isPowerCheck);
+            const response = generateResponse(message);
             addMessage(response, 'assistant');
             conversationHistory.push({ role: 'assistant', content: response });
             
             input.disabled = false;
             document.getElementById('shadow-ai-send').disabled = false;
             isTyping = false;
-        }, isLookup ? 2000 + Math.random() * 1000 : 800 + Math.random() * 500);
+            
+            // Check if this was their last question
+            checkAndShowUpgradePrompt();
+        }, 800 + Math.random() * 500);
     }
     
-    function showLimitMessage(text) {
+    function showLimitReachedMessage() {
         const messagesContainer = document.getElementById('shadow-ai-messages');
         if (!messagesContainer) return;
-        
-        // Remove existing limit messages
-        messagesContainer.querySelectorAll('.limit-message').forEach(el => el.remove());
         
         const limitDiv = document.createElement('div');
         limitDiv.className = 'chat-message assistant-message limit-message';
@@ -505,13 +447,63 @@
                 <div class="message-avatar">🤖</div>
                 <div class="message-text">
                     <strong>⏰ Daily Limit Reached</strong><br><br>
-                    ${text}<br><br>
-                    <a href="#pricing" onclick="document.getElementById('shadow-ai-chat').classList.remove('open');">View Pricing →</a>
+                    You've used all 3 free questions for today!<br><br>
+                    <strong>Want unlimited questions?</strong><br>
+                    Upgrade to <strong>Shadow AI Pro</strong> for unlimited questions, detailed recovery strategies, and personalized action plans.<br><br>
+                    <a href="${CONFIG.pricingUrl}" class="chat-link" onclick="document.getElementById('shadow-ai-chat')?.classList.add('hidden');">View Pro Plans →</a>
                 </div>
             </div>
         `;
         messagesContainer.appendChild(limitDiv);
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+    
+    function showProRequiredMessage(type) {
+        const messagesContainer = document.getElementById('shadow-ai-messages');
+        if (!messagesContainer) return;
+        
+        let content = '';
+        
+        if (type === 'recovery') {
+            content = `
+                <strong>🔒 Shadow AI Pro Feature</strong><br><br>
+                Recovery strategies, dispute assistance, and personalized action plans require <strong>Shadow AI Pro</strong>.<br><br>
+                <strong>With Pro you get:</strong><br>
+                ✓ Unlimited questions<br>
+                ✓ Step-by-step recovery strategies<br>
+                ✓ Platform-specific dispute templates<br>
+                ✓ Personalized action plans<br>
+                ✓ Direct analysis of your results<br><br>
+                <a href="${CONFIG.pricingUrl}" class="chat-link" onclick="document.getElementById('shadow-ai-chat')?.classList.add('hidden');">Unlock Shadow AI Pro →</a>
+            `;
+        }
+        
+        const proDiv = document.createElement('div');
+        proDiv.className = 'chat-message assistant-message pro-required-message';
+        proDiv.innerHTML = `
+            <div class="message-content">
+                <div class="message-avatar">🤖</div>
+                <div class="message-text">${content}</div>
+            </div>
+        `;
+        messagesContainer.appendChild(proDiv);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+    
+    function checkAndShowUpgradePrompt() {
+        const remaining = getQuestionsRemaining();
+        
+        // Show upgrade prompt after last question
+        if (remaining === 0) {
+            setTimeout(() => {
+                addMessage(
+                    `💡 **That was your last free question today!**\n\n` +
+                    `Want unlimited questions + recovery strategies?\n\n` +
+                    `[Upgrade to Shadow AI Pro](${CONFIG.pricingUrl}) for full access.`,
+                    'assistant'
+                );
+            }, 1500);
+        }
     }
     
     // ==========================================================================
@@ -549,36 +541,10 @@
             .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
             // Italic _text_
             .replace(/_(.*?)_/g, '<em>$1</em>')
-            // Links [text](url) - convert to clickable links
+            // Links [text](url)
             .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="chat-link" target="_blank">$1</a>')
             // Line breaks
             .replace(/\n/g, '<br>');
-    }
-    
-    // Get platform info from platforms.js
-    function getPlatformData() {
-        if (typeof PLATFORMS !== 'undefined') return PLATFORMS;
-        if (typeof window.platformData !== 'undefined') return window.platformData;
-        // Fallback
-        return [
-            { id: 'twitter', name: 'Twitter/X', icon: '𝕏', status: 'live' },
-            { id: 'reddit', name: 'Reddit', icon: '🔴', status: 'live' }
-        ];
-    }
-    
-    function getLivePlatforms() {
-        return getPlatformData().filter(p => p.status === 'live');
-    }
-    
-    function getPlatformByIdOrName(identifier) {
-        const platforms = getPlatformData();
-        const lower = identifier.toLowerCase();
-        return platforms.find(p => 
-            p.id === lower || 
-            p.name.toLowerCase().includes(lower) ||
-            (lower.includes('twitter') && p.id === 'twitter') ||
-            (lower.includes('x.com') && p.id === 'twitter')
-        );
     }
     
     function escapeHtml(text) {
@@ -617,269 +583,269 @@
     }
     
     // ==========================================================================
-    // RESPONSE GENERATION (Placeholder - replace with API)
+    // RESPONSE GENERATION
     // ==========================================================================
-    function generateResponse(message, isLookup = false, isPowerCheck = false) {
+    function generateResponse(message) {
         const lower = message.toLowerCase();
+        const results = getScanResults();
+        const remaining = getQuestionsRemaining();
         
-        // Handle Power Check requests
-        if (isPowerCheck) {
-            return generatePowerCheckResponse(message);
+        // If asking about their results and we have them
+        if (isAskingAboutResults(message) && results) {
+            return generateResultsAnalysis(message, results);
         }
         
-        // Handle lookup requests (username, post URL, hashtag)
-        if (isLookup) {
-            return generateLookupResponse(message);
+        // Questions about specific scores
+        if (results && (lower.includes('score') || lower.includes('percent') || lower.includes('%'))) {
+            return generateScoreExplanation(message, results);
         }
         
-        // General chat responses - use platforms.js
-        const livePlatforms = getLivePlatforms();
-        const platformList = livePlatforms.map(p => `${p.icon} **${p.name}**`).join('\n');
+        // Questions about hashtags
+        if (results && (lower.includes('hashtag') || lower.includes('#'))) {
+            return generateHashtagAnalysis(results);
+        }
         
+        // Questions about account
+        if (results && (lower.includes('account') || lower.includes('profile'))) {
+            return generateAccountAnalysis(results);
+        }
+        
+        // Questions about post
+        if (results && (lower.includes('post') || lower.includes('visibility'))) {
+            return generatePostAnalysis(results);
+        }
+        
+        // General shadow ban questions
         if (lower.includes('shadow ban') || lower.includes('shadowban')) {
-            return "Shadow banning is when a platform limits your content's visibility without notifying you. Your posts appear normal to you, but others can't see them in searches, feeds, or recommendations.\n\nI can help you check if you're affected! Just tell me:\n• Your **@username** and which **platform** to check\n• Or paste a **post URL**";
+            return generateShadowBanExplanation();
         }
         
-        if (lower.includes('how') && (lower.includes('check') || lower.includes('test'))) {
-            return "To check for a shadow ban, I analyze:\n\n✓ Search visibility\n✓ Engagement patterns\n✓ Hashtag reach\n✓ Profile accessibility\n\nJust tell me your **@username** and which **platform** (Twitter/X or Reddit), and I'll give you a quick summary!\n\nWant detailed analysis? Use our [full checker tools](checker.html).";
+        // What can you do / help
+        if (lower.includes('what can you') || lower.includes('help')) {
+            return generateHelpResponse(results);
         }
         
-        if (lower.includes('what') && lower.includes('platform')) {
-            return `I currently support:\n\n${platformList}\n\nMore platforms coming soon! Which one would you like to check?`;
+        // Greetings
+        if (lower.match(/^(hi|hey|hello|howdy)/)) {
+            return generateGreeting(results, remaining);
         }
         
-        if (lower.includes('fix') || lower.includes('recover') || lower.includes('appeal')) {
-            return "Here are general recovery strategies:\n\n1. **Take a break** - Stop posting for 24-48 hours\n2. **Review content** - Remove anything potentially violating guidelines\n3. **Avoid spam behavior** - Don't mass-like, follow, or use bots\n4. **Diversify hashtags** - Don't use the same ones repeatedly\n5. **Engage authentically** - Focus on genuine interactions\n\nWant platform-specific advice? Tell me which platform!";
-        }
-        
-        if (lower.includes('price') || lower.includes('cost') || lower.includes('pro') || lower.includes('upgrade') || lower.includes('premium')) {
-            return "**Shadow AI Pro** gives you:\n\n✓ 50 lookups/day (vs 3 free)\n✓ 25 Power Checks/day\n✓ Detailed analysis in chat\n✓ Priority processing\n✓ Personalized recovery strategies\n\n[View Pro Plans](index.html#pricing)";
-        }
-        
-        if (lower.includes('power check') || lower.includes('3-in-1') || lower.includes('3 in 1')) {
-            return "⚡ **Power Check** is our 3-in-1 analysis that checks:\n\n• Account health\n• Post visibility\n• Hashtag status\n\nIt uses your entire daily lookup allowance but gives you a complete picture!\n\nTo run a Power Check, say: **\"power check @username on Twitter\"** or paste a post URL.";
-        }
-        
-        if (lower.includes('hello') || lower.includes('hi') || lower.includes('hey')) {
-            return `Hey there! 👋 I'm Shadow AI, your shadow ban detection assistant.\n\n**What I can do:**\n• Check accounts: \"check @username on Twitter\"\n• Check posts: paste any post URL\n• Check hashtags: \"are #fitness #health safe?\"\n• Power Check (3-in-1): \"power check @username\"\n\n**Currently supporting:** ${livePlatforms.map(p => p.icon).join(' ')}\n\nWhat would you like to check?`;
-        }
-        
+        // Thanks
         if (lower.includes('thank')) {
-            return "You're welcome! 😊 Let me know if you need anything else.\n\nWant more lookups? [Check out Pro](index.html#pricing)";
+            return `You're welcome! 😊\n\nYou have **${remaining} questions** remaining today. Let me know if you have more questions about your results!`;
         }
         
-        // Default helpful response
-        return `I can help with shadow ban detection!\n\n**Quick commands:**\n• \"check @username on Twitter\"\n• \"check @username on Reddit\"\n• Paste a post URL\n• \"power check @username\" (3-in-1)\n\n**Supporting:** ${livePlatforms.map(p => `${p.icon} ${p.name}`).join(', ')}\n\nWhat would you like to check?`;
+        // Pricing questions
+        if (lower.includes('price') || lower.includes('cost') || lower.includes('pro') || lower.includes('upgrade')) {
+            return `**Shadow AI Pro** includes:\n\n` +
+                   `✓ Unlimited questions per day\n` +
+                   `✓ Recovery & dispute strategies\n` +
+                   `✓ Personalized action plans\n` +
+                   `✓ Platform-specific advice\n` +
+                   `✓ Priority support\n\n` +
+                   `[View Pro Plans](${CONFIG.pricingUrl})`;
+        }
+        
+        // Default response
+        if (results) {
+            return `I'm here to help analyze your scan results!\n\n` +
+                   `Your **${results.platform.name}** scan showed a **${results.scores.overall}%** shadow ban probability.\n\n` +
+                   `Try asking me:\n` +
+                   `• "What does my score mean?"\n` +
+                   `• "Why are my hashtags flagged?"\n` +
+                   `• "Is my account okay?"\n\n` +
+                   `_${remaining} questions remaining today._`;
+        } else {
+            return `I can help you understand shadow banning and analyze your scan results!\n\n` +
+                   `**Tip:** Run a [Power Check](#power-check) first, then come back and I can give you specific insights about your results.\n\n` +
+                   `Or ask me general questions like:\n` +
+                   `• "What is a shadow ban?"\n` +
+                   `• "How do shadow bans work?"\n\n` +
+                   `_${remaining} questions remaining today._`;
+        }
     }
     
-    function generateLookupResponse(message) {
-        const lower = message.toLowerCase();
-        const livePlatforms = getLivePlatforms();
+    function generateResultsAnalysis(message, results) {
+        const overall = results.scores.overall;
+        let riskLevel, interpretation;
         
-        // Check for username
-        const usernameMatch = message.match(/@([a-zA-Z0-9_]+)/);
-        if (usernameMatch) {
-            // Check if platform is specified
-            const platform = detectPlatformFromMessage(message);
-            if (!platform) {
-                // Ask which platform
-                const platformOptions = livePlatforms.map(p => `${p.icon} ${p.name}`).join('\n');
-                return `I found **@${usernameMatch[1]}** - which platform should I check?\n\n${platformOptions}\n\nJust say \"Twitter\" or \"Reddit\" and I'll run the check!`;
-            }
-            return generateUsernameCheckResponse(usernameMatch[1], message, platform);
+        if (overall < 25) {
+            riskLevel = 'LOW';
+            interpretation = 'Your account appears to be in good standing with minimal restrictions detected.';
+        } else if (overall < 50) {
+            riskLevel = 'MODERATE';
+            interpretation = 'Some potential restrictions detected. This could be temporary or platform-specific.';
+        } else if (overall < 75) {
+            riskLevel = 'HIGH';
+            interpretation = 'Multiple signals indicate your content may be restricted. Visibility is likely reduced.';
+        } else {
+            riskLevel = 'CRITICAL';
+            interpretation = 'Strong indicators of shadow ban detected. Your content is likely heavily restricted.';
         }
         
-        // Check for URL - platform detected from URL
-        const urlMatch = message.match(/https?:\/\/[^\s]+/i);
-        if (urlMatch) {
-            return generatePostCheckResponse(urlMatch[0]);
-        }
-        
-        // Check for hashtags
-        const hashtags = message.match(/#[a-zA-Z0-9_]+/g);
-        if (hashtags && hashtags.length > 0) {
-            // Check if platform is specified for hashtag check
-            const platform = detectPlatformFromMessage(message);
-            if (!platform) {
-                const platformOptions = livePlatforms.map(p => `${p.icon} ${p.name}`).join('\n');
-                return `I found hashtags: ${hashtags.join(' ')}\n\nWhich platform should I check them for?\n\n${platformOptions}\n\nJust say \"Twitter\" or \"Reddit\"!`;
-            }
-            return generateHashtagCheckResponse(hashtags, platform);
-        }
-        
-        // Generic check request
-        return "I'd be happy to run a check! Please provide:\n\n• A **@username** + platform (e.g., \"@yourname on Twitter\")\n• A **post URL** from Twitter or Reddit\n• Or **#hashtags** + platform\n\nWhat would you like me to analyze?";
+        return `📊 **Your Results Analysis**\n\n` +
+               `**Platform:** ${results.platform.icon} ${results.platform.name}\n` +
+               `**Account:** ${results.username}\n` +
+               `**Overall Score:** ${overall}% (${riskLevel} Risk)\n\n` +
+               `**What this means:**\n${interpretation}\n\n` +
+               `**Breakdown:**\n` +
+               `• Post Visibility: ${results.scores.post}%\n` +
+               `• Account Status: ${results.scores.account}%\n` +
+               `• Hashtag Health: ${results.scores.hashtag}%\n\n` +
+               `Ask me about any specific area for more details!`;
     }
     
-    function detectPlatformFromMessage(message) {
-        const lower = message.toLowerCase();
-        const livePlatforms = getLivePlatforms();
+    function generateScoreExplanation(message, results) {
+        const overall = results.scores.overall;
         
-        for (const platform of livePlatforms) {
-            if (lower.includes(platform.id) || lower.includes(platform.name.toLowerCase())) {
-                return platform;
-            }
-            // Special handling for "x" vs "twitter"
-            if (platform.id === 'twitter' && (lower.includes('twitter') || lower.includes(' x ') || lower.includes(' x.com'))) {
-                return platform;
-            }
-        }
-        return null;
+        return `📈 **Understanding Your Scores**\n\n` +
+               `Your **${overall}% overall score** is calculated from three factors:\n\n` +
+               `**1. Post Visibility (${results.scores.post}%)**\n` +
+               `How visible your content is in feeds and search.\n\n` +
+               `**2. Account Status (${results.scores.account}%)**\n` +
+               `Whether your profile has restrictions applied.\n\n` +
+               `**3. Hashtag Health (${results.scores.hashtag}%)**\n` +
+               `If any hashtags you used are restricted.\n\n` +
+               `_Lower scores = better. Higher scores = more likely restricted._\n\n` +
+               `Want recovery tips? [Upgrade to Pro](${CONFIG.pricingUrl}) for personalized strategies.`;
     }
     
-    function generateUsernameCheckResponse(username, fullMessage, platform = null) {
-        // Use provided platform or try to detect
-        if (!platform) {
-            platform = detectPlatformFromMessage(fullMessage);
+    function generateHashtagAnalysis(results) {
+        if (!results.hashtags || results.hashtags.length === 0) {
+            return `No hashtags were detected in your scanned post.\n\nHashtags can significantly impact reach. Want to check specific hashtags? Use our [Hashtag Checker](hashtag-checker.html).`;
         }
         
-        // Fallback to Twitter if still no platform (shouldn't happen with new flow)
-        if (!platform) {
-            const livePlatforms = getLivePlatforms();
-            platform = livePlatforms[0] || { name: 'Twitter/X', icon: '𝕏', id: 'twitter' };
+        const safe = results.hashtags.filter(h => h.status === 'safe');
+        const warning = results.hashtags.filter(h => h.status === 'warning');
+        const danger = results.hashtags.filter(h => h.status === 'danger');
+        
+        let response = `#️⃣ **Hashtag Analysis**\n\n`;
+        response += `We detected **${results.hashtags.length} hashtags** in your post:\n\n`;
+        
+        if (safe.length > 0) {
+            response += `✅ **Safe (${safe.length}):** ${safe.map(h => h.tag).join(', ')}\n`;
+        }
+        if (warning.length > 0) {
+            response += `⚠️ **Low-Reach (${warning.length}):** ${warning.map(h => h.tag).join(', ')}\n`;
+        }
+        if (danger.length > 0) {
+            response += `🚫 **Restricted (${danger.length}):** ${danger.map(h => h.tag).join(', ')}\n`;
         }
         
-        // Generate mock results
-        const probability = Math.floor(Math.random() * 35) + 5;
-        const status = probability < 15 ? 'LOW RISK ✅' : probability < 30 ? 'MODERATE RISK ⚠️' : 'HIGH RISK 🚨';
+        response += `\n**Hashtag Score: ${results.scores.hashtag}%**\n\n`;
         
-        return `${platform.icon} **${platform.name} Account Check: @${username}**\n\n` +
-               `**Shadow Ban Probability: ${probability}%** (${status})\n\n` +
-               `**Quick Summary:**\n` +
-               `✓ Search visibility: ${Math.random() > 0.3 ? 'Visible' : 'Reduced'}\n` +
-               `✓ Profile accessibility: ${Math.random() > 0.2 ? 'Normal' : 'Limited'}\n` +
-               `✓ Engagement analysis: ${Math.random() > 0.4 ? 'Healthy' : 'Below average'}\n` +
-               `✓ Content flags: ${Math.random() > 0.8 ? '1 warning' : 'None detected'}\n\n` +
-               `This used 1 of your ${CONFIG.lookupLimit} daily lookups.\n\n` +
-               `**Want detailed analysis?** Use our [full checker](checker.html?platform=${platform.id}) for comprehensive results with recovery tips!\n\n` +
-               `**Pro users** get detailed analysis right here in chat. [Learn more](index.html#pricing)`;
-    }
-    
-    function generatePostCheckResponse(url) {
-        // Detect platform from URL using platforms.js
-        const platforms = getPlatformData();
-        let platform = null;
-        
-        if (url.includes('twitter.com') || url.includes('x.com')) {
-            platform = platforms.find(p => p.id === 'twitter');
-        } else if (url.includes('reddit.com')) {
-            platform = platforms.find(p => p.id === 'reddit');
-        } else if (url.includes('instagram.com')) {
-            platform = platforms.find(p => p.id === 'instagram');
-        } else if (url.includes('tiktok.com')) {
-            platform = platforms.find(p => p.id === 'tiktok');
+        if (danger.length > 0 || warning.length > 0) {
+            response += `_Some hashtags may be limiting your reach. Consider using different tags in future posts._`;
+        } else {
+            response += `_Your hashtags look good! They shouldn't be limiting your reach._`;
         }
-        
-        // Check if platform is supported (live)
-        if (!platform || platform.status !== 'live') {
-            const detectedName = platform ? platform.name : 'this platform';
-            return `I detected a link from **${detectedName}**, but it's not supported yet.\n\n**Currently supporting:**\n${getLivePlatforms().map(p => `${p.icon} ${p.name}`).join('\n')}\n\nPaste a Twitter/X or Reddit URL to check!`;
-        }
-        
-        const probability = Math.floor(Math.random() * 30) + 5;
-        const status = probability < 15 ? 'VISIBLE ✅' : probability < 25 ? 'REDUCED REACH ⚠️' : 'SUPPRESSED 🚨';
-        
-        return `${platform.icon} **Post Visibility Check**\n\n` +
-               `**Platform:** ${platform.name}\n` +
-               `**Suppression Probability: ${probability}%** (${status})\n\n` +
-               `**Quick Analysis:**\n` +
-               `✓ Search indexing: ${Math.random() > 0.3 ? 'Indexed' : 'Not indexed'}\n` +
-               `✓ Feed visibility: ${Math.random() > 0.2 ? 'Normal' : 'Reduced'}\n` +
-               `✓ Hashtag reach: ${Math.random() > 0.4 ? 'Good' : 'Limited'}\n` +
-               `✓ Engagement rate: ${Math.random() > 0.3 ? 'Normal' : 'Below expected'}\n\n` +
-               `This used 1 of your ${CONFIG.lookupLimit} daily lookups.\n\n` +
-               `**Want full analysis?** Use our [Post URL Checker](post-checker.html) for detailed breakdown!\n\n` +
-               `[Upgrade to Pro](index.html#pricing) for detailed analysis in chat.`;
-    }
-    
-    function generateHashtagCheckResponse(hashtags, platform = null) {
-        // Use provided platform or first live platform
-        if (!platform) {
-            platform = getLivePlatforms()[0];
-        }
-        
-        const cleanHashtags = hashtags.map(h => h.replace('#', ''));
-        const results = cleanHashtags.map(tag => {
-            const rand = Math.random();
-            if (rand < 0.15) return { tag, status: 'BANNED 🚫', class: 'banned' };
-            if (rand < 0.35) return { tag, status: 'RESTRICTED ⚠️', class: 'restricted' };
-            return { tag, status: 'SAFE ✅', class: 'safe' };
-        });
-        
-        const banned = results.filter(r => r.class === 'banned').length;
-        const restricted = results.filter(r => r.class === 'restricted').length;
-        const safe = results.filter(r => r.class === 'safe').length;
-        
-        let summary = banned > 0 ? '🚨 **Warning:** Some hashtags are problematic!' : 
-                      restricted > 0 ? '⚠️ **Caution:** Some hashtags have restrictions.' :
-                      '✅ **All clear!** Your hashtags look safe.';
-        
-        let response = `${platform.icon} **Hashtag Check for ${platform.name}**\n\n${summary}\n\n`;
-        response += `**Summary:** ${safe} Safe, ${restricted} Restricted, ${banned} Banned\n\n`;
-        response += `**Details:**\n`;
-        results.forEach(r => {
-            response += `• #${r.tag}: ${r.status}\n`;
-        });
-        response += `\nThis used 1 of your ${CONFIG.lookupLimit} daily lookups.\n\n`;
-        response += `**Want full analysis?** Use our [Hashtag Checker](hashtag-checker.html) for comprehensive results!\n\n`;
-        response += `[Upgrade to Pro](index.html#pricing) for detailed analysis in chat.`;
         
         return response;
     }
     
-    function generatePowerCheckResponse(message) {
-        // Try to extract URL or detect platform from message
-        const urlMatch = message.match(/https?:\/\/[^\s]+/i);
-        const platforms = getPlatformData();
-        let platform = null;
+    function generateAccountAnalysis(results) {
+        const score = results.scores.account;
+        let status, details;
         
-        // Try to detect platform from URL
-        if (urlMatch) {
-            const url = urlMatch[0];
-            if (url.includes('twitter.com') || url.includes('x.com')) {
-                platform = platforms.find(p => p.id === 'twitter');
-            } else if (url.includes('reddit.com')) {
-                platform = platforms.find(p => p.id === 'reddit');
-            }
+        if (score < 25) {
+            status = 'Good Standing';
+            details = 'No significant account-level restrictions detected.';
+        } else if (score < 50) {
+            status = 'Minor Concerns';
+            details = 'Some signals detected but likely not a full shadow ban.';
+        } else {
+            status = 'Potential Issues';
+            details = 'Multiple signals indicate possible account restrictions.';
         }
         
-        // Try to detect platform from message text
-        if (!platform) {
-            platform = detectPlatformFromMessage(message);
+        let response = `👤 **Account Status: ${results.username}**\n\n`;
+        response += `**Status:** ${status}\n`;
+        response += `**Score:** ${score}%\n\n`;
+        response += `**Analysis:** ${details}\n\n`;
+        response += `**Factors Checked:**\n`;
+        
+        results.factors.account.forEach(f => {
+            const icon = f.status === 'good' ? '✓' : f.status === 'warning' ? '⚠' : '✗';
+            response += `${icon} ${f.text}\n`;
+        });
+        
+        return response;
+    }
+    
+    function generatePostAnalysis(results) {
+        const score = results.scores.post;
+        
+        let response = `📝 **Post Visibility Analysis**\n\n`;
+        response += `**Score:** ${score}%\n\n`;
+        response += `**Factors Checked:**\n`;
+        
+        results.factors.post.forEach(f => {
+            const icon = f.status === 'good' ? '✓' : f.status === 'warning' ? '⚠' : '✗';
+            response += `${icon} ${f.text}\n`;
+        });
+        
+        response += `\n`;
+        
+        if (score < 30) {
+            response += `_Your post appears to have normal visibility._`;
+        } else if (score < 60) {
+            response += `_Some visibility limitations may be affecting this post._`;
+        } else {
+            response += `_This post may have significantly reduced visibility._`;
         }
         
-        // Fallback to first live platform
-        if (!platform) {
-            platform = getLivePlatforms()[0] || { name: 'Twitter/X', icon: '𝕏', id: 'twitter' };
+        return response;
+    }
+    
+    function generateShadowBanExplanation() {
+        return `🔍 **What is a Shadow Ban?**\n\n` +
+               `A shadow ban (also called "stealth ban" or "ghost ban") is when a platform limits your content's visibility **without notifying you**.\n\n` +
+               `**How it works:**\n` +
+               `• Your posts look normal to YOU\n` +
+               `• But others can't see them in search/feeds\n` +
+               `• You get no notification or warning\n` +
+               `• Engagement drops mysteriously\n\n` +
+               `**Common causes:**\n` +
+               `• Posting content flagged by algorithms\n` +
+               `• Using restricted hashtags\n` +
+               `• Spam-like behavior (mass liking/following)\n` +
+               `• Receiving many reports\n\n` +
+               `Run a [Power Check](#power-check) to see if you're affected!`;
+    }
+    
+    function generateHelpResponse(results) {
+        if (results) {
+            return `I can help you understand your scan results!\n\n` +
+                   `**Try asking:**\n` +
+                   `• "Explain my results"\n` +
+                   `• "What does my score mean?"\n` +
+                   `• "Tell me about my hashtags"\n` +
+                   `• "Is my account okay?"\n\n` +
+                   `**For recovery strategies**, you'll need [Shadow AI Pro](${CONFIG.pricingUrl}).`;
+        } else {
+            return `I can help you understand shadow banning!\n\n` +
+                   `**First**, run a [Power Check](#power-check) to scan your account.\n\n` +
+                   `**Then** come back and I can:\n` +
+                   `• Explain what your results mean\n` +
+                   `• Analyze your scores\n` +
+                   `• Answer questions about shadow bans\n\n` +
+                   `**For recovery strategies**, upgrade to [Shadow AI Pro](${CONFIG.pricingUrl}).`;
         }
-        
-        // Check if platform is supported
-        if (platform.status !== 'live') {
-            return `⚡ **Power Check** isn't available for ${platform.name} yet.\n\n**Currently supporting:**\n${getLivePlatforms().map(p => `${p.icon} ${p.name}`).join('\n')}\n\nTry: \"power check @username on Twitter\"`;
+    }
+    
+    function generateGreeting(results, remaining) {
+        if (results) {
+            return `Hey there! 👋\n\n` +
+                   `I see you ran a scan on **${results.platform.name}** (${results.username}).\n\n` +
+                   `Your shadow ban probability: **${results.scores.overall}%**\n\n` +
+                   `What would you like to know about your results?\n\n` +
+                   `_${remaining} questions remaining today._`;
+        } else {
+            return `Hey! 👋 I'm Shadow AI.\n\n` +
+                   `Run a [Power Check](#power-check) first, then I can analyze your specific results!\n\n` +
+                   `Or ask me general questions about shadow banning.\n\n` +
+                   `_${remaining} questions remaining today._`;
         }
-        
-        const accountProb = Math.floor(Math.random() * 25) + 5;
-        const postProb = Math.floor(Math.random() * 30) + 5;
-        const hashtagProb = Math.floor(Math.random() * 20) + 5;
-        const overallProb = Math.floor((accountProb + postProb + hashtagProb) / 3);
-        
-        const status = overallProb < 15 ? 'LOW RISK ✅' : overallProb < 25 ? 'MODERATE RISK ⚠️' : 'HIGH RISK 🚨';
-        
-        return `⚡ **Power Check Complete** (3-in-1 Analysis)\n\n` +
-               `${platform.icon} **Platform:** ${platform.name}\n` +
-               `**Overall Shadow Ban Probability: ${overallProb}%** (${status})\n\n` +
-               `**━━━ Breakdown ━━━**\n\n` +
-               `👤 **Account Health:** ${accountProb}%\n` +
-               `• Profile visibility: ${accountProb < 20 ? 'Normal' : 'Reduced'}\n` +
-               `• Search appearance: ${accountProb < 15 ? 'Good' : 'Limited'}\n\n` +
-               `📝 **Post Visibility:** ${postProb}%\n` +
-               `• Feed distribution: ${postProb < 20 ? 'Normal' : 'Suppressed'}\n` +
-               `• Engagement rate: ${postProb < 25 ? 'Healthy' : 'Below average'}\n\n` +
-               `#️⃣ **Hashtag Status:** ${hashtagProb}%\n` +
-               `• All hashtags: ${hashtagProb < 15 ? 'Safe' : 'Some restrictions'}\n\n` +
-               `**━━━━━━━━━━━━━━━━**\n\n` +
-               `This is a quick summary. Power Check uses your entire daily lookup allowance.\n\n` +
-               `**Want detailed analysis + recovery tips?** Use our [full 3-in-1 Power Check](index.html#power-check) or [upgrade to Pro](index.html#pricing) for in-chat details!`;
     }
     
     // ==========================================================================
@@ -893,7 +859,6 @@
         
         // Focus handler
         input.addEventListener('focus', () => {
-            // Only apply keyboard class in landscape mobile
             if (window.innerWidth <= 926 && window.innerHeight <= 500 && 
                 window.matchMedia('(orientation: landscape)').matches) {
                 chat.classList.add('keyboard-visible');
@@ -916,26 +881,6 @@
                 }
             }, 300);
         });
-        
-        // Resize handler
-        let lastHeight = window.innerHeight;
-        let lastOrientation = window.matchMedia('(orientation: landscape)').matches;
-        
-        window.addEventListener('resize', () => {
-            const currentOrientation = window.matchMedia('(orientation: landscape)').matches;
-            
-            if (currentOrientation !== lastOrientation) {
-                chat.classList.remove('keyboard-visible');
-                if (document.activeElement === input) {
-                    input.blur();
-                }
-            }
-            
-            lastHeight = window.innerHeight;
-            lastOrientation = currentOrientation;
-        }, { passive: true });
-        
-        console.log('✅ Keyboard handler initialized');
     }
     
     // ==========================================================================
@@ -948,11 +893,10 @@
         let hasPlayed = false;
         
         const chatSequence = [
-            { type: 'user', text: "Am I shadow banned on Twitter?", delay: 800 },
-            { type: 'ai', text: "I can check that for you! What's your Twitter username?", delay: 1200 },
-            { type: 'user', text: "@myusername", delay: 600 },
-            { type: 'ai', text: "I'm analyzing your account now...", delay: 1000 },
-            { type: 'ai', text: "✓ Search visibility: Normal\n✓ Reply visibility: Normal\n✓ Profile access: Public\n\n**Result:** No shadow ban detected! Your account appears healthy.", delay: 1500 }
+            { type: 'user', text: "What does my 28% score mean?", delay: 800 },
+            { type: 'ai', text: "Your 28% shadow ban probability is LOW RISK ✅\n\nThis means your content appears to have good visibility with no major restrictions detected.", delay: 1200 },
+            { type: 'user', text: "Why was one hashtag flagged?", delay: 600 },
+            { type: 'ai', text: "The hashtag #followforfollow is marked as \"low-reach\" because it's commonly associated with spam behavior.\n\nTip: Avoid engagement-bait hashtags for better reach!", delay: 1500 }
         ];
         
         let currentIndex = 0;
@@ -983,13 +927,10 @@
             return typing;
         }
         
-        // Typewriter effect - types words one at a time
         function typewriterEffect(element, text, isUser, callback) {
             const words = text.split(' ');
             let currentWord = 0;
             let displayText = '';
-            
-            // Speed: AI types faster (50ms), user types slower (80ms)
             const speed = isUser ? 80 : 50;
             
             function typeNextWord() {
@@ -999,7 +940,6 @@
                     if (isUser) {
                         element.textContent = displayText;
                     } else {
-                        // For AI messages, handle line breaks and bold
                         const formattedText = displayText
                             .replace(/\n/g, '<br>')
                             .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
@@ -1034,7 +974,6 @@
             demoChat.appendChild(msgEl);
             demoChat.scrollTop = demoChat.scrollHeight;
             
-            // Start typewriter effect
             typewriterEffect(msgEl, message.text, message.type === 'user', callback);
             
             return msgEl;
@@ -1050,17 +989,14 @@
             currentIndex++;
             
             if (message.type === 'ai') {
-                // Show typing dots first
                 const typing = showDemoTypingIndicator();
                 setTimeout(() => {
                     typing.remove();
-                    // Then typewriter the message
                     addDemoMessageWithTypewriter(message, () => {
                         setTimeout(playNextMessage, message.delay || 800);
                     });
                 }, 500 + Math.random() * 300);
             } else {
-                // For user: show brief typing indicator then typewriter
                 const userTyping = showUserTypingIndicator();
                 setTimeout(() => {
                     userTyping.remove();
@@ -1077,11 +1013,9 @@
             isAnimating = true;
             demoChat.innerHTML = '';
             currentIndex = 0;
-            // Start almost immediately when section is visible
             setTimeout(playNextMessage, 100);
         }
         
-        // Start when section becomes visible - trigger earlier (20% visible)
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting && !hasPlayed) {

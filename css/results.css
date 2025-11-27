@@ -4,35 +4,34 @@
    ============================================================================= */
 
 /* =============================================================================
-   MAIN CONTENT AREA
+   RESULTS MAIN SECTION
    ============================================================================= */
 .results-main {
     padding: var(--space-xl) 0 var(--space-2xl);
 }
 
 /* =============================================================================
-   STATUS CARD - Main Result Display
+   STATUS CARD - OVERALL RESULT
    ============================================================================= */
 .status-card {
-    background: var(--gradient-card);
-    border: 2px solid var(--primary);
+    background: var(--card);
+    border: 2px solid var(--border);
     border-radius: var(--radius-2xl);
     padding: var(--space-xl);
     margin-bottom: var(--space-xl);
-    box-shadow: var(--shadow-glow-lg);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xl);
 }
 
 .status-header {
     display: flex;
     align-items: center;
     gap: var(--space-md);
-    padding-bottom: var(--space-lg);
-    border-bottom: 1px solid var(--border);
-    margin-bottom: var(--space-lg);
 }
 
 .status-icon {
-    font-size: 3rem;
+    font-size: 2.5rem;
     flex-shrink: 0;
 }
 
@@ -47,59 +46,94 @@
     color: var(--text-muted);
     text-transform: uppercase;
     letter-spacing: 0.05em;
+    font-weight: 600;
 }
 
 .status-query {
     font-size: 1.25rem;
-    font-weight: 600;
+    font-weight: 700;
+    color: var(--text);
     word-break: break-all;
 }
 
 .status-result {
     display: flex;
     align-items: center;
-    gap: var(--space-2xl);
-    justify-content: center;
+    gap: var(--space-xl);
+    padding: var(--space-lg);
+    background: var(--bg);
+    border-radius: var(--radius-xl);
 }
 
 /* Probability Circle */
 .probability-circle {
-    width: 160px;
-    height: 160px;
+    width: 120px;
+    height: 120px;
     border-radius: 50%;
-    background: var(--bg);
-    border: 4px solid var(--border);
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    flex-shrink: 0;
+    background: conic-gradient(
+        var(--success) calc(var(--probability, 0) * 1%),
+        var(--bg-tertiary) calc(var(--probability, 0) * 1%)
+    );
     position: relative;
+    flex-shrink: 0;
 }
 
-.probability-circle.good { border-color: var(--success); }
-.probability-circle.warning { border-color: var(--warning); }
-.probability-circle.bad { border-color: var(--danger); }
+.probability-circle::before {
+    content: '';
+    position: absolute;
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: var(--bg);
+}
+
+.probability-circle.good {
+    background: conic-gradient(
+        var(--success) calc(var(--probability, 0) * 1%),
+        var(--bg-tertiary) calc(var(--probability, 0) * 1%)
+    );
+}
+
+.probability-circle.warning {
+    background: conic-gradient(
+        var(--warning) calc(var(--probability, 0) * 1%),
+        var(--bg-tertiary) calc(var(--probability, 0) * 1%)
+    );
+}
+
+.probability-circle.bad {
+    background: conic-gradient(
+        var(--danger) calc(var(--probability, 0) * 1%),
+        var(--bg-tertiary) calc(var(--probability, 0) * 1%)
+    );
+}
 
 .probability-value {
-    font-size: 2.5rem;
-    font-weight: 700;
-    line-height: 1;
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: var(--text);
+    position: relative;
+    z-index: 1;
 }
-
-.probability-circle.good .probability-value { color: var(--success); }
-.probability-circle.warning .probability-value { color: var(--warning); }
-.probability-circle.bad .probability-value { color: var(--danger); }
 
 .probability-label {
-    font-size: 0.75rem;
+    font-size: 0.625rem;
     color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
     text-align: center;
-    margin-top: var(--space-xs);
+    position: relative;
+    z-index: 1;
+    line-height: 1.3;
 }
 
+/* Verdict */
 .status-verdict {
-    text-align: left;
+    flex: 1;
 }
 
 .verdict-badge {
@@ -107,34 +141,37 @@
     padding: var(--space-xs) var(--space-md);
     border-radius: var(--radius-full);
     font-size: 0.875rem;
-    font-weight: 600;
+    font-weight: 700;
     margin-bottom: var(--space-sm);
 }
 
 .verdict-badge.good {
-    background: rgba(16, 185, 129, 0.2);
+    background: var(--success-bg);
     color: var(--success);
+    border: 1px solid rgba(16, 185, 129, 0.3);
 }
 
 .verdict-badge.warning {
-    background: rgba(245, 158, 11, 0.2);
+    background: var(--warning-bg);
     color: var(--warning);
+    border: 1px solid rgba(245, 158, 11, 0.3);
 }
 
 .verdict-badge.bad {
-    background: rgba(239, 68, 68, 0.2);
+    background: var(--danger-bg);
     color: var(--danger);
+    border: 1px solid rgba(239, 68, 68, 0.3);
 }
 
 .verdict-text {
     color: var(--text-secondary);
     font-size: 1rem;
-    max-width: 300px;
     margin: 0;
+    line-height: 1.5;
 }
 
 /* =============================================================================
-   ENGINE CARD
+   ENGINE CARD - 5 FACTOR DISPLAY
    ============================================================================= */
 .engine-card {
     background: var(--card);
@@ -149,6 +186,8 @@
     align-items: center;
     justify-content: space-between;
     margin-bottom: var(--space-md);
+    padding-bottom: var(--space-md);
+    border-bottom: 1px solid var(--border);
 }
 
 .engine-title {
@@ -167,9 +206,9 @@
 }
 
 .factors-badge {
-    background: rgba(99, 102, 241, 0.1);
+    background: rgba(99, 102, 241, 0.15);
     color: var(--primary-light);
-    padding: var(--space-2xs) var(--space-sm);
+    padding: var(--space-xs) var(--space-md);
     border-radius: var(--radius-full);
     font-size: 0.8125rem;
     font-weight: 600;
@@ -177,34 +216,34 @@
 
 .engine-factors-row {
     display: flex;
+    justify-content: center;
     flex-wrap: wrap;
     gap: var(--space-sm);
     margin-bottom: var(--space-md);
 }
 
 .factor-chip {
-    display: inline-flex;
+    display: flex;
     align-items: center;
     gap: var(--space-xs);
-    padding: var(--space-xs) var(--space-sm);
-    border-radius: var(--radius-md);
+    padding: var(--space-xs) var(--space-md);
+    border-radius: var(--radius-full);
     font-size: 0.8125rem;
-    background: var(--bg);
-    border: 1px solid var(--border);
+    font-weight: 600;
+    transition: all var(--transition-fast);
 }
 
 .factor-chip.active {
-    background: rgba(16, 185, 129, 0.1);
-    border-color: rgba(16, 185, 129, 0.3);
+    background: var(--success-bg);
     color: var(--success);
+    border: 1px solid rgba(16, 185, 129, 0.3);
 }
 
 .factor-chip.inactive {
-    opacity: 0.5;
-}
-
-.factor-chip span:first-child {
-    font-size: 1rem;
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+    opacity: 0.6;
 }
 
 /* IP Display */
@@ -213,10 +252,12 @@
     align-items: center;
     justify-content: center;
     gap: var(--space-md);
-    padding: var(--space-md);
-    background: rgba(99, 102, 241, 0.05);
-    border-radius: var(--radius-md);
+    padding: var(--space-sm) var(--space-md);
+    background: rgba(99, 102, 241, 0.1);
+    border: 1px solid rgba(99, 102, 241, 0.2);
+    border-radius: var(--radius-lg);
     font-size: 0.875rem;
+    flex-wrap: wrap;
 }
 
 .ip-display .ip-label {
@@ -226,34 +267,37 @@
 .ip-display .ip-value {
     display: flex;
     align-items: center;
-    gap: var(--space-sm);
+    gap: var(--space-xs);
+    font-weight: 600;
+    font-family: 'Monaco', 'Menlo', monospace;
+    color: var(--text);
 }
 
 .ip-display .ip-flag {
     font-size: 1.25rem;
 }
 
-.ip-display .ip-type-badge {
+.ip-type-badge {
     padding: 2px 8px;
     border-radius: var(--radius-sm);
-    font-size: 0.75rem;
-    font-weight: 600;
+    font-size: 0.6875rem;
+    font-weight: 700;
     text-transform: uppercase;
 }
 
 .ip-type-badge.residential {
     background: rgba(16, 185, 129, 0.2);
-    color: #10b981;
-}
-
-.ip-type-badge.vpn {
-    background: rgba(239, 68, 68, 0.2);
-    color: #ef4444;
+    color: var(--success);
 }
 
 .ip-type-badge.datacenter {
     background: rgba(245, 158, 11, 0.2);
-    color: #f59e0b;
+    color: var(--warning);
+}
+
+.ip-type-badge.vpn {
+    background: rgba(239, 68, 68, 0.2);
+    color: var(--danger);
 }
 
 /* =============================================================================
@@ -266,27 +310,30 @@
 .checks-section h2 {
     font-size: 1.25rem;
     margin-bottom: var(--space-lg);
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
 }
 
 .checks-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: var(--space-md);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
 }
 
 .check-card {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-md);
     background: var(--card);
     border: 1px solid var(--border);
     border-radius: var(--radius-lg);
     padding: var(--space-md);
-    display: flex;
-    align-items: flex-start;
-    gap: var(--space-md);
-    transition: all var(--transition-base);
+    transition: all var(--transition-fast);
 }
 
 .check-card:hover {
-    border-color: var(--primary);
+    border-color: var(--border-light);
 }
 
 .check-card.pass {
@@ -306,52 +353,57 @@
 }
 
 .check-icon {
-    font-size: 1.5rem;
+    font-size: 1.25rem;
     flex-shrink: 0;
 }
 
 .check-content {
     flex: 1;
+    min-width: 0;
 }
 
 .check-name {
-    font-weight: 600;
-    margin-bottom: var(--space-2xs);
     display: flex;
     align-items: center;
     gap: var(--space-sm);
+    font-weight: 600;
+    margin-bottom: var(--space-2xs);
+    flex-wrap: wrap;
 }
 
 .check-status {
-    font-size: 0.75rem;
-    padding: 2px 6px;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    padding: 2px 8px;
     border-radius: var(--radius-sm);
 }
 
 .check-status.pass {
-    background: rgba(16, 185, 129, 0.2);
+    background: var(--success-bg);
     color: var(--success);
 }
 
 .check-status.warning {
-    background: rgba(245, 158, 11, 0.2);
+    background: var(--warning-bg);
     color: var(--warning);
 }
 
 .check-status.fail {
-    background: rgba(239, 68, 68, 0.2);
+    background: var(--danger-bg);
     color: var(--danger);
 }
 
 .check-status.info {
-    background: rgba(99, 102, 241, 0.2);
+    background: rgba(99, 102, 241, 0.15);
     color: var(--primary-light);
 }
 
 .check-detail {
-    font-size: 0.875rem;
     color: var(--text-muted);
+    font-size: 0.875rem;
     margin: 0;
+    line-height: 1.5;
 }
 
 /* =============================================================================
@@ -364,6 +416,9 @@
 .recommendations-section h2 {
     font-size: 1.25rem;
     margin-bottom: var(--space-lg);
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
 }
 
 .recommendations-list {
@@ -376,10 +431,10 @@
     display: flex;
     align-items: flex-start;
     gap: var(--space-md);
-    padding: var(--space-md);
     background: var(--card);
     border: 1px solid var(--border);
     border-radius: var(--radius-lg);
+    padding: var(--space-md);
 }
 
 .recommendation-icon {
@@ -388,10 +443,10 @@
 }
 
 .recommendation-text {
-    flex: 1;
-    font-size: 0.9375rem;
     color: var(--text-secondary);
+    font-size: 0.9375rem;
     margin: 0;
+    line-height: 1.5;
 }
 
 /* =============================================================================
@@ -401,77 +456,35 @@
     display: flex;
     justify-content: center;
     gap: var(--space-md);
-    margin-bottom: var(--space-xl);
     flex-wrap: wrap;
 }
 
 .btn-action {
-    display: inline-flex;
+    display: flex;
     align-items: center;
     gap: var(--space-sm);
     padding: var(--space-sm) var(--space-lg);
-    background: var(--card);
-    border: 1px solid var(--border);
     border-radius: var(--radius-md);
-    color: var(--text);
     font-size: 0.9375rem;
-    font-weight: 500;
+    font-weight: 600;
     cursor: pointer;
     transition: all var(--transition-base);
-    text-decoration: none;
+    border: none;
 }
 
-.btn-action:hover {
+.btn-action.secondary {
+    background: var(--card);
+    color: var(--text);
+    border: 2px solid var(--border);
+}
+
+.btn-action.secondary:hover {
     border-color: var(--primary);
     background: rgba(99, 102, 241, 0.1);
 }
 
-.btn-action.primary {
-    background: var(--gradient-primary);
-    border-color: transparent;
-    color: white;
-}
-
-.btn-action.primary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
-}
-
 /* =============================================================================
-   MONITORING CTA
-   ============================================================================= */
-.monitoring-cta {
-    display: flex;
-    align-items: center;
-    gap: var(--space-lg);
-    background: var(--gradient-card);
-    border: 1px solid var(--primary);
-    border-radius: var(--radius-xl);
-    padding: var(--space-lg);
-}
-
-.monitoring-icon {
-    font-size: 2.5rem;
-    flex-shrink: 0;
-}
-
-.monitoring-content {
-    flex: 1;
-}
-
-.monitoring-content h3 {
-    font-size: 1.125rem;
-    margin-bottom: var(--space-xs);
-}
-
-.monitoring-content p {
-    color: var(--text-muted);
-    font-size: 0.9375rem;
-    margin: 0;
-}
-
-/* =============================================================================
-   TOOLS GRID - Check Something Else
+   TOOLS GRID - CHECK OTHER TOOLS
    ============================================================================= */
 .tools-grid {
     display: grid;
@@ -484,15 +497,15 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    text-align: center;
-    gap: var(--space-sm);
+    gap: var(--space-md);
     padding: var(--space-xl);
     background: var(--card);
-    border: 1px solid var(--border);
+    border: 2px solid var(--border);
     border-radius: var(--radius-xl);
     text-decoration: none;
     color: inherit;
     transition: all var(--transition-base);
+    text-align: center;
 }
 
 .tool-card:hover {
@@ -511,82 +524,33 @@
 }
 
 .tool-card p {
-    font-size: 0.875rem;
     color: var(--text-muted);
+    font-size: 0.875rem;
     margin: 0;
 }
 
 .tool-arrow {
-    color: var(--primary-light);
     font-size: 1.25rem;
-    margin-top: auto;
+    color: var(--primary-light);
+    transition: transform var(--transition-base);
 }
 
+.tool-card:hover .tool-arrow {
+    transform: translateX(4px);
+}
+
+/* Back Home */
 .back-home {
     text-align: center;
-}
-
-/* =============================================================================
-   ENGINE FACTORS MODAL
-   ============================================================================= */
-.engine-factors {
-    list-style: none;
-    padding: 0;
-    margin: var(--space-lg) 0;
-}
-
-.engine-factors li {
-    display: flex;
-    align-items: flex-start;
-    gap: var(--space-md);
-    padding: var(--space-md);
-    background: rgba(99, 102, 241, 0.05);
-    border-radius: var(--radius-md);
-    margin-bottom: var(--space-sm);
-}
-
-.engine-factors li.factor-active {
-    border-left: 3px solid var(--success);
-}
-
-.engine-factors li.factor-inactive {
-    border-left: 3px solid var(--text-muted);
-    opacity: 0.6;
-}
-
-.factor-check {
-    font-size: 1.25rem;
-    width: 24px;
-    flex-shrink: 0;
-}
-
-.engine-factors strong {
-    display: block;
-    margin-bottom: var(--space-2xs);
-}
-
-.factor-desc {
-    font-size: 0.875rem;
-    color: var(--text-muted);
-}
-
-.modal-tech-note {
-    background: rgba(99, 102, 241, 0.1);
-    border: 1px solid rgba(99, 102, 241, 0.3);
-    border-radius: var(--radius-md);
-    padding: var(--space-md);
     margin-top: var(--space-lg);
 }
 
-.modal-tech-note h4 {
-    margin-bottom: var(--space-xs);
-    font-size: 0.9375rem;
-}
-
-.modal-tech-note p {
-    font-size: 0.875rem;
-    color: var(--text-secondary);
-    margin: 0;
+/* =============================================================================
+   MODAL BUTTON FULL WIDTH
+   ============================================================================= */
+.btn-full {
+    width: 100%;
+    justify-content: center;
 }
 
 /* =============================================================================
@@ -594,8 +558,7 @@
    ============================================================================= */
 @media (max-width: 1024px) {
     .tools-grid {
-        grid-template-columns: repeat(3, 1fr);
-        gap: var(--space-md);
+        grid-template-columns: repeat(2, 1fr);
     }
 }
 
@@ -603,32 +566,51 @@
    RESPONSIVE - MOBILE
    ============================================================================= */
 @media (max-width: 768px) {
-    .status-result {
-        flex-direction: column;
-        gap: var(--space-lg);
+    .status-card {
+        padding: var(--space-lg);
     }
     
-    .status-verdict {
+    .status-result {
+        flex-direction: column;
         text-align: center;
     }
     
-    .verdict-text {
-        max-width: 100%;
+    .probability-circle {
+        width: 100px;
+        height: 100px;
+    }
+    
+    .probability-circle::before {
+        width: 80px;
+        height: 80px;
+    }
+    
+    .probability-value {
+        font-size: 1.5rem;
     }
     
     .engine-header {
         flex-direction: column;
         gap: var(--space-sm);
-        align-items: flex-start;
+        text-align: center;
+    }
+    
+    .engine-factors-row {
+        gap: var(--space-xs);
+    }
+    
+    .factor-chip {
+        padding: var(--space-2xs) var(--space-sm);
+        font-size: 0.75rem;
+    }
+    
+    .ip-display {
+        flex-direction: column;
+        gap: var(--space-sm);
     }
     
     .tools-grid {
         grid-template-columns: 1fr;
-    }
-    
-    .monitoring-cta {
-        flex-direction: column;
-        text-align: center;
     }
     
     .results-actions {
@@ -639,31 +621,20 @@
         width: 100%;
         justify-content: center;
     }
-    
-    .ip-display {
-        flex-direction: column;
-        gap: var(--space-sm);
-    }
 }
 
 /* =============================================================================
    RESPONSIVE - SMALL MOBILE
    ============================================================================= */
 @media (max-width: 480px) {
-    .status-card {
-        padding: var(--space-lg);
+    .status-header {
+        flex-direction: column;
+        text-align: center;
     }
     
-    .probability-circle {
-        width: 140px;
-        height: 140px;
-    }
-    
-    .probability-value {
-        font-size: 2rem;
-    }
-    
-    .checks-grid {
-        grid-template-columns: 1fr;
+    .check-name {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--space-xs);
     }
 }

@@ -3,39 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Post URL Checker - Check If Your Post Is Shadow Banned | ShadowBanCheck.io</title>
-    <meta name="description" content="Check if your social media post is shadow banned or has limited reach. Analyze post content, hashtags, and visibility in seconds.">
+    <title>Post URL Shadow Ban Checker - ShadowBanCheck.io</title>
+    <meta name="description" content="Check if your post is shadow banned or hidden. Our 5-Factor Detection Engine analyzes visibility, reach, and restrictions with 90%+ accuracy.">
+    
+    <!-- Preconnect for performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     
     <!-- Favicon -->
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📝</text></svg>">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔍</text></svg>">
     
     <!-- CSS -->
     <link rel="stylesheet" href="css/main.css">
-    <link rel="stylesheet" href="css/post-checker.css">
     <link rel="stylesheet" href="css/shadow-ai.css">
 </head>
 <body>
     <!-- ===================================
-         SHARED COMPONENTS
-         Header, Mobile Nav, Footer loaded by shared-components.js
+         HEADER - Loaded by shared-components.js
          =================================== -->
 
-    <!-- Hero - Compact -->
-    <section class="hero">
+    <!-- Hero Section -->
+    <section class="hero checker-hero">
         <div class="container">
-            <div class="hero-badge">📝 Post URL Checker</div>
-            <h1 class="hero-title">Check Your Post's Reach</h1>
-            <p class="hero-subtitle">Paste a post URL to check if it's being shown or shadow banned. We analyze content, hashtags, and visibility signals.</p>
-            <p class="text-muted text-center">Powered by our 5-Factor Detection Engine</p>
-        </div>
-    </section>
-
-    <!-- Post Checker Form -->
-    <section class="section">
-        <div class="container">
-            <div class="post-checker-card">
+            <nav class="breadcrumb">
+                <a href="index.html">Home</a>
+                <span>›</span>
+                <span>Post Checker</span>
+            </nav>
+            
+            <div class="hero-badge">📝 Post Analysis</div>
+            <h1 class="hero-title"><span class="text-gradient">Post URL Shadow Ban Check</span></h1>
+            <p class="hero-subtitle">Paste any post URL. Our 5-Factor Detection Engine verifies if your content is being suppressed or hidden from others.</p>
+            
+            <!-- Post Checker Card -->
+            <div class="checker-card">
                 <!-- Info Button -->
-                <button class="checker-info-btn" id="post-info-btn" aria-label="What we check" type="button">
+                <button class="power-info-btn" id="post-info-btn" aria-label="What we check" type="button">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
                         <path d="M12 16V12M12 8H12.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
@@ -43,249 +46,259 @@
                 </button>
                 
                 <div class="checker-header">
-                    <div class="checker-header-content">
-                        <span class="checker-icon">📝</span>
-                        <div>
-                            <h3>Enter Post URL</h3>
-                            <p>Paste the full URL of your post from Twitter/X, Instagram, TikTok, Reddit, or other platforms</p>
+                    <span class="checker-icon">📝</span>
+                    <div>
+                        <h3>Post URL Check</h3>
+                        <p>Analyze any post for visibility restrictions</p>
+                    </div>
+                </div>
+                
+                <!-- Form -->
+                <form class="checker-form" id="post-check-form">
+                    <input 
+                        type="url" 
+                        id="post-url-input"
+                        class="checker-input"
+                        placeholder="https://twitter.com/username/status/123456789..."
+                        aria-label="Enter post URL"
+                    >
+                    <button type="submit" class="btn-analyze" id="analyze-btn">
+                        <span class="btn-text">Check Post</span>
+                        <span class="btn-icon">🔍</span>
+                    </button>
+                </form>
+                
+                <!-- Supported Platforms -->
+                <div class="supported-platforms" id="post-supported-platforms">
+                    <p>Supported platforms:</p>
+                    <div class="platform-icons" id="post-platform-icons">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+                
+                <!-- Features -->
+                <div class="checker-features">
+                    <span>✓ Search visibility test</span>
+                    <span>✓ Feed presence check</span>
+                    <span>✓ 1 free check per day</span>
+                </div>
+            </div>
+            
+            <!-- Results Area (Hidden Initially) -->
+            <div class="results-container hidden" id="results-container">
+                <div class="results-card">
+                    <!-- Results Header -->
+                    <div class="results-header">
+                        <div class="results-platform" id="results-platform">
+                            <span class="platform-icon">🐦</span>
+                            <span class="platform-name">Twitter/X</span>
+                        </div>
+                        <div class="results-post-info">
+                            <span class="post-author" id="results-author">@username</span>
+                            <span class="post-preview" id="results-preview">Post content preview...</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Score Circle -->
+                    <div class="score-section">
+                        <div class="score-circle" id="score-circle">
+                            <span class="score-value" id="score-value">0%</span>
+                            <span class="score-label">Suppression<br>Probability</span>
+                        </div>
+                        <p class="score-summary" id="score-summary">Analyzing post...</p>
+                    </div>
+                    
+                    <!-- Detection Factors -->
+                    <div class="factors-section">
+                        <h4>🧠 5-Factor Detection Engine Results</h4>
+                        <ul class="factors-list" id="factors-list">
+                            <!-- Populated by JS -->
+                        </ul>
+                    </div>
+                    
+                    <!-- Data Sources -->
+                    <div class="sources-section">
+                        <h5>Data Sources Used:</h5>
+                        <div class="sources-tags" id="sources-tags">
+                            <span class="source-tag">🔌 Platform API</span>
+                            <span class="source-tag">🌐 Browser Tests</span>
+                            <span class="source-tag">📊 Engagement Data</span>
+                        </div>
+                    </div>
+                    
+                    <!-- CTA -->
+                    <div class="results-cta">
+                        <p>Want to monitor all your posts automatically?</p>
+                        <div class="results-buttons">
+                            <a href="index.html#pricing" class="btn btn-primary">Get Full Protection →</a>
+                            <button class="btn btn-ghost" id="check-another-btn">Check Another</button>
                         </div>
                     </div>
                 </div>
-                
-                <div class="input-group">
-                    <input type="url" id="post-url-input" placeholder="https://twitter.com/username/status/123456789..." class="url-input">
-                    <div class="input-meta">
-                        <span id="platform-detected">Platform: Auto-detect</span>
-                        <span id="checks-remaining-display">1 free check left today</span>
-                    </div>
-                </div>
-                
-                <!-- IP Display -->
-                <div class="ip-display-section">
-                    <div class="ip-badge" id="ip-badge">
-                        <span class="ip-icon">🌐</span>
-                        <span id="ip-address">Detecting IP...</span>
-                        <span class="ip-type" id="ip-type"></span>
-                        <span class="ip-flag" id="ip-flag"></span>
-                    </div>
-                </div>
-                
-                <button id="check-post-btn" class="btn-check-post">
-                    <span>Analyze Post</span>
-                    <span>🔍</span>
-                </button>
-                
-                <div class="checker-features">
-                    <span>✓ Content analysis</span>
-                    <span>✓ Hashtag check</span>
-                    <span>✓ Visibility score</span>
-                </div>
-                
-                <div class="quick-actions">
-                    <button id="clear-btn" class="btn-text-link">Clear</button>
-                </div>
             </div>
             
-            <!-- Supported Platforms -->
-            <div class="supported-platforms">
-                <p>Supported platforms:</p>
-                <div class="platform-icons" id="supported-platform-icons">
-                    <!-- Populated by JS from platforms.js -->
+            <!-- Other Check Options -->
+            <div class="other-checks">
+                <p>Or try our other tools:</p>
+                <div class="check-links">
+                    <a href="index.html" class="check-link">
+                        <span>⚡</span>
+                        <span>Power Check (3-in-1)</span>
+                    </a>
+                    <a href="checker.html" class="check-link">
+                        <span>👤</span>
+                        <span>Account Check</span>
+                    </a>
+                    <a href="hashtag-checker.html" class="check-link">
+                        <span>#️⃣</span>
+                        <span>Hashtag Checker</span>
+                    </a>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- What We Analyze -->
+    <!-- What We Check Section -->
     <section class="section section-alt">
         <div class="container">
             <div class="section-header">
-                <h2 class="section-title">What We Analyze</h2>
-                <p class="section-desc">Our 5-Factor Engine examines multiple signals to determine your post's visibility</p>
+                <h2 class="section-title">What Our Engine Checks</h2>
+                <p class="section-desc">Comprehensive post analysis using our 5-Factor Detection Engine</p>
             </div>
             
-            <div class="analysis-grid">
-                <div class="analysis-card reveal">
-                    <span class="analysis-icon">📄</span>
-                    <h4>Post Content</h4>
-                    <p>We analyze text, images, and media for content that platforms may flag or limit</p>
-                </div>
-                <div class="analysis-card reveal">
-                    <span class="analysis-icon">#️⃣</span>
-                    <h4>Hashtag Health</h4>
-                    <p>Check if any hashtags used are banned, restricted, or oversaturated</p>
-                </div>
-                <div class="analysis-card reveal">
-                    <span class="analysis-icon">📊</span>
-                    <h4>Engagement Signals</h4>
-                    <p>Compare reach metrics against expected baselines for similar content</p>
-                </div>
-                <div class="analysis-card reveal">
-                    <span class="analysis-icon">🔍</span>
+            <div class="checks-grid">
+                <div class="check-card reveal">
+                    <span class="check-icon">🔍</span>
                     <h4>Search Visibility</h4>
-                    <p>Test if your post appears in search results and hashtag feeds</p>
+                    <p>Our automated browser tests verify if your post appears in platform search results when users look for related content.</p>
                 </div>
-                <div class="analysis-card reveal">
-                    <span class="analysis-icon">🌐</span>
-                    <h4>IP & Location</h4>
-                    <p>Factor in your IP type and geographic signals that affect reach</p>
+                <div class="check-card reveal">
+                    <span class="check-icon">📰</span>
+                    <h4>Feed Presence</h4>
+                    <p>We check if your post is actually showing up in your followers' feeds or being filtered out by the algorithm.</p>
                 </div>
-                <div class="analysis-card reveal">
-                    <span class="analysis-icon">🤖</span>
-                    <h4>AI Probability</h4>
-                    <p>Our AI combines all factors into a shadow ban probability score</p>
+                <div class="check-card reveal">
+                    <span class="check-icon">👁️</span>
+                    <h4>Public Accessibility</h4>
+                    <p>Logged-out visibility tests determine if non-followers and the general public can see your content.</p>
+                </div>
+                <div class="check-card reveal">
+                    <span class="check-icon">📊</span>
+                    <h4>Engagement Rate</h4>
+                    <p>Historical comparison reveals if this post is performing below your typical engagement baseline.</p>
+                </div>
+                <div class="check-card reveal">
+                    <span class="check-icon">⚠️</span>
+                    <h4>Content Warnings</h4>
+                    <p>We detect if platforms have applied sensitive content labels or age restrictions to your post.</p>
+                </div>
+                <div class="check-card reveal">
+                    <span class="check-icon">#️⃣</span>
+                    <h4>Hashtag Impact</h4>
+                    <p>Cross-reference post hashtags against our database of 1,800+ banned/restricted tags updated daily.</p>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- How It Works -->
-    <section class="section">
+    <!-- Trust Strip -->
+    <section class="trust-strip">
         <div class="container">
-            <div class="section-header">
-                <h2 class="section-title">How It Works</h2>
-                <p class="section-desc">Get your post visibility score in 3 simple steps</p>
-            </div>
-            
-            <div class="how-grid">
-                <div class="how-item reveal">
-                    <span class="how-icon">1️⃣</span>
-                    <div class="how-content">
-                        <h4>Paste URL</h4>
-                        <p>Copy the post URL from any supported platform</p>
-                    </div>
+            <div class="trust-items">
+                <div class="trust-item-inline">
+                    <span>🔒</span>
+                    <span>No Login Required</span>
                 </div>
-                <div class="how-item reveal">
-                    <span class="how-icon">2️⃣</span>
-                    <div class="how-content">
-                        <h4>We Analyze</h4>
-                        <p>Our engine checks content, hashtags, and visibility</p>
-                    </div>
+                <div class="trust-divider">•</div>
+                <div class="trust-item-inline">
+                    <span>⚡</span>
+                    <span>Results in 60 Seconds</span>
                 </div>
-                <div class="how-item reveal">
-                    <span class="how-icon">3️⃣</span>
-                    <div class="how-content">
-                        <h4>Get Results</h4>
-                        <p>See probability score with detailed breakdown</p>
-                    </div>
+                <div class="trust-divider">•</div>
+                <div class="trust-item-inline">
+                    <span>🎯</span>
+                    <span>90%+ Detection Accuracy</span>
+                </div>
+                <div class="trust-divider">•</div>
+                <div class="trust-item-inline">
+                    <span>📋</span>
+                    <span>Timestamped Evidence</span>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Our Detection Engine -->
-    <section class="section section-alt">
+    <!-- CTA Section -->
+    <section class="cta-section">
         <div class="container">
-            <div class="methodology-section reveal">
-                <button class="engine-info-btn" id="engine-info-btn" aria-label="Learn about our 5-Factor Engine" type="button">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
-                        <path d="M12 16V12M12 8H12.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                    </svg>
-                </button>
-                
-                <h3 class="methodology-title">Our Detection Engine</h3>
-                <p class="methodology-intro">Platforms rarely admit to shadow banning. That's why we built a proprietary detection system that analyzes multiple signals to calculate an accurate probability score—even when platforms won't tell you the truth.</p>
-                
-                <div class="methodology-grid">
-                    <div class="method-card">
-                        <span class="method-icon">🔌</span>
-                        <h4>Platform API Analysis</h4>
-                        <p>We fetch post data, engagement metrics, and visibility status directly from platform APIs.</p>
-                    </div>
-                    
-                    <div class="method-card">
-                        <span class="method-icon">🌐</span>
-                        <h4>Search Visibility Tests</h4>
-                        <p>We test if your post appears in hashtag feeds, search results, and explore pages.</p>
-                    </div>
-                    
-                    <div class="method-card">
-                        <span class="method-icon">#️⃣</span>
-                        <h4>Hashtag Database</h4>
-                        <p>Cross-reference all hashtags in your post against our database of banned/restricted tags.</p>
-                    </div>
-                    
-                    <div class="method-card">
-                        <span class="method-icon">🔍</span>
-                        <h4>IP Analysis</h4>
-                        <p>Factor in your IP type and location for regional reach probability assessment.</p>
-                    </div>
-                </div>
+            <h2>Want Continuous Monitoring?</h2>
+            <p>Get instant alerts when any of your posts get suppressed. Our 5-Factor Engine runs automated checks.</p>
+            <div class="cta-buttons">
+                <a href="index.html#pricing" class="btn btn-primary btn-lg">View Pricing →</a>
+                <a href="index.html#shadow-ai-pro" class="btn btn-ghost">Try Shadow AI</a>
             </div>
         </div>
     </section>
 
-    <!-- Cross-Promote: Other Tools -->
-    <section class="section">
-        <div class="container">
-            <div class="section-header">
-                <h2 class="section-title">Also Check</h2>
-                <p class="section-desc">Get a complete picture of your social media health</p>
-            </div>
-            
-            <div class="cross-promote-grid">
-                <a href="checker.html" class="cross-promote-card">
-                    <span class="cross-promote-icon">👤</span>
-                    <div class="cross-promote-content">
-                        <h3>Account Checker</h3>
-                        <p>Check if your account is shadow banned on any platform</p>
-                    </div>
-                    <span class="cross-promote-arrow">→</span>
-                </a>
-                <a href="hashtag-checker.html" class="cross-promote-card">
-                    <span class="cross-promote-icon">🚫</span>
-                    <div class="cross-promote-content">
-                        <h3>Hashtag Checker</h3>
-                        <p>Verify hashtags before posting to avoid reach penalties</p>
-                    </div>
-                    <span class="cross-promote-arrow">→</span>
-                </a>
-            </div>
-        </div>
-    </section>
+    <!-- ===================================
+         FOOTER - Loaded by shared-components.js
+         =================================== -->
 
-    <!-- What We Check Info Modal -->
+    <!-- Post Info Modal -->
     <div id="post-info-modal" class="modal hidden">
         <div class="modal-overlay"></div>
         <div class="modal-content">
             <button class="modal-close">&times;</button>
-            <div class="modal-icon">🧠</div>
-            <h3 class="modal-title">Post URL Check - 5-Factor Engine</h3>
+            <div class="modal-icon">📝</div>
+            <h3 class="modal-title">Post Check: Visibility Analysis</h3>
             <div class="modal-body">
-                <p class="modal-intro">The Post URL Checker uses <strong>4 of our 5 factors</strong> to analyze your specific post:</p>
+                <p class="modal-intro">Our 5-Factor Detection Engine runs comprehensive tests on your post:</p>
                 
-                <ul class="engine-factors">
-                    <li class="factor-active">
-                        <span class="factor-check">✓</span>
-                        <strong>🔌 Platform APIs</strong>
-                        <span class="factor-desc">Fetch post data, engagement metrics, and visibility status</span>
-                    </li>
-                    <li class="factor-active">
-                        <span class="factor-check">✓</span>
-                        <strong>🌐 Web Analysis</strong>
-                        <span class="factor-desc">Search visibility tests, hashtag feed appearance checks</span>
-                    </li>
-                    <li class="factor-inactive">
-                        <span class="factor-check">○</span>
-                        <strong>📊 Historical Data</strong>
-                        <span class="factor-desc">Not applicable for single post checks</span>
-                    </li>
-                    <li class="factor-active">
-                        <span class="factor-check">✓</span>
-                        <strong>#️⃣ Hashtag Database</strong>
-                        <span class="factor-desc">Check all hashtags used in the post against our database</span>
-                    </li>
-                    <li class="factor-active">
-                        <span class="factor-check">✓</span>
-                        <strong>🔍 IP Analysis</strong>
-                        <span class="factor-desc">Factor in your IP type and location for reach probability</span>
-                    </li>
-                </ul>
+                <div class="modal-check-section">
+                    <div class="modal-check-header">
+                        <span>🔍</span>
+                        <h4>What We Check</h4>
+                    </div>
+                    <ul class="check-list">
+                        <li>Search result presence (is the post findable?)</li>
+                        <li>Feed visibility status (shown to followers?)</li>
+                        <li>Logged-out accessibility test</li>
+                        <li>Engagement rate vs. expected baseline</li>
+                        <li>Sensitive content/warning flags</li>
+                        <li>Hashtag health (banned tags in post)</li>
+                        <li>Reply thread visibility</li>
+                    </ul>
+                </div>
                 
                 <div class="modal-tech-note">
-                    <h4>💡 Post vs Account Checks</h4>
-                    <p>A post can be shadow banned even if your account is in good standing. Content, hashtags, and timing all affect individual post visibility.</p>
+                    <h4>🧠 Why We're Different From ChatGPT</h4>
+                    <p>AI chatbots can only guess based on what you tell them. Our engine actually <strong>runs tests</strong>:</p>
+                    <ul class="engine-factors">
+                        <li class="factor-active">
+                            <span class="factor-check">✓</span>
+                            <span class="factor-icon">🔌</span>
+                            <div class="factor-content">
+                                <span class="factor-name">Platform API</span>
+                                <span class="factor-desc">Real post status and visibility data</span>
+                            </div>
+                        </li>
+                        <li class="factor-active">
+                            <span class="factor-check">✓</span>
+                            <span class="factor-icon">🌐</span>
+                            <div class="factor-content">
+                                <span class="factor-name">Browser Tests</span>
+                                <span class="factor-desc">Playwright checks with test accounts</span>
+                            </div>
+                        </li>
+                        <li class="factor-active">
+                            <span class="factor-check">✓</span>
+                            <span class="factor-icon">#️⃣</span>
+                            <div class="factor-content">
+                                <span class="factor-name">Hashtag Database</span>
+                                <span class="factor-desc">1,800+ banned tags, updated daily</span>
+                            </div>
+                        </li>
+                    </ul>
                 </div>
             </div>
             <div class="modal-footer">
@@ -294,104 +307,29 @@
         </div>
     </div>
 
-    <!-- Platform Info Modal -->
-    <div id="platform-info-modal" class="modal hidden">
+    <!-- Free Limit Modal -->
+    <div id="limit-modal" class="modal hidden">
         <div class="modal-overlay"></div>
         <div class="modal-content">
             <button class="modal-close">&times;</button>
-            <div class="modal-icon" id="platform-modal-icon">🔍</div>
-            <h3 class="modal-title" id="platform-modal-title">Platform Checks</h3>
-            <div class="modal-body" id="platform-modal-body">
-                <!-- Populated by JS -->
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-primary btn-lg" onclick="closePlatformInfoModal()">Got It!</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- 5-Factor Engine Modal -->
-    <div id="engine-info-modal" class="modal hidden">
-        <div class="modal-overlay"></div>
-        <div class="modal-content">
-            <button class="modal-close">&times;</button>
-            <div class="modal-icon">🧠</div>
-            <h3 class="modal-title">Powered by Our 5-Factor Detection Engine</h3>
+            <div class="modal-icon">⏰</div>
+            <h3 class="modal-title">Free Limit Reached</h3>
             <div class="modal-body">
-                <p class="modal-intro">The Post URL Checker uses <strong>4 of our 5 detection factors</strong>:</p>
-                
-                <ul class="engine-factors">
-                    <li class="factor-active">
-                        <span class="factor-check">✓</span>
-                        <span class="factor-icon">🔌</span>
-                        <div class="factor-content">
-                            <span class="factor-name">Platform APIs</span>
-                            <span class="factor-desc">Fetch post engagement metrics and visibility</span>
-                        </div>
-                    </li>
-                    <li class="factor-active">
-                        <span class="factor-check">✓</span>
-                        <span class="factor-icon">🌐</span>
-                        <div class="factor-content">
-                            <span class="factor-name">Web Analysis</span>
-                            <span class="factor-desc">Search visibility and feed appearance tests</span>
-                        </div>
-                    </li>
-                    <li class="factor-inactive">
-                        <span class="factor-check">○</span>
-                        <span class="factor-icon">📊</span>
-                        <div class="factor-content">
-                            <span class="factor-name">Historical Data</span>
-                            <span class="factor-desc">Not applicable for single post checks</span>
-                        </div>
-                    </li>
-                    <li class="factor-active">
-                        <span class="factor-check">✓</span>
-                        <span class="factor-icon">#️⃣</span>
-                        <div class="factor-content">
-                            <span class="factor-name">Hashtag Database</span>
-                            <span class="factor-desc">Cross-reference against banned/restricted tags</span>
-                        </div>
-                    </li>
-                    <li class="factor-active">
-                        <span class="factor-check">✓</span>
-                        <span class="factor-icon">🔍</span>
-                        <div class="factor-content">
-                            <span class="factor-name">IP Analysis</span>
-                            <span class="factor-desc">VPN/proxy detection, location risk assessment</span>
-                        </div>
-                    </li>
-                </ul>
-                
-                <div class="modal-tech-note">
-                    <h4>💡 Our Engine combines all applicable signals</h4>
-                    <p>Each post is analyzed for suppression indicators and assigned a probability score with detailed breakdowns.</p>
-                </div>
+                <p class="modal-intro">You've used your <strong>1 free post check</strong> for today!</p>
+                <p id="limit-time-remaining">Next free check available in: <strong>23h 45m</strong></p>
+                <hr style="border: none; border-top: 1px solid var(--border); margin: var(--space-lg) 0;">
+                <h4 style="margin-bottom: var(--space-md);">Want unlimited post checks?</h4>
+                <p style="margin-bottom: var(--space-md);">Upgrade to get unlimited checks, continuous monitoring, and instant alerts.</p>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-primary btn-lg" onclick="document.getElementById('engine-info-modal').classList.add('hidden'); document.body.style.overflow = '';">Got It!</button>
+                <a href="index.html#pricing" class="btn btn-primary btn-lg" onclick="closeLimitModal()">View Pricing →</a>
+                <button class="btn btn-ghost" onclick="closeLimitModal()">Maybe Later</button>
             </div>
         </div>
     </div>
 
-    <!-- ===================================
-         FOOTER - Loaded by shared-components.js
-         =================================== -->
-
-    <!-- Cookie Popup -->
-    <div id="cookie-popup" class="cookie-popup">
-        <div class="cookie-content">
-            <span class="cookie-icon">🍪</span>
-            <div class="cookie-text">
-                <h4>We Use Cookies</h4>
-                <p>We use cookies to enhance your experience and remember your preferences. <a href="legal/cookie-policy.html" style="color: var(--primary-light);">View Cookie Policy</a></p>
-            </div>
-            <div class="cookie-actions">
-                <button id="cookie-accept" class="btn-cookie btn-cookie-accept">Accept</button>
-                <button id="cookie-dismiss" class="btn-cookie btn-cookie-dismiss">Dismiss</button>
-            </div>
-        </div>
-    </div>
+    <!-- Toast Notification -->
+    <div id="toast" class="toast"></div>
 
     <!-- Back to Top Button -->
     <button id="back-to-top" class="back-to-top" aria-label="Back to top">↑</button>
@@ -399,8 +337,37 @@
     <!-- Scripts -->
     <script src="js/platforms.js"></script>
     <script src="js/shared-components.js"></script>
-    <script src="js/main.js"></script>
     <script src="js/post-checker.js"></script>
     <script src="js/shadow-ai.js"></script>
+    
+    <!-- Info Button Handler -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const infoBtn = document.getElementById('post-info-btn');
+            const modal = document.getElementById('post-info-modal');
+            
+            if (infoBtn && modal) {
+                infoBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    modal.classList.remove('hidden');
+                    document.body.style.overflow = 'hidden';
+                });
+                
+                const closeBtn = modal.querySelector('.modal-close');
+                const overlay = modal.querySelector('.modal-overlay');
+                
+                closeBtn?.addEventListener('click', function() {
+                    modal.classList.add('hidden');
+                    document.body.style.overflow = '';
+                });
+                
+                overlay?.addEventListener('click', function() {
+                    modal.classList.add('hidden');
+                    document.body.style.overflow = '';
+                });
+            }
+        });
+    </script>
 </body>
 </html>

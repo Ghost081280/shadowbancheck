@@ -418,7 +418,7 @@ function openPlatformModal(platform) {
             modalBody.className = 'modal-body coming-soon';
             modalBody.innerHTML = `
                 <p class="modal-intro">${platform.name} account checking is coming soon!</p>
-                <p style="color: var(--text-muted);">We're working hard to add ${platform.name} to our detection engine. Create an account to get notified when it launches.</p>
+                <p style="color: var(--text-muted);">We're working hard to add ${platform.name} to our detection engine. <a href="login.html" style="color: var(--accent); text-decoration: underline;">Create an account</a> to get notified when it launches.</p>
             `;
         }
     }
@@ -732,11 +732,13 @@ function generateHashtagFactors(hashtags) {
 }
 
 function getDataSources(platform) {
-    // Universal data sources - our Engine collects from multiple places
+    // All 5 factors from our Detection Engine
     return [
         { icon: '🔌', title: 'Platform APIs', desc: 'Direct integration where available' },
-        { icon: '🤖', title: 'AI Web Analysis', desc: '3rd party scraping & pattern detection' },
-        { icon: '📊', title: 'Historical Data', desc: 'Baseline comparison & trend analysis' }
+        { icon: '🔍', title: 'Web Analysis', desc: 'Search visibility & scraping tests' },
+        { icon: '📊', title: 'Historical Data', desc: 'Baseline comparison & trend analysis' },
+        { icon: '#️⃣', title: 'Hashtag Database', desc: 'Banned/restricted tags, updated daily' },
+        { icon: '🌐', title: 'IP Analysis', desc: 'VPN/proxy/datacenter detection' }
     ];
 }
 

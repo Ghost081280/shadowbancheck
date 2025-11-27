@@ -53,8 +53,11 @@
                     </div>
                 </div>
                 
+                <!-- Platform Detected Display -->
+                <p id="platform-detected" style="text-align: center; color: var(--text-muted); font-size: 0.875rem; margin-bottom: var(--space-md);">Platform: Auto-detect</p>
+                
                 <!-- Form -->
-                <form class="checker-form" id="post-check-form">
+                <div class="checker-form">
                     <input 
                         type="url" 
                         id="post-url-input"
@@ -62,17 +65,32 @@
                         placeholder="https://twitter.com/username/status/123456789..."
                         aria-label="Enter post URL"
                     >
-                    <button type="submit" class="btn-analyze" id="analyze-btn">
+                    <button type="button" class="btn-analyze" id="check-post-btn">
                         <span class="btn-text">Check Post</span>
                         <span class="btn-icon">🔍</span>
                     </button>
-                </form>
+                </div>
+                
+                <!-- Clear Button -->
+                <div style="text-align: center; margin-top: var(--space-sm);">
+                    <button type="button" id="clear-btn" class="btn btn-ghost" style="font-size: 0.875rem; padding: var(--space-xs) var(--space-md);">Clear</button>
+                </div>
                 
                 <!-- Supported Platforms -->
-                <div class="supported-platforms" id="post-supported-platforms">
+                <div class="supported-platforms" style="margin-top: var(--space-lg);">
                     <p>Supported platforms:</p>
-                    <div class="platform-icons" id="post-platform-icons">
+                    <div class="platform-icons" id="supported-platform-icons">
                         <!-- Populated by JS -->
+                    </div>
+                </div>
+                
+                <!-- IP Display -->
+                <div class="checker-ip-wrapper" style="text-align: center; margin-top: var(--space-md);">
+                    <div class="power-ip-display">
+                        <span class="ip-icon">🌐</span>
+                        <span id="ip-address">Detecting IP...</span>
+                        <span id="ip-type" class="ip-type"></span>
+                        <span id="ip-flag"></span>
                     </div>
                 </div>
                 
@@ -82,59 +100,9 @@
                     <span>✓ Feed presence check</span>
                     <span>✓ 1 free check per day</span>
                 </div>
-            </div>
-            
-            <!-- Results Area (Hidden Initially) -->
-            <div class="results-container hidden" id="results-container">
-                <div class="results-card">
-                    <!-- Results Header -->
-                    <div class="results-header">
-                        <div class="results-platform" id="results-platform">
-                            <span class="platform-icon">🐦</span>
-                            <span class="platform-name">Twitter/X</span>
-                        </div>
-                        <div class="results-post-info">
-                            <span class="post-author" id="results-author">@username</span>
-                            <span class="post-preview" id="results-preview">Post content preview...</span>
-                        </div>
-                    </div>
-                    
-                    <!-- Score Circle -->
-                    <div class="score-section">
-                        <div class="score-circle" id="score-circle">
-                            <span class="score-value" id="score-value">0%</span>
-                            <span class="score-label">Suppression<br>Probability</span>
-                        </div>
-                        <p class="score-summary" id="score-summary">Analyzing post...</p>
-                    </div>
-                    
-                    <!-- Detection Factors -->
-                    <div class="factors-section">
-                        <h4>🧠 5-Factor Detection Engine Results</h4>
-                        <ul class="factors-list" id="factors-list">
-                            <!-- Populated by JS -->
-                        </ul>
-                    </div>
-                    
-                    <!-- Data Sources -->
-                    <div class="sources-section">
-                        <h5>Data Sources Used:</h5>
-                        <div class="sources-tags" id="sources-tags">
-                            <span class="source-tag">🔌 Platform API</span>
-                            <span class="source-tag">🌐 Browser Tests</span>
-                            <span class="source-tag">📊 Engagement Data</span>
-                        </div>
-                    </div>
-                    
-                    <!-- CTA -->
-                    <div class="results-cta">
-                        <p>Want to monitor all your posts automatically?</p>
-                        <div class="results-buttons">
-                            <a href="index.html#pricing" class="btn btn-primary">Get Full Protection →</a>
-                            <button class="btn btn-ghost" id="check-another-btn">Check Another</button>
-                        </div>
-                    </div>
-                </div>
+                
+                <!-- Checks Remaining -->
+                <p id="checks-remaining-display" style="text-align: center; color: var(--text-muted); font-size: 0.875rem; margin-top: var(--space-sm);">1 free check left today</p>
             </div>
             
             <!-- Other Check Options -->
@@ -166,36 +134,36 @@
                 <p class="section-desc">Comprehensive post analysis using our 5-Factor Detection Engine</p>
             </div>
             
-            <div class="checks-grid">
-                <div class="check-card reveal">
-                    <span class="check-icon">🔍</span>
+            <div class="checks-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--space-lg);">
+                <div class="check-card reveal" style="background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--space-lg);">
+                    <span class="check-icon" style="font-size: 2rem; display: block; margin-bottom: var(--space-sm);">🔍</span>
                     <h4>Search Visibility</h4>
-                    <p>Our automated browser tests verify if your post appears in platform search results when users look for related content.</p>
+                    <p style="color: var(--text-muted); font-size: 0.875rem;">Our automated browser tests verify if your post appears in platform search results when users look for related content.</p>
                 </div>
-                <div class="check-card reveal">
-                    <span class="check-icon">📰</span>
+                <div class="check-card reveal" style="background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--space-lg);">
+                    <span class="check-icon" style="font-size: 2rem; display: block; margin-bottom: var(--space-sm);">📰</span>
                     <h4>Feed Presence</h4>
-                    <p>We check if your post is actually showing up in your followers' feeds or being filtered out by the algorithm.</p>
+                    <p style="color: var(--text-muted); font-size: 0.875rem;">We check if your post is actually showing up in your followers' feeds or being filtered out by the algorithm.</p>
                 </div>
-                <div class="check-card reveal">
-                    <span class="check-icon">👁️</span>
+                <div class="check-card reveal" style="background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--space-lg);">
+                    <span class="check-icon" style="font-size: 2rem; display: block; margin-bottom: var(--space-sm);">👁️</span>
                     <h4>Public Accessibility</h4>
-                    <p>Logged-out visibility tests determine if non-followers and the general public can see your content.</p>
+                    <p style="color: var(--text-muted); font-size: 0.875rem;">Logged-out visibility tests determine if non-followers and the general public can see your content.</p>
                 </div>
-                <div class="check-card reveal">
-                    <span class="check-icon">📊</span>
+                <div class="check-card reveal" style="background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--space-lg);">
+                    <span class="check-icon" style="font-size: 2rem; display: block; margin-bottom: var(--space-sm);">📊</span>
                     <h4>Engagement Rate</h4>
-                    <p>Historical comparison reveals if this post is performing below your typical engagement baseline.</p>
+                    <p style="color: var(--text-muted); font-size: 0.875rem;">Historical comparison reveals if this post is performing below your typical engagement baseline.</p>
                 </div>
-                <div class="check-card reveal">
-                    <span class="check-icon">⚠️</span>
+                <div class="check-card reveal" style="background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--space-lg);">
+                    <span class="check-icon" style="font-size: 2rem; display: block; margin-bottom: var(--space-sm);">⚠️</span>
                     <h4>Content Warnings</h4>
-                    <p>We detect if platforms have applied sensitive content labels or age restrictions to your post.</p>
+                    <p style="color: var(--text-muted); font-size: 0.875rem;">We detect if platforms have applied sensitive content labels or age restrictions to your post.</p>
                 </div>
-                <div class="check-card reveal">
-                    <span class="check-icon">#️⃣</span>
+                <div class="check-card reveal" style="background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--space-lg);">
+                    <span class="check-icon" style="font-size: 2rem; display: block; margin-bottom: var(--space-sm);">#️⃣</span>
                     <h4>Hashtag Impact</h4>
-                    <p>Cross-reference post hashtags against our database of 1,800+ banned/restricted tags updated daily.</p>
+                    <p style="color: var(--text-muted); font-size: 0.875rem;">Cross-reference post hashtags against our database of 1,800+ banned/restricted tags updated daily.</p>
                 </div>
             </div>
         </div>
@@ -307,23 +275,76 @@
         </div>
     </div>
 
-    <!-- Free Limit Modal -->
-    <div id="limit-modal" class="modal hidden">
+    <!-- Engine Info Modal -->
+    <div id="engine-info-modal" class="modal hidden">
         <div class="modal-overlay"></div>
         <div class="modal-content">
             <button class="modal-close">&times;</button>
-            <div class="modal-icon">⏰</div>
-            <h3 class="modal-title">Free Limit Reached</h3>
+            <div class="modal-icon">🧠</div>
+            <h3 class="modal-title">5-Factor Detection Engine</h3>
             <div class="modal-body">
-                <p class="modal-intro">You've used your <strong>1 free post check</strong> for today!</p>
-                <p id="limit-time-remaining">Next free check available in: <strong>23h 45m</strong></p>
-                <hr style="border: none; border-top: 1px solid var(--border); margin: var(--space-lg) 0;">
-                <h4 style="margin-bottom: var(--space-md);">Want unlimited post checks?</h4>
-                <p style="margin-bottom: var(--space-md);">Upgrade to get unlimited checks, continuous monitoring, and instant alerts.</p>
+                <p class="modal-intro">Unlike AI chatbots that can only guess, our engine runs actual tests:</p>
+                <ul class="engine-factors">
+                    <li class="factor-active">
+                        <span class="factor-check">✓</span>
+                        <span class="factor-icon">🔌</span>
+                        <div class="factor-content">
+                            <span class="factor-name">Platform API</span>
+                            <span class="factor-desc">Twitter API v2, Reddit API queries</span>
+                        </div>
+                    </li>
+                    <li class="factor-active">
+                        <span class="factor-check">✓</span>
+                        <span class="factor-icon">🌐</span>
+                        <div class="factor-content">
+                            <span class="factor-name">15+ Browser Tests</span>
+                            <span class="factor-desc">Playwright automation with test accounts</span>
+                        </div>
+                    </li>
+                    <li class="factor-active">
+                        <span class="factor-check">✓</span>
+                        <span class="factor-icon">📊</span>
+                        <div class="factor-content">
+                            <span class="factor-name">Historical Data</span>
+                            <span class="factor-desc">7/14/30 day engagement baselines</span>
+                        </div>
+                    </li>
+                    <li class="factor-active">
+                        <span class="factor-check">✓</span>
+                        <span class="factor-icon">#️⃣</span>
+                        <div class="factor-content">
+                            <span class="factor-name">Hashtag Database</span>
+                            <span class="factor-desc">1,800+ banned/restricted tags</span>
+                        </div>
+                    </li>
+                    <li class="factor-active">
+                        <span class="factor-check">✓</span>
+                        <span class="factor-icon">🔍</span>
+                        <div class="factor-content">
+                            <span class="factor-name">IP Analysis</span>
+                            <span class="factor-desc">VPN/proxy/datacenter detection</span>
+                        </div>
+                    </li>
+                </ul>
             </div>
             <div class="modal-footer">
-                <a href="index.html#pricing" class="btn btn-primary btn-lg" onclick="closeLimitModal()">View Pricing →</a>
-                <button class="btn btn-ghost" onclick="closeLimitModal()">Maybe Later</button>
+                <button class="btn btn-primary btn-lg" onclick="document.getElementById('engine-info-modal').classList.add('hidden'); document.body.style.overflow = '';">Got It!</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Platform Info Modal -->
+    <div id="platform-info-modal" class="modal hidden">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <button class="modal-close">&times;</button>
+            <div class="modal-icon" id="platform-modal-icon">🐦</div>
+            <h3 class="modal-title" id="platform-modal-title">Platform Checks</h3>
+            <div class="modal-body" id="platform-modal-body">
+                <!-- Populated by JS -->
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary btn-lg" onclick="closePlatformInfoModal()">Got It!</button>
             </div>
         </div>
     </div>
@@ -339,35 +360,5 @@
     <script src="js/shared-components.js"></script>
     <script src="js/post-checker.js"></script>
     <script src="js/shadow-ai.js"></script>
-    
-    <!-- Info Button Handler -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const infoBtn = document.getElementById('post-info-btn');
-            const modal = document.getElementById('post-info-modal');
-            
-            if (infoBtn && modal) {
-                infoBtn.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    modal.classList.remove('hidden');
-                    document.body.style.overflow = 'hidden';
-                });
-                
-                const closeBtn = modal.querySelector('.modal-close');
-                const overlay = modal.querySelector('.modal-overlay');
-                
-                closeBtn?.addEventListener('click', function() {
-                    modal.classList.add('hidden');
-                    document.body.style.overflow = '';
-                });
-                
-                overlay?.addEventListener('click', function() {
-                    modal.classList.add('hidden');
-                    document.body.style.overflow = '';
-                });
-            }
-        });
-    </script>
 </body>
 </html>

@@ -1,6 +1,9 @@
 /* =============================================================================
    POST CHECKER PAGE STYLES
    Extends main.css - page-specific styles only
+   
+   NOTE: Hero, platform-chip, supported-platforms, IP badge, and modal styles
+   are now in main.css. This file only contains post-checker-specific styles.
    ============================================================================= */
 
 /* =============================================================================
@@ -124,53 +127,6 @@
     color: var(--text-muted);
 }
 
-/* IP Display Section */
-.ip-display-section {
-    display: flex;
-    justify-content: center;
-    margin-bottom: var(--space-md);
-}
-
-.ip-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-sm);
-    padding: var(--space-xs) var(--space-md);
-    background: rgba(99, 102, 241, 0.1);
-    border: 1px solid rgba(99, 102, 241, 0.3);
-    border-radius: var(--radius-full);
-    font-size: 0.875rem;
-    color: var(--text-secondary);
-}
-
-.ip-badge .ip-icon {
-    font-size: 1rem;
-}
-
-.ip-badge .ip-type {
-    padding: 2px 8px;
-    background: rgba(16, 185, 129, 0.2);
-    color: #10b981;
-    border-radius: var(--radius-sm);
-    font-size: 0.75rem;
-    font-weight: 600;
-    text-transform: uppercase;
-}
-
-.ip-badge .ip-type.vpn {
-    background: rgba(239, 68, 68, 0.2);
-    color: #ef4444;
-}
-
-.ip-badge .ip-type.datacenter {
-    background: rgba(245, 158, 11, 0.2);
-    color: #f59e0b;
-}
-
-.ip-badge .ip-flag {
-    font-size: 1.25rem;
-}
-
 /* Check Button */
 .btn-check-post {
     width: 100%;
@@ -258,57 +214,6 @@
 .post-checker-card .btn-text-link:hover {
     text-decoration: underline;
     color: var(--primary);
-}
-
-/* =============================================================================
-   SUPPORTED PLATFORMS
-   ============================================================================= */
-.supported-platforms {
-    text-align: center;
-    margin-top: var(--space-xl);
-    color: var(--text-muted);
-    font-size: 0.875rem;
-}
-
-.supported-platforms p {
-    margin-bottom: var(--space-sm);
-}
-
-/* Platform icons - match index.html styling exactly */
-.platform-icons {
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: var(--space-sm);
-}
-
-.platform-chip {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 44px;
-    height: 44px;
-    background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
-    border: 1.5px solid rgba(99, 102, 241, 0.25);
-    border-radius: var(--radius-lg);
-    font-size: 1.25rem;
-    cursor: pointer;
-    transition: all var(--transition-fast);
-}
-
-.platform-chip:hover {
-    border-color: var(--primary);
-    background: linear-gradient(135deg, rgba(99, 102, 241, 0.2) 0%, rgba(139, 92, 246, 0.2) 100%);
-    transform: translateY(-3px);
-    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25);
-}
-
-.platform-chip.coming {
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: var(--text-muted);
-    background: rgba(99, 102, 241, 0.08);
-    border-color: rgba(99, 102, 241, 0.2);
 }
 
 /* =============================================================================
@@ -439,69 +344,6 @@
 }
 
 /* =============================================================================
-   MODAL STYLES
-   ============================================================================= */
-.engine-factors {
-    list-style: none;
-    padding: 0;
-    margin: var(--space-lg) 0;
-}
-
-.engine-factors li {
-    display: flex;
-    align-items: flex-start;
-    gap: var(--space-md);
-    padding: var(--space-md);
-    background: rgba(99, 102, 241, 0.05);
-    border-radius: var(--radius-md);
-    margin-bottom: var(--space-sm);
-}
-
-.engine-factors li.factor-active {
-    border-left: 3px solid var(--success);
-}
-
-.engine-factors li.factor-inactive {
-    border-left: 3px solid var(--text-muted);
-    opacity: 0.6;
-}
-
-.factor-check {
-    font-size: 1.25rem;
-    width: 24px;
-    flex-shrink: 0;
-}
-
-.engine-factors strong {
-    display: block;
-    margin-bottom: var(--space-2xs);
-}
-
-.factor-desc {
-    font-size: 0.875rem;
-    color: var(--text-muted);
-}
-
-.modal-tech-note {
-    background: rgba(99, 102, 241, 0.1);
-    border: 1px solid rgba(99, 102, 241, 0.3);
-    border-radius: var(--radius-md);
-    padding: var(--space-md);
-    margin-top: var(--space-lg);
-}
-
-.modal-tech-note h4 {
-    margin-bottom: var(--space-xs);
-    font-size: 0.9375rem;
-}
-
-.modal-tech-note p {
-    font-size: 0.875rem;
-    color: var(--text-secondary);
-    margin: 0;
-}
-
-/* =============================================================================
    RESPONSIVE - TABLET
    ============================================================================= */
 @media (max-width: 1024px) {
@@ -560,11 +402,6 @@
         flex-direction: column;
         text-align: center;
     }
-    
-    .ip-badge {
-        flex-wrap: wrap;
-        justify-content: center;
-    }
 }
 
 /* =============================================================================
@@ -574,11 +411,5 @@
     .post-checker-card .checker-features {
         flex-direction: column;
         align-items: center;
-    }
-    
-    .platform-chip {
-        width: 40px;
-        height: 40px;
-        font-size: 1.125rem;
     }
 }

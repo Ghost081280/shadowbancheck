@@ -16,6 +16,146 @@
     <!-- CSS -->
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/shadow-ai.css">
+    
+    <!-- Hashtag Checker Specific Styles -->
+    <style>
+        .input-help {
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.8125rem;
+            margin-top: var(--space-xs);
+        }
+        
+        /* Results Section */
+        .results-section {
+            margin-top: var(--space-2xl);
+        }
+        
+        .results-summary {
+            display: flex;
+            justify-content: center;
+            gap: var(--space-xl);
+            margin-bottom: var(--space-xl);
+            flex-wrap: wrap;
+        }
+        
+        .summary-item {
+            text-align: center;
+            padding: var(--space-md) var(--space-lg);
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            min-width: 100px;
+        }
+        
+        .summary-count {
+            font-size: 2rem;
+            font-weight: 800;
+            display: block;
+            line-height: 1;
+            margin-bottom: var(--space-xs);
+        }
+        
+        .summary-count.safe { color: var(--success); }
+        .summary-count.restricted { color: var(--warning); }
+        .summary-count.banned { color: var(--danger); }
+        
+        .summary-label {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+        
+        /* Results List */
+        .results-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: var(--space-md);
+        }
+        
+        .result-item {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            padding: var(--space-md);
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            transition: all var(--transition-fast);
+        }
+        
+        .result-item.safe {
+            border-color: rgba(16, 185, 129, 0.3);
+            background: rgba(16, 185, 129, 0.05);
+        }
+        
+        .result-item.restricted {
+            border-color: rgba(245, 158, 11, 0.3);
+            background: rgba(245, 158, 11, 0.05);
+        }
+        
+        .result-item.banned {
+            border-color: rgba(239, 68, 68, 0.3);
+            background: rgba(239, 68, 68, 0.05);
+        }
+        
+        .result-icon {
+            font-size: 1.25rem;
+            flex-shrink: 0;
+        }
+        
+        .result-info {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .result-hashtag {
+            font-family: monospace;
+            font-weight: 600;
+            font-size: 0.9375rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .result-platforms {
+            display: flex;
+            gap: var(--space-2xs);
+            margin-top: var(--space-2xs);
+        }
+        
+        .platform-status {
+            font-size: 0.625rem;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: var(--radius-sm);
+            text-transform: uppercase;
+        }
+        
+        .platform-status.banned {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--danger);
+        }
+        
+        .platform-status.restricted {
+            background: rgba(245, 158, 11, 0.2);
+            color: var(--warning);
+        }
+        
+        /* Results Actions */
+        .results-actions {
+            display: flex;
+            justify-content: center;
+            gap: var(--space-md);
+            margin-top: var(--space-xl);
+            flex-wrap: wrap;
+        }
+        
+        /* Category Cards */
+        .check-card-safe { border-color: rgba(16, 185, 129, 0.3); }
+        .check-card-warning { border-color: rgba(245, 158, 11, 0.3); }
+        .check-card-danger { border-color: rgba(239, 68, 68, 0.3); }
+        .check-card-banned { border-color: rgba(239, 68, 68, 0.5); }
+    </style>
 </head>
 <body>
     <!-- ===================================
@@ -37,14 +177,6 @@
             
             <!-- Hashtag Checker Card -->
             <div class="checker-card">
-                <!-- Info Button -->
-                <button class="power-info-btn" id="hashtag-info-btn" aria-label="What we check" type="button">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
-                        <path d="M12 16V12M12 8H12.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                    </svg>
-                </button>
-                
                 <div class="checker-header">
                     <span class="checker-icon">#️⃣</span>
                     <div>
@@ -53,16 +185,11 @@
                     </div>
                 </div>
                 
-                <!-- Platform Selector -->
-                <div class="platform-selector">
-                    <label class="platform-label">Select Platform:</label>
-                    <div class="platform-tabs" id="platform-tabs">
-                        <!-- Populated by JS -->
-                    </div>
-                </div>
+                <!-- Hashtag Count Display -->
+                <p id="hashtag-count" style="text-align: center; color: var(--text-muted); font-size: 0.875rem; margin-bottom: var(--space-md);">0 hashtags</p>
                 
                 <!-- Form -->
-                <form class="checker-form" id="hashtag-check-form">
+                <div class="checker-form">
                     <div class="input-wrapper">
                         <span class="input-prefix">#</span>
                         <input 
@@ -75,14 +202,19 @@
                             spellcheck="false"
                         >
                     </div>
-                    <button type="submit" class="btn-analyze" id="analyze-btn">
+                    <button type="button" class="btn-analyze" id="check-hashtags-btn">
                         <span class="btn-text">Check Hashtags</span>
                         <span class="btn-icon">🔍</span>
                     </button>
-                </form>
+                </div>
                 
                 <!-- Help Text -->
                 <p class="input-help">Separate multiple hashtags with commas. Check up to 10 at once.</p>
+                
+                <!-- Clear Button -->
+                <div style="text-align: center; margin-top: var(--space-sm);">
+                    <button type="button" id="clear-btn" class="btn btn-ghost" style="font-size: 0.875rem; padding: var(--space-xs) var(--space-md);">Clear</button>
+                </div>
                 
                 <!-- Features -->
                 <div class="checker-features">
@@ -90,46 +222,50 @@
                     <span>✓ Updated daily</span>
                     <span>✓ 1 free check per day</span>
                 </div>
+                
+                <!-- Checks Remaining -->
+                <p id="checks-remaining-display" style="text-align: center; color: var(--text-muted); font-size: 0.875rem; margin-top: var(--space-sm);">1 free check left today</p>
             </div>
             
-            <!-- Results Area (Hidden Initially) -->
-            <div class="results-container hidden" id="results-container">
-                <div class="results-card">
-                    <!-- Results Header -->
-                    <div class="results-header">
-                        <div class="results-platform" id="results-platform">
-                            <span class="platform-icon">🐦</span>
-                            <span class="platform-name">Twitter/X</span>
-                        </div>
-                        <div class="results-summary">
-                            <span class="hashtag-count" id="hashtag-count">3 hashtags checked</span>
-                        </div>
+            <!-- Supported Platforms for Hashtags -->
+            <div class="supported-platforms">
+                <p>Hashtag checking for <span id="live-platform-count">2</span> platforms:</p>
+                <div class="platform-icons" id="hashtag-platform-icons">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+            
+            <!-- Results Section (Hidden by default) -->
+            <div id="results-section" class="results-section hidden">
+                <div class="section-header">
+                    <h2 class="section-title">Results</h2>
+                </div>
+                
+                <!-- Summary Counts -->
+                <div class="results-summary">
+                    <div class="summary-item">
+                        <span class="summary-count safe" id="safe-count">0</span>
+                        <span class="summary-label">Safe</span>
                     </div>
-                    
-                    <!-- Hashtag Results Grid -->
-                    <div class="hashtag-results" id="hashtag-results">
-                        <!-- Populated by JS -->
+                    <div class="summary-item">
+                        <span class="summary-count restricted" id="restricted-count">0</span>
+                        <span class="summary-label">Restricted</span>
                     </div>
-                    
-                    <!-- Data Sources -->
-                    <div class="sources-section">
-                        <h5>Data Sources:</h5>
-                        <div class="sources-tags" id="sources-tags">
-                            <span class="source-tag">#️⃣ Hashtag Database (1,800+ tags)</span>
-                            <span class="source-tag">🔌 Platform API</span>
-                            <span class="source-tag">📊 Usage Analytics</span>
-                        </div>
-                        <p class="sources-note">Database updated daily with new banned and restricted hashtags.</p>
+                    <div class="summary-item">
+                        <span class="summary-count banned" id="banned-count">0</span>
+                        <span class="summary-label">Banned</span>
                     </div>
-                    
-                    <!-- CTA -->
-                    <div class="results-cta">
-                        <p>Want to automatically check hashtags in all your posts?</p>
-                        <div class="results-buttons">
-                            <a href="index.html#pricing" class="btn btn-primary">Get Full Protection →</a>
-                            <button class="btn btn-ghost" id="check-another-btn">Check More</button>
-                        </div>
-                    </div>
+                </div>
+                
+                <!-- Results List -->
+                <div class="results-list" id="results-list">
+                    <!-- Populated by JS -->
+                </div>
+                
+                <!-- Results Actions -->
+                <div class="results-actions">
+                    <button class="btn btn-primary" id="copy-safe-btn">Copy Safe Hashtags</button>
+                    <button class="btn btn-ghost" id="export-btn">Export Results</button>
                 </div>
             </div>
             
@@ -162,36 +298,36 @@
                 <p class="section-desc">Understanding what our database reveals about each hashtag</p>
             </div>
             
-            <div class="checks-grid">
-                <div class="check-card check-card-safe reveal">
-                    <span class="check-icon">✅</span>
+            <div class="checks-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--space-lg);">
+                <div class="check-card check-card-safe reveal" style="background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--space-lg);">
+                    <span class="check-icon" style="font-size: 2rem; display: block; margin-bottom: var(--space-sm);">✅</span>
                     <h4>Safe</h4>
-                    <p>Hashtag is not in any banned or restricted list. No known issues with reach or visibility.</p>
+                    <p style="color: var(--text-muted); font-size: 0.875rem;">Hashtag is not in any banned or restricted list. No known issues with reach or visibility.</p>
                 </div>
-                <div class="check-card check-card-warning reveal">
-                    <span class="check-icon">⚠️</span>
+                <div class="check-card check-card-warning reveal" style="background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--space-lg);">
+                    <span class="check-icon" style="font-size: 2rem; display: block; margin-bottom: var(--space-sm);">⚠️</span>
                     <h4>Limited Reach</h4>
-                    <p>Hashtag may have reduced visibility. Often oversaturated or flagged for spam-like usage patterns.</p>
+                    <p style="color: var(--text-muted); font-size: 0.875rem;">Hashtag may have reduced visibility. Often oversaturated or flagged for spam-like usage patterns.</p>
                 </div>
-                <div class="check-card check-card-danger reveal">
-                    <span class="check-icon">🚫</span>
+                <div class="check-card check-card-danger reveal" style="background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--space-lg);">
+                    <span class="check-icon" style="font-size: 2rem; display: block; margin-bottom: var(--space-sm);">🚫</span>
                     <h4>Restricted</h4>
-                    <p>Hashtag is actively restricted by the platform. Posts using it will have significantly reduced reach.</p>
+                    <p style="color: var(--text-muted); font-size: 0.875rem;">Hashtag is actively restricted by the platform. Posts using it will have significantly reduced reach.</p>
                 </div>
-                <div class="check-card check-card-banned reveal">
-                    <span class="check-icon">❌</span>
+                <div class="check-card check-card-banned reveal" style="background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--space-lg);">
+                    <span class="check-icon" style="font-size: 2rem; display: block; margin-bottom: var(--space-sm);">❌</span>
                     <h4>Banned</h4>
-                    <p>Hashtag is banned entirely. Using it may trigger account restrictions or content removal.</p>
+                    <p style="color: var(--text-muted); font-size: 0.875rem;">Hashtag is banned entirely. Using it may trigger account restrictions or content removal.</p>
                 </div>
-                <div class="check-card reveal">
-                    <span class="check-icon">📊</span>
+                <div class="check-card reveal" style="background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--space-lg);">
+                    <span class="check-icon" style="font-size: 2rem; display: block; margin-bottom: var(--space-sm);">📊</span>
                     <h4>Competition Score</h4>
-                    <p>We analyze how saturated the hashtag is. High competition means your post may get buried quickly.</p>
+                    <p style="color: var(--text-muted); font-size: 0.875rem;">We analyze how saturated the hashtag is. High competition means your post may get buried quickly.</p>
                 </div>
-                <div class="check-card reveal">
-                    <span class="check-icon">🔄</span>
+                <div class="check-card reveal" style="background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--space-lg);">
+                    <span class="check-icon" style="font-size: 2rem; display: block; margin-bottom: var(--space-sm);">🔄</span>
                     <h4>Daily Updates</h4>
-                    <p>Our database of 1,800+ restricted hashtags is updated daily as platforms change their policies.</p>
+                    <p style="color: var(--text-muted); font-size: 0.875rem;">Our database of 1,800+ restricted hashtags is updated daily as platforms change their policies.</p>
                 </div>
             </div>
         </div>
@@ -240,54 +376,7 @@
          FOOTER - Loaded by shared-components.js
          =================================== -->
 
-    <!-- Hashtag Info Modal -->
-    <div id="hashtag-info-modal" class="modal hidden">
-        <div class="modal-overlay"></div>
-        <div class="modal-content">
-            <button class="modal-close">&times;</button>
-            <div class="modal-icon">#️⃣</div>
-            <h3 class="modal-title">Hashtag Check: Database Analysis</h3>
-            <div class="modal-body">
-                <p class="modal-intro">Our hashtag database tracks 1,800+ banned and restricted hashtags across all major platforms:</p>
-                
-                <div class="modal-check-section">
-                    <div class="modal-check-header">
-                        <span>#️⃣</span>
-                        <h4>What We Check</h4>
-                    </div>
-                    <ul class="check-list">
-                        <li>Banned status (completely blocked)</li>
-                        <li>Restricted status (limited reach)</li>
-                        <li>Spam flags (penalized for overuse)</li>
-                        <li>Competition level (saturation)</li>
-                        <li>Platform-specific restrictions</li>
-                        <li>Recent policy changes</li>
-                    </ul>
-                </div>
-                
-                <div class="modal-tech-note">
-                    <h4>🔄 Daily Database Updates</h4>
-                    <p>Platforms constantly change which hashtags are restricted. Our database is updated <strong>every 24 hours</strong> to catch:</p>
-                    <ul>
-                        <li>Newly banned hashtags</li>
-                        <li>Hashtags removed from banned lists</li>
-                        <li>Temporary event-based restrictions</li>
-                        <li>Platform policy changes</li>
-                    </ul>
-                </div>
-                
-                <div class="modal-tech-note">
-                    <h4>💡 Why This Matters</h4>
-                    <p>Using even <strong>one</strong> banned hashtag can tank your entire post's reach—or trigger account restrictions. Check before you post!</p>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-primary btn-lg" onclick="document.getElementById('hashtag-info-modal').classList.add('hidden'); document.body.style.overflow = '';">Got It!</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Free Limit Modal -->
+    <!-- Limit Modal -->
     <div id="limit-modal" class="modal hidden">
         <div class="modal-overlay"></div>
         <div class="modal-content">
@@ -296,14 +385,14 @@
             <h3 class="modal-title">Free Limit Reached</h3>
             <div class="modal-body">
                 <p class="modal-intro">You've used your <strong>1 free hashtag check</strong> for today!</p>
-                <p id="limit-time-remaining">Next free check available in: <strong>23h 45m</strong></p>
+                <p>Next free check available in: <strong>24 hours</strong></p>
                 <hr style="border: none; border-top: 1px solid var(--border); margin: var(--space-lg) 0;">
                 <h4 style="margin-bottom: var(--space-md);">Want unlimited hashtag checks?</h4>
                 <p style="margin-bottom: var(--space-md);">Upgrade to get unlimited checks plus automatic hashtag analysis for all your posts.</p>
             </div>
             <div class="modal-footer">
-                <a href="index.html#pricing" class="btn btn-primary btn-lg" onclick="closeLimitModal()">View Pricing →</a>
-                <button class="btn btn-ghost" onclick="closeLimitModal()">Maybe Later</button>
+                <a href="index.html#pricing" class="btn btn-primary btn-lg" onclick="hideLimitModal()">View Pricing →</a>
+                <button class="btn btn-ghost" onclick="hideLimitModal()">Maybe Later</button>
             </div>
         </div>
     </div>
@@ -319,35 +408,5 @@
     <script src="js/shared-components.js"></script>
     <script src="js/hashtag-checker.js"></script>
     <script src="js/shadow-ai.js"></script>
-    
-    <!-- Info Button Handler -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const infoBtn = document.getElementById('hashtag-info-btn');
-            const modal = document.getElementById('hashtag-info-modal');
-            
-            if (infoBtn && modal) {
-                infoBtn.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    modal.classList.remove('hidden');
-                    document.body.style.overflow = 'hidden';
-                });
-                
-                const closeBtn = modal.querySelector('.modal-close');
-                const overlay = modal.querySelector('.modal-overlay');
-                
-                closeBtn?.addEventListener('click', function() {
-                    modal.classList.add('hidden');
-                    document.body.style.overflow = '';
-                });
-                
-                overlay?.addEventListener('click', function() {
-                    modal.classList.add('hidden');
-                    document.body.style.overflow = '';
-                });
-            }
-        });
-    </script>
 </body>
 </html>

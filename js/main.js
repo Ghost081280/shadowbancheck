@@ -4,7 +4,13 @@
    
    NOTE: platformData is now loaded from platforms.js (loaded before this file)
    NOTE: Demo chat animation moved to shadow-ai.js
+   NOTE: window.latestScanResults stores Power Check results for Shadow AI access
    ============================================================================= */
+
+/* =============================================================================
+   GLOBAL SCAN RESULTS STORAGE (For Shadow AI Integration)
+   ============================================================================= */
+window.latestScanResults = null;
 
 /* =============================================================================
    IP DETECTION
@@ -523,7 +529,9 @@ function generateDemoResults(platform, username, hashtags) {
         username,
         hashtags,
         scores: { overall: overallScore, post: postScore, account: accountScore, hashtag: hashtagScore },
-        factors: { post: postFactors, account: accountFactors, hashtag: hashtagFactors }
+        factors: { post: postFactors, account: accountFactors, hashtag: hashtagFactors },
+        timestamp: Date.now(),
+        url: document.getElementById('power-url-input')?.value || null
     };
 }
 
@@ -630,6 +638,20 @@ function getDataSources(platform) {
 function renderPowerResults(results) {
     const resultsSection = document.getElementById('power-results');
     if (!resultsSection) return;
+    
+    // =========================================================================
+    // STORE RESULTS FOR SHADOW AI ACCESS
+    // =========================================================================
+    window.latestScanResults = results;
+    console.log('✅ Power Check results stored in window.latestScanResults for Shadow AI');
+    
+    // Also store in localStorage for persistence across page reloads (same day)
+    try {
+        localStorage.setItem('shadowban_latest_results', JSON.stringify(results));
+    } catch (e) {
+        console.warn('Could not store results in localStorage:', e);
+    }
+    // =========================================================================
     
     // Overall section
     const overallIcon = document.getElementById('overall-icon');
@@ -911,6 +933,9 @@ function initPowerCheck() {
     // Initialize power platforms display
     initPowerPlatforms();
     
+    // Load any existing results from localStorage (for Shadow AI)
+    loadExistingResults();
+    
     // Info button
     infoBtn?.addEventListener('click', function(e) {
         e.preventDefault();
@@ -961,6 +986,23 @@ function initPowerCheck() {
             input.focus();
         }
     });
+}
+
+// Load existing results from localStorage for Shadow AI
+function loadExistingResults() {
+    try {
+        const stored = localStorage.getItem('shadowban_latest_results');
+        if (stored) {
+            const results = JSON.parse(stored);
+            // Check if results are from today (within 24 hours)
+            if (results.timestamp && (Date.now() - results.timestamp) < 24 * 60 * 60 * 1000) {
+                window.latestScanResults = results;
+                console.log('✅ Loaded existing scan results for Shadow AI');
+            }
+        }
+    } catch (e) {
+        console.warn('Could not load existing results:', e);
+    }
 }
 
 function runPowerCheck(url) {
@@ -1382,5 +1424,6 @@ window.ShadowBan = {
     openPlatformModal,
     showToast,
     detectUserIP,
-    getUserIPData
+    getUserIPData,
+    getLatestScanResults: () => window.latestScanResults
 };

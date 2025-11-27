@@ -26,7 +26,6 @@
             <div class="hero-badge">📝 Post URL Checker</div>
             <h1 class="hero-title">Check Your Post's Reach</h1>
             <p class="hero-subtitle">Paste a post URL to check if it's being shown or shadow banned. We analyze content, hashtags, and visibility signals.</p>
-            <p class="text-muted text-center">Powered by our 5-Factor Detection Engine</p>
         </div>
     </section>
 
@@ -185,7 +184,7 @@
                 </button>
                 
                 <h3 class="methodology-title">Our Detection Engine</h3>
-                <p class="methodology-intro">Platforms rarely admit to shadow banning. That's why we built a proprietary detection system that analyzes multiple signals to calculate an accurate probability score—even when platforms won't tell you the truth.</p>
+                <p class="methodology-intro">Platforms rarely admit to shadow banning. That's why we built a proprietary detection system that analyzes multiple signals to calculate an accurate probability score.</p>
                 
                 <div class="methodology-grid">
                     <div class="method-card">
@@ -245,7 +244,7 @@
         </div>
     </section>
 
-    <!-- What We Check Info Modal -->
+    <!-- Post Info Modal -->
     <div id="post-info-modal" class="modal hidden">
         <div class="modal-overlay"></div>
         <div class="modal-content">
@@ -258,28 +257,43 @@
                 <ul class="engine-factors">
                     <li class="factor-active">
                         <span class="factor-check">✓</span>
-                        <strong>🔌 Platform APIs</strong>
-                        <span class="factor-desc">Fetch post data, engagement metrics, and visibility status</span>
+                        <span class="factor-icon">🔌</span>
+                        <div class="factor-content">
+                            <span class="factor-name">Platform APIs</span>
+                            <span class="factor-desc">Fetch post data, engagement metrics, and visibility status</span>
+                        </div>
                     </li>
                     <li class="factor-active">
                         <span class="factor-check">✓</span>
-                        <strong>🌐 Web Analysis</strong>
-                        <span class="factor-desc">Search visibility tests, hashtag feed appearance checks</span>
+                        <span class="factor-icon">🌐</span>
+                        <div class="factor-content">
+                            <span class="factor-name">Web Analysis</span>
+                            <span class="factor-desc">Search visibility tests, hashtag feed appearance checks</span>
+                        </div>
                     </li>
                     <li class="factor-inactive">
                         <span class="factor-check">○</span>
-                        <strong>📊 Historical Data</strong>
-                        <span class="factor-desc">Not applicable for single post checks</span>
+                        <span class="factor-icon">📊</span>
+                        <div class="factor-content">
+                            <span class="factor-name">Historical Data</span>
+                            <span class="factor-desc">Not applicable for single post checks</span>
+                        </div>
                     </li>
                     <li class="factor-active">
                         <span class="factor-check">✓</span>
-                        <strong>#️⃣ Hashtag Database</strong>
-                        <span class="factor-desc">Check all hashtags used in the post against our database</span>
+                        <span class="factor-icon">#️⃣</span>
+                        <div class="factor-content">
+                            <span class="factor-name">Hashtag Database</span>
+                            <span class="factor-desc">Check all hashtags used in the post against our database</span>
+                        </div>
                     </li>
                     <li class="factor-active">
                         <span class="factor-check">✓</span>
-                        <strong>🔍 IP Analysis</strong>
-                        <span class="factor-desc">Factor in your IP type and location for reach probability</span>
+                        <span class="factor-icon">🔍</span>
+                        <div class="factor-content">
+                            <span class="factor-name">IP Analysis</span>
+                            <span class="factor-desc">Factor in your IP type and location for reach probability</span>
+                        </div>
                     </li>
                 </ul>
                 
@@ -375,26 +389,11 @@
     </div>
 
     <!-- ===================================
-         FOOTER - Loaded by shared-components.js
+         SHARED COMPONENTS (Loaded by shared-components.js):
+         - Footer
+         - Cookie Popup
+         - Back to Top Button
          =================================== -->
-
-    <!-- Cookie Popup -->
-    <div id="cookie-popup" class="cookie-popup">
-        <div class="cookie-content">
-            <span class="cookie-icon">🍪</span>
-            <div class="cookie-text">
-                <h4>We Use Cookies</h4>
-                <p>We use cookies to enhance your experience and remember your preferences. <a href="legal/cookie-policy.html" style="color: var(--primary-light);">View Cookie Policy</a></p>
-            </div>
-            <div class="cookie-actions">
-                <button id="cookie-accept" class="btn-cookie btn-cookie-accept">Accept</button>
-                <button id="cookie-dismiss" class="btn-cookie btn-cookie-dismiss">Dismiss</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Back to Top Button -->
-    <button id="back-to-top" class="back-to-top" aria-label="Back to top">↑</button>
 
     <!-- Scripts -->
     <script src="js/platforms.js"></script>

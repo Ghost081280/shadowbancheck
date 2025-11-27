@@ -10,7 +10,6 @@
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔍</text></svg>">
     
     <!-- CSS -->
-    <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/login.css">
 </head>
 <body class="login-body">
@@ -34,15 +33,16 @@
         
         <!-- Login Card -->
         <div class="login-card">
-            <!-- Demo Credentials Notice - REMOVE AFTER TESTING -->
+            <!-- Demo Credentials Notice -->
             <div class="demo-notice">
                 <div class="demo-notice-header">
                     <span>🧪</span>
                     <span>Demo Mode - Test Credentials</span>
                 </div>
+                <!-- User -->
                 <div class="demo-credentials">
                     <div class="demo-cred">
-                        <span class="demo-label">User:</span>
+                        <span class="demo-label">👤 User:</span>
                         <code class="demo-value">demo@test.com</code>
                         <button class="demo-copy" onclick="copyToClipboard('demo@test.com', this)" title="Copy">📋</button>
                     </div>
@@ -52,9 +52,23 @@
                         <button class="demo-copy" onclick="copyToClipboard('password123', this)" title="Copy">📋</button>
                     </div>
                 </div>
+                <!-- Agency -->
                 <div class="demo-credentials" style="margin-top: 8px; padding-top: 8px; border-top: 1px dashed rgba(251, 191, 36, 0.3);">
                     <div class="demo-cred">
-                        <span class="demo-label">Admin:</span>
+                        <span class="demo-label">🏢 Agency:</span>
+                        <code class="demo-value">agency@test.com</code>
+                        <button class="demo-copy" onclick="copyToClipboard('agency@test.com', this)" title="Copy">📋</button>
+                    </div>
+                    <div class="demo-cred">
+                        <span class="demo-label">Pass:</span>
+                        <code class="demo-value">agency123</code>
+                        <button class="demo-copy" onclick="copyToClipboard('agency123', this)" title="Copy">📋</button>
+                    </div>
+                </div>
+                <!-- Admin -->
+                <div class="demo-credentials" style="margin-top: 8px; padding-top: 8px; border-top: 1px dashed rgba(251, 191, 36, 0.3);">
+                    <div class="demo-cred">
+                        <span class="demo-label">👑 Admin:</span>
                         <code class="demo-value">admin@shadowbancheck.io</code>
                         <button class="demo-copy" onclick="copyToClipboard('admin@shadowbancheck.io', this)" title="Copy">📋</button>
                     </div>
@@ -64,9 +78,12 @@
                         <button class="demo-copy" onclick="copyToClipboard('admin', this)" title="Copy">📋</button>
                     </div>
                 </div>
-                <button class="demo-autofill" onclick="autofillDemo()">⚡ Auto-fill Demo User</button>
+                <div style="display: flex; gap: 8px; margin-top: 12px;">
+                    <button class="demo-autofill" onclick="autofillDemo()" style="flex: 1;">👤 User</button>
+                    <button class="demo-autofill" onclick="autofillAgency()" style="flex: 1;">🏢 Agency</button>
+                    <button class="demo-autofill" onclick="autofillAdmin()" style="flex: 1;">👑 Admin</button>
+                </div>
             </div>
-            <!-- END Demo Notice -->
             
             <!-- Google Sign In -->
             <button class="btn-google" id="google-signin-btn">
@@ -103,7 +120,6 @@
                 <div class="form-options">
                     <label class="remember-me">
                         <input type="checkbox" id="remember" name="remember">
-                        <span class="checkmark"></span>
                         <span>Remember me</span>
                     </label>
                     <a href="#" class="forgot-link" onclick="showForgotPassword(); return false;">Forgot password?</a>
@@ -183,23 +199,21 @@
                             <span class="btn-loading hidden"><span class="spinner"></span> Creating...</span>
                         </button>
                     </form>
-                    <p class="signup-terms">By creating an account, you agree to our <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>.</p>
+                    <p class="signup-terms" style="font-size: 0.75rem; color: var(--text-muted); margin-top: 16px;">By creating an account, you agree to our <a href="#" style="color: var(--primary-light);">Terms of Service</a> and <a href="#" style="color: var(--primary-light);">Privacy Policy</a>.</p>
                 </div>
                 
                 <!-- Step 2: Email Verification -->
                 <div id="signup-step-2" class="hidden">
-                    <div class="verify-header">
-                        <span class="verify-icon">📧</span>
-                        <h3>Check Your Email</h3>
-                        <p>We've sent a 6-digit verification code to:</p>
+                    <div style="text-align: center; margin-bottom: 24px;">
+                        <span style="font-size: 3rem;">📧</span>
+                        <h3 style="margin: 8px 0;">Check Your Email</h3>
+                        <p style="color: var(--text-muted);">We've sent a 6-digit verification code to:</p>
                         <strong id="verify-email-display">you@example.com</strong>
                     </div>
                     <form id="verify-form">
                         <div class="form-group">
                             <label for="verify-code">Verification Code</label>
-                            <div class="code-input-group">
-                                <input type="text" id="verify-code" name="verify-code" placeholder="000000" maxlength="6" pattern="[0-9]{6}" inputmode="numeric" autocomplete="one-time-code" required>
-                            </div>
+                            <input type="text" id="verify-code" name="verify-code" placeholder="000000" maxlength="6" pattern="[0-9]{6}" inputmode="numeric" autocomplete="one-time-code" required style="text-align: center; font-size: 1.5rem; letter-spacing: 0.5rem;">
                         </div>
                         <div class="signup-error hidden" id="verify-error">
                             <span class="error-icon">⚠️</span>
@@ -210,20 +224,20 @@
                             <span class="btn-loading hidden"><span class="spinner"></span> Verifying...</span>
                         </button>
                     </form>
-                    <div class="resend-code">
-                        <span>Didn't receive the code?</span>
-                        <button type="button" class="link-btn" id="resend-btn" onclick="resendCode()">Resend Code</button>
-                        <span class="resend-timer hidden" id="resend-timer">(60s)</span>
+                    <div style="text-align: center; margin-top: 16px; font-size: 0.8125rem;">
+                        <span style="color: var(--text-muted);">Didn't receive the code?</span>
+                        <button type="button" id="resend-btn" onclick="resendCode()" style="background: none; border: none; color: var(--primary-light); cursor: pointer;">Resend Code</button>
+                        <span class="hidden" id="resend-timer">(60s)</span>
                     </div>
-                    <button type="button" class="back-step-btn" onclick="goBackToStep1()">← Back to signup</button>
+                    <button type="button" onclick="goBackToStep1()" style="display: block; width: 100%; margin-top: 16px; background: none; border: none; color: var(--text-muted); cursor: pointer;">← Back to signup</button>
                 </div>
                 
                 <!-- Step 3: Success -->
                 <div id="signup-step-3" class="hidden">
-                    <div class="success-header">
-                        <span class="success-icon">🎉</span>
-                        <h3>Account Created!</h3>
-                        <p>Your account has been verified and created successfully.</p>
+                    <div style="text-align: center;">
+                        <span style="font-size: 4rem;">🎉</span>
+                        <h3 style="margin: 16px 0;">Account Created!</h3>
+                        <p style="color: var(--text-muted); margin-bottom: 24px;">Your account has been verified and created successfully.</p>
                     </div>
                     <button type="button" class="btn-login" onclick="signupComplete()">Continue to Dashboard →</button>
                 </div>

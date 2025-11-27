@@ -23,9 +23,10 @@
     
     function detectPageType() {
         const path = window.location.pathname.toLowerCase();
-        if (path.includes('admin-dashboard') || path.includes('admin.html')) return 'admin';
-        if (path.includes('agency-dashboard') || path.includes('agency.html')) return 'agency';
-        if (path.includes('dashboard')) return 'dashboard';
+        // Clean URLs: /admin, /agency, /pro
+        if (path.includes('/admin')) return 'admin';
+        if (path.includes('/agency')) return 'agency';
+        if (path.includes('/pro')) return 'dashboard';
         return 'website';
     }
     

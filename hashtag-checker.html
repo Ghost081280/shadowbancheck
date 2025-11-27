@@ -26,11 +26,10 @@
             <div class="hero-badge">🚫 Banned Hashtags Checker</div>
             <h1 class="hero-title">Check Banned Hashtags</h1>
             <p class="hero-subtitle">Check if your hashtags are banned or restricted before you post. Avoid shadowbans and maximize your reach.</p>
-            <p class="text-muted text-center">Powered by our 5-Factor Detection Engine</p>
         </div>
     </section>
 
-    <!-- Hashtag Checker Form - Wide with Glow -->
+    <!-- Hashtag Checker Form -->
     <section class="section">
         <div class="container">
             <div class="hashtag-checker-card">
@@ -53,7 +52,7 @@
                 </div>
                 
                 <div class="input-group">
-                    <textarea id="hashtag-input" placeholder="#example #hashtag #test&#10;#fitness #viral #fyp" rows="4"></textarea>
+                    <textarea id="hashtag-input" class="hashtag-input" placeholder="#example #hashtag #test&#10;#fitness #viral #fyp" rows="4"></textarea>
                     <div class="input-meta">
                         <span id="hashtag-count">0 hashtags</span>
                         <span id="checks-remaining-display">1 free check left today</span>
@@ -76,7 +75,7 @@
                 </div>
             </div>
             
-            <!-- Supported Platforms for Hashtag Checking -->
+            <!-- Supported Platforms -->
             <div class="supported-platforms">
                 <p>Hashtags checked for:</p>
                 <div class="platform-icons" id="hashtag-platform-icons">
@@ -308,7 +307,7 @@
         </div>
     </section>
 
-    <!-- How It Works - Enhanced with Methodology -->
+    <!-- How It Works -->
     <section class="section section-alt how-works-section">
         <div class="container">
             <div class="section-header">
@@ -341,9 +340,8 @@
                 </div>
             </div>
             
-            <!-- Detailed Methodology with Engine Info Button -->
+            <!-- Detailed Methodology -->
             <div class="methodology-section reveal">
-                <!-- Engine Info Button -->
                 <button class="engine-info-btn" id="engine-info-btn" aria-label="View 5-Factor Engine details" type="button">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
@@ -358,120 +356,33 @@
                     <div class="method-card">
                         <span class="method-icon">📊</span>
                         <h4>Curated Database</h4>
-                        <p>We maintain a database of 1,800+ known banned and restricted hashtags across all major platforms, updated daily at midnight UTC.</p>
-                        <div class="method-details">
-                            <strong>What we track:</strong>
-                            <ul>
-                                <li>Instagram: 500+ banned hashtags</li>
-                                <li>TikTok: 300+ restricted tags</li>
-                                <li>Twitter/X, Facebook, LinkedIn</li>
-                                <li>Platform policy changes</li>
-                            </ul>
-                        </div>
+                        <p>We maintain a database of 1,800+ known banned and restricted hashtags across all major platforms, updated daily.</p>
                     </div>
                     
                     <div class="method-card">
                         <span class="method-icon">🔍</span>
                         <h4>Real-Time Visibility Tests</h4>
-                        <p>Our automated system performs live searches to verify if hashtags are currently blocked or showing reduced results on each platform.</p>
-                        <div class="method-details">
-                            <strong>What we test:</strong>
-                            <ul>
-                                <li>Hashtag page accessibility</li>
-                                <li>Post count visibility</li>
-                                <li>Content warning triggers</li>
-                                <li>Search result suppression</li>
-                            </ul>
-                        </div>
+                        <p>Our automated system performs live searches to verify if hashtags are currently blocked or showing reduced results.</p>
                     </div>
                     
                     <div class="method-card">
                         <span class="method-icon">🤖</span>
                         <h4>AI Pattern Detection</h4>
-                        <p>Our machine learning model analyzes hashtag patterns to identify spam-associated tags and predict which hashtags may become restricted.</p>
-                        <div class="method-details">
-                            <strong>Patterns analyzed:</strong>
-                            <ul>
-                                <li>Spam correlation scores</li>
-                                <li>Bot usage frequency</li>
-                                <li>Community guideline triggers</li>
-                                <li>Engagement manipulation signals</li>
-                            </ul>
-                        </div>
+                        <p>Our machine learning model analyzes hashtag patterns to identify spam-associated tags and predict restrictions.</p>
                     </div>
                     
                     <div class="method-card">
                         <span class="method-icon">👥</span>
                         <h4>Community Reports</h4>
-                        <p>We aggregate reports from creators and our user community to catch newly banned hashtags before they appear in official lists.</p>
-                        <div class="method-details">
-                            <strong>Sources include:</strong>
-                            <ul>
-                                <li>User-submitted reports</li>
-                                <li>Creator community forums</li>
-                                <li>Social media manager feedback</li>
-                                <li>Platform announcement tracking</li>
-                            </ul>
-                        </div>
+                        <p>We aggregate reports from creators to catch newly banned hashtags before they appear in official lists.</p>
                     </div>
-                </div>
-                
-                <div class="citation-info">
-                    <span class="citation-icon">⚠️</span>
-                    <div class="citation-content">
-                        <h4>Ban Types Explained</h4>
-                        <p><strong>Fully Banned:</strong> Hashtag is completely blocked—no posts will appear when searched, and using it can flag your account.</p>
-                        <p><strong>Restricted/Limited:</strong> Hashtag shows limited content or has reduced reach. Using it may suppress your post's visibility without full removal.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Data Sources -->
-    <section class="section">
-        <div class="container">
-            <div class="section-header">
-                <h2 class="section-title">Our Data Sources</h2>
-                <p class="section-desc">Multi-layered analysis for maximum accuracy</p>
-            </div>
-            <div class="sources-grid">
-                <div class="source-card reveal">
-                    <span class="source-icon">📊</span>
-                    <h4>Hashtag Database</h4>
-                    <p>1,800+ banned/restricted hashtags tracked daily</p>
-                </div>
-                <div class="source-card reveal">
-                    <span class="source-icon">🔍</span>
-                    <h4>Live Search Tests</h4>
-                    <p>Real-time visibility checks across platforms</p>
-                </div>
-                <div class="source-card reveal">
-                    <span class="source-icon">🤖</span>
-                    <h4>AI Detection</h4>
-                    <p>Pattern analysis for spam-associated tags</p>
-                </div>
-                <div class="source-card reveal">
-                    <span class="source-icon">👥</span>
-                    <h4>Community Reports</h4>
-                    <p>User-verified restrictions and updates</p>
-                </div>
-                <div class="source-card reveal">
-                    <span class="source-icon">📰</span>
-                    <h4>Platform Updates</h4>
-                    <p>Official policy change monitoring</p>
-                </div>
-                <div class="source-card reveal">
-                    <span class="source-icon">⏰</span>
-                    <h4>24hr Updates</h4>
-                    <p>Database refreshed daily at midnight UTC</p>
                 </div>
             </div>
         </div>
     </section>
 
     <!-- Cross-Promote: Other Tools -->
-    <section class="section section-alt">
+    <section class="section">
         <div class="container">
             <div class="section-header">
                 <h2 class="section-title">Also Check</h2>
@@ -499,11 +410,7 @@
         </div>
     </section>
 
-    <!-- ===================================
-         FOOTER - Loaded by shared-components.js
-         =================================== -->
-
-    <!-- 5-Factor Engine Info Modal -->
+    <!-- 5-Factor Engine Info Modal (for hashtag checker card) -->
     <div id="hashtag-info-modal" class="modal hidden">
         <div class="modal-overlay"></div>
         <div class="modal-content">
@@ -558,7 +465,7 @@
                 
                 <div class="modal-tech-note">
                     <h4>💡 Our Engine combines all applicable signals to determine hashtag safety</h4>
-                    <p>Each hashtag is cross-referenced against our database, verified with live visibility tests, and analyzed for restriction patterns—giving you the most accurate results possible.</p>
+                    <p>Each hashtag is cross-referenced against our database, verified with live visibility tests, and analyzed for restriction patterns.</p>
                 </div>
             </div>
             <div class="modal-footer">
@@ -622,7 +529,7 @@
                 
                 <div class="modal-tech-note">
                     <h4>💡 Why only 3 factors for hashtags?</h4>
-                    <p>Hashtag checking doesn't require account-level API access or IP analysis. We focus on our comprehensive database, real-time visibility tests, and historical pattern data to deliver fast, accurate results.</p>
+                    <p>Hashtag checking doesn't require account-level API access or IP analysis. We focus on our comprehensive database, real-time visibility tests, and historical pattern data.</p>
                 </div>
             </div>
             <div class="modal-footer">
@@ -657,136 +564,15 @@
         </div>
     </div>
 
-    <!-- Cookie Popup -->
-    <div id="cookie-popup" class="cookie-popup">
-        <div class="cookie-content">
-            <span class="cookie-icon">🍪</span>
-            <div class="cookie-text">
-                <h4>We Use Cookies</h4>
-                <p>We use cookies to enhance your experience and remember your preferences. <a href="legal/cookie-policy.html" style="color: var(--primary-light);">View Cookie Policy</a></p>
-            </div>
-            <div class="cookie-actions">
-                <button id="cookie-accept" class="btn-cookie btn-cookie-accept">Accept</button>
-                <button id="cookie-dismiss" class="btn-cookie btn-cookie-dismiss">Dismiss</button>
-            </div>
-        </div>
-    </div>
+    <!-- ===================================
+         SHARED COMPONENTS (Loaded by shared-components.js):
+         - Footer
+         - Cookie Popup
+         - Back to Top Button
+         - Toast
+         =================================== -->
 
-    <!-- Back to Top Button -->
-    <button id="back-to-top" class="back-to-top" aria-label="Back to top">↑</button>
-
-    <!-- Toast -->
-    <div id="toast" class="toast"></div>
-
-    <script>
-        // Platform tabs functionality
-        document.addEventListener('DOMContentLoaded', function() {
-            const tabs = document.querySelectorAll('.platform-tab');
-            const panels = document.querySelectorAll('.hashtag-panel');
-            
-            tabs.forEach(tab => {
-                tab.addEventListener('click', function() {
-                    const platform = this.dataset.platform;
-                    
-                    // Update active tab
-                    tabs.forEach(t => t.classList.remove('active'));
-                    this.classList.add('active');
-                    
-                    // Update active panel
-                    panels.forEach(p => {
-                        if (p.dataset.platform === platform) {
-                            p.classList.add('active');
-                        } else {
-                            p.classList.remove('active');
-                        }
-                    });
-                });
-            });
-            
-            // Info button modal (main checker card)
-            const infoBtn = document.getElementById('hashtag-info-btn');
-            const infoModal = document.getElementById('hashtag-info-modal');
-            
-            if (infoBtn && infoModal) {
-                infoBtn.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    infoModal.classList.remove('hidden');
-                    document.body.style.overflow = 'hidden';
-                });
-                
-                // Close handlers for info modal
-                const closeBtn = infoModal.querySelector('.modal-close');
-                const overlay = infoModal.querySelector('.modal-overlay');
-                
-                closeBtn?.addEventListener('click', function() {
-                    infoModal.classList.add('hidden');
-                    document.body.style.overflow = '';
-                });
-                
-                overlay?.addEventListener('click', function() {
-                    infoModal.classList.add('hidden');
-                    document.body.style.overflow = '';
-                });
-            }
-            
-            // Engine info button (methodology section)
-            const engineInfoBtn = document.getElementById('engine-info-btn');
-            const engineInfoModal = document.getElementById('engine-info-modal');
-            
-            if (engineInfoBtn && engineInfoModal) {
-                engineInfoBtn.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    engineInfoModal.classList.remove('hidden');
-                    document.body.style.overflow = 'hidden';
-                });
-                
-                // Close handlers for engine info modal
-                const closeBtn = engineInfoModal.querySelector('.modal-close');
-                const overlay = engineInfoModal.querySelector('.modal-overlay');
-                
-                closeBtn?.addEventListener('click', function() {
-                    engineInfoModal.classList.add('hidden');
-                    document.body.style.overflow = '';
-                });
-                
-                overlay?.addEventListener('click', function() {
-                    engineInfoModal.classList.add('hidden');
-                    document.body.style.overflow = '';
-                });
-            }
-            
-            // Close handlers for limit modal
-            const limitModal = document.getElementById('limit-modal');
-            if (limitModal) {
-                const closeBtn = limitModal.querySelector('.modal-close');
-                const overlay = limitModal.querySelector('.modal-overlay');
-                
-                closeBtn?.addEventListener('click', function() {
-                    limitModal.classList.add('hidden');
-                    document.body.style.overflow = '';
-                });
-                
-                overlay?.addEventListener('click', function() {
-                    limitModal.classList.add('hidden');
-                    document.body.style.overflow = '';
-                });
-            }
-            
-            // ESC key to close modals
-            document.addEventListener('keydown', function(e) {
-                if (e.key === 'Escape') {
-                    document.querySelectorAll('.modal').forEach(m => {
-                        m.classList.add('hidden');
-                    });
-                    document.body.style.overflow = '';
-                }
-            });
-        });
-    </script>
-    
-    <!-- Scripts - platforms.js loads FIRST -->
+    <!-- Scripts -->
     <script src="js/platforms.js"></script>
     <script src="js/shared-components.js"></script>
     <script src="js/main.js"></script>

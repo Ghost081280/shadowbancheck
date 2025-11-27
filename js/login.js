@@ -1,303 +1,276 @@
 /* =============================================================================
-   LOGIN.JS - Login Page Functionality with Signup & Verification
+   LOGIN.JS v2.0
+   ShadowBanCheck.io - Authentication System with 3-Way Role Routing
    ============================================================================= */
 
-// =============================================================================
-// CREDENTIALS
-// =============================================================================
-const ADMIN_CREDENTIALS = {
-    email: 'admin@shadowbancheck.io',
-    password: 'admin'
-};
-
-const DEMO_CREDENTIALS = {
-    email: 'demo@test.com',
-    password: 'password123'
-};
+(function() {
+'use strict';
 
 // =============================================================================
-// PENDING SIGNUPS STORAGE (Simulates backend)
-// In production, this would be server-side
+// DEMO ACCOUNTS (Replace with backend auth in production)
 // =============================================================================
-let pendingSignup = null;  // Stores current signup attempt
-let resendCooldown = 0;    // Cooldown timer for resend
+const DEMO_ACCOUNTS = {
+    // User account
+    'demo@test.com': {
+        password: 'password123',
+        role: 'user',
+        name: 'Demo User',
+        redirect: 'dashboard.html'
+    },
+    // Agency account
+    'agency@test.com': {
+        password: 'agency123',
+        role: 'agency',
+        name: 'Agency Demo',
+        redirect: 'agency-dashboard.html'
+    },
+    // Admin account
+    'admin@shadowbancheck.io': {
+        password: 'admin',
+        role: 'admin',
+        name: 'Admin',
+        redirect: 'admin-dashboard.html'
+    }
+};
+
+// =============================================================================
+// STORAGE KEYS
+// =============================================================================
+const STORAGE_KEYS = {
+    session: 'shadowban_session',
+    users: 'shadowban_users',
+    pendingVerification: 'shadowban_pending_verification'
+};
 
 // =============================================================================
 // INITIALIZATION
 // =============================================================================
-document.addEventListener('DOMContentLoaded', () => {
+function init() {
+    console.log('🔐 Login System v2.0 Initializing...');
+    
+    // Check if already logged in
+    checkExistingSession();
+    
+    // Init form handlers
     initLoginForm();
-    initGoogleSignIn();
-    initPasswordToggle();
-    initForgotPassword();
     initSignupForm();
     initVerifyForm();
-});
+    initForgotForm();
+    initPasswordToggle();
+    
+    console.log('✅ Login system initialized');
+}
+
+// =============================================================================
+// SESSION CHECK
+// =============================================================================
+function checkExistingSession() {
+    const session = localStorage.getItem(STORAGE_KEYS.session) || 
+                   sessionStorage.getItem(STORAGE_KEYS.session);
+    
+    if (session) {
+        try {
+            const data = JSON.parse(session);
+            if (data.loggedIn && data.email) {
+                // Redirect based on role
+                redirectByRole(data.role || 'user');
+            }
+        } catch (e) {
+            // Invalid session, clear it
+            localStorage.removeItem(STORAGE_KEYS.session);
+            sessionStorage.removeItem(STORAGE_KEYS.session);
+        }
+    }
+}
+
+function redirectByRole(role) {
+    switch (role) {
+        case 'admin':
+            window.location.href = 'admin-dashboard.html';
+            break;
+        case 'agency':
+            window.location.href = 'agency-dashboard.html';
+            break;
+        default:
+            window.location.href = 'dashboard.html';
+    }
+}
 
 // =============================================================================
 // LOGIN FORM
 // =============================================================================
 function initLoginForm() {
     const form = document.getElementById('login-form');
+    if (!form) return;
     
-    form?.addEventListener('submit', async (e) => {
+    form.addEventListener('submit', async (e) => {
         e.preventDefault();
         
-        const email = document.getElementById('email').value.trim();
+        const email = document.getElementById('email').value.trim().toLowerCase();
         const password = document.getElementById('password').value;
-        const remember = document.getElementById('remember').checked;
+        const remember = document.getElementById('remember')?.checked || false;
         
-        // Hide any previous errors
-        hideError();
+        const loginBtn = document.getElementById('login-btn');
+        const btnText = loginBtn.querySelector('.btn-text');
+        const btnLoading = loginBtn.querySelector('.btn-loading');
         
-        // Show loading state
-        setLoading(true);
+        // Show loading
+        btnText.classList.add('hidden');
+        btnLoading.classList.remove('hidden');
+        loginBtn.disabled = true;
+        hideLoginError();
         
-        // Simulate API delay
-        await delay(1500);
+        // Simulate network delay
+        await delay(800);
         
-        // Check if admin
-        const isAdmin = validateAdmin(email, password);
-        
-        // Check if regular user (demo or registered)
-        const isValidUser = validateCredentials(email, password);
-        
-        if (isAdmin) {
-            // Admin login!
-            showToast('👑', 'Welcome back, Admin! Redirecting...');
-            
-            // Store admin session
-            const storage = remember ? localStorage : sessionStorage;
-            storage.setItem('shadowban_session', JSON.stringify({
-                email: email,
-                loggedIn: true,
-                isAdmin: true,
-                timestamp: Date.now()
-            }));
-            
-            // Redirect to ADMIN dashboard
-            await delay(1000);
-            window.location.href = 'admin-dashboard.html';
-            
-        } else if (isValidUser) {
-            // Regular user login
-            showToast('✅', 'Login successful! Redirecting...');
-            
-            // Store user session
-            const storage = remember ? localStorage : sessionStorage;
-            storage.setItem('shadowban_session', JSON.stringify({
-                email: email,
-                loggedIn: true,
-                isAdmin: false,
-                timestamp: Date.now()
-            }));
-            
-            // Redirect to USER dashboard
-            await delay(1000);
-            window.location.href = 'dashboard.html';
-            
-        } else {
-            // Failed
-            setLoading(false);
-            showError('Invalid email or password. Please try again.');
+        // Check demo accounts first
+        if (DEMO_ACCOUNTS[email]) {
+            const account = DEMO_ACCOUNTS[email];
+            if (account.password === password) {
+                // Success - create session
+                createSession(email, account.role, account.name, remember);
+                showToast('✅', `Welcome back, ${account.name}!`);
+                await delay(500);
+                window.location.href = account.redirect;
+                return;
+            }
         }
+        
+        // Check registered users
+        const users = getRegisteredUsers();
+        const user = users[email];
+        
+        if (user && user.password === password) {
+            // Success - create session
+            createSession(email, user.role || 'user', user.name || 'User', remember);
+            showToast('✅', `Welcome back!`);
+            await delay(500);
+            redirectByRole(user.role || 'user');
+            return;
+        }
+        
+        // Failed
+        btnText.classList.remove('hidden');
+        btnLoading.classList.add('hidden');
+        loginBtn.disabled = false;
+        showLoginError('Invalid email or password. Please try again.');
     });
 }
 
-function validateAdmin(email, password) {
-    return email.toLowerCase() === ADMIN_CREDENTIALS.email.toLowerCase() && 
-           password === ADMIN_CREDENTIALS.password;
-}
-
-function validateCredentials(email, password) {
-    // Check demo credentials
-    if (email.toLowerCase() === DEMO_CREDENTIALS.email.toLowerCase() && 
-        password === DEMO_CREDENTIALS.password) {
-        return true;
-    }
+function createSession(email, role, name, remember) {
+    const sessionData = {
+        loggedIn: true,
+        email: email,
+        role: role,
+        name: name,
+        isAdmin: role === 'admin',
+        isAgency: role === 'agency',
+        createdAt: Date.now()
+    };
     
-    // Check registered users from localStorage
-    const users = JSON.parse(localStorage.getItem('shadowban_users') || '[]');
-    const user = users.find(u => u.email.toLowerCase() === email.toLowerCase());
+    const storage = remember ? localStorage : sessionStorage;
+    storage.setItem(STORAGE_KEYS.session, JSON.stringify(sessionData));
     
-    if (user && user.password === password && user.verified) {
-        return true;
-    }
-    
-    return false;
-}
-
-function setLoading(isLoading) {
-    const btn = document.getElementById('login-btn');
-    const btnText = btn?.querySelector('.btn-text');
-    const btnLoading = btn?.querySelector('.btn-loading');
-    
-    if (isLoading) {
-        btn.disabled = true;
-        btnText?.classList.add('hidden');
-        btnLoading?.classList.remove('hidden');
-    } else {
-        btn.disabled = false;
-        btnText?.classList.remove('hidden');
-        btnLoading?.classList.add('hidden');
+    // Also store in localStorage if remember
+    if (remember) {
+        localStorage.setItem(STORAGE_KEYS.session, JSON.stringify(sessionData));
     }
 }
 
-function showError(message) {
+function showLoginError(message) {
     const errorDiv = document.getElementById('login-error');
     const errorMsg = document.getElementById('error-message');
-    
     if (errorDiv && errorMsg) {
         errorMsg.textContent = message;
         errorDiv.classList.remove('hidden');
     }
 }
 
-function hideError() {
+function hideLoginError() {
     const errorDiv = document.getElementById('login-error');
-    errorDiv?.classList.add('hidden');
-}
-
-// =============================================================================
-// SIGNUP MODAL
-// =============================================================================
-function showSignupModal() {
-    document.getElementById('signup-modal')?.classList.remove('hidden');
-    // Reset to step 1
-    showSignupStep(1);
-    // Focus email field
-    setTimeout(() => {
-        document.getElementById('signup-email')?.focus();
-    }, 100);
-}
-
-function closeSignupModal() {
-    document.getElementById('signup-modal')?.classList.add('hidden');
-    // Reset forms
-    document.getElementById('signup-form')?.reset();
-    document.getElementById('verify-form')?.reset();
-    hideSignupError();
-    hideVerifyError();
-    pendingSignup = null;
-}
-
-function showSignupStep(step) {
-    document.getElementById('signup-step-1')?.classList.toggle('hidden', step !== 1);
-    document.getElementById('signup-step-2')?.classList.toggle('hidden', step !== 2);
-    document.getElementById('signup-step-3')?.classList.toggle('hidden', step !== 3);
-    
-    // Update modal title
-    const title = document.getElementById('signup-modal-title');
-    if (title) {
-        if (step === 1) title.textContent = '🚀 Create Your Account';
-        if (step === 2) title.textContent = '📧 Verify Your Email';
-        if (step === 3) title.textContent = '🎉 Welcome!';
+    if (errorDiv) {
+        errorDiv.classList.add('hidden');
     }
 }
 
-function goBackToStep1() {
-    showSignupStep(1);
-    pendingSignup = null;
-}
+// =============================================================================
+// SIGNUP FORM
+// =============================================================================
+let pendingSignup = null;
 
-// =============================================================================
-// SIGNUP FORM HANDLING
-// =============================================================================
 function initSignupForm() {
     const form = document.getElementById('signup-form');
+    if (!form) return;
     
-    form?.addEventListener('submit', async (e) => {
+    form.addEventListener('submit', async (e) => {
         e.preventDefault();
         
-        const email = document.getElementById('signup-email').value.trim();
+        const email = document.getElementById('signup-email').value.trim().toLowerCase();
         const password = document.getElementById('signup-password').value;
         const confirm = document.getElementById('signup-confirm').value;
         
-        // Hide previous errors
-        hideSignupError();
+        const btn = document.getElementById('signup-btn');
+        const btnText = btn.querySelector('.btn-text');
+        const btnLoading = btn.querySelector('.btn-loading');
         
         // Validation
-        if (!isValidEmail(email)) {
-            showSignupError('Please enter a valid email address.');
+        if (password !== confirm) {
+            showSignupError('Passwords do not match');
             return;
         }
         
         if (password.length < 8) {
-            showSignupError('Password must be at least 8 characters.');
+            showSignupError('Password must be at least 8 characters');
             return;
         }
         
-        if (password !== confirm) {
-            showSignupError('Passwords do not match.');
-            return;
-        }
-        
-        // Check if email already registered
-        const users = JSON.parse(localStorage.getItem('shadowban_users') || '[]');
-        if (users.some(u => u.email.toLowerCase() === email.toLowerCase())) {
-            showSignupError('An account with this email already exists.');
+        // Check if email already exists
+        const users = getRegisteredUsers();
+        if (users[email] || DEMO_ACCOUNTS[email]) {
+            showSignupError('An account with this email already exists');
             return;
         }
         
         // Show loading
-        setSignupLoading(true);
+        btnText.classList.add('hidden');
+        btnLoading.classList.remove('hidden');
+        btn.disabled = true;
+        hideSignupError();
         
-        // Simulate sending email (1-2 second delay)
-        await delay(1500);
+        await delay(1000);
         
-        // Generate 6-digit code
-        const verificationCode = generateCode();
+        // Generate verification code
+        const code = generateCode();
+        pendingSignup = { email, password, code };
         
-        // Store pending signup
-        pendingSignup = {
-            email: email,
-            password: password,
-            code: verificationCode,
-            timestamp: Date.now()
-        };
+        // Store pending verification
+        localStorage.setItem(STORAGE_KEYS.pendingVerification, JSON.stringify({
+            email,
+            code,
+            expires: Date.now() + (10 * 60 * 1000) // 10 minutes
+        }));
         
-        // In production, send email here via your email service
-        // For now, we'll show it in a toast (REMOVE IN PRODUCTION)
-        console.log(`📧 Verification code for ${email}: ${verificationCode}`);
-        showToast('📧', `Code sent! (Dev: ${verificationCode})`);
+        console.log('📧 Verification code:', code); // For demo purposes
         
-        // Reset loading
-        setSignupLoading(false);
+        // Reset button
+        btnText.classList.remove('hidden');
+        btnLoading.classList.add('hidden');
+        btn.disabled = false;
         
         // Show verification step
         document.getElementById('verify-email-display').textContent = email;
-        showSignupStep(2);
+        document.getElementById('signup-step-1').classList.add('hidden');
+        document.getElementById('signup-step-2').classList.remove('hidden');
+        document.getElementById('signup-modal-title').textContent = '📧 Verify Your Email';
         
-        // Focus code input
-        setTimeout(() => {
-            document.getElementById('verify-code')?.focus();
-        }, 100);
-        
-        // Start resend cooldown
-        startResendCooldown();
+        showToast('📧', `Code sent! (Demo: ${code})`);
+        startResendTimer();
     });
-}
-
-function setSignupLoading(isLoading) {
-    const btn = document.getElementById('signup-btn');
-    const btnText = btn?.querySelector('.btn-text');
-    const btnLoading = btn?.querySelector('.btn-loading');
-    
-    if (isLoading) {
-        btn.disabled = true;
-        btnText?.classList.add('hidden');
-        btnLoading?.classList.remove('hidden');
-    } else {
-        btn.disabled = false;
-        btnText?.classList.remove('hidden');
-        btnLoading?.classList.add('hidden');
-    }
 }
 
 function showSignupError(message) {
     const errorDiv = document.getElementById('signup-error');
     const errorMsg = document.getElementById('signup-error-message');
-    
     if (errorDiv && errorMsg) {
         errorMsg.textContent = message;
         errorDiv.classList.remove('hidden');
@@ -305,110 +278,74 @@ function showSignupError(message) {
 }
 
 function hideSignupError() {
-    document.getElementById('signup-error')?.classList.add('hidden');
-}
-
-function generateCode() {
-    return Math.floor(100000 + Math.random() * 900000).toString();
-}
-
-function isValidEmail(email) {
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    const errorDiv = document.getElementById('signup-error');
+    if (errorDiv) {
+        errorDiv.classList.add('hidden');
+    }
 }
 
 // =============================================================================
-// VERIFICATION FORM HANDLING
+// VERIFICATION FORM
 // =============================================================================
 function initVerifyForm() {
     const form = document.getElementById('verify-form');
+    if (!form) return;
     
-    form?.addEventListener('submit', async (e) => {
+    form.addEventListener('submit', async (e) => {
         e.preventDefault();
         
         const code = document.getElementById('verify-code').value.trim();
-        
-        // Hide previous errors
-        hideVerifyError();
+        const btn = document.getElementById('verify-btn');
+        const btnText = btn.querySelector('.btn-text');
+        const btnLoading = btn.querySelector('.btn-loading');
         
         if (!pendingSignup) {
-            showVerifyError('Session expired. Please start over.');
-            return;
-        }
-        
-        // Check if code expired (10 minutes)
-        if (Date.now() - pendingSignup.timestamp > 10 * 60 * 1000) {
-            showVerifyError('Code expired. Please request a new one.');
-            return;
-        }
-        
-        // Validate code format
-        if (!/^\d{6}$/.test(code)) {
-            showVerifyError('Please enter a valid 6-digit code.');
+            showVerifyError('Session expired. Please try again.');
             return;
         }
         
         // Show loading
-        setVerifyLoading(true);
+        btnText.classList.add('hidden');
+        btnLoading.classList.remove('hidden');
+        btn.disabled = true;
+        hideVerifyError();
         
-        await delay(1000);
+        await delay(800);
         
         // Check code
-        if (code !== pendingSignup.code) {
-            setVerifyLoading(false);
+        if (code === pendingSignup.code || code === '000000') { // 000000 is bypass for demo
+            // Create account
+            const users = getRegisteredUsers();
+            users[pendingSignup.email] = {
+                password: pendingSignup.password,
+                role: 'user',
+                name: pendingSignup.email.split('@')[0],
+                createdAt: Date.now()
+            };
+            saveRegisteredUsers(users);
+            
+            // Clear pending
+            localStorage.removeItem(STORAGE_KEYS.pendingVerification);
+            
+            // Show success
+            document.getElementById('signup-step-2').classList.add('hidden');
+            document.getElementById('signup-step-3').classList.remove('hidden');
+            document.getElementById('signup-modal-title').textContent = '🎉 Success!';
+            
+            showToast('✅', 'Account created successfully!');
+        } else {
+            // Wrong code
+            btnText.classList.remove('hidden');
+            btnLoading.classList.add('hidden');
+            btn.disabled = false;
             showVerifyError('Invalid verification code. Please try again.');
-            return;
         }
-        
-        // Success! Create the user account
-        const users = JSON.parse(localStorage.getItem('shadowban_users') || '[]');
-        users.push({
-            email: pendingSignup.email,
-            password: pendingSignup.password,
-            verified: true,
-            createdAt: Date.now()
-        });
-        localStorage.setItem('shadowban_users', JSON.stringify(users));
-        
-        // Clear pending signup
-        const completedEmail = pendingSignup.email;
-        pendingSignup = null;
-        
-        // Reset loading
-        setVerifyLoading(false);
-        
-        // Show success
-        showSignupStep(3);
-        
-        // Store in session so they're logged in
-        sessionStorage.setItem('shadowban_session', JSON.stringify({
-            email: completedEmail,
-            loggedIn: true,
-            isAdmin: false,
-            timestamp: Date.now()
-        }));
     });
-}
-
-function setVerifyLoading(isLoading) {
-    const btn = document.getElementById('verify-btn');
-    const btnText = btn?.querySelector('.btn-text');
-    const btnLoading = btn?.querySelector('.btn-loading');
-    
-    if (isLoading) {
-        btn.disabled = true;
-        btnText?.classList.add('hidden');
-        btnLoading?.classList.remove('hidden');
-    } else {
-        btn.disabled = false;
-        btnText?.classList.remove('hidden');
-        btnLoading?.classList.add('hidden');
-    }
 }
 
 function showVerifyError(message) {
     const errorDiv = document.getElementById('verify-error');
     const errorMsg = document.getElementById('verify-error-message');
-    
     if (errorDiv && errorMsg) {
         errorMsg.textContent = message;
         errorDiv.classList.remove('hidden');
@@ -416,178 +353,205 @@ function showVerifyError(message) {
 }
 
 function hideVerifyError() {
-    document.getElementById('verify-error')?.classList.add('hidden');
+    const errorDiv = document.getElementById('verify-error');
+    if (errorDiv) {
+        errorDiv.classList.add('hidden');
+    }
 }
 
-// =============================================================================
-// RESEND CODE FUNCTIONALITY
-// =============================================================================
-function resendCode() {
-    if (resendCooldown > 0 || !pendingSignup) return;
-    
-    // Generate new code
-    const newCode = generateCode();
-    pendingSignup.code = newCode;
-    pendingSignup.timestamp = Date.now();
-    
-    // In production, send email here
-    console.log(`📧 New verification code for ${pendingSignup.email}: ${newCode}`);
-    showToast('📧', `New code sent! (Dev: ${newCode})`);
-    
-    // Start cooldown
-    startResendCooldown();
-}
+// Resend timer
+let resendInterval = null;
 
-function startResendCooldown() {
-    resendCooldown = 60;
-    const resendBtn = document.getElementById('resend-btn');
-    const resendTimer = document.getElementById('resend-timer');
+function startResendTimer() {
+    const btn = document.getElementById('resend-btn');
+    const timer = document.getElementById('resend-timer');
+    let seconds = 60;
     
-    resendBtn.disabled = true;
-    resendTimer?.classList.remove('hidden');
+    btn.disabled = true;
+    btn.style.opacity = '0.5';
+    timer.classList.remove('hidden');
     
-    const interval = setInterval(() => {
-        resendCooldown--;
-        if (resendTimer) resendTimer.textContent = `(${resendCooldown}s)`;
+    if (resendInterval) clearInterval(resendInterval);
+    
+    resendInterval = setInterval(() => {
+        seconds--;
+        timer.textContent = `(${seconds}s)`;
         
-        if (resendCooldown <= 0) {
-            clearInterval(interval);
-            resendBtn.disabled = false;
-            resendTimer?.classList.add('hidden');
+        if (seconds <= 0) {
+            clearInterval(resendInterval);
+            btn.disabled = false;
+            btn.style.opacity = '1';
+            timer.classList.add('hidden');
         }
     }, 1000);
 }
 
-function signupComplete() {
-    // Redirect to dashboard
-    window.location.href = 'dashboard.html';
-}
-
-// =============================================================================
-// PASSWORD TOGGLE FOR SIGNUP
-// =============================================================================
-function toggleSignupPassword(inputId) {
-    const input = document.getElementById(inputId);
-    const btn = input?.nextElementSibling;
+window.resendCode = function() {
+    if (!pendingSignup) return;
     
-    if (input) {
-        const type = input.type === 'password' ? 'text' : 'password';
-        input.type = type;
-        if (btn) btn.textContent = type === 'password' ? '👁️' : '🙈';
+    // Generate new code
+    pendingSignup.code = generateCode();
+    console.log('📧 New verification code:', pendingSignup.code);
+    showToast('📧', `New code sent! (Demo: ${pendingSignup.code})`);
+    startResendTimer();
+};
+
+window.goBackToStep1 = function() {
+    document.getElementById('signup-step-2').classList.add('hidden');
+    document.getElementById('signup-step-1').classList.remove('hidden');
+    document.getElementById('signup-modal-title').textContent = '🚀 Create Your Account';
+    pendingSignup = null;
+};
+
+window.signupComplete = function() {
+    closeSignupModal();
+    
+    // Auto-fill login with new email
+    if (pendingSignup && pendingSignup.email) {
+        document.getElementById('email').value = pendingSignup.email;
+        document.getElementById('password').focus();
     }
-}
-
-// =============================================================================
-// GOOGLE SIGN IN
-// =============================================================================
-function initGoogleSignIn() {
-    const googleBtn = document.getElementById('google-signin-btn');
     
-    googleBtn?.addEventListener('click', async () => {
-        showToast('🔧', 'Google Sign-In coming soon!');
-        
-        // In production, you would integrate with:
-        // - Firebase Auth
-        // - Supabase Auth
-        // - Google Identity Services
-        // - etc.
-    });
-}
-
-// =============================================================================
-// PASSWORD TOGGLE (Login)
-// =============================================================================
-function initPasswordToggle() {
-    const toggleBtn = document.getElementById('toggle-password');
-    const passwordInput = document.getElementById('password');
-    
-    toggleBtn?.addEventListener('click', () => {
-        const type = passwordInput.type === 'password' ? 'text' : 'password';
-        passwordInput.type = type;
-        toggleBtn.textContent = type === 'password' ? '👁️' : '🙈';
-    });
-}
+    pendingSignup = null;
+};
 
 // =============================================================================
 // FORGOT PASSWORD
 // =============================================================================
-function initForgotPassword() {
+function initForgotForm() {
     const form = document.getElementById('forgot-form');
+    if (!form) return;
     
-    form?.addEventListener('submit', async (e) => {
+    form.addEventListener('submit', async (e) => {
         e.preventDefault();
         
-        const email = document.getElementById('forgot-email').value.trim();
+        const email = document.getElementById('forgot-email').value.trim().toLowerCase();
         
-        if (!email) {
-            showToast('⚠️', 'Please enter your email address');
-            return;
-        }
+        await delay(800);
         
-        // Show loading
-        const btn = form.querySelector('button');
-        const originalText = btn.textContent;
-        btn.textContent = 'Sending...';
-        btn.disabled = true;
-        
-        await delay(1500);
-        
-        // Reset button
-        btn.textContent = originalText;
-        btn.disabled = false;
-        
-        // Close modal
+        // Always show success (don't reveal if email exists)
+        showToast('📧', 'If an account exists, a reset link has been sent.');
         closeForgotPassword();
-        
-        // Show success message
-        showToast('✅', 'Password reset link sent! Check your email.');
     });
 }
 
-function showForgotPassword() {
-    document.getElementById('forgot-modal')?.classList.remove('hidden');
+// =============================================================================
+// PASSWORD TOGGLE
+// =============================================================================
+function initPasswordToggle() {
+    const toggle = document.getElementById('toggle-password');
+    const password = document.getElementById('password');
+    
+    if (toggle && password) {
+        toggle.addEventListener('click', () => {
+            const type = password.type === 'password' ? 'text' : 'password';
+            password.type = type;
+            toggle.textContent = type === 'password' ? '👁️' : '🙈';
+        });
+    }
 }
 
-function closeForgotPassword() {
-    document.getElementById('forgot-modal')?.classList.add('hidden');
-    document.getElementById('forgot-email').value = '';
-}
+window.toggleSignupPassword = function(inputId) {
+    const input = document.getElementById(inputId);
+    if (input) {
+        const type = input.type === 'password' ? 'text' : 'password';
+        input.type = type;
+    }
+};
 
 // =============================================================================
-// DEMO HELPERS - REMOVE AFTER TESTING
+// MODALS
 // =============================================================================
-function autofillDemo() {
-    document.getElementById('email').value = DEMO_CREDENTIALS.email;
-    document.getElementById('password').value = DEMO_CREDENTIALS.password;
-    showToast('✅', 'Demo credentials filled! Click Sign In.');
-}
+window.showSignupModal = function() {
+    const modal = document.getElementById('signup-modal');
+    if (modal) {
+        modal.classList.remove('hidden');
+        // Reset to step 1
+        document.getElementById('signup-step-1').classList.remove('hidden');
+        document.getElementById('signup-step-2').classList.add('hidden');
+        document.getElementById('signup-step-3').classList.add('hidden');
+        document.getElementById('signup-modal-title').textContent = '🚀 Create Your Account';
+        document.getElementById('signup-form').reset();
+        hideSignupError();
+    }
+};
 
-function copyToClipboard(text, btn) {
+window.closeSignupModal = function() {
+    const modal = document.getElementById('signup-modal');
+    if (modal) {
+        modal.classList.add('hidden');
+    }
+};
+
+window.showForgotPassword = function() {
+    const modal = document.getElementById('forgot-modal');
+    if (modal) {
+        modal.classList.remove('hidden');
+        document.getElementById('forgot-form').reset();
+    }
+};
+
+window.closeForgotPassword = function() {
+    const modal = document.getElementById('forgot-modal');
+    if (modal) {
+        modal.classList.add('hidden');
+    }
+};
+
+// =============================================================================
+// DEMO AUTO-FILL FUNCTIONS
+// =============================================================================
+window.autofillDemo = function() {
+    document.getElementById('email').value = 'demo@test.com';
+    document.getElementById('password').value = 'password123';
+    showToast('⚡', 'User credentials filled!');
+};
+
+window.autofillAgency = function() {
+    document.getElementById('email').value = 'agency@test.com';
+    document.getElementById('password').value = 'agency123';
+    showToast('🏢', 'Agency credentials filled!');
+};
+
+window.autofillAdmin = function() {
+    document.getElementById('email').value = 'admin@shadowbancheck.io';
+    document.getElementById('password').value = 'admin';
+    showToast('👑', 'Admin credentials filled!');
+};
+
+window.copyToClipboard = function(text, btn) {
     navigator.clipboard.writeText(text).then(() => {
-        const originalText = btn.textContent;
+        const original = btn.textContent;
         btn.textContent = '✅';
-        setTimeout(() => {
-            btn.textContent = originalText;
-        }, 1000);
-    }).catch(() => {
-        // Fallback for older browsers
-        const textarea = document.createElement('textarea');
-        textarea.value = text;
-        document.body.appendChild(textarea);
-        textarea.select();
-        document.execCommand('copy');
-        document.body.removeChild(textarea);
-        
-        const originalText = btn.textContent;
-        btn.textContent = '✅';
-        setTimeout(() => {
-            btn.textContent = originalText;
-        }, 1000);
+        setTimeout(() => btn.textContent = original, 1000);
     });
+};
+
+// =============================================================================
+// HELPER FUNCTIONS
+// =============================================================================
+function getRegisteredUsers() {
+    try {
+        return JSON.parse(localStorage.getItem(STORAGE_KEYS.users) || '{}');
+    } catch {
+        return {};
+    }
+}
+
+function saveRegisteredUsers(users) {
+    localStorage.setItem(STORAGE_KEYS.users, JSON.stringify(users));
+}
+
+function generateCode() {
+    return Math.floor(100000 + Math.random() * 900000).toString();
+}
+
+function delay(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 // =============================================================================
-// TOAST NOTIFICATIONS
+// TOAST
 // =============================================================================
 function showToast(icon, message) {
     const toast = document.getElementById('toast');
@@ -611,49 +575,19 @@ function showToast(icon, message) {
 }
 
 // =============================================================================
-// UTILITY FUNCTIONS
+// GOOGLE SIGN IN (Placeholder)
 // =============================================================================
-function delay(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
+document.getElementById('google-signin-btn')?.addEventListener('click', () => {
+    showToast('🔧', 'Google Sign-In coming soon!');
+});
+
+// =============================================================================
+// INIT
+// =============================================================================
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+} else {
+    init();
 }
 
-// =============================================================================
-// CHECK EXISTING SESSION
-// =============================================================================
-(function checkSession() {
-    // Check if user is already logged in
-    const session = localStorage.getItem('shadowban_session') || 
-                   sessionStorage.getItem('shadowban_session');
-    
-    if (session) {
-        try {
-            const data = JSON.parse(session);
-            if (data.loggedIn) {
-                // Redirect based on role
-                if (data.isAdmin) {
-                    window.location.href = 'admin-dashboard.html';
-                } else {
-                    window.location.href = 'dashboard.html';
-                }
-            }
-        } catch (e) {
-            // Invalid session, clear it
-            localStorage.removeItem('shadowban_session');
-            sessionStorage.removeItem('shadowban_session');
-        }
-    }
 })();
-
-// =============================================================================
-// MAKE FUNCTIONS GLOBALLY AVAILABLE
-// =============================================================================
-window.autofillDemo = autofillDemo;
-window.copyToClipboard = copyToClipboard;
-window.showForgotPassword = showForgotPassword;
-window.closeForgotPassword = closeForgotPassword;
-window.showSignupModal = showSignupModal;
-window.closeSignupModal = closeSignupModal;
-window.goBackToStep1 = goBackToStep1;
-window.toggleSignupPassword = toggleSignupPassword;
-window.resendCode = resendCode;
-window.signupComplete = signupComplete;

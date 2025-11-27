@@ -1174,26 +1174,12 @@
         </div>
     </div>
 
-    <!-- Cookie Popup -->
-    <div id="cookie-popup" class="cookie-popup">
-        <div class="cookie-content">
-            <span class="cookie-icon">🍪</span>
-            <div class="cookie-text">
-                <h4>We Use Cookies</h4>
-                <p>We use cookies to enhance your experience and remember your preferences. <a href="legal/cookie-policy.html" style="color: var(--primary-light);">View Cookie Policy</a></p>
-            </div>
-            <div class="cookie-actions">
-                <button id="cookie-accept" class="btn-cookie btn-cookie-accept">Accept</button>
-                <button id="cookie-dismiss" class="btn-cookie btn-cookie-dismiss">Dismiss</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Toast Notification -->
-    <div id="toast" class="toast"></div>
-
-    <!-- Back to Top Button -->
-    <button id="back-to-top" class="back-to-top" aria-label="Back to top">↑</button>
+    <!-- ===================================
+         SHARED COMPONENTS (Loaded by shared-components.js):
+         - Cookie Popup
+         - Back to Top Button  
+         - Toast Notification
+         =================================== -->
 
     <!-- Shadow AI Chatbot - Created dynamically by shadow-ai.js -->
 
@@ -1202,44 +1188,5 @@
     <script src="js/shared-components.js"></script>
     <script src="js/main.js"></script>
     <script src="js/shadow-ai.js"></script>
-    
-    <!-- AI Info Modal Handler & Coming Soon Platform Handler -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // AI Info Modal
-            const aiInfoBtn = document.getElementById('ai-info-btn');
-            const aiInfoModal = document.getElementById('ai-info-modal');
-            
-            if (aiInfoBtn && aiInfoModal) {
-                aiInfoBtn.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    aiInfoModal.classList.remove('hidden');
-                    document.body.style.overflow = 'hidden';
-                });
-                
-                // Close modal handlers
-                const closeBtn = aiInfoModal.querySelector('.modal-close');
-                const overlay = aiInfoModal.querySelector('.modal-overlay');
-                
-                if (closeBtn) {
-                    closeBtn.addEventListener('click', function() {
-                        aiInfoModal.classList.add('hidden');
-                        document.body.style.overflow = '';
-                    });
-                }
-                
-                if (overlay) {
-                    overlay.addEventListener('click', function() {
-                        aiInfoModal.classList.add('hidden');
-                        document.body.style.overflow = '';
-                    });
-                }
-            }
-            
-            // Handle "Coming Soon" platforms - show modal (link inside modal for account creation)
-            // Modal now has clickable "Create an account" link inside it
-        });
-    </script>
 </body>
 </html>

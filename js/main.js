@@ -1470,6 +1470,27 @@ function initAudienceModals() {
                     <p>From royalty to reality stars, public figures are often targeted by both automated systems and coordinated reporting. Platforms <strong>aren't required to tell you</strong> when your visibility is restricted. Our detection system alerts you in real-time with <strong>actionable data and source citations</strong>—so you can take action before your audience thinks you've gone silent.</p>
                 </div>
             `
+        },
+        'agency': {
+            icon: '🏛️',
+            title: 'Why Agencies & Brands Need Shadow Ban Detection',
+            content: `
+                <p class="modal-intro">Government agencies, corporations, and PR teams invest heavily in social communications. A shadow ban means your taxpayer-funded or brand campaigns aren't reaching the public you're trying to serve.</p>
+                
+                <h4>At-Risk Situations:</h4>
+                <ul class="check-list">
+                    <li>Public health announcements flagged as "misinformation"</li>
+                    <li>Emergency alerts not reaching citizens during crises</li>
+                    <li>Brand campaigns suppressed without explanation</li>
+                    <li>Regulatory communications hidden from stakeholders</li>
+                    <li>PR crisis responses failing to reach your audience</li>
+                </ul>
+                
+                <div class="modal-tech-note">
+                    <h4>💡 Accountability Matters</h4>
+                    <p>When a government agency spends public funds on social outreach—or a brand invests millions in campaigns—you need to know those messages are actually being delivered. Platforms can <strong>silently suppress content</strong> without disclosure. Our detection system provides <strong>documented evidence</strong> your legal, compliance, and communications teams can use to demand transparency, file disputes, or adjust strategy with real data.</p>
+                </div>
+            `
         }
     };
     

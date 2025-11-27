@@ -1,7 +1,18 @@
 /* =============================================================================
    SHARED COMPONENTS LOADER
    ShadowBanCheck.io
-   Loads header, mobile-nav, and footer into all pages
+   
+   Loads shared HTML components into all pages:
+   - Header
+   - Mobile Navigation
+   - Footer
+   - Cookie Popup
+   - Back to Top Button
+   - Toast Notification
+   
+   NOTE: This file ONLY loads HTML. All JavaScript initialization
+   (mobile nav toggle, cookie popup logic, back-to-top scroll, etc.)
+   is handled by main.js after components are loaded.
    ============================================================================= */
 
 (function() {
@@ -10,7 +21,6 @@
 // ============================================
 // CONFIGURATION
 // ============================================
-// Detect if we're in a subfolder and adjust paths accordingly
 const currentPath = window.location.pathname;
 const isInSubfolder = currentPath.includes('/legal/');
 const SHARED_PATH = isInSubfolder ? '../shared/' : './shared/';
@@ -20,18 +30,36 @@ const COMPONENTS = {
     header: {
         file: 'header.html',
         target: 'body',
-        position: 'afterbegin' // Insert at the beginning of body
+        position: 'afterbegin'
     },
     mobileNav: {
         file: 'mobile-nav.html',
         target: 'header',
-        position: 'afterend' // Insert after header
+        position: 'afterend'
     },
     footer: {
         file: 'footer.html',
         target: 'body',
-        position: 'beforeend', // Insert at end of body
-        beforeSelector: 'script' // But before script tags
+        position: 'beforeend',
+        beforeSelector: 'script'
+    },
+    cookiePopup: {
+        file: 'cookie-popup.html',
+        target: 'body',
+        position: 'beforeend',
+        beforeSelector: 'script'
+    },
+    backToTop: {
+        file: 'back-to-top.html',
+        target: 'body',
+        position: 'beforeend',
+        beforeSelector: 'script'
+    },
+    toast: {
+        file: 'toast.html',
+        target: 'body',
+        position: 'beforeend',
+        beforeSelector: 'script'
     }
 };
 
@@ -49,9 +77,7 @@ async function loadComponent(name, config) {
         
         // Fix relative paths if in subfolder
         if (isInSubfolder) {
-            // Fix links like href="index.html" to href="../index.html"
             html = html.replace(/href="((?!http|#|mailto:|tel:)[^"]+)"/g, (match, path) => {
-                // Don't modify already-relative paths or anchors
                 if (path.startsWith('../') || path.startsWith('/')) {
                     return match;
                 }
@@ -67,7 +93,7 @@ async function loadComponent(name, config) {
             return false;
         }
         
-        // Special handling for footer - insert before scripts
+        // Special handling - insert before scripts
         if (config.beforeSelector && config.position === 'beforeend') {
             const firstScript = document.querySelector(config.target + ' > ' + config.beforeSelector);
             if (firstScript) {
@@ -79,7 +105,6 @@ async function loadComponent(name, config) {
             target.insertAdjacentHTML(config.position, html);
         }
         
-        console.log(`✅ Loaded ${name}`);
         return true;
         
     } catch (error) {
@@ -89,80 +114,21 @@ async function loadComponent(name, config) {
 }
 
 // ============================================
-// MOBILE NAV INITIALIZATION
-// ============================================
-function initializeMobileNav() {
-    const toggle = document.getElementById('nav-toggle');
-    const close = document.getElementById('nav-close');
-    const overlay = document.getElementById('nav-overlay');
-    const mobileNav = document.getElementById('nav-mobile');
-    
-    if (!toggle || !mobileNav) {
-        console.warn('⚠️ Mobile nav elements not found');
-        return;
-    }
-    
-    function openNav() {
-        mobileNav.classList.add('active');
-        if (overlay) overlay.classList.add('active');
-        document.body.style.overflow = 'hidden';
-    }
-    
-    function closeNav() {
-        mobileNav.classList.remove('active');
-        if (overlay) overlay.classList.remove('active');
-        document.body.style.overflow = '';
-    }
-    
-    toggle.addEventListener('click', openNav);
-    
-    if (close) {
-        close.addEventListener('click', closeNav);
-    }
-    
-    if (overlay) {
-        overlay.addEventListener('click', closeNav);
-    }
-    
-    // Close on escape key
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && mobileNav.classList.contains('active')) {
-            closeNav();
-        }
-    });
-    
-    // Close when clicking nav links
-    const navLinks = mobileNav.querySelectorAll('a');
-    navLinks.forEach(link => {
-        link.addEventListener('click', closeNav);
-    });
-    
-    console.log('✅ Mobile nav initialized');
-}
-
-// ============================================
 // HIDE HOME LINK ON HOME PAGE
 // ============================================
 function hideHomeOnHomePage() {
-    // Get current page filename
     const currentPage = window.location.pathname.split('/').pop() || 'index.html';
-    
-    // Check if we're on index.html or root
     const isHomePage = currentPage === 'index.html' || currentPage === '' || currentPage === '/';
     
     if (isHomePage) {
-        // Hide desktop home link
         const desktopHomeLink = document.getElementById('nav-home-link');
         if (desktopHomeLink) {
             desktopHomeLink.style.display = 'none';
-            console.log('✅ Hidden desktop Home link (on home page)');
         }
         
-        // Hide mobile home link
         const mobileHomeLink = document.getElementById('nav-mobile-home-link');
         if (mobileHomeLink) {
             mobileHomeLink.style.display = 'none';
-            console.log('✅ Hidden mobile Home link (on home page)');
         }
     }
 }
@@ -177,17 +143,17 @@ async function initializeSharedComponents() {
     await loadComponent('header', COMPONENTS.header);
     await loadComponent('mobileNav', COMPONENTS.mobileNav);
     await loadComponent('footer', COMPONENTS.footer);
-    
-    // Initialize mobile nav after components are loaded
-    initializeMobileNav();
+    await loadComponent('cookiePopup', COMPONENTS.cookiePopup);
+    await loadComponent('backToTop', COMPONENTS.backToTop);
+    await loadComponent('toast', COMPONENTS.toast);
     
     // Hide home link if on home page
     hideHomeOnHomePage();
     
-    // Dispatch event for other scripts to know components are ready
+    // Dispatch event for main.js to know components are ready
     document.dispatchEvent(new CustomEvent('sharedComponentsLoaded'));
     
-    console.log('✅ All shared components loaded');
+    console.log('✅ Shared components loaded');
 }
 
 // ============================================

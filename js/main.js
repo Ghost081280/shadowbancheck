@@ -12,6 +12,111 @@
    ============================================================================= */
 window.latestScanResults = null;
 
+// Track what type of search was done
+window.lastSearchType = null; // 'power', 'account', 'post', 'hashtag'
+
+/* =============================================================================
+   DAILY CHECK TRACKING - Power Check uses all 3 individual checks
+   ============================================================================= */
+const INDIVIDUAL_CHECKS_KEY = 'shadowban_individual_checks';
+const POWER_CHECK_USED_KEY = 'shadowban_power_check_used';
+
+function getIndividualChecksData() {
+    try {
+        const data = localStorage.getItem(INDIVIDUAL_CHECKS_KEY);
+        if (data) {
+            const parsed = JSON.parse(data);
+            const today = new Date().toDateString();
+            if (parsed.date !== today) {
+                return { date: today, account: false, post: false, hashtag: false };
+            }
+            return parsed;
+        }
+    } catch (e) {
+        console.warn('Could not read individual checks data:', e);
+    }
+    return { date: new Date().toDateString(), account: false, post: false, hashtag: false };
+}
+
+function saveIndividualChecksData(data) {
+    try {
+        localStorage.setItem(INDIVIDUAL_CHECKS_KEY, JSON.stringify(data));
+    } catch (e) {
+        console.warn('Could not save individual checks data:', e);
+    }
+}
+
+function isPowerCheckUsedToday() {
+    try {
+        const data = localStorage.getItem(POWER_CHECK_USED_KEY);
+        if (data) {
+            const parsed = JSON.parse(data);
+            const today = new Date().toDateString();
+            return parsed.date === today && parsed.used;
+        }
+    } catch (e) {
+        console.warn('Could not read power check status:', e);
+    }
+    return false;
+}
+
+function markPowerCheckUsed() {
+    try {
+        localStorage.setItem(POWER_CHECK_USED_KEY, JSON.stringify({
+            date: new Date().toDateString(),
+            used: true
+        }));
+        // Also mark all individual checks as used
+        const data = getIndividualChecksData();
+        data.account = true;
+        data.post = true;
+        data.hashtag = true;
+        saveIndividualChecksData(data);
+    } catch (e) {
+        console.warn('Could not save power check status:', e);
+    }
+}
+
+function canDoIndividualCheck(type) {
+    // If Power Check was used today, no individual checks allowed
+    if (isPowerCheckUsedToday()) return false;
+    
+    const data = getIndividualChecksData();
+    return !data[type];
+}
+
+function markIndividualCheckUsed(type) {
+    const data = getIndividualChecksData();
+    data[type] = true;
+    saveIndividualChecksData(data);
+}
+
+function getRemainingIndividualChecks() {
+    if (isPowerCheckUsedToday()) return 0;
+    
+    const data = getIndividualChecksData();
+    let remaining = 0;
+    if (!data.account) remaining++;
+    if (!data.post) remaining++;
+    if (!data.hashtag) remaining++;
+    return remaining;
+}
+
+// Store individual search results for Shadow AI
+function storeIndividualSearchResults(type, results) {
+    window.latestScanResults = results;
+    window.lastSearchType = type;
+    
+    try {
+        localStorage.setItem('shadowban_latest_results', JSON.stringify(results));
+        localStorage.setItem('shadowban_last_search_type', type);
+    } catch (e) {
+        console.warn('Could not store results in localStorage:', e);
+    }
+    
+    console.log(`✅ ${type} check results stored for Shadow AI`);
+}
+
 /* =============================================================================
    IP DETECTION
    Fetches user's IP and determines if VPN/Datacenter/Residential
@@ -642,15 +747,8 @@ function renderPowerResults(results) {
     // =========================================================================
     // STORE RESULTS FOR SHADOW AI ACCESS
     // =========================================================================
-    window.latestScanResults = results;
-    console.log('✅ Power Check results stored in window.latestScanResults for Shadow AI');
-    
-    // Also store in localStorage for persistence across page reloads (same day)
-    try {
-        localStorage.setItem('shadowban_latest_results', JSON.stringify(results));
-    } catch (e) {
-        console.warn('Could not store results in localStorage:', e);
-    }
+    results.searchType = 'power';
+    storeIndividualSearchResults('power', results);
     // =========================================================================
     
     // Overall section
@@ -992,11 +1090,13 @@ function initPowerCheck() {
 function loadExistingResults() {
     try {
         const stored = localStorage.getItem('shadowban_latest_results');
+        const storedType = localStorage.getItem('shadowban_last_search_type');
         if (stored) {
             const results = JSON.parse(stored);
             // Check if results are from today (within 24 hours)
             if (results.timestamp && (Date.now() - results.timestamp) < 24 * 60 * 60 * 1000) {
                 window.latestScanResults = results;
+                window.lastSearchType = storedType || results.searchType || 'power';
                 console.log('✅ Loaded existing scan results for Shadow AI');
             }
         }
@@ -1042,6 +1142,7 @@ function runPowerCheck(url) {
         const results = generateDemoResults(platform, username, hashtags);
         
         recordPowerCheck();
+        markPowerCheckUsed(); // This also disables individual checks for today
         renderPowerResults(results);
         
         button?.classList.remove('loading');

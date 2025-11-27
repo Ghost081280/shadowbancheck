@@ -97,16 +97,6 @@
                     <span>Download Report</span>
                 </button>
             </div>
-
-            <!-- Monitoring CTA -->
-            <div class="monitoring-cta">
-                <span class="monitoring-icon">🔔</span>
-                <div class="monitoring-content">
-                    <h3>Get Instant Alerts</h3>
-                    <p>Set up monitoring to get notified the moment your visibility changes.</p>
-                </div>
-                <a href="index.html#pricing" class="btn btn-primary">Set Up Monitoring →</a>
-            </div>
         </div>
     </main>
 
@@ -118,20 +108,20 @@
                 <p class="section-desc">Use our other tools to get a complete picture</p>
             </div>
             
-            <div class="tools-grid">
-                <a href="checker.html" class="tool-card">
+            <div class="tools-grid" id="tools-grid">
+                <a href="checker.html" class="tool-card" data-check-type="username">
                     <span class="tool-icon">👤</span>
                     <h4>Account Check</h4>
                     <p>Check if your account is shadow banned</p>
                     <span class="tool-arrow">→</span>
                 </a>
-                <a href="post-checker.html" class="tool-card">
+                <a href="post-checker.html" class="tool-card" data-check-type="post">
                     <span class="tool-icon">📝</span>
                     <h4>Post URL Check</h4>
                     <p>Check if a specific post is restricted</p>
                     <span class="tool-arrow">→</span>
                 </a>
-                <a href="hashtag-checker.html" class="tool-card">
+                <a href="hashtag-checker.html" class="tool-card" data-check-type="hashtag">
                     <span class="tool-icon">🚫</span>
                     <h4>Hashtag Checker</h4>
                     <p>Check if your hashtags are banned</p>
@@ -140,7 +130,7 @@
             </div>
             
             <div class="back-home">
-                <a href="index.html" class="btn btn-ghost btn-lg">← Back to Home</a>
+                <a href="index.html#shadow-ai" class="btn btn-primary btn-lg">Explore Shadow AI Pro →</a>
             </div>
         </div>
     </section>

@@ -119,6 +119,8 @@ function getDemoDataForPlatform(platform) {
                         name: 'Search Visibility',
                         description: 'Account appears in search results normally',
                         status: 'passed',
+                        icon: '🔍',
+                        detail: 'Account appears in search results normally',
                         citation: 'Twitter/X API v2 search endpoint',
                         factor: 'api'
                     },
@@ -126,6 +128,8 @@ function getDemoDataForPlatform(platform) {
                         name: 'Reply Visibility (QFD)',
                         description: 'Replies visible without quality filter restrictions',
                         status: 'passed',
+                        icon: '💬',
+                        detail: 'Replies visible without quality filter restrictions',
                         citation: 'Third-party QFD detection API',
                         factor: 'web'
                     },
@@ -133,6 +137,8 @@ function getDemoDataForPlatform(platform) {
                         name: 'Engagement Rate',
                         description: 'Engagement aligns with historical baseline',
                         status: 'passed',
+                        icon: '📊',
+                        detail: 'Engagement aligns with historical baseline',
                         citation: 'Historical baseline comparison',
                         factor: 'historical'
                     },
@@ -140,6 +146,8 @@ function getDemoDataForPlatform(platform) {
                         name: 'Account Status',
                         description: 'No flags or restrictions detected on account',
                         status: 'passed',
+                        icon: '👤',
+                        detail: 'No flags or restrictions detected on account',
                         citation: 'Twitter/X API v2 user lookup',
                         factor: 'api'
                     },
@@ -147,6 +155,8 @@ function getDemoDataForPlatform(platform) {
                         name: 'IP Risk Assessment',
                         description: 'Your IP shows no VPN/proxy indicators',
                         status: 'passed',
+                        icon: '🌐',
+                        detail: 'Your IP shows no VPN/proxy indicators',
                         citation: 'IP geolocation & reputation check',
                         factor: 'ip'
                     }
@@ -185,6 +195,8 @@ function getDemoDataForPlatform(platform) {
                         name: 'Site-wide Shadowban',
                         description: 'Account is not shadow banned site-wide',
                         status: 'passed',
+                        icon: '🌐',
+                        detail: 'Account is not shadow banned site-wide',
                         citation: 'Reddit API + /r/ShadowBan verification',
                         factor: 'api'
                     },
@@ -192,6 +204,8 @@ function getDemoDataForPlatform(platform) {
                         name: 'Subreddit Bans',
                         description: 'No active subreddit-specific bans detected',
                         status: 'passed',
+                        icon: '📋',
+                        detail: 'No active subreddit-specific bans detected',
                         citation: 'Subreddit API queries',
                         factor: 'web'
                     },
@@ -199,6 +213,8 @@ function getDemoDataForPlatform(platform) {
                         name: 'Post Visibility',
                         description: 'Recent posts visible in subreddit feeds',
                         status: 'passed',
+                        icon: '📝',
+                        detail: 'Recent posts visible in subreddit feeds',
                         citation: 'New post crawl test',
                         factor: 'web'
                     },
@@ -206,6 +222,8 @@ function getDemoDataForPlatform(platform) {
                         name: 'Karma Status',
                         description: 'Karma accumulation functioning normally',
                         status: 'passed',
+                        icon: '⬆️',
+                        detail: 'Karma accumulation functioning normally',
                         citation: 'Reddit API user endpoint',
                         factor: 'historical'
                     }
@@ -244,6 +262,8 @@ function getDemoDataForPlatform(platform) {
                         name: 'Search Visibility',
                         description: 'Account appears in search with reduced ranking',
                         status: 'warning',
+                        icon: '🔍',
+                        detail: 'Account appears in search with reduced ranking',
                         citation: 'Twitter/X API v2 search endpoint',
                         factor: 'api'
                     },
@@ -251,6 +271,8 @@ function getDemoDataForPlatform(platform) {
                         name: 'Post Reach',
                         description: 'Recent posts showing 40% below baseline engagement',
                         status: 'warning',
+                        icon: '📉',
+                        detail: 'Recent posts showing 40% below baseline engagement',
                         citation: 'Historical engagement comparison',
                         factor: 'historical'
                     },
@@ -258,6 +280,8 @@ function getDemoDataForPlatform(platform) {
                         name: 'Hashtag Analysis',
                         description: 'Found 2 restricted hashtags in recent posts: #crypto, #viral',
                         status: 'warning',
+                        icon: '#️⃣',
+                        detail: 'Found 2 restricted hashtags: #crypto, #viral',
                         citation: 'Hashtag database cross-reference',
                         factor: 'hashtag'
                     },
@@ -265,6 +289,8 @@ function getDemoDataForPlatform(platform) {
                         name: 'IP Risk Assessment',
                         description: 'VPN/Proxy detected - adds risk to account trust score',
                         status: 'warning',
+                        icon: '🌐',
+                        detail: 'VPN/Proxy detected - adds risk to account trust score',
                         citation: 'IP reputation analysis',
                         factor: 'ip'
                     },
@@ -272,6 +298,8 @@ function getDemoDataForPlatform(platform) {
                         name: 'Account Standing',
                         description: 'No permanent restrictions on account',
                         status: 'passed',
+                        icon: '👤',
+                        detail: 'No permanent restrictions on account',
                         citation: 'Twitter/X API v2 user lookup',
                         factor: 'api'
                     }
@@ -285,8 +313,8 @@ function getDemoDataForPlatform(platform) {
             }
         },
         'hashtag': {
-            platform: 'Instagram',
-            identifier: '#fitness #health...',
+            platform: 'Multi-Platform',
+            identifier: '#fitness #health #viral',
             checkType: 'hashtag',
             timestamp: Date.now(),
             ipData: null,
@@ -303,31 +331,82 @@ function getDemoDataForPlatform(platform) {
                 },
                 checks: [
                     {
-                        name: 'Hashtag Database',
-                        description: 'Cross-referenced against 1,800+ known banned/restricted tags',
+                        name: '#fitness',
+                        description: 'Safe to use on all platforms',
                         status: 'passed',
-                        citation: 'ShadowBanCheck hashtag database',
-                        factor: 'hashtag'
+                        icon: '✅',
+                        detail: 'Safe to use on all platforms'
                     },
                     {
-                        name: 'Instagram Visibility',
-                        description: '#likeforlike is restricted on Instagram',
-                        status: 'warning',
-                        citation: 'Live Instagram search test',
-                        factor: 'web'
+                        name: '#health',
+                        description: 'Safe to use on all platforms',
+                        status: 'passed',
+                        icon: '✅',
+                        detail: 'Safe to use on all platforms'
                     },
                     {
-                        name: 'TikTok Visibility',
-                        description: '#fyp is over-saturated and may reduce reach',
+                        name: '#viral',
+                        description: 'Restricted on TikTok, LinkedIn',
                         status: 'warning',
-                        citation: 'TikTok hashtag analysis',
-                        factor: 'web'
+                        icon: '⚠️',
+                        detail: 'Restricted on TikTok, LinkedIn - may reduce reach'
                     }
                 ],
                 recommendations: [
-                    { text: 'Remove #likeforlike - it\'s restricted on Instagram.', type: 'warning' },
-                    { text: 'Consider alternatives to #fyp for better TikTok reach.', type: 'info' },
-                    { text: 'Other hashtags in your set are safe to use.', type: 'success' }
+                    { text: 'Consider replacing #viral with alternatives like #trending or #popular.', type: 'warning' },
+                    { text: '#fitness and #health are safe to use across all platforms.', type: 'success' },
+                    { text: 'Check your account status with our Account Checker.', type: 'info' }
+                ]
+            }
+        },
+        'post': {
+            platform: 'Twitter/X',
+            identifier: 'https://twitter.com/user/status/123',
+            checkType: 'post',
+            timestamp: Date.now(),
+            ipData: {
+                ip: '72.134.92.18',
+                type: 'residential',
+                typeLabel: 'Residential',
+                location: 'Chicago, IL'
+            },
+            results: {
+                probability: 15,
+                status: 'clean',
+                statusText: 'Post Appears Visible',
+                engineFactors: {
+                    api: { active: true, detail: 'Post data retrieved' },
+                    web: { active: true, detail: 'Search visibility confirmed' },
+                    historical: { active: false, detail: 'Single post check' },
+                    hashtag: { active: true, detail: 'Hashtags verified safe' },
+                    ip: { active: true, detail: 'Residential IP verified' }
+                },
+                checks: [
+                    {
+                        name: 'Post Visibility',
+                        description: 'Post appears in search and feeds',
+                        status: 'passed',
+                        icon: '👁️',
+                        detail: 'Post appears in search and feeds'
+                    },
+                    {
+                        name: 'Hashtag Health',
+                        description: 'All hashtags are safe',
+                        status: 'passed',
+                        icon: '#️⃣',
+                        detail: 'All hashtags are safe'
+                    },
+                    {
+                        name: 'Engagement',
+                        description: 'Engagement metrics look normal',
+                        status: 'passed',
+                        icon: '📊',
+                        detail: 'Engagement metrics look normal'
+                    }
+                ],
+                recommendations: [
+                    { text: 'Your post appears to be in good standing.', type: 'success' },
+                    { text: 'Continue monitoring engagement over the next 24 hours.', type: 'info' }
                 ]
             }
         }
@@ -357,7 +436,7 @@ function loadResults() {
             showDemoNotice();
             return;
         }
-        window.location.href = 'checker.html';
+        window.location.href = 'index.html';
         return;
     }
     
@@ -371,7 +450,7 @@ function loadResults() {
     if (Date.now() - timestamp > 3600000) {
         sessionStorage.removeItem('shadowban_results');
         sessionStorage.removeItem('checkResults');
-        window.location.href = 'checker.html';
+        window.location.href = 'index.html';
         return;
     }
     
@@ -427,7 +506,7 @@ function showDemoNotice() {
         const notice = document.createElement('div');
         notice.className = 'demo-notice';
         notice.style.cssText = 'background: rgba(99, 102, 241, 0.1); border: 1px solid var(--primary); border-radius: 8px; padding: 12px 16px; margin-top: 16px; text-align: center; font-size: 0.875rem; color: var(--text-secondary);';
-        notice.innerHTML = '📊 <strong>Demo Data</strong> - Try different check types: <a href="?demo=twitter" style="color: var(--primary-light); margin: 0 8px;">Username</a> | <a href="?demo=power" style="color: var(--primary-light); margin: 0 8px;">Power Check</a> | <a href="?demo=hashtag" style="color: var(--primary-light); margin: 0 8px;">Hashtag</a>';
+        notice.innerHTML = '📊 <strong>Demo Data</strong> - Try different check types: <a href="?demo=twitter" style="color: var(--primary-light); margin: 0 8px;">Username</a> | <a href="?demo=power" style="color: var(--primary-light); margin: 0 8px;">Power Check</a> | <a href="?demo=hashtag" style="color: var(--primary-light); margin: 0 8px;">Hashtag</a> | <a href="?demo=post" style="color: var(--primary-light); margin: 0 8px;">Post</a>';
         hero.appendChild(notice);
     }
 }
@@ -445,6 +524,7 @@ function displayResults(data) {
         'Pinterest': '📌',
         'Reddit': '🤖',
         'Threads': '🧵',
+        'Multi-Platform': '#️⃣',
         'Email': '📧',
         'Unknown': '🔍'
     };
@@ -457,7 +537,7 @@ function displayResults(data) {
     const heroSubtitle = document.getElementById('results-subtitle');
     
     if (heroBadge) {
-        const checkTypeName = checkType === 'post' ? 'Post' : checkType === 'hashtag' ? 'Hashtag' : 'Account';
+        const checkTypeName = checkType === 'post' ? 'Post' : checkType === 'hashtag' ? 'Hashtag' : checkType === 'power' ? 'Power' : 'Account';
         heroBadge.textContent = `📊 ${checkTypeName} Analysis Complete`;
     }
     if (heroTitle) heroTitle.textContent = `${platform} Results`;
@@ -547,34 +627,41 @@ function displayResults(data) {
         }).join('');
     }
     
+    // Hide the tool card that matches the current check type
+    hideMatchingToolCard(checkType);
+    
     // Store data for sharing/download
     window.currentResults = data;
 }
-                    <p class="check-description">${check.description}</p>
-                    ${factorBadge}
-                    ${check.citation ? `
-                    <div class="check-citation">
-                        <span class="check-citation-icon">📄</span>
-                        <span>${check.citation}</span>
-                    </div>
-                    ` : ''}
-                </div>
-            `;
-        }).join('');
-    }
+
+/* =============================================================================
+   HIDE MATCHING TOOL CARD
+   ============================================================================= */
+function hideMatchingToolCard(checkType) {
+    const toolsGrid = document.getElementById('tools-grid');
+    if (!toolsGrid) return;
     
-    // Update recommendations
-    const recommendationsContent = document.getElementById('recommendations-content');
-    if (recommendationsContent && results.recommendations) {
-        recommendationsContent.innerHTML = results.recommendations.map(rec => `
-            <div class="recommendation-item ${rec.type}">
-                <p class="recommendation-text">${rec.text}</p>
-            </div>
-        `).join('');
-    }
+    const toolCards = toolsGrid.querySelectorAll('.tool-card');
     
-    // Setup engine info modal
-    setupEngineInfoModal(results.engineFactors, checkType);
+    toolCards.forEach(card => {
+        const cardType = card.dataset.checkType;
+        
+        // Hide the card that matches the current check type
+        // Also hide account card for power check since it includes account check
+        if (cardType === checkType || (checkType === 'power' && cardType === 'username')) {
+            card.style.display = 'none';
+        } else {
+            card.style.display = '';
+        }
+    });
+    
+    // Update grid to handle 2 items better
+    const visibleCards = toolsGrid.querySelectorAll('.tool-card:not([style*="display: none"])');
+    if (visibleCards.length === 2) {
+        toolsGrid.style.gridTemplateColumns = 'repeat(2, 1fr)';
+        toolsGrid.style.maxWidth = '700px';
+        toolsGrid.style.margin = '0 auto';
+    }
 }
 
 /* =============================================================================
@@ -623,7 +710,7 @@ function displayEngineFactors(engineFactors, checkType, ipData) {
                 <span>${ipData.ip || 'Unknown'}</span>
                 <span class="ip-type-badge ${typeClass}">${ipData.type || 'Residential'}</span>
             </div>
-            ${ipData.country ? `<span class="ip-label">${ipData.country}</span>` : ''}
+            ${ipData.country || ipData.location ? `<span class="ip-label">${ipData.country || ipData.location}</span>` : ''}
         `;
     } else if (ipDisplay) {
         ipDisplay.style.display = 'none';
@@ -727,19 +814,20 @@ function setupModalCloseHandlers(modal) {
 }
 
 function initShareModal() {
-    const storedData = sessionStorage.getItem('shadowban_results');
+    const storedData = sessionStorage.getItem('shadowban_results') || sessionStorage.getItem('checkResults');
     
     let shareText, platform, score, status;
     
     if (storedData) {
         const data = JSON.parse(storedData);
-        status = data.results.status;
-        score = data.results.probability;
-        platform = data.platform;
+        const normalized = normalizeResultsData(data);
+        status = normalized.results.status;
+        score = normalized.results.probability;
+        platform = normalized.platform;
         
-        shareText = status === 'clean'
+        shareText = score < 20
             ? `✅ Just checked my ${platform} account for shadow bans - only ${score}% probability! Check yours free at`
-            : status === 'warning'
+            : score < 50
             ? `⚠️ My ${platform} account has a ${score}% shadow ban probability - some issues detected. Check your account free at`
             : `🚫 My ${platform} account has a ${score}% shadow ban probability. Check your account free at`;
     } else {
@@ -768,28 +856,30 @@ function initShareModal() {
         document.body.style.overflow = '';
     });
     
-    document.getElementById('share-modal-linkedin')?.addEventListener('click', function() {
-        window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`, '_blank', 'width=600,height=400');
-        document.getElementById('share-modal').classList.add('hidden');
-        document.body.style.overflow = '';
+    document.getElementById('share-modal-copy')?.addEventListener('click', function() {
+        navigator.clipboard.writeText(`${shareText} ${shareUrl}`).then(() => {
+            this.innerHTML = '<span>✓</span><span>Copied!</span>';
+            setTimeout(() => {
+                this.innerHTML = '<span>📋</span><span>Copy Link</span>';
+            }, 2000);
+        });
     });
 }
 
 function downloadReport() {
-    const storedData = sessionStorage.getItem('shadowban_results');
-    if (!storedData) return;
+    const data = window.currentResults;
+    if (!data) return;
     
-    const data = JSON.parse(storedData);
     const { platform, identifier, results, checkType, ipData } = data;
     const checkTypeConfig = CHECK_TYPE_FACTORS[checkType] || CHECK_TYPE_FACTORS['username'];
     
     let report = `SHADOW BAN CHECK REPORT
 ========================
 Platform: ${platform}
-Account: ${identifier}
+Query: ${identifier}
 Date: ${new Date(data.timestamp).toLocaleString()}
 Check Type: ${checkTypeConfig.name}
-Overall Status: ${results.statusText}
+Overall Status: ${results.statusText || 'Analysis Complete'}
 Shadow Ban Probability: ${results.probability}%
 
 5-FACTOR DETECTION ENGINE
@@ -805,15 +895,15 @@ Factors Used: ${checkTypeConfig.count}/5
     });
     
     if (ipData && results.engineFactors?.ip?.active) {
-        report += `\nIP ANALYSIS\n-----------\nIP: ${ipData.ip}\nType: ${ipData.typeLabel}\n`;
-        if (ipData.location) report += `Location: ${ipData.location}\n`;
+        report += `\nIP ANALYSIS\n-----------\nIP: ${ipData.ip}\nType: ${ipData.typeLabel || ipData.type}\n`;
+        if (ipData.location || ipData.country) report += `Location: ${ipData.location || ipData.country}\n`;
     }
     
     report += `\nDETAILED CHECKS\n---------------\n`;
     
-    results.checks.forEach(check => {
-        report += `\n${check.name}: ${check.status.toUpperCase()}\n`;
-        report += `  ${check.description}\n`;
+    results.checks?.forEach(check => {
+        report += `\n${check.name}: ${(check.status || 'unknown').toUpperCase()}\n`;
+        report += `  ${check.detail || check.description}\n`;
         if (check.citation) {
             report += `  Source: ${check.citation}\n`;
         }
@@ -821,8 +911,9 @@ Factors Used: ${checkTypeConfig.count}/5
     
     report += `\nRECOMMENDATIONS\n---------------\n`;
     
-    results.recommendations.forEach((rec, index) => {
-        report += `\n${index + 1}. ${rec.text}\n`;
+    results.recommendations?.forEach((rec, index) => {
+        const text = typeof rec === 'string' ? rec : rec.text;
+        report += `\n${index + 1}. ${text}\n`;
     });
     
     report += `\n------------------------\nPowered by 5-Factor Detection Engine\nGenerated by ShadowBanCheck.io\n${window.location.origin}`;
@@ -831,7 +922,7 @@ Factors Used: ${checkTypeConfig.count}/5
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `shadowban-report-${platform.toLowerCase().replace(/\s+/g, '-')}-${Date.now()}.txt`;
+    a.download = `shadowban-report-${platform.toLowerCase().replace(/[\s\/]+/g, '-')}-${Date.now()}.txt`;
     a.click();
     URL.revokeObjectURL(url);
 }

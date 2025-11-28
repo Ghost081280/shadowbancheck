@@ -53,66 +53,8 @@
     
     <!-- CSS -->
     <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/index.css">
     <link rel="stylesheet" href="css/shadow-ai.css">
-    
-    <!-- Suggest Platform Styles -->
-    <style>
-        /* Suggest Platform Card */
-        .platform-item.suggest-platform {
-            border: 2px dashed rgba(99, 102, 241, 0.4);
-            background: rgba(99, 102, 241, 0.05);
-        }
-        .platform-item.suggest-platform:hover {
-            border-color: var(--primary);
-            background: rgba(99, 102, 241, 0.1);
-        }
-        .platform-badge.suggest {
-            background: var(--gradient-primary);
-            color: white;
-        }
-        
-        /* Suggest Form */
-        .suggest-form {
-            display: flex;
-            flex-direction: column;
-            gap: var(--space-md);
-        }
-        .suggest-form .form-group {
-            display: flex;
-            flex-direction: column;
-            gap: var(--space-xs);
-        }
-        .suggest-form label {
-            font-size: 0.875rem;
-            font-weight: 600;
-            color: var(--text);
-        }
-        .suggest-form input,
-        .suggest-form textarea {
-            padding: var(--space-sm) var(--space-md);
-            background: var(--card);
-            border: 2px solid var(--border);
-            border-radius: var(--radius-md);
-            color: var(--text);
-            font-size: 1rem;
-            font-family: inherit;
-            transition: all 0.2s ease;
-        }
-        .suggest-form input:focus,
-        .suggest-form textarea:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
-        }
-        .suggest-form input::placeholder,
-        .suggest-form textarea::placeholder {
-            color: var(--text-muted);
-        }
-        .suggest-form textarea {
-            resize: vertical;
-            min-height: 80px;
-        }
-    </style>
 </head>
 <body>
     <!-- ===================================
@@ -690,7 +632,7 @@
         <div class="container">
             <div class="ai-wrapper">
                 <!-- Info Button -->
-                <button class="ai-info-btn" id="ai-info-btn" aria-label="How Shadow AI differs from AI chatbots" type="button" style="position: absolute; top: 1rem; right: 1rem; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; background: rgba(99, 102, 241, 0.15); border: 2px solid rgba(99, 102, 241, 0.4); border-radius: 50%; color: var(--primary-light); cursor: pointer; transition: all 0.15s ease; z-index: 10;">
+                <button class="ai-info-btn" id="ai-info-btn" aria-label="How Shadow AI differs from AI chatbots" type="button">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
                         <path d="M12 16V12M12 8H12.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
@@ -920,7 +862,7 @@
             <div class="faq-grid">
                 <div class="faq-column">
                     <div class="faq-item">
-                        <button class="faq-question">
+                        <button class="faq-question" type="button">
                             ⚡ What is the Power Check?
                             <span class="faq-toggle">+</span>
                         </button>
@@ -930,7 +872,7 @@
                     </div>
                     
                     <div class="faq-item">
-                        <button class="faq-question">
+                        <button class="faq-question" type="button">
                             🤖 How is Shadow AI Pro different from AI chatbots?
                             <span class="faq-toggle">+</span>
                         </button>
@@ -940,7 +882,7 @@
                     </div>
                     
                     <div class="faq-item">
-                        <button class="faq-question">
+                        <button class="faq-question" type="button">
                             📊 Why probability instead of yes/no?
                             <span class="faq-toggle">+</span>
                         </button>
@@ -950,7 +892,7 @@
                     </div>
                     
                     <div class="faq-item">
-                        <button class="faq-question">
+                        <button class="faq-question" type="button">
                             🔒 Why are free results public?
                             <span class="faq-toggle">+</span>
                         </button>
@@ -960,7 +902,7 @@
                     </div>
                     
                     <div class="faq-item">
-                        <button class="faq-question">
+                        <button class="faq-question" type="button">
                             💰 How does usage-based pricing work?
                             <span class="faq-toggle">+</span>
                         </button>
@@ -972,7 +914,7 @@
                 
                 <div class="faq-column">
                     <div class="faq-item">
-                        <button class="faq-question">
+                        <button class="faq-question" type="button">
                             📊 What is the 5-Factor Detection Engine?
                             <span class="faq-toggle">+</span>
                         </button>
@@ -982,7 +924,7 @@
                     </div>
                     
                     <div class="faq-item">
-                        <button class="faq-question">
+                        <button class="faq-question" type="button">
                             📱 Which platforms do you analyze?
                             <span class="faq-toggle">+</span>
                         </button>
@@ -992,7 +934,7 @@
                     </div>
                     
                     <div class="faq-item">
-                        <button class="faq-question">
+                        <button class="faq-question" type="button">
                             🇺🇸 What does "U.S.-Based Servers" mean?
                             <span class="faq-toggle">+</span>
                         </button>
@@ -1002,7 +944,7 @@
                     </div>
                     
                     <div class="faq-item">
-                        <button class="faq-question">
+                        <button class="faq-question" type="button">
                             🏢 What's the Agency plan for?
                             <span class="faq-toggle">+</span>
                         </button>
@@ -1012,7 +954,7 @@
                     </div>
                     
                     <div class="faq-item">
-                        <button class="faq-question">
+                        <button class="faq-question" type="button">
                             ⏱️ How long does analysis take?
                             <span class="faq-toggle">+</span>
                         </button>
@@ -1048,7 +990,7 @@
                             <div>
                                 <strong>Email Us Directly</strong>
                                 <p>Send platform suggestions or questions to our team</p>
-                                <a href="/cdn-cgi/l/email-protection#64171114140b161024170c05000b1306050a070c01070f4a0d0b" class="btn-method">Send Email</a>
+                                <a href="mailto:contact@shadowbancheck.io" class="btn-method">Send Email</a>
                             </div>
                         </div>
                         
@@ -1186,7 +1128,7 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-primary btn-lg" onclick="document.getElementById('power-info-modal').classList.add('hidden'); document.body.style.overflow = '';">Got It!</button>
+                <button class="btn btn-primary btn-lg" onclick="closeModal('power-info-modal')">Got It!</button>
             </div>
         </div>
     </div>
@@ -1230,12 +1172,12 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-primary btn-lg" onclick="document.getElementById('ai-info-modal').classList.add('hidden'); document.body.style.overflow = '';">Got It!</button>
+                <button class="btn btn-primary btn-lg" onclick="closeModal('ai-info-modal')">Got It!</button>
             </div>
         </div>
     </div>
 
-    <!-- Platform Modal -->
+    <!-- Platform Modal - Single "Got It!" button footer -->
     <div id="platform-modal" class="modal hidden">
         <div class="modal-overlay"></div>
         <div class="modal-content">
@@ -1251,22 +1193,8 @@
                     <!-- Populated by JS -->
                 </ul>
             </div>
-            <div class="modal-footer modal-footer-buttons" id="modal-footer">
-                <p class="modal-footer-label">What would you like to check?</p>
-                <div class="check-type-buttons">
-                    <a href="#" id="modal-btn-account" class="btn-check-type">
-                        <span class="btn-icon">👤</span>
-                        <span class="btn-label">Check Account</span>
-                    </a>
-                    <a href="#" id="modal-btn-post" class="btn-check-type">
-                        <span class="btn-icon">📝</span>
-                        <span class="btn-label">Check Post URL</span>
-                    </a>
-                    <a href="#" id="modal-btn-hashtag" class="btn-check-type">
-                        <span class="btn-icon">#️⃣</span>
-                        <span class="btn-label">Check Hashtags</span>
-                    </a>
-                </div>
+            <div class="modal-footer" id="modal-footer">
+                <button class="btn btn-primary btn-lg" onclick="closeModal('platform-modal')">Got It!</button>
             </div>
         </div>
     </div>
@@ -1286,8 +1214,8 @@
                 <p style="margin-bottom: var(--space-md);">Upgrade to Pro for $9/mo: unlimited accounts, private results, any frequency, Email + SMS alerts.</p>
             </div>
             <div class="modal-footer">
-                <a href="#pricing" class="btn btn-primary btn-lg" onclick="closeLimitModal()">Get Pro - $9/mo →</a>
-                <button class="btn btn-ghost" onclick="closeLimitModal()">Maybe Later</button>
+                <a href="#pricing" class="btn btn-primary btn-lg" onclick="closeModal('limit-modal')">Get Pro - $9/mo →</a>
+                <button class="btn btn-ghost" onclick="closeModal('limit-modal')">Maybe Later</button>
             </div>
         </div>
     </div>
@@ -1303,7 +1231,7 @@
                 <!-- Content populated by JS -->
             </div>
             <div class="modal-footer">
-                <a href="#pricing" class="btn btn-primary btn-lg" onclick="document.getElementById('audience-modal').classList.add('hidden'); document.body.style.overflow = '';">Get Protected →</a>
+                <button class="btn btn-primary btn-lg" onclick="closeModal('audience-modal')">Got It!</button>
             </div>
         </div>
     </div>
@@ -1319,15 +1247,16 @@
                 <!-- Content populated by JS -->
             </div>
             <div class="modal-footer">
-                <button class="btn btn-primary btn-lg" onclick="document.getElementById('factor-info-modal').classList.add('hidden'); document.body.style.overflow = '';">Got It!</button>
+                <button class="btn btn-primary btn-lg" onclick="closeModal('factor-info-modal')">Got It!</button>
             </div>
         </div>
     </div>
 
     <!-- Scripts -->
-    <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script src="js/platforms.js"></script>
+    <script src="js/platforms.js"></script>
     <script src="js/shared-components.js"></script>
     <script src="js/main.js"></script>
+    <script src="js/index.js"></script>
     <script src="js/shadow-ai.js"></script>
 </body>
 </html>

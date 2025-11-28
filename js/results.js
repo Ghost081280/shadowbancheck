@@ -1,938 +1,872 @@
 /* =============================================================================
    RESULTS.JS - Results Page Functionality
-   5-Factor Detection Engine Integration
+   AI-Optimized "Short Answer + Deep Dive" Format
    ============================================================================= */
 
 /* =============================================================================
-   5-FACTOR ENGINE CONFIGURATION
+   INITIALIZATION
    ============================================================================= */
-const ENGINE_FACTORS = [
-    {
-        id: 'api',
-        icon: '🔌',
-        name: 'Platform APIs',
-        shortName: 'APIs',
-        activeDesc: 'Direct API integration verified account status',
-        inactiveDesc: 'Not used for this check type'
-    },
-    {
-        id: 'web',
-        icon: '🌐',
-        name: 'Web Analysis',
-        shortName: 'Web',
-        activeDesc: 'Live scraping and visibility tests performed',
-        inactiveDesc: 'Not applicable for this check'
-    },
-    {
-        id: 'historical',
-        icon: '📊',
-        name: 'Historical Data',
-        shortName: 'History',
-        activeDesc: 'Compared against baseline patterns',
-        inactiveDesc: 'Not applicable for this check'
-    },
-    {
-        id: 'hashtag',
-        icon: '#️⃣',
-        name: 'Hashtag Database',
-        shortName: 'Hashtags',
-        activeDesc: 'Cross-referenced 1,800+ banned/restricted tags',
-        inactiveDesc: 'Not applicable for username-only checks'
-    },
-    {
-        id: 'ip',
-        icon: '🔍',
-        name: 'IP Analysis',
-        shortName: 'IP',
-        activeDesc: 'VPN/proxy detection and location analysis',
-        inactiveDesc: 'Not used for this check type'
-    }
-];
-
-// Check type configurations
-const CHECK_TYPE_FACTORS = {
-    'power': {
-        name: '3-in-1 Power Check',
-        factors: ['api', 'web', 'historical', 'hashtag', 'ip'],
-        count: 5
-    },
-    'username': {
-        name: 'Username Check',
-        factors: ['api', 'web', 'historical', 'ip'],
-        count: 4
-    },
-    'hashtag': {
-        name: 'Hashtag Check',
-        factors: ['web', 'historical', 'hashtag'],
-        count: 3
-    },
-    'post': {
-        name: 'Post Check',
-        factors: ['api', 'web', 'historical', 'hashtag', 'ip'],
-        count: 5
-    }
-};
+document.addEventListener('DOMContentLoaded', function() {
+    loadResults();
+    initActions();
+    initShareButtons();
+    console.log('✅ Results page initialized');
+});
 
 /* =============================================================================
-   DEMO DATA - FOR TESTING/EDITING
-   ============================================================================= */
-function loadDemoData() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const demoParam = urlParams.get('demo');
-    
-    if (demoParam) {
-        const demoData = getDemoDataForPlatform(demoParam);
-        if (demoData) {
-            displayResults(demoData);
-            return true;
-        }
-    }
-    return false;
-}
-
-function getDemoDataForPlatform(platform) {
-    const demos = {
-        'twitter': {
-            platform: 'Twitter/X',
-            identifier: '@elonmusk',
-            checkType: 'username',
-            timestamp: Date.now(),
-            ipData: {
-                ip: '192.168.1.42',
-                type: 'residential',
-                typeLabel: 'Residential',
-                location: 'San Francisco, CA'
-            },
-            results: {
-                probability: 23,
-                status: 'clean',
-                statusText: 'No Shadow Ban Detected',
-                engineFactors: {
-                    api: { active: true, detail: 'Twitter API v2 verified' },
-                    web: { active: true, detail: 'Search visibility confirmed' },
-                    historical: { active: true, detail: 'Engagement baseline normal' },
-                    hashtag: { active: false, detail: 'N/A for username checks' },
-                    ip: { active: true, detail: 'Residential IP verified' }
-                },
-                checks: [
-                    {
-                        name: 'Search Visibility',
-                        description: 'Account appears in search results normally',
-                        status: 'passed',
-                        icon: '🔍',
-                        detail: 'Account appears in search results normally',
-                        citation: 'Twitter/X API v2 search endpoint',
-                        factor: 'api'
-                    },
-                    {
-                        name: 'Reply Visibility (QFD)',
-                        description: 'Replies visible without quality filter restrictions',
-                        status: 'passed',
-                        icon: '💬',
-                        detail: 'Replies visible without quality filter restrictions',
-                        citation: 'Third-party QFD detection API',
-                        factor: 'web'
-                    },
-                    {
-                        name: 'Engagement Rate',
-                        description: 'Engagement aligns with historical baseline',
-                        status: 'passed',
-                        icon: '📊',
-                        detail: 'Engagement aligns with historical baseline',
-                        citation: 'Historical baseline comparison',
-                        factor: 'historical'
-                    },
-                    {
-                        name: 'Account Status',
-                        description: 'No flags or restrictions detected on account',
-                        status: 'passed',
-                        icon: '👤',
-                        detail: 'No flags or restrictions detected on account',
-                        citation: 'Twitter/X API v2 user lookup',
-                        factor: 'api'
-                    },
-                    {
-                        name: 'IP Risk Assessment',
-                        description: 'Your IP shows no VPN/proxy indicators',
-                        status: 'passed',
-                        icon: '🌐',
-                        detail: 'Your IP shows no VPN/proxy indicators',
-                        citation: 'IP geolocation & reputation check',
-                        factor: 'ip'
-                    }
-                ],
-                recommendations: [
-                    { text: 'Your account is performing well. Continue posting quality content.', type: 'success' },
-                    { text: 'Monitor engagement trends to catch any future issues early.', type: 'info' },
-                    { text: 'Set up monitoring alerts to get notified of any changes.', type: 'info' }
-                ]
-            }
-        },
-        'reddit': {
-            platform: 'Reddit',
-            identifier: 'u/spez',
-            checkType: 'username',
-            timestamp: Date.now(),
-            ipData: {
-                ip: '10.0.0.55',
-                type: 'residential',
-                typeLabel: 'Residential',
-                location: 'New York, NY'
-            },
-            results: {
-                probability: 8,
-                status: 'clean',
-                statusText: 'No Shadow Ban Detected',
-                engineFactors: {
-                    api: { active: true, detail: 'Reddit API verified' },
-                    web: { active: true, detail: 'Profile visibility confirmed' },
-                    historical: { active: true, detail: 'Karma patterns analyzed' },
-                    hashtag: { active: false, detail: 'N/A for Reddit' },
-                    ip: { active: true, detail: 'Residential IP verified' }
-                },
-                checks: [
-                    {
-                        name: 'Site-wide Shadowban',
-                        description: 'Account is not shadow banned site-wide',
-                        status: 'passed',
-                        icon: '🌐',
-                        detail: 'Account is not shadow banned site-wide',
-                        citation: 'Reddit API + /r/ShadowBan verification',
-                        factor: 'api'
-                    },
-                    {
-                        name: 'Subreddit Bans',
-                        description: 'No active subreddit-specific bans detected',
-                        status: 'passed',
-                        icon: '📋',
-                        detail: 'No active subreddit-specific bans detected',
-                        citation: 'Subreddit API queries',
-                        factor: 'web'
-                    },
-                    {
-                        name: 'Post Visibility',
-                        description: 'Recent posts visible in subreddit feeds',
-                        status: 'passed',
-                        icon: '📝',
-                        detail: 'Recent posts visible in subreddit feeds',
-                        citation: 'New post crawl test',
-                        factor: 'web'
-                    },
-                    {
-                        name: 'Karma Status',
-                        description: 'Karma accumulation functioning normally',
-                        status: 'passed',
-                        icon: '⬆️',
-                        detail: 'Karma accumulation functioning normally',
-                        citation: 'Reddit API user endpoint',
-                        factor: 'historical'
-                    }
-                ],
-                recommendations: [
-                    { text: 'Your Reddit account is in excellent standing.', type: 'success' },
-                    { text: 'Continue following community guidelines to maintain good status.', type: 'info' },
-                    { text: 'Review subreddit-specific rules before posting to avoid issues.', type: 'info' }
-                ]
-            }
-        },
-        'power': {
-            platform: 'Twitter/X',
-            identifier: '@example_user',
-            checkType: 'power',
-            timestamp: Date.now(),
-            ipData: {
-                ip: '203.45.67.89',
-                type: 'vpn',
-                typeLabel: 'VPN/Proxy',
-                location: 'Unknown'
-            },
-            results: {
-                probability: 67,
-                status: 'warning',
-                statusText: 'Potential Issues Detected',
-                engineFactors: {
-                    api: { active: true, detail: 'API access confirmed' },
-                    web: { active: true, detail: 'Visibility tests run' },
-                    historical: { active: true, detail: 'Baseline compared' },
-                    hashtag: { active: true, detail: '2 restricted tags found' },
-                    ip: { active: true, detail: 'VPN detected (+15% risk)' }
-                },
-                checks: [
-                    {
-                        name: 'Search Visibility',
-                        description: 'Account appears in search with reduced ranking',
-                        status: 'warning',
-                        icon: '🔍',
-                        detail: 'Account appears in search with reduced ranking',
-                        citation: 'Twitter/X API v2 search endpoint',
-                        factor: 'api'
-                    },
-                    {
-                        name: 'Post Reach',
-                        description: 'Recent posts showing 40% below baseline engagement',
-                        status: 'warning',
-                        icon: '📉',
-                        detail: 'Recent posts showing 40% below baseline engagement',
-                        citation: 'Historical engagement comparison',
-                        factor: 'historical'
-                    },
-                    {
-                        name: 'Hashtag Analysis',
-                        description: 'Found 2 restricted hashtags in recent posts: #crypto, #viral',
-                        status: 'warning',
-                        icon: '#️⃣',
-                        detail: 'Found 2 restricted hashtags: #crypto, #viral',
-                        citation: 'Hashtag database cross-reference',
-                        factor: 'hashtag'
-                    },
-                    {
-                        name: 'IP Risk Assessment',
-                        description: 'VPN/Proxy detected - adds risk to account trust score',
-                        status: 'warning',
-                        icon: '🌐',
-                        detail: 'VPN/Proxy detected - adds risk to account trust score',
-                        citation: 'IP reputation analysis',
-                        factor: 'ip'
-                    },
-                    {
-                        name: 'Account Standing',
-                        description: 'No permanent restrictions on account',
-                        status: 'passed',
-                        icon: '👤',
-                        detail: 'No permanent restrictions on account',
-                        citation: 'Twitter/X API v2 user lookup',
-                        factor: 'api'
-                    }
-                ],
-                recommendations: [
-                    { text: 'Remove restricted hashtags (#crypto, #viral) from recent posts.', type: 'warning' },
-                    { text: 'Consider disabling VPN when posting to improve trust score.', type: 'warning' },
-                    { text: 'Engagement is below baseline - avoid posting for 24-48 hours.', type: 'info' },
-                    { text: 'Set up monitoring to track when visibility improves.', type: 'info' }
-                ]
-            }
-        },
-        'hashtag': {
-            platform: 'Multi-Platform',
-            identifier: '#fitness #health #viral',
-            checkType: 'hashtag',
-            timestamp: Date.now(),
-            ipData: null,
-            results: {
-                probability: 35,
-                status: 'warning',
-                statusText: 'Some Hashtags Restricted',
-                engineFactors: {
-                    api: { active: false, detail: 'Not needed for hashtag checks' },
-                    web: { active: true, detail: 'Live visibility tests run' },
-                    historical: { active: true, detail: 'Restriction patterns analyzed' },
-                    hashtag: { active: true, detail: '1,800+ tags cross-referenced' },
-                    ip: { active: false, detail: 'Not needed for hashtag checks' }
-                },
-                checks: [
-                    {
-                        name: '#fitness',
-                        description: 'Safe to use on all platforms',
-                        status: 'passed',
-                        icon: '✅',
-                        detail: 'Safe to use on all platforms'
-                    },
-                    {
-                        name: '#health',
-                        description: 'Safe to use on all platforms',
-                        status: 'passed',
-                        icon: '✅',
-                        detail: 'Safe to use on all platforms'
-                    },
-                    {
-                        name: '#viral',
-                        description: 'Restricted on TikTok, LinkedIn',
-                        status: 'warning',
-                        icon: '⚠️',
-                        detail: 'Restricted on TikTok, LinkedIn - may reduce reach'
-                    }
-                ],
-                recommendations: [
-                    { text: 'Consider replacing #viral with alternatives like #trending or #popular.', type: 'warning' },
-                    { text: '#fitness and #health are safe to use across all platforms.', type: 'success' },
-                    { text: 'Check your account status with our Account Checker.', type: 'info' }
-                ]
-            }
-        },
-        'post': {
-            platform: 'Twitter/X',
-            identifier: 'https://twitter.com/user/status/123',
-            checkType: 'post',
-            timestamp: Date.now(),
-            ipData: {
-                ip: '72.134.92.18',
-                type: 'residential',
-                typeLabel: 'Residential',
-                location: 'Chicago, IL'
-            },
-            results: {
-                probability: 15,
-                status: 'clean',
-                statusText: 'Post Appears Visible',
-                engineFactors: {
-                    api: { active: true, detail: 'Post data retrieved' },
-                    web: { active: true, detail: 'Search visibility confirmed' },
-                    historical: { active: false, detail: 'Single post check' },
-                    hashtag: { active: true, detail: 'Hashtags verified safe' },
-                    ip: { active: true, detail: 'Residential IP verified' }
-                },
-                checks: [
-                    {
-                        name: 'Post Visibility',
-                        description: 'Post appears in search and feeds',
-                        status: 'passed',
-                        icon: '👁️',
-                        detail: 'Post appears in search and feeds'
-                    },
-                    {
-                        name: 'Hashtag Health',
-                        description: 'All hashtags are safe',
-                        status: 'passed',
-                        icon: '#️⃣',
-                        detail: 'All hashtags are safe'
-                    },
-                    {
-                        name: 'Engagement',
-                        description: 'Engagement metrics look normal',
-                        status: 'passed',
-                        icon: '📊',
-                        detail: 'Engagement metrics look normal'
-                    }
-                ],
-                recommendations: [
-                    { text: 'Your post appears to be in good standing.', type: 'success' },
-                    { text: 'Continue monitoring engagement over the next 24 hours.', type: 'info' }
-                ]
-            }
-        }
-    };
-    
-    return demos[platform.toLowerCase()];
-}
-
-/* =============================================================================
-   LOAD AND DISPLAY RESULTS
+   LOAD RESULTS
    ============================================================================= */
 function loadResults() {
-    // Check for demo mode first
-    if (loadDemoData()) {
-        return;
-    }
+    // Try to get results from URL params or sessionStorage
+    const urlParams = new URLSearchParams(window.location.search);
+    const storedResults = sessionStorage.getItem('shadowban_results');
     
-    // Try multiple storage keys (different pages use different keys)
-    let storedData = sessionStorage.getItem('shadowban_results') || 
-                     sessionStorage.getItem('checkResults');
+    let results = null;
     
-    if (!storedData) {
-        console.log('No stored results, loading Power Check demo for preview');
-        const powerDemo = getDemoDataForPlatform('power');
-        if (powerDemo) {
-            displayResults(powerDemo);
-            showDemoNotice();
-            return;
+    // Priority: sessionStorage (fresh results), then URL params (for demo/testing)
+    if (storedResults) {
+        try {
+            results = JSON.parse(storedResults);
+        } catch (e) {
+            console.error('Failed to parse stored results:', e);
         }
+    }
+    
+    // If no stored results, check for demo mode via URL
+    if (!results && urlParams.has('demo')) {
+        results = generateDemoResults(urlParams.get('demo'));
+    }
+    
+    // If still no results, redirect to home
+    if (!results) {
+        console.log('No results found, redirecting to home');
         window.location.href = 'index.html';
         return;
     }
     
-    const data = JSON.parse(storedData);
+    // Store for Shadow AI access
+    window.latestScanResults = results;
+    window.lastSearchType = results.type || 'power';
     
-    // Convert new format to old format if needed
-    const normalizedData = normalizeResultsData(data);
+    // Display results
+    displayResults(results);
     
-    // Check timestamp - expire after 1 hour
-    const timestamp = new Date(normalizedData.timestamp).getTime();
-    if (Date.now() - timestamp > 3600000) {
-        sessionStorage.removeItem('shadowban_results');
-        sessionStorage.removeItem('checkResults');
-        window.location.href = 'index.html';
-        return;
-    }
+    // Update page metadata for SEO/AI
+    updatePageMetadata(results);
     
-    displayResults(normalizedData);
-}
-
-// Normalize data from different sources into consistent format
-function normalizeResultsData(data) {
-    // If it's already in the old format, return as-is
-    if (data.results && data.results.probability !== undefined) {
-        return data;
-    }
-    
-    // Convert new post-checker format to results format
-    if (data.type === 'post' || data.type === 'username' || data.type === 'hashtag') {
-        return {
-            platform: data.platform || 'Unknown',
-            identifier: data.query || data.username || 'Unknown',
-            checkType: data.type || 'post',
-            timestamp: data.timestamp || Date.now(),
-            ipData: data.ipData || null,
-            results: {
-                probability: data.probability || 0,
-                status: data.statusClass || 'clean',
-                statusText: data.status || 'Analysis Complete',
-                engineFactors: convertFactors(data.factors),
-                checks: data.checks || [],
-                recommendations: (data.recommendations || []).map(r => 
-                    typeof r === 'string' ? { text: r, type: 'info' } : r
-                )
-            }
-        };
-    }
-    
-    return data;
-}
-
-function convertFactors(factors) {
-    if (!factors) return {};
-    
-    return {
-        api: { active: factors.platformAPI || false, detail: 'Platform API analysis' },
-        web: { active: factors.webAnalysis || false, detail: 'Web visibility tests' },
-        historical: { active: factors.historicalData || false, detail: 'Historical pattern comparison' },
-        hashtag: { active: factors.hashtagDatabase || false, detail: 'Hashtag database check' },
-        ip: { active: factors.ipAnalysis || false, detail: 'IP and location analysis' }
-    };
-}
-
-function showDemoNotice() {
-    const hero = document.querySelector('.hero .container');
-    if (hero) {
-        const notice = document.createElement('div');
-        notice.className = 'demo-notice';
-        notice.style.cssText = 'background: rgba(99, 102, 241, 0.1); border: 1px solid var(--primary); border-radius: 8px; padding: 12px 16px; margin-top: 16px; text-align: center; font-size: 0.875rem; color: var(--text-secondary);';
-        notice.innerHTML = '📊 <strong>Demo Data</strong> - Try different check types: <a href="?demo=twitter" style="color: var(--primary-light); margin: 0 8px;">Username</a> | <a href="?demo=power" style="color: var(--primary-light); margin: 0 8px;">Power Check</a> | <a href="?demo=hashtag" style="color: var(--primary-light); margin: 0 8px;">Hashtag</a> | <a href="?demo=post" style="color: var(--primary-light); margin: 0 8px;">Post</a>';
-        hero.appendChild(notice);
-    }
-}
-
-function displayResults(data) {
-    const { platform, identifier, results, checkType, ipData } = data;
-    
-    const platformIcons = {
-        'Instagram': '📸',
-        'TikTok': '🎵',
-        'Twitter/X': '𝕏',
-        'Facebook': '📘',
-        'LinkedIn': '💼',
-        'YouTube': '📺',
-        'Pinterest': '📌',
-        'Reddit': '🤖',
-        'Threads': '🧵',
-        'Multi-Platform': '#️⃣',
-        'Email': '📧',
-        'Unknown': '🔍'
-    };
-    
-    const checkTypeConfig = CHECK_TYPE_FACTORS[checkType] || CHECK_TYPE_FACTORS['username'];
-    
-    // Update hero section
-    const heroBadge = document.getElementById('results-badge');
-    const heroTitle = document.getElementById('results-title');
-    const heroSubtitle = document.getElementById('results-subtitle');
-    
-    if (heroBadge) {
-        const checkTypeName = checkType === 'post' ? 'Post' : checkType === 'hashtag' ? 'Hashtag' : checkType === 'power' ? 'Power' : 'Account';
-        heroBadge.textContent = `📊 ${checkTypeName} Analysis Complete`;
-    }
-    if (heroTitle) heroTitle.textContent = `${platform} Results`;
-    if (heroSubtitle) heroSubtitle.textContent = `Analyzed with ${checkTypeConfig.count}/5 Detection Factors`;
-    
-    // Update status card
-    const statusIcon = document.getElementById('status-icon');
-    const statusPlatform = document.getElementById('status-platform');
-    const statusQuery = document.getElementById('status-query');
-    const probabilityCircle = document.getElementById('probability-circle');
-    const probabilityValue = document.getElementById('probability-value');
-    const verdictBadge = document.getElementById('verdict-badge');
-    const verdictText = document.getElementById('verdict-text');
-    
-    if (statusIcon) statusIcon.textContent = platformIcons[platform] || '🔍';
-    if (statusPlatform) statusPlatform.textContent = platform;
-    if (statusQuery) statusQuery.textContent = identifier;
-    
-    // Status class based on probability
-    let statusClass = 'good';
-    let statusLabel = 'Likely Visible';
-    let statusDescription = 'Your content appears to be in good standing.';
-    
-    if (results.probability >= 50) {
-        statusClass = 'bad';
-        statusLabel = 'Likely Restricted';
-        statusDescription = 'Significant visibility issues detected. Review recommendations below.';
-    } else if (results.probability >= 20) {
-        statusClass = 'warning';
-        statusLabel = 'Possibly Limited';
-        statusDescription = 'Some factors may be affecting your reach. Review the analysis.';
-    }
-    
-    if (probabilityCircle) {
-        probabilityCircle.className = `probability-circle ${statusClass}`;
-        probabilityCircle.style.setProperty('--probability', results.probability);
-    }
-    if (probabilityValue) probabilityValue.textContent = `${results.probability}%`;
-    if (verdictBadge) {
-        verdictBadge.textContent = statusLabel;
-        verdictBadge.className = `verdict-badge ${statusClass}`;
-    }
-    if (verdictText) verdictText.textContent = statusDescription;
-    
-    // Update 5-Factor Engine Summary
-    displayEngineFactors(results.engineFactors, checkType, ipData);
-    
-    // Update checks grid
-    const checksGrid = document.getElementById('checks-grid');
-    if (checksGrid && results.checks) {
-        checksGrid.innerHTML = results.checks.map(check => {
-            const checkStatus = check.status === 'passed' || check.status === 'pass' ? 'pass' : 
-                               check.status === 'warning' ? 'warning' : 
-                               check.status === 'info' ? 'info' : 'fail';
-            
-            const statusLabel = checkStatus === 'pass' ? 'Pass' : 
-                               checkStatus === 'warning' ? 'Warning' : 
-                               checkStatus === 'info' ? 'Info' : 'Issue';
-            
-            return `
-                <div class="check-card ${checkStatus}">
-                    <span class="check-icon">${check.icon || '🔍'}</span>
-                    <div class="check-content">
-                        <div class="check-name">
-                            ${check.name}
-                            <span class="check-status ${checkStatus}">${statusLabel}</span>
-                        </div>
-                        <p class="check-detail">${check.detail || check.description || ''}</p>
-                    </div>
-                </div>
-            `;
-        }).join('');
-    }
-    
-    // Update recommendations
-    const recommendationsList = document.getElementById('recommendations-list');
-    if (recommendationsList && results.recommendations) {
-        recommendationsList.innerHTML = results.recommendations.map((rec, index) => {
-            const text = typeof rec === 'string' ? rec : rec.text;
-            const icons = ['💡', '🎯', '📋', '🔧', '⚡'];
-            return `
-                <div class="recommendation-item">
-                    <span class="recommendation-icon">${icons[index % icons.length]}</span>
-                    <p class="recommendation-text">${text}</p>
-                </div>
-            `;
-        }).join('');
-    }
-    
-    // Hide the tool card that matches the current check type
-    hideMatchingToolCard(checkType);
-    
-    // Store data for sharing/download
-    window.currentResults = data;
+    // Update permanent URL display
+    updatePermanentUrl(results);
 }
 
 /* =============================================================================
-   HIDE MATCHING TOOL CARD
+   DISPLAY RESULTS - Short Answer + Deep Dive
    ============================================================================= */
-function hideMatchingToolCard(checkType) {
-    const toolsGrid = document.getElementById('tools-grid');
-    if (!toolsGrid) return;
+function displayResults(results) {
+    const { platform, username, probability, verdict, verdictText, findings, factors, verification, ipData } = results;
     
-    const toolCards = toolsGrid.querySelectorAll('.tool-card');
+    // === SHORT ANSWER SECTION ===
     
-    toolCards.forEach(card => {
-        const cardType = card.dataset.checkType;
+    // Breadcrumb
+    const breadcrumbPlatform = document.getElementById('breadcrumb-platform');
+    if (breadcrumbPlatform) {
+        breadcrumbPlatform.textContent = platform.name;
+    }
+    
+    // Platform badge
+    const platformIcon = document.getElementById('result-platform-icon');
+    const platformName = document.getElementById('result-platform-name');
+    if (platformIcon) platformIcon.textContent = platform.icon;
+    if (platformName) platformName.textContent = platform.name;
+    
+    // Timestamp
+    const timestampEl = document.getElementById('result-timestamp');
+    if (timestampEl && results.timestamp) {
+        const date = new Date(results.timestamp);
+        timestampEl.textContent = `Analyzed: ${date.toLocaleDateString()} at ${date.toLocaleTimeString()}`;
+        timestampEl.setAttribute('datetime', date.toISOString());
+    }
+    
+    // Query/Username
+    const queryEl = document.getElementById('result-query');
+    if (queryEl) queryEl.textContent = username;
+    
+    // Probability Ring
+    const probabilityValue = document.getElementById('probability-value');
+    const probabilityInline = document.getElementById('probability-inline');
+    const probabilityCircle = document.getElementById('probability-circle');
+    
+    if (probabilityValue) probabilityValue.textContent = `${probability}%`;
+    if (probabilityInline) probabilityInline.textContent = `${probability}%`;
+    
+    // Animate probability ring
+    if (probabilityCircle) {
+        const circumference = 2 * Math.PI * 45; // radius = 45
+        const offset = circumference - (probability / 100) * circumference;
         
-        // Hide the card that matches the current check type
-        // Also hide account card for power check since it includes account check
-        if (cardType === checkType || (checkType === 'power' && cardType === 'username')) {
-            card.style.display = 'none';
+        setTimeout(() => {
+            probabilityCircle.style.strokeDashoffset = offset;
+            
+            // Color based on probability
+            if (probability >= 60) {
+                probabilityCircle.classList.add('danger');
+            } else if (probability >= 30) {
+                probabilityCircle.classList.add('warning');
+            }
+        }, 100);
+    }
+    
+    // Probability interpretation
+    const interpretationEl = document.getElementById('probability-interpretation');
+    if (interpretationEl) {
+        if (probability < 20) {
+            interpretationEl.textContent = 'All 5 signals indicate normal visibility. Your content appears to be reaching your audience without restrictions.';
+        } else if (probability < 40) {
+            interpretationEl.textContent = 'Most signals look healthy, with minor concerns detected. Content is likely visible but may have slight reach limitations.';
+        } else if (probability < 60) {
+            interpretationEl.textContent = 'Multiple signals indicate potential visibility issues. Some content may not be reaching your full audience.';
         } else {
-            card.style.display = '';
+            interpretationEl.textContent = 'Significant visibility concerns detected across multiple signals. Content is likely being suppressed or filtered.';
+        }
+    }
+    
+    // Verdict badge
+    const verdictBadge = document.getElementById('verdict-badge');
+    if (verdictBadge) {
+        verdictBadge.textContent = verdictText;
+        verdictBadge.className = `verdict-badge ${verdict}`;
+    }
+    
+    // Key Findings
+    displayFindings(findings);
+    
+    // Citation date
+    const citationDate = document.getElementById('citation-date');
+    if (citationDate && results.timestamp) {
+        citationDate.textContent = new Date(results.timestamp).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+    }
+    
+    // === DEEP DIVE SECTION ===
+    
+    // Engine factors
+    displayFactors(factors);
+    
+    // Platform-specific checks
+    displayPlatformChecks(platform, probability, verification);
+    
+    // Verification section (Twitter-specific)
+    displayVerification(verification, platform);
+    
+    // IP Analysis
+    displayIPAnalysis(ipData);
+    
+    // Recommendations
+    displayRecommendations(results);
+}
+
+/* =============================================================================
+   DISPLAY COMPONENTS
+   ============================================================================= */
+function displayFindings(findings) {
+    const findingsList = document.getElementById('findings-list');
+    if (!findingsList || !findings) return;
+    
+    findingsList.innerHTML = findings.map(f => {
+        const icon = f.type === 'good' ? '✓' : f.type === 'warning' ? '⚠' : '✗';
+        return `<li class="finding-${f.type}"><span>${icon}</span><span>${f.text}</span></li>`;
+    }).join('');
+}
+
+function displayFactors(factors) {
+    if (!factors) return;
+    
+    const factorConfig = {
+        api: { id: 'factor-api', icon: '🔌', name: 'Platform APIs' },
+        web: { id: 'factor-web', icon: '🔍', name: 'Web Analysis' },
+        historical: { id: 'factor-historical', icon: '📊', name: 'Historical Data' },
+        hashtag: { id: 'factor-hashtag', icon: '#️⃣', name: 'Hashtag Database' },
+        ip: { id: 'factor-ip', icon: '🌐', name: 'IP Analysis' }
+    };
+    
+    let activeCount = 0;
+    
+    Object.entries(factors).forEach(([key, data]) => {
+        const config = factorConfig[key];
+        if (!config) return;
+        
+        const row = document.getElementById(config.id);
+        if (!row) return;
+        
+        const indicator = row.querySelector('.factor-indicator');
+        const finding = row.querySelector('.factor-finding');
+        const status = row.querySelector('.factor-status');
+        
+        if (data.active) {
+            activeCount++;
+            indicator?.classList.add('active');
+            indicator?.classList.remove('inactive');
+        } else {
+            indicator?.classList.add('inactive');
+            indicator?.classList.remove('active');
+        }
+        
+        if (finding) finding.textContent = data.finding || 'Analysis complete';
+        
+        if (status) {
+            status.className = `factor-status ${data.status || 'good'}`;
+            status.innerHTML = data.status === 'good' ? '<span>✓</span>' : 
+                              data.status === 'warning' ? '<span>⚠</span>' : 
+                              data.status === 'bad' ? '<span>✗</span>' : '<span>○</span>';
         }
     });
     
-    // Update grid to handle 2 items better
-    const visibleCards = toolsGrid.querySelectorAll('.tool-card:not([style*="display: none"])');
-    if (visibleCards.length === 2) {
-        toolsGrid.style.gridTemplateColumns = 'repeat(2, 1fr)';
-        toolsGrid.style.maxWidth = '700px';
-        toolsGrid.style.margin = '0 auto';
+    // Update factors count
+    const factorsUsed = document.getElementById('engine-factors-used');
+    if (factorsUsed) factorsUsed.textContent = `${activeCount}/5 factors analyzed`;
+}
+
+function displayPlatformChecks(platform, probability, verification) {
+    const checksGrid = document.getElementById('checks-grid');
+    if (!checksGrid) return;
+    
+    let checks = [];
+    
+    if (platform.key === 'twitter') {
+        checks = [
+            {
+                icon: '🔍',
+                name: 'Search Visibility',
+                status: probability < 40 ? 'pass' : 'warning',
+                description: probability < 40 
+                    ? 'Account appears in Twitter/X search results' 
+                    : 'Reduced visibility in search results detected'
+            },
+            {
+                icon: '💬',
+                name: 'Reply Visibility (QFD)',
+                status: probability < 50 ? 'pass' : 'warning',
+                description: probability < 50 
+                    ? 'Replies visible without quality filter restrictions' 
+                    : 'Replies may be hidden behind "Show more replies"'
+            },
+            {
+                icon: '👤',
+                name: 'Profile Accessibility',
+                status: 'pass',
+                description: 'Profile is accessible to logged-out users'
+            },
+            {
+                icon: '📊',
+                name: 'Engagement Rate',
+                status: probability < 30 ? 'pass' : 'warning',
+                description: probability < 30 
+                    ? 'Engagement aligns with historical baseline' 
+                    : 'Engagement below historical baseline'
+            },
+            {
+                icon: verification?.hasCheckmark ? '✓' : '❌',
+                name: 'Verification Badge',
+                status: verification?.hasCheckmark ? 'pass' : 'warning',
+                description: verification?.hasCheckmark 
+                    ? `${verification.type === 'blue' ? 'Blue' : verification.type === 'gold' ? 'Gold' : 'Grey'} verification badge detected` 
+                    : 'No verification badge (may affect algorithmic visibility)'
+            }
+        ];
+    } else if (platform.key === 'reddit') {
+        checks = [
+            {
+                icon: '🌐',
+                name: 'Site-wide Shadowban',
+                status: probability < 50 ? 'pass' : 'warning',
+                description: probability < 50 
+                    ? 'Account is not site-wide shadowbanned' 
+                    : 'Potential site-wide restrictions detected'
+            },
+            {
+                icon: '📋',
+                name: 'Subreddit Bans',
+                status: 'pass',
+                description: 'No subreddit-specific bans detected in recent activity'
+            },
+            {
+                icon: '📝',
+                name: 'Post Visibility',
+                status: probability < 40 ? 'pass' : 'warning',
+                description: probability < 40 
+                    ? 'Recent posts visible in subreddit feeds' 
+                    : 'Some posts may be filtered or removed'
+            },
+            {
+                icon: '⬆️',
+                name: 'Karma Status',
+                status: 'pass',
+                description: 'Karma accumulation appears to be functioning normally'
+            }
+        ];
+    } else {
+        // Generic checks
+        checks = [
+            {
+                icon: '👤',
+                name: 'Profile Visibility',
+                status: probability < 40 ? 'pass' : 'warning',
+                description: probability < 40 ? 'Profile accessible to public' : 'Profile may have limited visibility'
+            },
+            {
+                icon: '🔍',
+                name: 'Search Presence',
+                status: probability < 50 ? 'pass' : 'warning',
+                description: probability < 50 ? 'Account appears in search' : 'Search visibility may be reduced'
+            }
+        ];
     }
+    
+    checksGrid.innerHTML = checks.map(check => `
+        <div class="check-card ${check.status}">
+            <span class="check-icon">${check.icon}</span>
+            <div class="check-content">
+                <h4>${check.name}</h4>
+                <p>${check.description}</p>
+            </div>
+        </div>
+    `).join('');
+}
+
+function displayVerification(verification, platform) {
+    const section = document.getElementById('verification-section');
+    if (!section) return;
+    
+    // Only show for Twitter
+    if (platform.key !== 'twitter') {
+        section.classList.add('hidden');
+        return;
+    }
+    
+    section.classList.remove('hidden');
+    
+    const card = document.getElementById('verification-card');
+    const iconEl = document.getElementById('verification-icon');
+    const titleEl = document.getElementById('verification-title');
+    const textEl = document.getElementById('verification-text');
+    const impactEl = document.getElementById('verification-impact');
+    
+    if (verification?.hasCheckmark) {
+        card?.classList.add('verified');
+        
+        const badgeType = verification.type === 'blue' ? 'Blue ✓' : 
+                         verification.type === 'gold' ? 'Gold ✓ (Organization)' : 
+                         'Grey ✓ (Government)';
+        
+        if (iconEl) iconEl.textContent = '✓';
+        if (titleEl) titleEl.textContent = `${badgeType} Verified`;
+        if (textEl) textEl.textContent = 'This account has a verification badge, which generally provides improved visibility in search results and recommendations on Twitter/X.';
+        if (impactEl) impactEl.textContent = 'Positive factor for visibility';
+    } else {
+        card?.classList.remove('verified');
+        if (iconEl) iconEl.textContent = '❌';
+        if (titleEl) titleEl.textContent = 'No Verification Badge';
+        if (textEl) textEl.textContent = 'This account does not have a verification badge (Blue ✓, Gold ✓ for organizations, or Grey ✓ for government). On Twitter/X, unverified accounts may receive lower visibility in search results and recommendations compared to verified accounts.';
+        if (impactEl) impactEl.textContent = '+5% added to probability score';
+    }
+}
+
+function displayIPAnalysis(ipData) {
+    const section = document.getElementById('ip-analysis');
+    if (!section || !ipData) return;
+    
+    const addressEl = document.getElementById('ip-address');
+    const badgeEl = document.getElementById('ip-type-badge');
+    const flagEl = document.getElementById('ip-flag');
+    const explanationEl = document.getElementById('ip-explanation');
+    
+    if (addressEl) addressEl.textContent = ipData.ip || 'Unknown';
+    
+    if (badgeEl) {
+        badgeEl.textContent = ipData.typeLabel || 'Unknown';
+        badgeEl.className = `ip-type-badge ${ipData.type || 'unknown'}`;
+    }
+    
+    if (flagEl && ipData.countryCode) {
+        flagEl.textContent = countryCodeToFlag(ipData.countryCode);
+    }
+    
+    if (explanationEl) {
+        if (ipData.isVPN) {
+            explanationEl.textContent = 'Your IP appears to be a VPN or proxy connection. Platforms may treat content posted from VPNs with lower trust, potentially affecting visibility. This added +10% to your probability score.';
+        } else if (ipData.isDatacenter) {
+            explanationEl.textContent = 'Your IP appears to be from a datacenter or hosting provider. Platforms often restrict content from server IPs to prevent automation abuse. This added +15% to your probability score.';
+        } else {
+            explanationEl.textContent = 'Your IP appears to be a residential connection. Platforms generally trust residential IPs more than VPNs or datacenter IPs, which positively affects content visibility.';
+        }
+    }
+}
+
+function displayRecommendations(results) {
+    const list = document.getElementById('recommendations-list');
+    if (!list) return;
+    
+    const { probability, platform, verification, ipData } = results;
+    const recommendations = [];
+    
+    // Based on probability level
+    if (probability < 20) {
+        recommendations.push({
+            type: 'success',
+            icon: '✅',
+            title: 'Looking Good!',
+            text: 'Your account shows healthy signals across all 5 factors. Continue posting quality content and engaging authentically.'
+        });
+        recommendations.push({
+            type: 'info',
+            icon: '📊',
+            title: 'Set Up Monitoring',
+            text: 'Consider setting up regular monitoring to catch any changes early. Pro users get automatic alerts when probability increases.'
+        });
+    } else if (probability < 40) {
+        recommendations.push({
+            type: 'info',
+            icon: '👀',
+            title: 'Minor Concerns Detected',
+            text: 'A few signals show minor concerns. This is often temporary and may resolve on its own. Monitor your engagement over the next few days.'
+        });
+    } else if (probability < 60) {
+        recommendations.push({
+            type: 'warning',
+            icon: '⚠️',
+            title: 'Visibility May Be Affected',
+            text: 'Multiple signals indicate potential visibility issues. Review your recent content for anything that might trigger algorithmic filters.'
+        });
+    } else {
+        recommendations.push({
+            type: 'warning',
+            icon: '🚨',
+            title: 'Significant Concerns',
+            text: 'Multiple signals indicate likely suppression. Consider reviewing platform guidelines and appealing if you believe this is in error.'
+        });
+    }
+    
+    // Verification-specific (Twitter)
+    if (platform.key === 'twitter' && !verification?.hasCheckmark) {
+        recommendations.push({
+            type: 'info',
+            icon: '✓',
+            title: 'Consider Verification',
+            text: 'Getting verified on Twitter/X can improve your visibility in search and recommendations. Blue verification is available through Twitter Blue subscription.'
+        });
+    }
+    
+    // IP-specific
+    if (ipData?.isVPN) {
+        recommendations.push({
+            type: 'warning',
+            icon: '🌐',
+            title: 'VPN Detected',
+            text: 'Consider disabling your VPN when posting content. Platforms may apply additional scrutiny to content posted from VPN connections.'
+        });
+    }
+    
+    // Always add Shadow AI suggestion
+    recommendations.push({
+        type: 'info',
+        icon: '🤖',
+        title: 'Ask Shadow AI',
+        text: 'Get personalized advice based on your specific results. Shadow AI can analyze your probability factors and suggest targeted recovery steps.'
+    });
+    
+    list.innerHTML = recommendations.map(rec => `
+        <div class="recommendation-item ${rec.type}">
+            <span class="recommendation-icon">${rec.icon}</span>
+            <div class="recommendation-content">
+                <h4>${rec.title}</h4>
+                <p>${rec.text}</p>
+            </div>
+        </div>
+    `).join('');
 }
 
 /* =============================================================================
-   5-FACTOR ENGINE DISPLAY
+   PAGE METADATA - SEO & AI Optimization
    ============================================================================= */
-function displayEngineFactors(engineFactors, checkType, ipData) {
-    const factorsRow = document.getElementById('engine-factors-row');
-    const factorsBadge = document.getElementById('factors-badge');
-    const ipDisplay = document.getElementById('ip-display');
+function updatePageMetadata(results) {
+    const { platform, username, probability, verdictText, timestamp } = results;
     
-    // Count active factors
-    let activeCount = 0;
-    if (engineFactors) {
-        Object.values(engineFactors).forEach(f => {
-            if (f && f.active) activeCount++;
-        });
+    // Page title
+    const titleEl = document.getElementById('page-title');
+    if (titleEl) {
+        titleEl.textContent = `${username} on ${platform.name}: ${probability}% Shadow Ban Probability - ShadowBanCheck.io`;
+        document.title = titleEl.textContent;
     }
     
-    // Update factors badge
-    if (factorsBadge) {
-        factorsBadge.textContent = `${activeCount}/5 Factors`;
+    // Meta description
+    const descEl = document.getElementById('page-description');
+    if (descEl) {
+        const desc = `Shadow ban probability analysis for ${username} on ${platform.name}. Result: ${probability}% probability (${verdictText}). Analyzed by 5-Factor Detection Engine on ${new Date(timestamp).toLocaleDateString()}.`;
+        descEl.setAttribute('content', desc);
     }
     
-    // Display factor chips
-    if (factorsRow && engineFactors) {
-        factorsRow.innerHTML = ENGINE_FACTORS.map(factor => {
-            const factorData = engineFactors[factor.id];
-            const isActive = factorData?.active || false;
-            
-            return `
-                <div class="factor-chip ${isActive ? 'active' : 'inactive'}">
-                    <span>${factor.icon}</span>
-                    <span>${factor.shortName}</span>
-                </div>
-            `;
-        }).join('');
-    }
+    // Open Graph
+    const ogTitle = document.getElementById('og-title');
+    const ogDesc = document.getElementById('og-description');
+    if (ogTitle) ogTitle.setAttribute('content', `${username}: ${probability}% Shadow Ban Probability on ${platform.name}`);
+    if (ogDesc) ogDesc.setAttribute('content', `5-Factor Detection Engine analysis: ${verdictText}. Analyzed platform APIs, web visibility, historical data, hashtags, and IP signals.`);
     
-    // Display IP if IP analysis was used
-    if (ipDisplay && ipData && engineFactors?.ip?.active) {
-        const typeClass = (ipData.type || 'residential').toLowerCase();
-        ipDisplay.innerHTML = `
-            <span class="ip-label">🌐 Your IP:</span>
-            <div class="ip-value">
-                ${ipData.flag ? `<span class="ip-flag">${ipData.flag}</span>` : ''}
-                <span>${ipData.ip || 'Unknown'}</span>
-                <span class="ip-type-badge ${typeClass}">${ipData.type || 'Residential'}</span>
-            </div>
-            ${ipData.country || ipData.location ? `<span class="ip-label">${ipData.country || ipData.location}</span>` : ''}
-        `;
-    } else if (ipDisplay) {
-        ipDisplay.style.display = 'none';
-    }
+    // Twitter Card
+    const twitterTitle = document.getElementById('twitter-title');
+    const twitterDesc = document.getElementById('twitter-description');
+    if (twitterTitle) twitterTitle.setAttribute('content', `${username}: ${probability}% Shadow Ban Probability`);
+    if (twitterDesc) twitterDesc.setAttribute('content', `${platform.name} analysis by ShadowBanCheck.io's 5-Factor Detection Engine`);
     
-    // Setup engine info modal
-    setupEngineInfoModal(engineFactors, checkType);
+    // Schema.org JSON-LD
+    updateSchemaOrg(results);
+    
+    // Canonical URL
+    updateCanonicalUrl(results);
 }
 
-function setupEngineInfoModal(engineFactors, checkType) {
-    const infoBtn = document.getElementById('engine-info-btn');
-    const modal = document.getElementById('engine-info-modal');
-    const modalFactors = document.getElementById('modal-engine-factors');
+function updateSchemaOrg(results) {
+    const schemaEl = document.getElementById('schema-json');
+    if (!schemaEl) return;
     
-    if (modalFactors && engineFactors) {
-        const checkTypeConfig = CHECK_TYPE_FACTORS[checkType] || CHECK_TYPE_FACTORS['username'];
-        
-        modalFactors.innerHTML = ENGINE_FACTORS.map(factor => {
-            const factorData = engineFactors[factor.id];
-            const isActive = factorData?.active || false;
-            const desc = isActive 
-                ? (factorData.detail || factor.activeDesc)
-                : factor.inactiveDesc;
-            
-            return `
-                <li class="${isActive ? 'factor-active' : 'factor-inactive'}">
-                    <span class="factor-check">${isActive ? '✓' : '○'}</span>
-                    <span class="factor-icon">${factor.icon}</span>
-                    <div class="factor-content">
-                        <span class="factor-name">${factor.name}</span>
-                        <span class="factor-desc">${desc}</span>
-                    </div>
-                </li>
-            `;
-        }).join('');
-    }
+    const { platform, username, probability, verdictText, timestamp, findings, factors } = results;
+    const dateStr = new Date(timestamp).toISOString();
     
-    if (infoBtn && modal) {
-        infoBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            modal.classList.remove('hidden');
-            document.body.style.overflow = 'hidden';
-        });
-        
-        const closeBtn = modal.querySelector('.modal-close');
-        const overlay = modal.querySelector('.modal-overlay');
-        
-        const closeModal = () => {
-            modal.classList.add('hidden');
-            document.body.style.overflow = '';
-        };
-        
-        closeBtn?.addEventListener('click', closeModal);
-        overlay?.addEventListener('click', closeModal);
-    }
+    const schema = {
+        "@context": "https://schema.org",
+        "@type": "TechArticle",
+        "headline": `${username} Shadow Ban Probability Analysis on ${platform.name}`,
+        "description": `Shadow ban probability: ${probability}% (${verdictText}). Analysis based on 5-Factor Detection Engine examining platform APIs, web visibility, historical data, hashtag database, and IP analysis.`,
+        "author": {
+            "@type": "Organization",
+            "name": "ShadowBanCheck.io",
+            "url": "https://shadowbancheck.io"
+        },
+        "publisher": {
+            "@type": "Organization",
+            "name": "ShadowBanCheck.io",
+            "logo": {
+                "@type": "ImageObject",
+                "url": "https://shadowbancheck.io/logo.png"
+            }
+        },
+        "datePublished": dateStr,
+        "dateModified": dateStr,
+        "mainEntity": {
+            "@type": "Thing",
+            "name": username,
+            "description": `Social media account on ${platform.name}`
+        },
+        "about": {
+            "@type": "Thing",
+            "name": "Shadow Ban Analysis",
+            "description": "Probability analysis of content visibility restrictions on social media"
+        },
+        "mentions": [
+            {
+                "@type": "Thing",
+                "name": platform.name,
+                "description": "Social media platform"
+            }
+        ],
+        "keywords": `shadow ban, ${platform.name}, probability analysis, content visibility, social media`,
+        "isAccessibleForFree": true,
+        "creativeWorkStatus": "Published",
+        "inLanguage": "en-US"
+    };
+    
+    schemaEl.textContent = JSON.stringify(schema, null, 2);
+}
+
+function updateCanonicalUrl(results) {
+    const canonicalEl = document.getElementById('canonical-url');
+    const ogUrl = document.getElementById('og-url');
+    
+    // Build canonical URL (placeholder structure until backend)
+    const platform = results.platform.key;
+    const identifier = results.username.replace('@', '').replace('u/', '');
+    const url = `https://shadowbancheck.io/results/${platform}/${encodeURIComponent(identifier)}`;
+    
+    if (canonicalEl) canonicalEl.setAttribute('href', url);
+    if (ogUrl) ogUrl.setAttribute('content', url);
+}
+
+function updatePermanentUrl(results) {
+    const urlInput = document.getElementById('permanent-url');
+    if (!urlInput) return;
+    
+    const platform = results.platform.key;
+    const identifier = results.username.replace('@', '').replace('u/', '');
+    const url = `https://shadowbancheck.io/results/${platform}/${encodeURIComponent(identifier)}`;
+    
+    urlInput.value = url;
 }
 
 /* =============================================================================
    ACTIONS
    ============================================================================= */
 function initActions() {
-    const downloadBtn = document.getElementById('download-report');
-    downloadBtn?.addEventListener('click', downloadReport);
+    // Download PDF
+    document.getElementById('download-report-btn')?.addEventListener('click', downloadReport);
     
-    const shareBtn = document.getElementById('share-results-btn');
-    shareBtn?.addEventListener('click', openShareModal);
-    
-    initShareModal();
-    
-    // ESC key handler
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') {
-            document.querySelectorAll('.modal').forEach(m => {
-                m.classList.add('hidden');
-            });
-            document.body.style.overflow = '';
+    // Ask AI
+    document.getElementById('ask-ai-btn')?.addEventListener('click', () => {
+        // Open Shadow AI chatbot
+        if (typeof window.openShadowAI === 'function') {
+            window.openShadowAI();
+        } else {
+            // Fallback: scroll to AI section or show message
+            window.location.href = 'index.html#shadow-ai-pro';
         }
     });
 }
 
-function openShareModal() {
-    const modal = document.getElementById('share-modal');
-    if (modal) {
-        modal.classList.remove('hidden');
-        document.body.style.overflow = 'hidden';
-        setupModalCloseHandlers(modal);
-    }
-}
-
-function setupModalCloseHandlers(modal) {
-    const closeBtn = modal.querySelector('.modal-close');
-    const overlay = modal.querySelector('.modal-overlay');
+function initShareButtons() {
+    const results = window.latestScanResults;
+    if (!results) return;
     
-    const closeModal = () => {
-        modal.classList.add('hidden');
-        document.body.style.overflow = '';
-    };
+    const shareUrl = window.location.href;
+    const shareText = `My ${results.platform.name} account has a ${results.probability}% shadow ban probability. Check yours free at`;
     
-    closeBtn?.addEventListener('click', closeModal);
-    overlay?.addEventListener('click', closeModal);
-}
-
-function initShareModal() {
-    const storedData = sessionStorage.getItem('shadowban_results') || sessionStorage.getItem('checkResults');
-    
-    let shareText, platform, score, status;
-    
-    if (storedData) {
-        const data = JSON.parse(storedData);
-        const normalized = normalizeResultsData(data);
-        status = normalized.results.status;
-        score = normalized.results.probability;
-        platform = normalized.platform;
-        
-        shareText = score < 20
-            ? `✅ Just checked my ${platform} account for shadow bans - only ${score}% probability! Check yours free at`
-            : score < 50
-            ? `⚠️ My ${platform} account has a ${score}% shadow ban probability - some issues detected. Check your account free at`
-            : `🚫 My ${platform} account has a ${score}% shadow ban probability. Check your account free at`;
-    } else {
-        shareText = '🔍 Just checked my social media for shadow bans with the 5-Factor Detection Engine! Check yours free at';
-    }
-    
-    const shareUrl = window.location.origin;
-    const encodedText = encodeURIComponent(shareText);
-    const encodedUrl = encodeURIComponent(shareUrl);
-    
-    document.getElementById('share-modal-twitter')?.addEventListener('click', function() {
-        window.open(`https://twitter.com/intent/tweet?text=${encodedText}&url=${encodedUrl}`, '_blank', 'width=600,height=400');
-        document.getElementById('share-modal').classList.add('hidden');
-        document.body.style.overflow = '';
+    // Inline share buttons
+    document.getElementById('share-twitter-btn')?.addEventListener('click', () => {
+        window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`, '_blank');
     });
     
-    document.getElementById('share-modal-facebook')?.addEventListener('click', function() {
-        window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}&quote=${encodedText}`, '_blank', 'width=600,height=400');
-        document.getElementById('share-modal').classList.add('hidden');
-        document.body.style.overflow = '';
+    document.getElementById('share-facebook-btn')?.addEventListener('click', () => {
+        window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`, '_blank');
     });
     
-    document.getElementById('share-modal-telegram')?.addEventListener('click', function() {
-        window.open(`https://t.me/share/url?url=${encodedUrl}&text=${encodedText}`, '_blank', 'width=600,height=400');
-        document.getElementById('share-modal').classList.add('hidden');
-        document.body.style.overflow = '';
+    document.getElementById('share-linkedin-btn')?.addEventListener('click', () => {
+        window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`, '_blank');
+    });
+    
+    document.getElementById('copy-link-btn')?.addEventListener('click', function() {
+        const urlInput = document.getElementById('permanent-url');
+        if (urlInput) {
+            navigator.clipboard.writeText(urlInput.value).then(() => {
+                this.textContent = '✓';
+                setTimeout(() => this.textContent = '🔗', 2000);
+            });
+        }
+    });
+    
+    // Modal share buttons
+    document.getElementById('share-modal-twitter')?.addEventListener('click', () => {
+        window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`, '_blank');
+    });
+    
+    document.getElementById('share-modal-facebook')?.addEventListener('click', () => {
+        window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`, '_blank');
+    });
+    
+    document.getElementById('share-modal-linkedin')?.addEventListener('click', () => {
+        window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`, '_blank');
     });
     
     document.getElementById('share-modal-copy')?.addEventListener('click', function() {
-        navigator.clipboard.writeText(`${shareText} ${shareUrl}`).then(() => {
-            this.innerHTML = '<span>✓</span><span>Copied!</span>';
-            setTimeout(() => {
-                this.innerHTML = '<span>📋</span><span>Copy Link</span>';
-            }, 2000);
-        });
+        const urlInput = document.getElementById('permanent-url');
+        if (urlInput) {
+            navigator.clipboard.writeText(urlInput.value).then(() => {
+                this.innerHTML = '<span>✓</span><span>Copied!</span>';
+                setTimeout(() => this.innerHTML = '<span>📋</span><span>Copy Permanent URL</span>', 2000);
+            });
+        }
     });
 }
 
 function downloadReport() {
-    const data = window.currentResults;
-    if (!data) return;
+    const results = window.latestScanResults;
+    if (!results) return;
     
-    const { platform, identifier, results, checkType, ipData } = data;
-    const checkTypeConfig = CHECK_TYPE_FACTORS[checkType] || CHECK_TYPE_FACTORS['username'];
+    const { platform, username, probability, verdictText, timestamp, findings, factors, verification, ipData } = results;
+    const date = new Date(timestamp);
     
-    let report = `SHADOW BAN CHECK REPORT
-========================
-Platform: ${platform}
-Query: ${identifier}
-Date: ${new Date(data.timestamp).toLocaleString()}
-Check Type: ${checkTypeConfig.name}
-Overall Status: ${results.statusText || 'Analysis Complete'}
-Shadow Ban Probability: ${results.probability}%
+    let report = `SHADOW BAN PROBABILITY REPORT
+==============================
+Generated by ShadowBanCheck.io 5-Factor Detection Engine
 
-5-FACTOR DETECTION ENGINE
--------------------------
-Factors Used: ${checkTypeConfig.count}/5
+SUMMARY
+-------
+Platform: ${platform.name}
+Account: ${username}
+Date: ${date.toLocaleDateString()} at ${date.toLocaleTimeString()}
+
+PROBABILITY SCORE: ${probability}%
+STATUS: ${verdictText}
+
+KEY FINDINGS
+------------
 `;
     
-    ENGINE_FACTORS.forEach(factor => {
-        const factorData = results.engineFactors?.[factor.id];
-        const status = factorData?.active ? '✓ ACTIVE' : '○ Inactive';
-        const detail = factorData?.active ? (factorData.detail || factor.activeDesc) : factor.inactiveDesc;
-        report += `${factor.icon} ${factor.name}: ${status}\n   ${detail}\n`;
+    findings.forEach(f => {
+        const icon = f.type === 'good' ? '[✓]' : f.type === 'warning' ? '[⚠]' : '[✗]';
+        report += `${icon} ${f.text}\n`;
     });
     
-    if (ipData && results.engineFactors?.ip?.active) {
-        report += `\nIP ANALYSIS\n-----------\nIP: ${ipData.ip}\nType: ${ipData.typeLabel || ipData.type}\n`;
-        if (ipData.location || ipData.country) report += `Location: ${ipData.location || ipData.country}\n`;
+    report += `
+5-FACTOR DETECTION ENGINE ANALYSIS
+----------------------------------
+`;
+    
+    const factorNames = {
+        api: 'Platform APIs',
+        web: 'Web Analysis',
+        historical: 'Historical Data',
+        hashtag: 'Hashtag Database',
+        ip: 'IP Analysis'
+    };
+    
+    Object.entries(factors).forEach(([key, data]) => {
+        const status = data.status === 'good' ? '[✓]' : data.status === 'warning' ? '[⚠]' : '[○]';
+        report += `${status} ${factorNames[key]}: ${data.finding}\n`;
+    });
+    
+    if (verification && platform.key === 'twitter') {
+        report += `
+VERIFICATION STATUS
+-------------------
+`;
+        if (verification.hasCheckmark) {
+            report += `[✓] ${verification.type === 'blue' ? 'Blue' : verification.type === 'gold' ? 'Gold' : 'Grey'} verification badge detected\n`;
+        } else {
+            report += `[⚠] No verification badge (adds +5% to probability)\n`;
+        }
     }
     
-    report += `\nDETAILED CHECKS\n---------------\n`;
+    if (ipData) {
+        report += `
+IP ANALYSIS
+-----------
+IP: ${ipData.ip}
+Type: ${ipData.typeLabel}
+Location: ${ipData.country || 'Unknown'}
+`;
+    }
     
-    results.checks?.forEach(check => {
-        report += `\n${check.name}: ${(check.status || 'unknown').toUpperCase()}\n`;
-        report += `  ${check.detail || check.description}\n`;
-        if (check.citation) {
-            report += `  Source: ${check.citation}\n`;
-        }
-    });
+    report += `
+METHODOLOGY
+-----------
+This probability score is calculated by analyzing 5 independent signals:
+1. Platform APIs - Direct queries to official APIs
+2. Web Analysis - Automated browser tests from U.S. servers
+3. Historical Data - Comparison against engagement baselines
+4. Hashtag Database - Cross-reference against banned/restricted tags
+5. IP Analysis - VPN/proxy/datacenter detection
+
+No tool can definitively determine shadow ban status—platforms don't
+disclose their algorithms. This probability score represents the
+likelihood of restrictions based on observable signals.
+
+---
+Report generated by ShadowBanCheck.io
+https://shadowbancheck.io
+`;
     
-    report += `\nRECOMMENDATIONS\n---------------\n`;
-    
-    results.recommendations?.forEach((rec, index) => {
-        const text = typeof rec === 'string' ? rec : rec.text;
-        report += `\n${index + 1}. ${text}\n`;
-    });
-    
-    report += `\n------------------------\nPowered by 5-Factor Detection Engine\nGenerated by ShadowBanCheck.io\n${window.location.origin}`;
-    
+    // Download as text file
     const blob = new Blob([report], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `shadowban-report-${platform.toLowerCase().replace(/[\s\/]+/g, '-')}-${Date.now()}.txt`;
+    a.download = `shadowban-report-${platform.key}-${username.replace('@', '').replace('u/', '')}-${Date.now()}.txt`;
     a.click();
     URL.revokeObjectURL(url);
 }
 
 /* =============================================================================
-   INITIALIZE
+   DEMO DATA GENERATOR
    ============================================================================= */
-document.addEventListener('DOMContentLoaded', function() {
-    loadResults();
-    initActions();
+function generateDemoResults(demoType) {
+    const demos = {
+        'twitter': {
+            type: 'power',
+            platform: { name: 'Twitter/X', icon: '𝕏', key: 'twitter', id: 'twitter' },
+            url: 'https://twitter.com/example/status/123456789',
+            username: '@exampleuser',
+            postId: '123456789',
+            timestamp: Date.now(),
+            probability: 28,
+            verdict: 'likely-visible',
+            verdictText: 'Likely Visible',
+            findings: [
+                { type: 'good', text: 'Account appears in search results' },
+                { type: 'good', text: 'Profile accessible to public' },
+                { type: 'warning', text: 'No verification badge detected (may affect visibility)' }
+            ],
+            factors: {
+                api: { active: true, status: 'good', finding: 'Account active and accessible via Twitter API v2' },
+                web: { active: true, status: 'good', finding: 'Search visibility confirmed from U.S. servers' },
+                historical: { active: true, status: 'good', finding: 'Engagement within normal baseline' },
+                hashtag: { active: true, status: 'good', finding: 'No banned or restricted hashtags detected' },
+                ip: { active: true, status: 'good', finding: 'Residential IP verified' }
+            },
+            verification: { type: 'none', hasCheckmark: false, impact: '+5% added to probability' },
+            ipData: { ip: '192.168.1.42', type: 'residential', typeLabel: 'Residential', countryCode: 'US', country: 'United States' }
+        },
+        'warning': {
+            type: 'power',
+            platform: { name: 'Twitter/X', icon: '𝕏', key: 'twitter', id: 'twitter' },
+            url: 'https://twitter.com/example/status/123456789',
+            username: '@testaccount',
+            postId: '123456789',
+            timestamp: Date.now(),
+            probability: 52,
+            verdict: 'possibly-limited',
+            verdictText: 'Possibly Limited',
+            findings: [
+                { type: 'good', text: 'Account exists and is accessible' },
+                { type: 'warning', text: 'Search visibility below normal' },
+                { type: 'warning', text: 'VPN detected - may affect platform trust' }
+            ],
+            factors: {
+                api: { active: true, status: 'good', finding: 'Account status confirmed via API' },
+                web: { active: true, status: 'warning', finding: 'Reduced search visibility detected from U.S. servers' },
+                historical: { active: true, status: 'warning', finding: 'Engagement 30% below baseline' },
+                hashtag: { active: true, status: 'good', finding: 'No problematic hashtags detected' },
+                ip: { active: true, status: 'warning', finding: 'VPN detected (+10% probability)' }
+            },
+            verification: { type: 'none', hasCheckmark: false, impact: '+5% added to probability' },
+            ipData: { ip: '10.0.0.1', type: 'vpn', typeLabel: 'VPN/Proxy', countryCode: 'US', country: 'United States', isVPN: true }
+        },
+        'reddit': {
+            type: 'power',
+            platform: { name: 'Reddit', icon: '🤖', key: 'reddit', id: 'reddit' },
+            url: 'https://reddit.com/user/example',
+            username: 'u/exampleuser',
+            postId: 'abc123',
+            timestamp: Date.now(),
+            probability: 15,
+            verdict: 'likely-visible',
+            verdictText: 'Likely Visible',
+            findings: [
+                { type: 'good', text: 'Account is not shadowbanned site-wide' },
+                { type: 'good', text: 'Posts visible in subreddit feeds' },
+                { type: 'good', text: 'Karma accumulation normal' }
+            ],
+            factors: {
+                api: { active: true, status: 'good', finding: 'Account verified via Reddit API' },
+                web: { active: true, status: 'good', finding: 'Profile accessible from multiple browsers' },
+                historical: { active: true, status: 'good', finding: 'Karma patterns normal' },
+                hashtag: { active: false, status: 'inactive', finding: 'N/A for Reddit' },
+                ip: { active: true, status: 'good', finding: 'Residential IP verified' }
+            },
+            verification: null,
+            ipData: { ip: '192.168.1.100', type: 'residential', typeLabel: 'Residential', countryCode: 'US', country: 'United States' }
+        }
+    };
     
-    console.log('✅ Results page initialized with 5-Factor Engine');
-});
+    return demos[demoType] || demos['twitter'];
+}
+
+/* =============================================================================
+   UTILITIES
+   ============================================================================= */
+function countryCodeToFlag(countryCode) {
+    if (!countryCode) return '';
+    const codePoints = countryCode
+        .toUpperCase()
+        .split('')
+        .map(char => 127397 + char.charCodeAt(0));
+    return String.fromCodePoint(...codePoints);
+}

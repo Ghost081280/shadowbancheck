@@ -1657,3 +1657,451 @@ window.ShadowBan = {
     getUserIPData,
     getLatestScanResults: () => window.latestScanResults
 };
+/**
+ * =============================================================================
+ * POWER CHECK ENHANCEMENTS
+ * ShadowBanCheck.io - Connection Step + Engine Animation
+ * =============================================================================
+ */
+
+(function() {
+    'use strict';
+    
+    // Platform detection patterns
+    const PLATFORM_PATTERNS = {
+        twitter: /(?:twitter\.com|x\.com)\/([^\/\?]+)/i,
+        reddit: /(?:reddit\.com)\/(?:r\/[^\/]+\/comments\/|user\/)?([^\/\?]+)/i,
+        instagram: /(?:instagram\.com)\/(?:p\/|reel\/)?([^\/\?]+)/i,
+        tiktok: /(?:tiktok\.com)\/@?([^\/\?]+)/i,
+        facebook: /(?:facebook\.com)\/([^\/\?]+)/i,
+        youtube: /(?:youtube\.com|youtu\.be)\/(?:watch\?v=|@)?([^\/\?\&]+)/i,
+        linkedin: /(?:linkedin\.com)\/(?:in\/|posts\/)?([^\/\?]+)/i
+    };
+    
+    // Test accounts per platform (placeholders - update as you create accounts)
+    const TEST_ACCOUNTS = {
+        twitter: {
+            username: '@ghost081280',
+            displayName: 'ShadowBanCheck Test Account',
+            followUrl: 'https://twitter.com/intent/follow?screen_name=ghost081280',
+            icon: '𝕏'
+        },
+        reddit: {
+            username: 'u/ShadowBanCheck',
+            displayName: 'ShadowBanCheck Test Account',
+            followUrl: 'https://reddit.com/user/ShadowBanCheck',
+            icon: '🤖'
+        },
+        instagram: {
+            username: '@shadowbancheck',
+            displayName: 'ShadowBanCheck Test Account',
+            followUrl: 'https://instagram.com/shadowbancheck',
+            icon: '📸'
+        },
+        tiktok: {
+            username: '@shadowbancheck',
+            displayName: 'ShadowBanCheck Test Account',
+            followUrl: 'https://tiktok.com/@shadowbancheck',
+            icon: '🎵'
+        }
+    };
+    
+    // Terminal animation lines
+    const TERMINAL_SEQUENCES = {
+        phase1: [
+            { prompt: '$', command: 'shadowban-engine --init', delay: 200 },
+            { response: '→ Loading 5-Factor Detection Engine v1.0...', delay: 300 },
+            { response: '→ Connecting to platform APIs...', delay: 400 },
+            { prompt: '$', command: 'GET /api/twitter/v2/users/lookup', delay: 300 },
+            { data: '{ "user_id": "***", "status": "active" }', delay: 200 },
+            { success: '✓ Platform API connected', delay: 300 },
+            { prompt: '$', command: 'playwright launch --headless', delay: 400 },
+            { response: '→ Spawning browser instances...', delay: 300 },
+            { response: '  → Chrome (logged-in)', delay: 200 },
+            { response: '  → Chrome (logged-out)', delay: 200 },
+            { response: '  → Firefox (private)', delay: 200 },
+            { success: '✓ Web analysis ready', delay: 300 },
+            { prompt: '$', command: 'query historical_snapshots --user=***', delay: 300 },
+            { data: '{ "snapshots": 47, "baseline_engagement": 4.2% }', delay: 200 },
+            { success: '✓ Historical data loaded', delay: 300 },
+            { prompt: '$', command: 'SELECT * FROM banned_hashtags WHERE platform=\'twitter\'', delay: 300 },
+            { response: '→ Checking hashtag database...', delay: 200 },
+            { data: '{ "total_tracked": "growing daily", "last_update": "today" }', delay: 200 },
+            { success: '✓ Hashtag intelligence ready', delay: 300 },
+            { prompt: '$', command: 'curl ipqs.com/api/check --ip=***', delay: 300 },
+            { data: '{ "vpn": false, "proxy": false, "risk_score": 12 }', delay: 200 },
+            { success: '✓ IP analysis complete', delay: 300 },
+            { response: '', delay: 100 },
+            { success: '═══ ALL 5 FACTORS READY ═══', delay: 400 },
+            { response: '→ Initiating Shadow AI analysis...', delay: 300 }
+        ]
+    };
+    
+    // AI processing messages
+    const AI_MESSAGES = [
+        'Identifying patterns...',
+        'Cross-referencing factors...',
+        'Analyzing visibility signals...',
+        'Checking historical anomalies...',
+        'Generating probability score...',
+        'Compiling recommendations...',
+        'Finalizing report...'
+    ];
+    
+    // State
+    let detectedPlatform = null;
+    let isAnimating = false;
+    
+    /**
+     * Initialize power check enhancements
+     */
+    function init() {
+        const urlInput = document.getElementById('power-url-input');
+        const form = document.getElementById('power-check-form');
+        
+        if (!urlInput || !form) return;
+        
+        // Listen for URL input changes
+        urlInput.addEventListener('input', debounce(handleUrlInput, 300));
+        urlInput.addEventListener('paste', () => setTimeout(() => handleUrlInput(), 50));
+        
+        // Override form submission
+        form.addEventListener('submit', handleFormSubmit);
+        
+        console.log('⚡ Power Check Enhancements loaded');
+    }
+    
+    /**
+     * Handle URL input - detect platform and show connection step
+     */
+    function handleUrlInput() {
+        const urlInput = document.getElementById('power-url-input');
+        const connectionStep = document.getElementById('connection-step');
+        const url = urlInput?.value?.trim();
+        
+        if (!url || !connectionStep) return;
+        
+        // Detect platform from URL
+        detectedPlatform = detectPlatform(url);
+        
+        if (detectedPlatform && TEST_ACCOUNTS[detectedPlatform]) {
+            showConnectionStep(detectedPlatform);
+        } else {
+            connectionStep.classList.add('hidden');
+        }
+    }
+    
+    /**
+     * Detect platform from URL
+     */
+    function detectPlatform(url) {
+        for (const [platform, pattern] of Object.entries(PLATFORM_PATTERNS)) {
+            if (pattern.test(url)) {
+                return platform;
+            }
+        }
+        return null;
+    }
+    
+    /**
+     * Show the connection step with appropriate platform account
+     */
+    function showConnectionStep(platform) {
+        const connectionStep = document.getElementById('connection-step');
+        const accountContainer = document.getElementById('connection-account');
+        
+        if (!connectionStep || !accountContainer) return;
+        
+        // Hide all platform follow options
+        accountContainer.querySelectorAll('.account-to-follow').forEach(el => {
+            el.classList.add('hidden');
+        });
+        
+        // Show the relevant platform
+        const platformFollow = document.getElementById(`follow-${platform}`);
+        if (platformFollow) {
+            platformFollow.classList.remove('hidden');
+            
+            // Update account info if we have custom data
+            const account = TEST_ACCOUNTS[platform];
+            if (account) {
+                const usernameEl = platformFollow.querySelector('strong');
+                const iconEl = platformFollow.querySelector('.account-platform-icon');
+                const linkEl = platformFollow.querySelector('.btn-follow');
+                
+                if (usernameEl) usernameEl.textContent = account.username;
+                if (iconEl) iconEl.textContent = account.icon;
+                if (linkEl) linkEl.href = account.followUrl;
+            }
+        }
+        
+        // Show connection step with animation
+        connectionStep.classList.remove('hidden');
+        
+        // Reset checkbox
+        const checkbox = document.getElementById('connection-confirmed');
+        if (checkbox) checkbox.checked = false;
+    }
+    
+    /**
+     * Handle form submission - run engine animation then show results
+     */
+    function handleFormSubmit(e) {
+        e.preventDefault();
+        
+        if (isAnimating) return;
+        
+        const urlInput = document.getElementById('power-url-input');
+        const url = urlInput?.value?.trim();
+        
+        if (!url) {
+            urlInput?.classList.add('blink-empty');
+            setTimeout(() => urlInput?.classList.remove('blink-empty'), 1200);
+            return;
+        }
+        
+        // Check if platform is supported
+        const platform = detectPlatform(url);
+        if (!platform) {
+            showToast('Please enter a valid Twitter, Reddit, Instagram, TikTok, Facebook, YouTube, or LinkedIn URL', 'warning');
+            return;
+        }
+        
+        // Start the engine animation
+        runEngineAnimation(platform, url);
+    }
+    
+    /**
+     * Run the full engine animation sequence
+     */
+    async function runEngineAnimation(platform, url) {
+        isAnimating = true;
+        
+        const engineAnimation = document.getElementById('engine-animation');
+        const powerResults = document.getElementById('power-results');
+        const phase1 = document.getElementById('engine-phase-1');
+        const phase2 = document.getElementById('engine-phase-2');
+        const terminalOutput = document.getElementById('terminal-output');
+        const connectionConfirmed = document.getElementById('connection-confirmed')?.checked;
+        
+        // Hide results, show animation
+        powerResults?.classList.add('hidden');
+        engineAnimation?.classList.remove('hidden');
+        
+        // Scroll to animation
+        engineAnimation?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        
+        // Phase 1: Engine startup with terminal
+        phase1?.classList.remove('hidden');
+        phase2?.classList.add('hidden');
+        
+        // Clear terminal
+        if (terminalOutput) terminalOutput.innerHTML = '';
+        
+        // Run terminal animation
+        await runTerminalAnimation(terminalOutput);
+        
+        // Update factor indicators as we go
+        await animateFactorProgress();
+        
+        // Phase 2: AI Analysis
+        phase1?.classList.add('hidden');
+        phase2?.classList.remove('hidden');
+        
+        // Cycle through AI messages
+        await runAIAnalysis();
+        
+        // Done - hide animation, show results
+        engineAnimation?.classList.add('hidden');
+        
+        // Generate and show results (this would normally come from API)
+        showMockResults(platform, url, connectionConfirmed);
+        
+        isAnimating = false;
+    }
+    
+    /**
+     * Run terminal animation
+     */
+    async function runTerminalAnimation(container) {
+        if (!container) return;
+        
+        for (const line of TERMINAL_SEQUENCES.phase1) {
+            const lineEl = document.createElement('div');
+            lineEl.className = 'terminal-line';
+            
+            if (line.prompt) {
+                lineEl.innerHTML = `<span class="prompt">${line.prompt}</span> <span class="command">${line.command}</span>`;
+            } else if (line.response) {
+                lineEl.innerHTML = `<span class="response">${line.response}</span>`;
+            } else if (line.success) {
+                lineEl.innerHTML = `<span class="success">${line.success}</span>`;
+            } else if (line.warning) {
+                lineEl.innerHTML = `<span class="warning">${line.warning}</span>`;
+            } else if (line.data) {
+                lineEl.innerHTML = `<span class="data">${line.data}</span>`;
+            }
+            
+            container.appendChild(lineEl);
+            container.scrollTop = container.scrollHeight;
+            
+            await sleep(line.delay || 200);
+        }
+    }
+    
+    /**
+     * Animate factor progress indicators
+     */
+    async function animateFactorProgress() {
+        const factors = [
+            'factor-1-progress',
+            'factor-2-progress', 
+            'factor-3-progress',
+            'factor-4-progress',
+            'factor-5-progress'
+        ];
+        
+        for (let i = 0; i < factors.length; i++) {
+            const factorEl = document.getElementById(factors[i]);
+            const statusEl = factorEl?.querySelector('.factor-status');
+            
+            if (factorEl && statusEl) {
+                // Set to running
+                factorEl.classList.add('active');
+                statusEl.textContent = '◉';
+                statusEl.classList.remove('pending');
+                statusEl.classList.add('running');
+                
+                await sleep(400);
+                
+                // Set to complete
+                factorEl.classList.remove('active');
+                factorEl.classList.add('complete');
+                statusEl.textContent = '✓';
+                statusEl.classList.remove('running');
+                statusEl.classList.add('complete');
+            }
+        }
+    }
+    
+    /**
+     * Run AI analysis phase
+     */
+    async function runAIAnalysis() {
+        const messageEl = document.getElementById('ai-processing-message');
+        
+        for (const message of AI_MESSAGES) {
+            if (messageEl) messageEl.textContent = message;
+            await sleep(600);
+        }
+    }
+    
+    /**
+     * Show mock results (replace with real API call later)
+     */
+    function showMockResults(platform, url, connectionConfirmed) {
+        const powerResults = document.getElementById('power-results');
+        
+        // Show results
+        powerResults?.classList.remove('hidden');
+        
+        // Scroll to results
+        powerResults?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        
+        // Update platform display
+        const platformDisplay = document.getElementById('overall-platform');
+        if (platformDisplay) {
+            const platformName = platform.charAt(0).toUpperCase() + platform.slice(1);
+            platformDisplay.textContent = `${platformName} • Analysis Complete`;
+        }
+        
+        // Generate random but realistic score
+        const baseScore = Math.floor(Math.random() * 40) + 10;
+        const score = connectionConfirmed ? baseScore : baseScore + 5; // Slightly higher uncertainty without connection
+        
+        const scoreEl = document.getElementById('overall-score-value');
+        if (scoreEl) {
+            scoreEl.textContent = `${score}%`;
+            
+            // Update color based on score
+            const scoreCircle = document.getElementById('overall-score-circle');
+            if (scoreCircle) {
+                scoreCircle.classList.remove('low', 'medium', 'high');
+                if (score < 25) scoreCircle.classList.add('low');
+                else if (score < 50) scoreCircle.classList.add('medium');
+                else scoreCircle.classList.add('high');
+            }
+        }
+        
+        // Show toast about connection status
+        if (!connectionConfirmed) {
+            setTimeout(() => {
+                showToast('💡 Tip: Follow our test account for more accurate in-network visibility data next time!', 'info');
+            }, 1500);
+        }
+    }
+    
+    /**
+     * Show toast notification
+     */
+    function showToast(message, type = 'info') {
+        // Use existing toast system if available
+        if (window.showToast) {
+            window.showToast(message, type);
+            return;
+        }
+        
+        // Fallback toast
+        const toast = document.getElementById('toast') || createFallbackToast();
+        const toastMessage = toast.querySelector('.toast-message') || toast;
+        
+        toastMessage.textContent = message;
+        toast.className = `toast ${type} show`;
+        
+        setTimeout(() => {
+            toast.classList.remove('show');
+        }, 5000);
+    }
+    
+    /**
+     * Create fallback toast if none exists
+     */
+    function createFallbackToast() {
+        const toast = document.createElement('div');
+        toast.id = 'toast';
+        toast.className = 'toast';
+        toast.innerHTML = '<span class="toast-message"></span>';
+        document.body.appendChild(toast);
+        return toast;
+    }
+    
+    /**
+     * Utility: Sleep
+     */
+    function sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+    
+    /**
+     * Utility: Debounce
+     */
+    function debounce(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+            const later = () => {
+                clearTimeout(timeout);
+                func(...args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
+    }
+    
+    // Initialize when DOM ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
+    
+})();

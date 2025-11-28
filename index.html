@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ShadowBanCheck.io - Calculate Your Shadow Ban Probability | Free Detection Tools</title>
-    <meta name="description" content="Calculate your shadow ban probability on Twitter, Instagram, TikTok, Reddit & 22+ platforms. Our 5-Factor Detection Engine analyzes multiple signals to give you accurate probability scores in 60 seconds.">
+    <meta name="description" content="Calculate your shadow ban probability on Twitter/X, Reddit, Instagram, TikTok & LinkedIn. Our 5-Factor Detection Engine analyzes multiple signals to give you accurate probability scores in 60 seconds.">
     
     <!-- Open Graph -->
     <meta property="og:title" content="ShadowBanCheck.io - Calculate Your Shadow Ban Probability">
@@ -54,6 +54,65 @@
     <!-- CSS -->
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/shadow-ai.css">
+    
+    <!-- Suggest Platform Styles -->
+    <style>
+        /* Suggest Platform Card */
+        .platform-item.suggest-platform {
+            border: 2px dashed rgba(99, 102, 241, 0.4);
+            background: rgba(99, 102, 241, 0.05);
+        }
+        .platform-item.suggest-platform:hover {
+            border-color: var(--primary);
+            background: rgba(99, 102, 241, 0.1);
+        }
+        .platform-badge.suggest {
+            background: var(--gradient-primary);
+            color: white;
+        }
+        
+        /* Suggest Form */
+        .suggest-form {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-md);
+        }
+        .suggest-form .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-xs);
+        }
+        .suggest-form label {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text);
+        }
+        .suggest-form input,
+        .suggest-form textarea {
+            padding: var(--space-sm) var(--space-md);
+            background: var(--card);
+            border: 2px solid var(--border);
+            border-radius: var(--radius-md);
+            color: var(--text);
+            font-size: 1rem;
+            font-family: inherit;
+            transition: all 0.2s ease;
+        }
+        .suggest-form input:focus,
+        .suggest-form textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+        }
+        .suggest-form input::placeholder,
+        .suggest-form textarea::placeholder {
+            color: var(--text-muted);
+        }
+        .suggest-form textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+    </style>
 </head>
 <body>
     <!-- ===================================
@@ -989,7 +1048,7 @@
                             <div>
                                 <strong>Email Us Directly</strong>
                                 <p>Send platform suggestions or questions to our team</p>
-                                <a href="mailto:support@shadowbancheck.io" class="btn-method">Send Email</a>
+                                <a href="/cdn-cgi/l/email-protection#64171114140b161024170c05000b1306050a070c01070f4a0d0b" class="btn-method">Send Email</a>
                             </div>
                         </div>
                         
@@ -1266,7 +1325,7 @@
     </div>
 
     <!-- Scripts -->
-    <script src="js/platforms.js"></script>
+    <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script src="js/platforms.js"></script>
     <script src="js/shared-components.js"></script>
     <script src="js/main.js"></script>
     <script src="js/shadow-ai.js"></script>

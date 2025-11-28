@@ -1,72 +1,68 @@
 /* =============================================================================
-   LOGIN.JS v2.0
-   ShadowBanCheck.io - Authentication System with 3-Way Role Routing
+   LOGIN.JS v3.1
+   ShadowBanCheck.io - Authentication System with Clean URL Routing
+   Routes to: /pro (user), /agency (agency), /admin (admin)
    ============================================================================= */
-
-(function() {
-'use strict';
 
 // =============================================================================
 // DEMO ACCOUNTS (Replace with backend auth in production)
 // =============================================================================
 const DEMO_ACCOUNTS = {
-    // User account
+    // Pro (User) account
     'demo@test.com': {
         password: 'password123',
         role: 'user',
         name: 'Demo User',
-        redirect: 'dashboard.html'
+        redirect: 'pro.html'  // /pro
     },
     // Agency account
     'agency@test.com': {
         password: 'agency123',
         role: 'agency',
         name: 'Agency Demo',
-        redirect: 'agency-dashboard.html'
+        redirect: 'agency.html'  // /agency
     },
     // Admin account
     'admin@shadowbancheck.io': {
         password: 'admin',
         role: 'admin',
         name: 'Admin',
-        redirect: 'admin-dashboard.html'
+        redirect: 'admin.html'  // /admin
     }
+};
+
+// =============================================================================
+// URL CONFIGURATION
+// =============================================================================
+const REDIRECTS = {
+    user: 'pro.html',      // /pro
+    agency: 'agency.html', // /agency
+    admin: 'admin.html'    // /admin
 };
 
 // =============================================================================
 // STORAGE KEYS
 // =============================================================================
-const STORAGE_KEYS = {
-    session: 'shadowban_session',
-    users: 'shadowban_users',
-    pendingVerification: 'shadowban_pending_verification'
-};
+const STORAGE_KEY = 'shadowban_session';
 
 // =============================================================================
 // INITIALIZATION
 // =============================================================================
-function init() {
-    console.log('🔐 Login System v2.0 Initializing...');
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('🔐 Login System v3.1 Initializing...');
     
     // Check if already logged in
     checkExistingSession();
     
-    // Init form handlers
-    initLoginForm();
-    initSignupForm();
-    initVerifyForm();
-    initForgotForm();
-    initPasswordToggle();
-    
     console.log('✅ Login system initialized');
-}
+});
 
 // =============================================================================
 // SESSION CHECK
 // =============================================================================
 function checkExistingSession() {
-    const session = localStorage.getItem(STORAGE_KEYS.session) || 
-                   sessionStorage.getItem(STORAGE_KEYS.session);
+    const session = localStorage.getItem(STORAGE_KEY) || 
+                   sessionStorage.getItem(STORAGE_KEY);
     
     if (session) {
         try {
@@ -77,8 +73,8 @@ function checkExistingSession() {
             }
         } catch (e) {
             // Invalid session, clear it
-            localStorage.removeItem(STORAGE_KEYS.session);
-            sessionStorage.removeItem(STORAGE_KEYS.session);
+            localStorage.removeItem(STORAGE_KEY);
+            sessionStorage.removeItem(STORAGE_KEY);
         }
     }
 }
@@ -86,75 +82,57 @@ function checkExistingSession() {
 function redirectByRole(role) {
     switch (role) {
         case 'admin':
-            window.location.href = 'admin-dashboard.html';
+            window.location.href = REDIRECTS.admin;
             break;
         case 'agency':
-            window.location.href = 'agency-dashboard.html';
+            window.location.href = REDIRECTS.agency;
             break;
         default:
-            window.location.href = 'dashboard.html';
+            window.location.href = REDIRECTS.user;
     }
 }
 
 // =============================================================================
 // LOGIN FORM
 // =============================================================================
-function initLoginForm() {
-    const form = document.getElementById('login-form');
-    if (!form) return;
+function handleLogin(e) {
+    e.preventDefault();
     
-    form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        
-        const email = document.getElementById('email').value.trim().toLowerCase();
-        const password = document.getElementById('password').value;
-        const remember = document.getElementById('remember')?.checked || false;
-        
-        const loginBtn = document.getElementById('login-btn');
-        const btnText = loginBtn.querySelector('.btn-text');
-        const btnLoading = loginBtn.querySelector('.btn-loading');
-        
-        // Show loading
-        btnText.classList.add('hidden');
-        btnLoading.classList.remove('hidden');
-        loginBtn.disabled = true;
-        hideLoginError();
-        
-        // Simulate network delay
-        await delay(800);
-        
-        // Check demo accounts first
-        if (DEMO_ACCOUNTS[email]) {
-            const account = DEMO_ACCOUNTS[email];
-            if (account.password === password) {
-                // Success - create session
-                createSession(email, account.role, account.name, remember);
-                showToast('✅', `Welcome back, ${account.name}!`);
-                await delay(500);
-                window.location.href = account.redirect;
-                return;
-            }
-        }
-        
-        // Check registered users
-        const users = getRegisteredUsers();
-        const user = users[email];
-        
-        if (user && user.password === password) {
+    const email = document.getElementById('email').value.trim().toLowerCase();
+    const password = document.getElementById('password').value;
+    const remember = document.getElementById('remember-me')?.checked || false;
+    
+    // Check demo accounts
+    if (DEMO_ACCOUNTS[email]) {
+        const account = DEMO_ACCOUNTS[email];
+        if (account.password === password) {
             // Success - create session
-            createSession(email, user.role || 'user', user.name || 'User', remember);
-            showToast('✅', `Welcome back!`);
-            await delay(500);
-            redirectByRole(user.role || 'user');
-            return;
+            createSession(email, account.role, account.name, remember);
+            showToast('✅', `Welcome back, ${account.name}!`);
+            setTimeout(() => {
+                window.location.href = account.redirect;
+            }, 500);
+            return false;
         }
-        
-        // Failed
-        btnText.classList.remove('hidden');
-        btnLoading.classList.add('hidden');
-        loginBtn.disabled = false;
-        showLoginError('Invalid email or password. Please try again.');
-    });
+    }
+    
+    // Check registered users
+    const users = getRegisteredUsers();
+    const user = users[email];
+    
+    if (user && user.password === password) {
+        // Success - create session
+        createSession(email, user.role || 'user', user.name || 'User', remember);
+        showToast('✅', `Welcome back!`);
+        setTimeout(() => {
+            redirectByRole(user.role || 'user');
+        }, 500);
+        return false;
+    }
+    
+    // Failed
+    showToast('❌', 'Invalid email or password');
+    return false;
 }
 
 function createSession(email, role, name, remember) {
@@ -169,27 +147,11 @@ function createSession(email, role, name, remember) {
     };
     
     const storage = remember ? localStorage : sessionStorage;
-    storage.setItem(STORAGE_KEYS.session, JSON.stringify(sessionData));
+    storage.setItem(STORAGE_KEY, JSON.stringify(sessionData));
     
     // Also store in localStorage if remember
     if (remember) {
-        localStorage.setItem(STORAGE_KEYS.session, JSON.stringify(sessionData));
-    }
-}
-
-function showLoginError(message) {
-    const errorDiv = document.getElementById('login-error');
-    const errorMsg = document.getElementById('error-message');
-    if (errorDiv && errorMsg) {
-        errorMsg.textContent = message;
-        errorDiv.classList.remove('hidden');
-    }
-}
-
-function hideLoginError() {
-    const errorDiv = document.getElementById('login-error');
-    if (errorDiv) {
-        errorDiv.classList.add('hidden');
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(sessionData));
     }
 }
 
@@ -197,363 +159,206 @@ function hideLoginError() {
 // SIGNUP FORM
 // =============================================================================
 let pendingSignup = null;
+let verificationCode = null;
 
-function initSignupForm() {
-    const form = document.getElementById('signup-form');
-    if (!form) return;
+function handleSignup(e) {
+    e.preventDefault();
     
-    form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        
-        const email = document.getElementById('signup-email').value.trim().toLowerCase();
-        const password = document.getElementById('signup-password').value;
-        const confirm = document.getElementById('signup-confirm').value;
-        
-        const btn = document.getElementById('signup-btn');
-        const btnText = btn.querySelector('.btn-text');
-        const btnLoading = btn.querySelector('.btn-loading');
-        
-        // Validation
-        if (password !== confirm) {
-            showSignupError('Passwords do not match');
-            return;
-        }
-        
-        if (password.length < 8) {
-            showSignupError('Password must be at least 8 characters');
-            return;
-        }
-        
-        // Check if email already exists
-        const users = getRegisteredUsers();
-        if (users[email] || DEMO_ACCOUNTS[email]) {
-            showSignupError('An account with this email already exists');
-            return;
-        }
-        
-        // Show loading
-        btnText.classList.add('hidden');
-        btnLoading.classList.remove('hidden');
-        btn.disabled = true;
-        hideSignupError();
-        
-        await delay(1000);
-        
-        // Generate verification code
-        const code = generateCode();
-        pendingSignup = { email, password, code };
-        
-        // Store pending verification
-        localStorage.setItem(STORAGE_KEYS.pendingVerification, JSON.stringify({
-            email,
-            code,
-            expires: Date.now() + (10 * 60 * 1000) // 10 minutes
-        }));
-        
-        console.log('📧 Verification code:', code); // For demo purposes
-        
-        // Reset button
-        btnText.classList.remove('hidden');
-        btnLoading.classList.add('hidden');
-        btn.disabled = false;
-        
-        // Show verification step
-        document.getElementById('verify-email-display').textContent = email;
-        document.getElementById('signup-step-1').classList.add('hidden');
-        document.getElementById('signup-step-2').classList.remove('hidden');
-        document.getElementById('signup-modal-title').textContent = '📧 Verify Your Email';
-        
-        showToast('📧', `Code sent! (Demo: ${code})`);
-        startResendTimer();
-    });
-}
-
-function showSignupError(message) {
-    const errorDiv = document.getElementById('signup-error');
-    const errorMsg = document.getElementById('signup-error-message');
-    if (errorDiv && errorMsg) {
-        errorMsg.textContent = message;
-        errorDiv.classList.remove('hidden');
+    const firstName = document.getElementById('first-name').value.trim();
+    const lastName = document.getElementById('last-name').value.trim();
+    const email = document.getElementById('signup-email').value.trim().toLowerCase();
+    const password = document.getElementById('signup-password').value;
+    
+    // Validation
+    if (password.length < 8) {
+        showToast('⚠️', 'Password must be at least 8 characters');
+        return false;
     }
-}
-
-function hideSignupError() {
-    const errorDiv = document.getElementById('signup-error');
-    if (errorDiv) {
-        errorDiv.classList.add('hidden');
+    
+    // Check if email already exists
+    const users = getRegisteredUsers();
+    if (users[email] || DEMO_ACCOUNTS[email]) {
+        showToast('⚠️', 'An account with this email already exists');
+        return false;
     }
-}
-
-// =============================================================================
-// VERIFICATION FORM
-// =============================================================================
-function initVerifyForm() {
-    const form = document.getElementById('verify-form');
-    if (!form) return;
     
-    form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        
-        const code = document.getElementById('verify-code').value.trim();
-        const btn = document.getElementById('verify-btn');
-        const btnText = btn.querySelector('.btn-text');
-        const btnLoading = btn.querySelector('.btn-loading');
-        
-        if (!pendingSignup) {
-            showVerifyError('Session expired. Please try again.');
-            return;
-        }
-        
-        // Show loading
-        btnText.classList.add('hidden');
-        btnLoading.classList.remove('hidden');
-        btn.disabled = true;
-        hideVerifyError();
-        
-        await delay(800);
-        
-        // Check code
-        if (code === pendingSignup.code || code === '000000') { // 000000 is bypass for demo
-            // Create account
-            const users = getRegisteredUsers();
-            users[pendingSignup.email] = {
-                password: pendingSignup.password,
-                role: 'user',
-                name: pendingSignup.email.split('@')[0],
-                createdAt: Date.now()
-            };
-            saveRegisteredUsers(users);
-            
-            // Clear pending
-            localStorage.removeItem(STORAGE_KEYS.pendingVerification);
-            
-            // Show success
-            document.getElementById('signup-step-2').classList.add('hidden');
-            document.getElementById('signup-step-3').classList.remove('hidden');
-            document.getElementById('signup-modal-title').textContent = '🎉 Success!';
-            
-            showToast('✅', 'Account created successfully!');
-        } else {
-            // Wrong code
-            btnText.classList.remove('hidden');
-            btnLoading.classList.add('hidden');
-            btn.disabled = false;
-            showVerifyError('Invalid verification code. Please try again.');
-        }
-    });
+    // Store pending signup
+    pendingSignup = {
+        firstName,
+        lastName,
+        email,
+        password,
+        name: `${firstName} ${lastName}`
+    };
+    
+    // Generate verification code
+    verificationCode = generateCode();
+    console.log('📧 Verification code:', verificationCode);
+    
+    // Show verification step
+    document.getElementById('signup-card').classList.add('hidden');
+    document.getElementById('verify-card').classList.remove('hidden');
+    document.getElementById('verify-email').textContent = email;
+    
+    showToast('📧', `Code sent! (Demo: ${verificationCode})`);
+    
+    return false;
 }
 
-function showVerifyError(message) {
-    const errorDiv = document.getElementById('verify-error');
-    const errorMsg = document.getElementById('verify-error-message');
-    if (errorDiv && errorMsg) {
-        errorMsg.textContent = message;
-        errorDiv.classList.remove('hidden');
+function handleVerify(e) {
+    e.preventDefault();
+    
+    const code = document.getElementById('verify-code').value.trim();
+    
+    if (code !== verificationCode) {
+        showToast('❌', 'Invalid verification code');
+        return false;
     }
-}
-
-function hideVerifyError() {
-    const errorDiv = document.getElementById('verify-error');
-    if (errorDiv) {
-        errorDiv.classList.add('hidden');
+    
+    if (!pendingSignup) {
+        showToast('❌', 'Signup session expired');
+        showLogin();
+        return false;
     }
-}
-
-// Resend timer
-let resendInterval = null;
-
-function startResendTimer() {
-    const btn = document.getElementById('resend-btn');
-    const timer = document.getElementById('resend-timer');
-    let seconds = 60;
     
-    btn.disabled = true;
-    btn.style.opacity = '0.5';
-    timer.classList.remove('hidden');
+    // Save the new user
+    const users = getRegisteredUsers();
+    users[pendingSignup.email] = {
+        password: pendingSignup.password,
+        name: pendingSignup.name,
+        firstName: pendingSignup.firstName,
+        lastName: pendingSignup.lastName,
+        role: 'user',
+        createdAt: Date.now()
+    };
+    saveRegisteredUsers(users);
     
-    if (resendInterval) clearInterval(resendInterval);
+    // Create session and redirect
+    createSession(pendingSignup.email, 'user', pendingSignup.name, true);
+    showToast('✅', 'Account created! Welcome aboard!');
     
-    resendInterval = setInterval(() => {
-        seconds--;
-        timer.textContent = `(${seconds}s)`;
-        
-        if (seconds <= 0) {
-            clearInterval(resendInterval);
-            btn.disabled = false;
-            btn.style.opacity = '1';
-            timer.classList.add('hidden');
-        }
+    setTimeout(() => {
+        window.location.href = REDIRECTS.user;
     }, 1000);
+    
+    return false;
 }
 
-window.resendCode = function() {
-    if (!pendingSignup) return;
+function handleForgotPassword(e) {
+    e.preventDefault();
     
-    // Generate new code
-    pendingSignup.code = generateCode();
-    console.log('📧 New verification code:', pendingSignup.code);
-    showToast('📧', `New code sent! (Demo: ${pendingSignup.code})`);
-    startResendTimer();
-};
-
-window.goBackToStep1 = function() {
-    document.getElementById('signup-step-2').classList.add('hidden');
-    document.getElementById('signup-step-1').classList.remove('hidden');
-    document.getElementById('signup-modal-title').textContent = '🚀 Create Your Account';
-    pendingSignup = null;
-};
-
-window.signupComplete = function() {
-    closeSignupModal();
+    const email = document.getElementById('forgot-email').value.trim();
     
-    // Auto-fill login with new email
-    if (pendingSignup && pendingSignup.email) {
-        document.getElementById('email').value = pendingSignup.email;
-        document.getElementById('password').focus();
+    // Always show success (don't reveal if email exists)
+    showToast('📧', 'If an account exists, a reset link has been sent.');
+    showLogin();
+    
+    return false;
+}
+
+// =============================================================================
+// NAVIGATION
+// =============================================================================
+function showLogin() {
+    document.getElementById('login-card').classList.remove('hidden');
+    document.getElementById('signup-card').classList.add('hidden');
+    document.getElementById('verify-card').classList.add('hidden');
+    document.getElementById('forgot-card').classList.add('hidden');
+}
+
+function showSignup() {
+    document.getElementById('login-card').classList.add('hidden');
+    document.getElementById('signup-card').classList.remove('hidden');
+    document.getElementById('verify-card').classList.add('hidden');
+    document.getElementById('forgot-card').classList.add('hidden');
+}
+
+function showForgotPassword() {
+    document.getElementById('login-card').classList.add('hidden');
+    document.getElementById('signup-card').classList.add('hidden');
+    document.getElementById('verify-card').classList.add('hidden');
+    document.getElementById('forgot-card').classList.remove('hidden');
+}
+
+function resendCode() {
+    if (!pendingSignup) {
+        showToast('⚠️', 'Please start signup again');
+        showSignup();
+        return;
     }
     
-    pendingSignup = null;
-};
-
-// =============================================================================
-// FORGOT PASSWORD
-// =============================================================================
-function initForgotForm() {
-    const form = document.getElementById('forgot-form');
-    if (!form) return;
-    
-    form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        
-        const email = document.getElementById('forgot-email').value.trim().toLowerCase();
-        
-        await delay(800);
-        
-        // Always show success (don't reveal if email exists)
-        showToast('📧', 'If an account exists, a reset link has been sent.');
-        closeForgotPassword();
-    });
+    verificationCode = generateCode();
+    console.log('📧 New verification code:', verificationCode);
+    showToast('📧', `New code sent! (Demo: ${verificationCode})`);
 }
 
 // =============================================================================
 // PASSWORD TOGGLE
 // =============================================================================
-function initPasswordToggle() {
-    const toggle = document.getElementById('toggle-password');
-    const password = document.getElementById('password');
+function togglePassword(inputId) {
+    const input = document.getElementById(inputId);
+    const btn = input.nextElementSibling;
     
-    if (toggle && password) {
-        toggle.addEventListener('click', () => {
-            const type = password.type === 'password' ? 'text' : 'password';
-            password.type = type;
-            toggle.textContent = type === 'password' ? '👁️' : '🙈';
-        });
+    if (input.type === 'password') {
+        input.type = 'text';
+        btn.textContent = '🙈';
+    } else {
+        input.type = 'password';
+        btn.textContent = '👁️';
     }
 }
-
-window.toggleSignupPassword = function(inputId) {
-    const input = document.getElementById(inputId);
-    if (input) {
-        const type = input.type === 'password' ? 'text' : 'password';
-        input.type = type;
-    }
-};
-
-// =============================================================================
-// MODALS
-// =============================================================================
-window.showSignupModal = function() {
-    const modal = document.getElementById('signup-modal');
-    if (modal) {
-        modal.classList.remove('hidden');
-        // Reset to step 1
-        document.getElementById('signup-step-1').classList.remove('hidden');
-        document.getElementById('signup-step-2').classList.add('hidden');
-        document.getElementById('signup-step-3').classList.add('hidden');
-        document.getElementById('signup-modal-title').textContent = '🚀 Create Your Account';
-        document.getElementById('signup-form').reset();
-        hideSignupError();
-    }
-};
-
-window.closeSignupModal = function() {
-    const modal = document.getElementById('signup-modal');
-    if (modal) {
-        modal.classList.add('hidden');
-    }
-};
-
-window.showForgotPassword = function() {
-    const modal = document.getElementById('forgot-modal');
-    if (modal) {
-        modal.classList.remove('hidden');
-        document.getElementById('forgot-form').reset();
-    }
-};
-
-window.closeForgotPassword = function() {
-    const modal = document.getElementById('forgot-modal');
-    if (modal) {
-        modal.classList.add('hidden');
-    }
-};
 
 // =============================================================================
 // DEMO AUTO-FILL FUNCTIONS
 // =============================================================================
-window.autofillDemo = function() {
+function autofillDemo() {
     document.getElementById('email').value = 'demo@test.com';
     document.getElementById('password').value = 'password123';
-    showToast('⚡', 'User credentials filled!');
-};
+    showToast('⚡', 'Pro credentials filled!');
+}
 
-window.autofillAgency = function() {
+function autofillAgency() {
     document.getElementById('email').value = 'agency@test.com';
     document.getElementById('password').value = 'agency123';
     showToast('🏢', 'Agency credentials filled!');
-};
+}
 
-window.autofillAdmin = function() {
+function autofillAdmin() {
     document.getElementById('email').value = 'admin@shadowbancheck.io';
     document.getElementById('password').value = 'admin';
     showToast('👑', 'Admin credentials filled!');
-};
+}
 
-window.copyToClipboard = function(text, btn) {
-    navigator.clipboard.writeText(text).then(() => {
-        const original = btn.textContent;
-        btn.textContent = '✅';
-        setTimeout(() => btn.textContent = original, 1000);
-    });
-};
+// =============================================================================
+// GOOGLE SIGN IN (Placeholder)
+// =============================================================================
+function handleGoogleSignIn() {
+    showToast('🔧', 'Google Sign-In coming soon!');
+}
 
 // =============================================================================
 // HELPER FUNCTIONS
 // =============================================================================
 function getRegisteredUsers() {
     try {
-        return JSON.parse(localStorage.getItem(STORAGE_KEYS.users) || '{}');
+        return JSON.parse(localStorage.getItem('shadowban_users') || '{}');
     } catch {
         return {};
     }
 }
 
 function saveRegisteredUsers(users) {
-    localStorage.setItem(STORAGE_KEYS.users, JSON.stringify(users));
+    localStorage.setItem('shadowban_users', JSON.stringify(users));
 }
 
 function generateCode() {
     return Math.floor(100000 + Math.random() * 900000).toString();
 }
 
-function delay(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-}
-
 // =============================================================================
 // TOAST
 // =============================================================================
-function showToast(icon, message) {
+function showToast(icon, message, duration = 3000) {
     const toast = document.getElementById('toast');
     const toastIcon = document.getElementById('toast-icon');
     const toastMessage = document.getElementById('toast-message');
@@ -561,33 +366,10 @@ function showToast(icon, message) {
     if (toast && toastIcon && toastMessage) {
         toastIcon.textContent = icon;
         toastMessage.textContent = message;
-        
         toast.classList.remove('hidden');
-        toast.classList.add('visible');
         
         setTimeout(() => {
-            toast.classList.remove('visible');
-            setTimeout(() => {
-                toast.classList.add('hidden');
-            }, 300);
-        }, 3000);
+            toast.classList.add('hidden');
+        }, duration);
     }
 }
-
-// =============================================================================
-// GOOGLE SIGN IN (Placeholder)
-// =============================================================================
-document.getElementById('google-signin-btn')?.addEventListener('click', () => {
-    showToast('🔧', 'Google Sign-In coming soon!');
-});
-
-// =============================================================================
-// INIT
-// =============================================================================
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
-} else {
-    init();
-}
-
-})();

@@ -20,27 +20,31 @@
 // =============================================================================
 const DemoData = {
     messages: [
-        { id: 1, name: 'Sarah Mitchell', email: 'sarah.m@gmail.com', avatar: '👩', preview: 'Hi, I think my Instagram account is shadow banned...', time: '10 min ago', unread: true, messages: [
+        { id: 1, name: 'Sarah Mitchell', email: 'sarah.m@gmail.com', avatar: '👩', plan: 'pro', preview: 'Hi, I think my Instagram account is shadow banned...', time: '10 min ago', unread: true, messages: [
             { from: 'user', text: 'Hi, I think my Instagram account is shadow banned. My posts are getting no engagement.', time: '10 min ago' },
             { from: 'user', text: 'I ran a check and got 67% probability. What should I do?', time: '9 min ago' }
         ]},
-        { id: 2, name: 'Mike Johnson', email: 'mike.j@outlook.com', avatar: '👨', preview: 'Thanks for the help yesterday! My TikTok account is back...', time: '1 hour ago', unread: true, messages: [
+        { id: 2, name: 'Mike Johnson', email: 'mike.j@outlook.com', avatar: '👨', plan: 'agency', preview: 'Thanks for the help yesterday! My TikTok account is back...', time: '1 hour ago', unread: true, messages: [
             { from: 'user', text: 'Thanks for the help yesterday!', time: '1 hour ago' },
             { from: 'user', text: 'My TikTok account is back to normal after following your advice.', time: '1 hour ago' }
         ]},
-        { id: 3, name: 'Emma Davis', email: 'emma.d@yahoo.com', avatar: '👩‍🦰', preview: 'I upgraded to Pro but I can\'t see the new features...', time: '2 hours ago', unread: false, messages: [
+        { id: 3, name: 'Emma Davis', email: 'emma.d@yahoo.com', avatar: '👩‍🦰', plan: 'pro', preview: 'I upgraded to Pro but I can\'t see the new features...', time: '2 hours ago', unread: false, messages: [
             { from: 'user', text: 'I upgraded to Pro but I can\'t see the new features.', time: '2 hours ago' },
             { from: 'admin', text: 'Hi Emma! Let me check your account. What email did you use?', time: '1 hour 45 min ago' },
             { from: 'user', text: 'emma.d@yahoo.com', time: '1 hour 30 min ago' }
+        ]},
+        { id: 4, name: 'TechAgency Co', email: 'support@techagency.co', avatar: '🏢', plan: 'agency', preview: 'We need help with a client dispute...', time: '3 hours ago', unread: true, messages: [
+            { from: 'user', text: 'We need help with a client dispute for their Instagram account.', time: '3 hours ago' },
+            { from: 'user', text: 'The appeal was rejected but we think it was a mistake.', time: '3 hours ago' }
         ]}
     ],
     
     liveChats: [
-        { id: 1, name: 'Sarah Mitchell', email: 'sarah.m@gmail.com', avatar: '👩', online: true, typing: true, preview: 'Typing...', time: 'now', messages: [
+        { id: 1, name: 'Sarah Mitchell', email: 'sarah.m@gmail.com', avatar: '👩', plan: 'pro', online: true, typing: true, preview: 'Typing...', time: 'now', messages: [
             { from: 'user', text: 'Hi, I\'m still having issues with my Instagram.', time: '2 min ago' },
             { from: 'admin', text: 'I see. Let me pull up your account details.', time: '1 min ago' }
         ]},
-        { id: 2, name: 'David Park', email: 'david.p@gmail.com', avatar: '👨‍🎤', online: true, typing: false, preview: 'How long does recovery usually take?', time: '5 min ago', messages: [
+        { id: 2, name: 'David Park', email: 'david.p@gmail.com', avatar: '👨‍🎤', plan: 'agency', online: true, typing: false, preview: 'How long does recovery usually take?', time: '5 min ago', messages: [
             { from: 'user', text: 'I got a warning on my Twitter account.', time: '10 min ago' },
             { from: 'admin', text: 'What kind of warning are you seeing?', time: '8 min ago' },
             { from: 'user', text: 'It says my replies may be limited.', time: '6 min ago' },
@@ -156,6 +160,11 @@ function initNavigation() {
 const ChatManager = {
     currentChat: null,
     
+    getPlanBadge(plan) {
+        if (plan === 'agency') return '<span class="badge agency" style="font-size: 0.65rem; padding: 0.15rem 0.4rem; background: linear-gradient(135deg, #3b82f6, #6366f1); color: white;">Agency</span>';
+        return '<span class="badge pro" style="font-size: 0.65rem; padding: 0.15rem 0.4rem; background: linear-gradient(135deg, #f59e0b, #eab308); color: white;">Pro</span>';
+    },
+    
     // Render messages list in sidebar
     renderMessagesList() {
         const container = document.getElementById('messages-list');
@@ -166,7 +175,7 @@ const ChatManager = {
                 <div class="message-avatar">${msg.avatar}</div>
                 <div class="message-content">
                     <div class="message-header">
-                        <span class="message-name">${msg.name}</span>
+                        <span class="message-name">${msg.name} ${this.getPlanBadge(msg.plan)}</span>
                         <span class="message-time">${msg.time}</span>
                     </div>
                     <p class="message-preview">${msg.preview}</p>
@@ -193,7 +202,7 @@ const ChatManager = {
                     ${chat.online ? '<span class="online-dot"></span>' : ''}
                 </div>
                 <div class="chat-info">
-                    <div class="chat-name">${chat.name}</div>
+                    <div class="chat-name">${chat.name} ${this.getPlanBadge(chat.plan)}</div>
                     <div class="chat-preview">${chat.typing ? '<em>Typing...</em>' : chat.preview}</div>
                 </div>
                 <span class="chat-time">${chat.time}</span>
@@ -218,7 +227,7 @@ const ChatManager = {
                     <div class="message-avatar">${msg.avatar}</div>
                     <div class="message-content">
                         <div class="message-header">
-                            <span class="message-name">${msg.name}</span>
+                            <span class="message-name">${msg.name} ${this.getPlanBadge(msg.plan)}</span>
                             <span class="message-time">${msg.time}</span>
                         </div>
                         <p class="message-preview">${msg.preview}</p>
@@ -235,7 +244,7 @@ const ChatManager = {
                         ${chat.online ? '<span class="online-dot"></span>' : ''}
                     </div>
                     <div class="chat-info">
-                        <div class="chat-name">${chat.name}</div>
+                        <div class="chat-name">${chat.name} ${this.getPlanBadge(chat.plan)}</div>
                         <div class="chat-preview">${chat.typing ? '<em>Typing...</em>' : chat.preview}</div>
                     </div>
                     <span class="chat-time">${chat.time}</span>

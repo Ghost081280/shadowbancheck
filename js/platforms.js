@@ -3,7 +3,7 @@
    Social Media Platforms for Shadow Ban Detection
    
    This file is loaded FIRST on all pages.
-   Edit this file to add/remove platforms - both index and checker update automatically.
+   Currently supporting 5 platforms (2 live, 3 coming soon).
    ============================================================================= */
 
 window.platformData = [
@@ -70,7 +70,7 @@ window.platformData = [
     },
     
     // =========================================================================
-    // COMING SOON - In development
+    // COMING SOON - In active development
     // =========================================================================
     { 
         name: 'Instagram', 
@@ -103,7 +103,7 @@ window.platformData = [
     },
     { 
         name: 'TikTok', 
-        icon: '♪', 
+        icon: '🎵', 
         status: 'soon',
         id: 'tiktok',
         checks: [
@@ -131,64 +131,8 @@ window.platformData = [
         ]
     },
     { 
-        name: 'Facebook', 
-        icon: 'ⓕ', 
-        status: 'soon',
-        id: 'facebook',
-        checks: [
-            'News Feed visibility',
-            'Group post reach',
-            'Page distribution penalties',
-            'Marketplace restrictions',
-            'Comment visibility filtering',
-            'Share functionality limits',
-            'Profile search visibility',
-            'Event promotion reach',
-            'Ad account restrictions',
-            'Content recommendation status'
-        ],
-        hashtagChecks: [
-            'Banned hashtag detection',
-            'Group filter triggers',
-            'Spam keyword identification'
-        ],
-        postChecks: [
-            'News Feed distribution',
-            'Share reach analysis',
-            'Group visibility status'
-        ]
-    },
-    { 
-        name: 'YouTube', 
-        icon: '▶', 
-        status: 'soon',
-        id: 'youtube',
-        checks: [
-            'Search result visibility',
-            'Recommendation algorithm status',
-            'Monetization eligibility',
-            'Comment visibility',
-            'Community post reach',
-            'Shorts recommendation status',
-            'Channel discoverability',
-            'Video age-restriction flags',
-            'Limited ads status',
-            'Subscriber notification delivery'
-        ],
-        hashtagChecks: [
-            'Tag visibility in search',
-            'Banned tag detection',
-            'Trending eligibility'
-        ],
-        postChecks: [
-            'Video search visibility',
-            'Recommendation status',
-            'Comment section analysis'
-        ]
-    },
-    { 
         name: 'LinkedIn', 
-        icon: 'in', 
+        icon: '💼', 
         status: 'soon',
         id: 'linkedin',
         checks: [
@@ -205,221 +149,13 @@ window.platformData = [
         ],
         hashtagChecks: [
             'Professional hashtag reach',
-            'Industry tag visibility'
+            'Industry tag visibility',
+            'Banned professional terms'
         ],
         postChecks: [
             'Feed distribution analysis',
-            'Article reach status'
-        ]
-    },
-    { 
-        name: 'Threads', 
-        icon: '@', 
-        status: 'soon',
-        id: 'threads',
-        checks: [
-            'Feed visibility status',
-            'Reply visibility',
-            'Search discoverability',
-            'Recommendation eligibility',
-            'Account restrictions',
-            'Cross-posting to Instagram',
-            'Engagement throttling',
-            'Content warning flags'
-        ],
-        hashtagChecks: [
-            'Tag visibility',
-            'Trending eligibility'
-        ],
-        postChecks: [
-            'Thread visibility',
-            'Reply reach analysis'
-        ]
-    },
-    { 
-        name: 'Pinterest', 
-        icon: '📍', 
-        status: 'soon',
-        id: 'pinterest',
-        checks: [
-            'Pin visibility in search',
-            'Board discoverability',
-            'Home feed recommendations',
-            'Idea Pin distribution',
-            'Shopping pin eligibility',
-            'Profile search ranking',
-            'Spam flag detection',
-            'Engagement rate analysis'
-        ],
-        hashtagChecks: [
-            'Pin tag visibility',
-            'Board discovery tags'
-        ],
-        postChecks: [
-            'Pin search visibility',
-            'Board reach analysis'
-        ]
-    },
-    { 
-        name: 'Snapchat', 
-        icon: '👻', 
-        status: 'soon',
-        id: 'snapchat',
-        checks: [
-            'Story visibility',
-            'Spotlight eligibility',
-            'Discover page presence',
-            'Public profile discoverability',
-            'Snap Map visibility',
-            'Quick Add suggestions',
-            'Lens/filter restrictions',
-            'Account flags'
-        ],
-        hashtagChecks: [
-            'Story tag visibility',
-            'Spotlight tags'
-        ],
-        postChecks: [
-            'Story reach analysis',
-            'Spotlight distribution'
-        ]
-    },
-    { 
-        name: 'Twitch', 
-        icon: '🎮', 
-        status: 'soon',
-        id: 'twitch',
-        checks: [
-            'Stream discoverability',
-            'Category/tag visibility',
-            'Chat restrictions',
-            'Clip visibility',
-            'VOD availability',
-            'Raid/host eligibility',
-            'Partner/Affiliate status',
-            'Ad revenue eligibility',
-            'Recommendation placement',
-            'Community guidelines strikes'
-        ],
-        hashtagChecks: [
-            'Stream tag visibility',
-            'Category tags'
-        ],
-        postChecks: [
-            'Clip discoverability',
-            'VOD visibility'
-        ]
-    },
-    { 
-        name: 'Discord', 
-        icon: '💬', 
-        status: 'soon',
-        id: 'discord',
-        checks: [
-            'Server discovery visibility',
-            'Message delivery status',
-            'DM restrictions',
-            'Server join limitations',
-            'Nitro feature access',
-            'Account flags',
-            'Phone verification requirements',
-            'Slow mode triggers'
-        ]
-    },
-    { 
-        name: 'Telegram', 
-        icon: '✈️', 
-        status: 'soon',
-        id: 'telegram',
-        checks: [
-            'Channel discoverability',
-            'Group visibility in search',
-            'Message forwarding restrictions',
-            'Bot functionality limits',
-            'Content restriction flags',
-            'Account limitations',
-            'Sticker pack visibility',
-            'Voice chat access'
-        ]
-    },
-    { 
-        name: 'Bluesky', 
-        icon: '🦋', 
-        status: 'soon',
-        id: 'bluesky',
-        checks: [
-            'Feed visibility',
-            'Search discoverability',
-            'Reply visibility',
-            'Moderation labels',
-            'Custom feed inclusion',
-            'Account flags',
-            'Content warnings',
-            'Handle verification'
-        ]
-    },
-    { 
-        name: 'Mastodon', 
-        icon: '🐘', 
-        status: 'soon',
-        id: 'mastodon',
-        checks: [
-            'Instance federation status',
-            'Post visibility across instances',
-            'Hashtag discoverability',
-            'Boost/favorite delivery',
-            'Profile discoverability',
-            'Media attachment visibility',
-            'Instance-specific restrictions',
-            'Moderation flags'
-        ]
-    },
-    { 
-        name: 'Truth Social', 
-        icon: 'T', 
-        status: 'soon',
-        id: 'truthsocial',
-        checks: [
-            'Truth visibility',
-            'ReTruth reach',
-            'Search discoverability',
-            'Feed placement',
-            'Account verification status',
-            'Content flags',
-            'Engagement throttling',
-            'Profile visibility'
-        ]
-    },
-    { 
-        name: 'Rumble', 
-        icon: 'R', 
-        status: 'soon',
-        id: 'rumble',
-        checks: [
-            'Video discoverability',
-            'Search ranking',
-            'Recommendation status',
-            'Monetization eligibility',
-            'Comment visibility',
-            'Channel growth restrictions',
-            'Content flags',
-            'Live stream visibility'
-        ]
-    },
-    { 
-        name: 'Kick', 
-        icon: 'K', 
-        status: 'soon',
-        id: 'kick',
-        checks: [
-            'Stream discoverability',
-            'Category placement',
-            'Chat restrictions',
-            'Clip visibility',
-            'VOD availability',
-            'Subscription eligibility',
-            'Revenue access',
-            'Community guidelines status'
+            'Article reach status',
+            'Engagement throttling detection'
         ]
     }
 ];
@@ -429,21 +165,19 @@ window.platformData = [
 // =========================================================================
 
 /**
+ * Get platform by ID
+ */
+window.getPlatformById = function(id) {
+    return window.platformData.find(p => p.id === id);
+};
+
+/**
  * Get platform by name (case-insensitive, handles slashes)
  */
 window.getPlatformByName = function(name) {
     const normalized = name.toLowerCase().replace(/\s+/g, '').replace(/\//g, '');
     return window.platformData.find(p => 
         p.name.toLowerCase().replace(/\s+/g, '').replace(/\//g, '') === normalized
-    );
-};
-
-/**
- * Get platform by slug (URL-friendly format)
- */
-window.getPlatformBySlug = function(slug) {
-    return window.platformData.find(p => 
-        p.name.toLowerCase().replace(/\s+/g, '-').replace(/\//g, '-') === slug
     );
 };
 
@@ -468,8 +202,17 @@ window.getPlatformCount = function() {
     return window.platformData.length;
 };
 
-console.log('✅ Platforms loaded:', window.platformData.length, 'social media platforms');
+/**
+ * Get live platform count
+ */
+window.getLivePlatformCount = function() {
+    return window.platformData.filter(p => p.status === 'live').length;
+};
 
-// Alias for backwards compatibility - make PLATFORMS globally available
+console.log('✅ Platforms loaded:', window.platformData.length, 'platforms (', 
+    window.platformData.filter(p => p.status === 'live').length, 'live,',
+    window.platformData.filter(p => p.status === 'soon').length, 'coming soon)');
+
+// Alias for backwards compatibility
 window.PLATFORMS = window.platformData;
 var PLATFORMS = window.platformData;

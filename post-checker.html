@@ -3,11 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Post URL Checker - Check If Your Post Is Shadow Banned | ShadowBanCheck.io</title>
-    <meta name="description" content="Check if your social media post is shadow banned or has limited reach. Analyze post content, hashtags, and visibility in seconds.">
+    <title>Post URL Probability Checker - Calculate Your Post's Shadow Ban Score | ShadowBanCheck.io</title>
+    <meta name="description" content="Calculate the shadow ban probability for any social media post. Our 5-Factor Detection Engine analyzes content, hashtags, and visibility signals to give you an accurate probability score.">
+    
+    <!-- SEO Meta Tags -->
+    <meta name="keywords" content="post shadow ban checker, shadowban probability, Twitter post checker, Instagram post shadowban, TikTok shadowban, post visibility">
+    <meta name="author" content="ShadowBanCheck.io">
+    <meta name="robots" content="index, follow">
+    
+    <!-- Open Graph -->
+    <meta property="og:title" content="Post URL Probability Checker | ShadowBanCheck.io">
+    <meta property="og:description" content="Calculate your post's shadow ban probability with our 5-Factor Detection Engine. Instant results for Twitter, Reddit, and more.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://shadowbancheck.io/post-checker.html">
+    
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Post URL Probability Checker">
+    <meta name="twitter:description" content="Calculate your post's shadow ban probability with our 5-Factor Detection Engine.">
     
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📝</text></svg>">
+    
+    <!-- Schema.org for AI Citation -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "Post URL Shadow Ban Probability Checker",
+        "description": "Calculate shadow ban probability for individual social media posts using our 5-Factor Detection Engine",
+        "url": "https://shadowbancheck.io/post-checker.html",
+        "applicationCategory": "UtilityApplication",
+        "operatingSystem": "Web",
+        "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+        },
+        "creator": {
+            "@type": "Organization",
+            "name": "ShadowBanCheck.io"
+        }
+    }
+    </script>
     
     <!-- CSS -->
     <link rel="stylesheet" href="css/main.css">
@@ -23,16 +61,16 @@
     <!-- Hero - Compact -->
     <section class="hero">
         <div class="container">
-            <div class="hero-badge">📝 Post URL Checker</div>
-            <h1 class="hero-title">Check Your Post's Reach</h1>
-            <p class="hero-subtitle">Paste a post URL to check if it's being shown or shadow banned. We analyze content, hashtags, and visibility signals.</p>
+            <div class="hero-badge">📝 Post Probability Checker</div>
+            <h1 class="hero-title">Calculate Your Post's Shadow Ban Probability</h1>
+            <p class="hero-subtitle">Paste a post URL to calculate its shadow ban probability. Our 5-Factor Engine analyzes content, hashtags, and visibility signals.</p>
         </div>
     </section>
 
     <!-- Post Checker Form -->
     <section class="section">
         <div class="container">
-            <div class="post-checker-card">
+            <div class="post-checker-card" id="checker-card">
                 <!-- Info Button -->
                 <button class="checker-info-btn" id="post-info-btn" aria-label="What we check" type="button">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -46,42 +84,134 @@
                         <span class="checker-icon">📝</span>
                         <div>
                             <h3>Enter Post URL</h3>
-                            <p>Paste the full URL of your post from Twitter/X, Instagram, TikTok, Reddit, or other platforms</p>
+                            <p>Paste the full URL of your post to calculate its probability score</p>
                         </div>
                     </div>
                 </div>
                 
-                <div class="input-group">
-                    <input type="url" id="post-url-input" placeholder="https://twitter.com/username/status/123456789..." class="url-input">
-                    <div class="input-meta">
-                        <span id="platform-detected">Platform: Auto-detect</span>
-                        <span id="checks-remaining-display">1 free check left today</span>
+                <form id="post-check-form" class="checker-form">
+                    <div class="input-group">
+                        <input type="url" id="post-url-input" placeholder="https://twitter.com/username/status/123456789..." class="url-input" required>
+                        <div class="input-meta">
+                            <span id="platform-detected">Platform: Auto-detect</span>
+                            <span id="checks-remaining-display">Free results are permanent & public</span>
+                        </div>
                     </div>
-                </div>
-                
-                <!-- IP Display -->
-                <div class="ip-display-section">
-                    <div class="ip-badge" id="ip-badge">
-                        <span class="ip-icon">🌐</span>
-                        <span id="ip-address">Detecting IP...</span>
-                        <span class="ip-type" id="ip-type"></span>
-                        <span class="ip-flag" id="ip-flag"></span>
+                    
+                    <!-- IP Display -->
+                    <div class="ip-display-section">
+                        <div class="ip-badge" id="ip-badge">
+                            <span class="ip-icon">🌐</span>
+                            <span class="ip-label">Your IP:</span>
+                            <span class="ip-value" id="ip-address">Detecting...</span>
+                            <span class="ip-type" id="ip-type"></span>
+                            <span class="ip-flag" id="ip-flag"></span>
+                        </div>
                     </div>
-                </div>
-                
-                <button id="check-post-btn" class="btn-check-post">
-                    <span>Analyze Post</span>
-                    <span>🔍</span>
-                </button>
+                    
+                    <button type="submit" id="check-post-btn" class="btn-check-post">
+                        <span class="btn-text">Calculate Probability</span>
+                        <span class="btn-icon">🔍</span>
+                    </button>
+                </form>
                 
                 <div class="checker-features">
-                    <span>✓ Content analysis</span>
-                    <span>✓ Hashtag check</span>
-                    <span>✓ Visibility score</span>
+                    <span>✓ Content & hashtag analysis</span>
+                    <span>✓ Visibility score in 60 seconds</span>
+                    <span>✓ Permanent results page</span>
+                </div>
+                
+                <div class="checker-note">
+                    <p>💡 <strong>Why probability?</strong> No tool can definitively say "this post IS shadow banned" — platforms don't disclose this. We analyze 4 independent signals to calculate the <em>probability</em> your post's reach is being limited.</p>
                 </div>
                 
                 <div class="quick-actions">
-                    <button id="clear-btn" class="btn-text-link">Clear</button>
+                    <button type="button" id="clear-btn" class="btn-text-link">Clear</button>
+                </div>
+            </div>
+            
+            <!-- Engine Animation (Hidden until check starts) -->
+            <div id="engine-animation" class="engine-animation hidden">
+                <div class="engine-animation-card">
+                    <!-- Phase 1: Engine Running -->
+                    <div id="engine-phase-1" class="engine-phase">
+                        <div class="engine-header">
+                            <span class="engine-icon-animated">⚙️</span>
+                            <div>
+                                <h3>5-Factor Detection Engine</h3>
+                                <p class="engine-status">Analyzing post signals...</p>
+                            </div>
+                        </div>
+                        
+                        <div class="engine-terminal">
+                            <div class="terminal-header">
+                                <span class="terminal-dot red"></span>
+                                <span class="terminal-dot yellow"></span>
+                                <span class="terminal-dot green"></span>
+                                <span class="terminal-title">shadowban-engine v1.0</span>
+                            </div>
+                            <div class="terminal-body" id="terminal-output"></div>
+                        </div>
+                        
+                        <div class="engine-factors-progress">
+                            <div class="factor-progress" id="factor-1-progress">
+                                <span class="factor-icon">🔌</span>
+                                <span class="factor-name">API</span>
+                                <span class="factor-status pending">○</span>
+                            </div>
+                            <div class="factor-progress" id="factor-2-progress">
+                                <span class="factor-icon">🔍</span>
+                                <span class="factor-name">Web</span>
+                                <span class="factor-status pending">○</span>
+                            </div>
+                            <div class="factor-progress" id="factor-3-progress">
+                                <span class="factor-icon">📊</span>
+                                <span class="factor-name">History</span>
+                                <span class="factor-status pending">○</span>
+                            </div>
+                            <div class="factor-progress" id="factor-4-progress">
+                                <span class="factor-icon">#️⃣</span>
+                                <span class="factor-name">Hashtags</span>
+                                <span class="factor-status pending">○</span>
+                            </div>
+                            <div class="factor-progress" id="factor-5-progress">
+                                <span class="factor-icon">🌐</span>
+                                <span class="factor-name">IP</span>
+                                <span class="factor-status pending">○</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Phase 2: AI Analysis -->
+                    <div id="engine-phase-2" class="engine-phase hidden">
+                        <div class="engine-header ai-mode">
+                            <span class="engine-icon-animated">🧠</span>
+                            <div>
+                                <h3>Shadow AI Analysis</h3>
+                                <p class="engine-status">Calculating probability score...</p>
+                            </div>
+                        </div>
+                        
+                        <div class="ai-analysis-visual">
+                            <div class="ai-brain">
+                                <div class="brain-pulse"></div>
+                                🧠
+                            </div>
+                            <p class="ai-processing-text">
+                                <span id="ai-processing-message">Cross-referencing signals...</span>
+                            </p>
+                        </div>
+                        
+                        <div class="ai-data-flow">
+                            <div class="data-stream">
+                                <span class="data-label">4 Factors</span>
+                                <div class="data-dots"><span></span><span></span><span></span></div>
+                                <span class="data-label">AI Engine</span>
+                                <div class="data-dots"><span></span><span></span><span></span></div>
+                                <span class="data-label">Probability</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
             
@@ -100,7 +230,7 @@
         <div class="container">
             <div class="section-header">
                 <h2 class="section-title">What We Analyze</h2>
-                <p class="section-desc">Our 5-Factor Engine examines multiple signals to determine your post's visibility</p>
+                <p class="section-desc">Our 5-Factor Engine examines multiple signals to calculate your post's probability score</p>
             </div>
             
             <div class="analysis-grid">
@@ -122,12 +252,12 @@
                 <div class="analysis-card reveal">
                     <span class="analysis-icon">🔍</span>
                     <h4>Search Visibility</h4>
-                    <p>Test if your post appears in search results and hashtag feeds</p>
+                    <p>Test if your post appears in search results and hashtag feeds from U.S. servers</p>
                 </div>
                 <div class="analysis-card reveal">
                     <span class="analysis-icon">🌐</span>
                     <h4>IP & Location</h4>
-                    <p>Factor in your IP type and geographic signals that affect reach</p>
+                    <p>Factor YOUR IP type (VPN/datacenter) that affects platform trust</p>
                 </div>
                 <div class="analysis-card reveal">
                     <span class="analysis-icon">🤖</span>
@@ -143,7 +273,7 @@
         <div class="container">
             <div class="section-header">
                 <h2 class="section-title">How It Works</h2>
-                <p class="section-desc">Get your post visibility score in 3 simple steps</p>
+                <p class="section-desc">Get your post probability score in 3 simple steps</p>
             </div>
             
             <div class="how-grid">
@@ -164,8 +294,8 @@
                 <div class="how-item reveal">
                     <span class="how-icon">3️⃣</span>
                     <div class="how-content">
-                        <h4>Get Results</h4>
-                        <p>See probability score with detailed breakdown</p>
+                        <h4>Get Probability</h4>
+                        <p>Receive your score with detailed breakdown</p>
                     </div>
                 </div>
             </div>
@@ -183,8 +313,8 @@
                     </svg>
                 </button>
                 
-                <h3 class="methodology-title">Our Detection Engine</h3>
-                <p class="methodology-intro">Platforms rarely admit to shadow banning. That's why we built a proprietary detection system that analyzes multiple signals to calculate an accurate probability score.</p>
+                <h3 class="methodology-title">Why Probability, Not Yes/No?</h3>
+                <p class="methodology-intro">Platforms <strong>never confirm</strong> shadow bans on individual posts. That's why we analyze multiple independent signals to calculate an accurate <em>probability score</em> — the most honest approach possible.</p>
                 
                 <div class="methodology-grid">
                     <div class="method-card">
@@ -194,22 +324,26 @@
                     </div>
                     
                     <div class="method-card">
-                        <span class="method-icon">🌐</span>
-                        <h4>Search Visibility Tests</h4>
-                        <p>We test if your post appears in hashtag feeds, search results, and explore pages.</p>
+                        <span class="method-icon">🔍</span>
+                        <h4>Search Visibility (U.S. Servers)</h4>
+                        <p>We test if your post appears in hashtag feeds, search results, and explore pages from U.S.-based servers.</p>
                     </div>
                     
                     <div class="method-card">
                         <span class="method-icon">#️⃣</span>
                         <h4>Hashtag Database</h4>
-                        <p>Cross-reference all hashtags in your post against our database of banned/restricted tags.</p>
+                        <p>Cross-reference all hashtags in your post against our database of banned/restricted tags (updated daily).</p>
                     </div>
                     
                     <div class="method-card">
-                        <span class="method-icon">🔍</span>
-                        <h4>IP Analysis</h4>
-                        <p>Factor in your IP type and location for regional reach probability assessment.</p>
+                        <span class="method-icon">🌐</span>
+                        <h4>IP Analysis (Your Connection)</h4>
+                        <p>We analyze YOUR IP for VPN/proxy/datacenter flags that platforms may use to affect post reach.</p>
                     </div>
+                </div>
+                
+                <div class="methodology-note">
+                    <p><strong>Note:</strong> Post checks use 4 of our 5 factors. Historical Data is only used for account-level analysis.</p>
                 </div>
             </div>
         </div>
@@ -220,23 +354,31 @@
         <div class="container">
             <div class="section-header">
                 <h2 class="section-title">Also Check</h2>
-                <p class="section-desc">Get a complete picture of your social media health</p>
+                <p class="section-desc">Get a complete picture of your social media visibility</p>
             </div>
             
             <div class="cross-promote-grid">
+                <a href="index.html#power-check" class="cross-promote-card highlight">
+                    <span class="cross-promote-icon">⚡</span>
+                    <div class="cross-promote-content">
+                        <h3>Power Check <span class="badge-new">3-in-1</span></h3>
+                        <p>Account + Post + Hashtag analysis in one scan</p>
+                    </div>
+                    <span class="cross-promote-arrow">→</span>
+                </a>
                 <a href="checker.html" class="cross-promote-card">
                     <span class="cross-promote-icon">👤</span>
                     <div class="cross-promote-content">
                         <h3>Account Checker</h3>
-                        <p>Check if your account is shadow banned on any platform</p>
+                        <p>Check your account's overall probability score</p>
                     </div>
                     <span class="cross-promote-arrow">→</span>
                 </a>
                 <a href="hashtag-checker.html" class="cross-promote-card">
-                    <span class="cross-promote-icon">🚫</span>
+                    <span class="cross-promote-icon">#️⃣</span>
                     <div class="cross-promote-content">
                         <h3>Hashtag Checker</h3>
-                        <p>Verify hashtags before posting to avoid reach penalties</p>
+                        <p>Verify hashtags before posting to avoid penalties</p>
                     </div>
                     <span class="cross-promote-arrow">→</span>
                 </a>
@@ -249,57 +391,27 @@
         <div class="modal-overlay"></div>
         <div class="modal-content">
             <button class="modal-close">&times;</button>
-            <div class="modal-icon">🧠</div>
-            <h3 class="modal-title">Post URL Check - 5-Factor Engine</h3>
+            <div class="modal-icon">📝</div>
+            <h3 class="modal-title">Post Probability Check</h3>
             <div class="modal-body">
-                <p class="modal-intro">The Post URL Checker uses <strong>4 of our 5 factors</strong> to analyze your specific post:</p>
+                <p class="modal-intro">Our Post Checker calculates your post's shadow ban probability by analyzing:</p>
                 
-                <ul class="engine-factors">
-                    <li class="factor-active">
-                        <span class="factor-check">✓</span>
-                        <span class="factor-icon">🔌</span>
-                        <div class="factor-content">
-                            <span class="factor-name">Platform APIs</span>
-                            <span class="factor-desc">Fetch post data, engagement metrics, and visibility status</span>
-                        </div>
-                    </li>
-                    <li class="factor-active">
-                        <span class="factor-check">✓</span>
-                        <span class="factor-icon">🌐</span>
-                        <div class="factor-content">
-                            <span class="factor-name">Web Analysis</span>
-                            <span class="factor-desc">Search visibility tests, hashtag feed appearance checks</span>
-                        </div>
-                    </li>
-                    <li class="factor-inactive">
-                        <span class="factor-check">○</span>
-                        <span class="factor-icon">📊</span>
-                        <div class="factor-content">
-                            <span class="factor-name">Historical Data</span>
-                            <span class="factor-desc">Not applicable for single post checks</span>
-                        </div>
-                    </li>
-                    <li class="factor-active">
-                        <span class="factor-check">✓</span>
-                        <span class="factor-icon">#️⃣</span>
-                        <div class="factor-content">
-                            <span class="factor-name">Hashtag Database</span>
-                            <span class="factor-desc">Check all hashtags used in the post against our database</span>
-                        </div>
-                    </li>
-                    <li class="factor-active">
-                        <span class="factor-check">✓</span>
-                        <span class="factor-icon">🔍</span>
-                        <div class="factor-content">
-                            <span class="factor-name">IP Analysis</span>
-                            <span class="factor-desc">Factor in your IP type and location for reach probability</span>
-                        </div>
-                    </li>
+                <ul class="check-list">
+                    <li>Post content for flagged keywords/media</li>
+                    <li>All hashtags against our banned/restricted database</li>
+                    <li>Search visibility in hashtag feeds and explore</li>
+                    <li>Engagement metrics vs expected baseline</li>
+                    <li>Your IP connection type (VPN/proxy/datacenter)</li>
                 </ul>
                 
                 <div class="modal-tech-note">
                     <h4>💡 Post vs Account Checks</h4>
-                    <p>A post can be shadow banned even if your account is in good standing. Content, hashtags, and timing all affect individual post visibility.</p>
+                    <p>A post can have a high probability even if your account is in good standing. Content, hashtags, and timing all affect individual post visibility.</p>
+                </div>
+                
+                <div class="modal-privacy-note">
+                    <h4>📋 Free Tier Notice</h4>
+                    <p>Free results are stored permanently and publicly indexed for SEO. Upgrade to Pro for private results with deletion capability.</p>
                 </div>
             </div>
             <div class="modal-footer">
@@ -330,9 +442,9 @@
         <div class="modal-content">
             <button class="modal-close">&times;</button>
             <div class="modal-icon">🧠</div>
-            <h3 class="modal-title">Powered by Our 5-Factor Detection Engine</h3>
+            <h3 class="modal-title">5-Factor Detection Engine</h3>
             <div class="modal-body">
-                <p class="modal-intro">The Post URL Checker uses <strong>4 of our 5 detection factors</strong>:</p>
+                <p class="modal-intro">The Post URL Checker uses <strong>4 of our 5 detection factors</strong> to calculate probability:</p>
                 
                 <ul class="engine-factors">
                     <li class="factor-active">
@@ -345,10 +457,10 @@
                     </li>
                     <li class="factor-active">
                         <span class="factor-check">✓</span>
-                        <span class="factor-icon">🌐</span>
+                        <span class="factor-icon">🔍</span>
                         <div class="factor-content">
                             <span class="factor-name">Web Analysis</span>
-                            <span class="factor-desc">Search visibility and feed appearance tests</span>
+                            <span class="factor-desc">Search visibility tests from U.S. servers</span>
                         </div>
                     </li>
                     <li class="factor-inactive">
@@ -369,17 +481,17 @@
                     </li>
                     <li class="factor-active">
                         <span class="factor-check">✓</span>
-                        <span class="factor-icon">🔍</span>
+                        <span class="factor-icon">🌐</span>
                         <div class="factor-content">
                             <span class="factor-name">IP Analysis</span>
-                            <span class="factor-desc">VPN/proxy detection, location risk assessment</span>
+                            <span class="factor-desc">Analyzes YOUR connection for VPN/datacenter flags</span>
                         </div>
                     </li>
                 </ul>
                 
                 <div class="modal-tech-note">
-                    <h4>💡 Our Engine combines all applicable signals</h4>
-                    <p>Each post is analyzed for suppression indicators and assigned a probability score with detailed breakdowns.</p>
+                    <h4>💡 Why Probability?</h4>
+                    <p>No tool can definitively determine if a post is shadow banned — platforms don't disclose their algorithms. Our probability score represents the <strong>likelihood</strong> of restrictions based on observable signals.</p>
                 </div>
             </div>
             <div class="modal-footer">

@@ -2041,7 +2041,7 @@ input:checked + .slider:before {
 .footer-content {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-start;
     width: 100%;
     flex-wrap: wrap;
     gap: 1rem;
@@ -2051,6 +2051,7 @@ input:checked + .slider:before {
     display: flex;
     gap: 1.5rem;
     flex-wrap: wrap;
+    margin-left: 2rem;
 }
 
 .shared-footer a,

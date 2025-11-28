@@ -3,11 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Banned Hashtags Checker - Find Restricted Hashtags | ShadowBanCheck.io</title>
-    <meta name="description" content="Check if your hashtags are banned or restricted before you post. Works across Instagram, TikTok, Twitter/X, Facebook, LinkedIn + 20 more platforms.">
+    <title>Hashtag Probability Checker - Calculate Hashtag Risk Score | ShadowBanCheck.io</title>
+    <meta name="description" content="Calculate the shadow ban probability for your hashtags before posting. Our 5-Factor Detection Engine analyzes banned and restricted hashtags across Instagram, TikTok, Twitter/X, and more.">
+    
+    <!-- SEO Meta Tags -->
+    <meta name="keywords" content="banned hashtags checker, hashtag probability, Instagram banned hashtags, TikTok shadowban hashtags, hashtag safety checker">
+    <meta name="author" content="ShadowBanCheck.io">
+    <meta name="robots" content="index, follow">
+    
+    <!-- Open Graph -->
+    <meta property="og:title" content="Hashtag Probability Checker | ShadowBanCheck.io">
+    <meta property="og:description" content="Calculate hashtag risk probability before posting. Check banned and restricted hashtags across all major platforms.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://shadowbancheck.io/hashtag-checker.html">
+    
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Hashtag Probability Checker">
+    <meta name="twitter:description" content="Calculate hashtag risk probability with our 5-Factor Detection Engine.">
     
     <!-- Favicon -->
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚫</text></svg>">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>#️⃣</text></svg>">
+    
+    <!-- Schema.org for AI Citation -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "Hashtag Shadow Ban Probability Checker",
+        "description": "Calculate shadow ban probability for hashtags using our 5-Factor Detection Engine with a database of 1,800+ banned/restricted hashtags",
+        "url": "https://shadowbancheck.io/hashtag-checker.html",
+        "applicationCategory": "UtilityApplication",
+        "operatingSystem": "Web",
+        "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+        },
+        "creator": {
+            "@type": "Organization",
+            "name": "ShadowBanCheck.io"
+        }
+    }
+    </script>
     
     <!-- CSS -->
     <link rel="stylesheet" href="css/main.css">
@@ -23,16 +61,16 @@
     <!-- Hero - Compact -->
     <section class="hero">
         <div class="container">
-            <div class="hero-badge">🚫 Banned Hashtags Checker</div>
-            <h1 class="hero-title">Check Banned Hashtags</h1>
-            <p class="hero-subtitle">Check if your hashtags are banned or restricted before you post. Avoid shadowbans and maximize your reach.</p>
+            <div class="hero-badge">#️⃣ Hashtag Probability Checker</div>
+            <h1 class="hero-title">Calculate Your Hashtag Risk Probability</h1>
+            <p class="hero-subtitle">Check hashtags <strong>before</strong> you post. Our database of 1,800+ banned/restricted hashtags helps you avoid shadow bans and maximize reach.</p>
         </div>
     </section>
 
     <!-- Hashtag Checker Form -->
     <section class="section">
         <div class="container">
-            <div class="hashtag-checker-card">
+            <div class="hashtag-checker-card" id="checker-card">
                 <!-- Info Button -->
                 <button class="checker-info-btn" id="hashtag-info-btn" aria-label="What we check" type="button">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -43,7 +81,7 @@
                 
                 <div class="checker-header">
                     <div class="checker-header-content">
-                        <span class="checker-icon">🚫</span>
+                        <span class="checker-icon">#️⃣</span>
                         <div>
                             <h3>Enter Hashtags to Check</h3>
                             <p>Enter hashtags separated by spaces or commas (e.g. #fitness #health #wellness)</p>
@@ -51,27 +89,118 @@
                     </div>
                 </div>
                 
-                <div class="input-group">
-                    <textarea id="hashtag-input" class="hashtag-input" placeholder="#example #hashtag #test&#10;#fitness #viral #fyp" rows="4"></textarea>
-                    <div class="input-meta">
-                        <span id="hashtag-count">0 hashtags</span>
-                        <span id="checks-remaining-display">1 free check left today</span>
+                <form id="hashtag-check-form" class="checker-form">
+                    <div class="input-group">
+                        <textarea id="hashtag-input" class="hashtag-input" placeholder="#example #hashtag #test&#10;#fitness #viral #fyp" rows="4"></textarea>
+                        <div class="input-meta">
+                            <span id="hashtag-count">0 hashtags</span>
+                            <span>Free results are permanent & public</span>
+                        </div>
                     </div>
-                </div>
-                
-                <button id="check-hashtags-btn" class="btn-check-hashtags">
-                    <span>Check Hashtags</span>
-                    <span>🔍</span>
-                </button>
+                    
+                    <button type="submit" id="check-hashtags-btn" class="btn-check-hashtags">
+                        <span class="btn-text">Calculate Risk Probability</span>
+                        <span class="btn-icon">🔍</span>
+                    </button>
+                </form>
                 
                 <div class="checker-features">
+                    <span>✓ 1,800+ hashtag database</span>
                     <span>✓ Results in seconds</span>
-                    <span>✓ 1 free check per day</span>
-                    <span>✓ <span id="live-platform-count">2</span> platforms analyzed</span>
+                    <span>✓ Permanent results page</span>
+                </div>
+                
+                <div class="checker-note">
+                    <p>💡 <strong>Why probability?</strong> Hashtag restrictions change constantly and vary by platform. We analyze your hashtags against our database and return a <em>risk probability</em> — the likelihood they'll trigger reach limitations.</p>
                 </div>
                 
                 <div class="quick-actions">
-                    <button id="clear-btn" class="btn-text-link">Clear</button>
+                    <button type="button" id="clear-btn" class="btn-text-link">Clear</button>
+                </div>
+            </div>
+            
+            <!-- Engine Animation (Hidden until check starts) -->
+            <div id="engine-animation" class="engine-animation hidden">
+                <div class="engine-animation-card">
+                    <!-- Phase 1: Engine Running -->
+                    <div id="engine-phase-1" class="engine-phase">
+                        <div class="engine-header">
+                            <span class="engine-icon-animated">⚙️</span>
+                            <div>
+                                <h3>5-Factor Detection Engine</h3>
+                                <p class="engine-status">Scanning hashtag database...</p>
+                            </div>
+                        </div>
+                        
+                        <div class="engine-terminal">
+                            <div class="terminal-header">
+                                <span class="terminal-dot red"></span>
+                                <span class="terminal-dot yellow"></span>
+                                <span class="terminal-dot green"></span>
+                                <span class="terminal-title">shadowban-engine v1.0</span>
+                            </div>
+                            <div class="terminal-body" id="terminal-output"></div>
+                        </div>
+                        
+                        <div class="engine-factors-progress">
+                            <div class="factor-progress" id="factor-1-progress">
+                                <span class="factor-icon">🔌</span>
+                                <span class="factor-name">API</span>
+                                <span class="factor-status pending">○</span>
+                            </div>
+                            <div class="factor-progress" id="factor-2-progress">
+                                <span class="factor-icon">🔍</span>
+                                <span class="factor-name">Web</span>
+                                <span class="factor-status pending">○</span>
+                            </div>
+                            <div class="factor-progress" id="factor-3-progress">
+                                <span class="factor-icon">📊</span>
+                                <span class="factor-name">History</span>
+                                <span class="factor-status pending">○</span>
+                            </div>
+                            <div class="factor-progress" id="factor-4-progress">
+                                <span class="factor-icon">#️⃣</span>
+                                <span class="factor-name">Hashtags</span>
+                                <span class="factor-status pending">○</span>
+                            </div>
+                            <div class="factor-progress" id="factor-5-progress">
+                                <span class="factor-icon">🌐</span>
+                                <span class="factor-name">IP</span>
+                                <span class="factor-status pending">○</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Phase 2: AI Analysis -->
+                    <div id="engine-phase-2" class="engine-phase hidden">
+                        <div class="engine-header ai-mode">
+                            <span class="engine-icon-animated">🧠</span>
+                            <div>
+                                <h3>Shadow AI Analysis</h3>
+                                <p class="engine-status">Calculating risk probability...</p>
+                            </div>
+                        </div>
+                        
+                        <div class="ai-analysis-visual">
+                            <div class="ai-brain">
+                                <div class="brain-pulse"></div>
+                                🧠
+                            </div>
+                            <p class="ai-processing-text">
+                                <span id="ai-processing-message">Cross-referencing database...</span>
+                            </p>
+                        </div>
+                        
+                        <div class="ai-data-flow">
+                            <div class="data-stream">
+                                <span class="data-label">3 Factors</span>
+                                <div class="data-dots"><span></span><span></span><span></span></div>
+                                <span class="data-label">AI Engine</span>
+                                <div class="data-dots"><span></span><span></span><span></span></div>
+                                <span class="data-label">Probability</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
             
@@ -85,47 +214,12 @@
         </div>
     </section>
 
-    <!-- Results Section (Hidden initially) -->
-    <section id="results-section" class="results-section hidden">
-        <div class="container">
-            <!-- Compact Summary Bar -->
-            <div class="results-summary-bar">
-                <h2>📊 Results</h2>
-                <div class="summary-stats">
-                    <div class="summary-stat-inline safe">
-                        <span class="stat-icon">✅</span>
-                        <span class="stat-count" id="safe-count">0</span>
-                        <span class="stat-label-inline">Safe</span>
-                    </div>
-                    <div class="summary-stat-inline banned">
-                        <span class="stat-icon">🚫</span>
-                        <span class="stat-count" id="banned-count">0</span>
-                        <span class="stat-label-inline">Banned</span>
-                    </div>
-                    <div class="summary-stat-inline restricted">
-                        <span class="stat-icon">⚠️</span>
-                        <span class="stat-count" id="restricted-count">0</span>
-                        <span class="stat-label-inline">Restricted</span>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Compact Hashtag Grid -->
-            <div id="results-list" class="results-list"></div>
-            
-            <div class="results-actions">
-                <button id="copy-safe-btn" class="btn-results">📋 Copy Safe Hashtags</button>
-                <button id="export-btn" class="btn-results">📥 Export Results</button>
-            </div>
-        </div>
-    </section>
-
     <!-- Platform-Specific Banned Hashtags - Daily Trending -->
-    <section class="platform-hashtags-section">
+    <section class="platform-hashtags-section section-alt">
         <div class="container">
             <div class="section-header">
-                <h2 class="section-title">🔥 Daily Trending Banned Hashtags</h2>
-                <p class="section-desc">Updated every 24 hours at midnight UTC. Select a platform to see known banned and restricted hashtags.</p>
+                <h2 class="section-title">🔥 Known Banned & Restricted Hashtags</h2>
+                <p class="section-desc">Updated daily. Select a platform to see hashtags that trigger shadow bans.</p>
             </div>
             
             <!-- Platform Tabs -->
@@ -139,7 +233,7 @@
                     <span>TikTok</span>
                 </button>
                 <button class="platform-tab" data-platform="twitter">
-                    <span class="platform-tab-icon">🐦</span>
+                    <span class="platform-tab-icon">𝕏</span>
                     <span>Twitter/X</span>
                 </button>
                 <button class="platform-tab" data-platform="facebook">
@@ -227,7 +321,7 @@
                 <!-- Twitter Panel -->
                 <div class="hashtag-panel" data-platform="twitter">
                     <div class="panel-header">
-                        <h3>🐦 Twitter/X Restricted Hashtags</h3>
+                        <h3>𝕏 Twitter/X Restricted Hashtags</h3>
                         <p>These hashtags may limit reach or trigger content warnings on Twitter/X</p>
                     </div>
                     <div class="banned-tags-grid">
@@ -296,23 +390,23 @@
                 <div class="legend-item">
                     <span class="legend-dot banned"></span>
                     <span>Fully Banned</span>
-                    <span class="legend-desc">— Completely blocked, no posts shown</span>
+                    <span class="legend-desc">— 100% probability of restrictions</span>
                 </div>
                 <div class="legend-item">
                     <span class="legend-dot restricted"></span>
                     <span>Restricted/Limited</span>
-                    <span class="legend-desc">— Reduced reach, may trigger shadowban</span>
+                    <span class="legend-desc">— High probability of reduced reach</span>
                 </div>
             </div>
         </div>
     </section>
 
     <!-- How It Works -->
-    <section class="section section-alt how-works-section">
+    <section class="section how-works-section">
         <div class="container">
             <div class="section-header">
-                <h2 class="section-title">How Our Checker Works</h2>
-                <p class="section-desc">Our comprehensive hashtag detection system</p>
+                <h2 class="section-title">How It Works</h2>
+                <p class="section-desc">Get your hashtag risk probability in 3 simple steps</p>
             </div>
             
             <!-- Quick Steps -->
@@ -321,26 +415,30 @@
                     <span class="how-icon">1️⃣</span>
                     <div class="how-content">
                         <h4>Enter Hashtags</h4>
-                        <p>Paste your hashtags above</p>
+                        <p>Paste your hashtags above (any format)</p>
                     </div>
                 </div>
                 <div class="how-item reveal">
                     <span class="how-icon">2️⃣</span>
                     <div class="how-content">
-                        <h4>AI Analysis</h4>
-                        <p>We scan 5 platforms instantly</p>
+                        <h4>We Analyze</h4>
+                        <p>Database + visibility tests + patterns</p>
                     </div>
                 </div>
                 <div class="how-item reveal">
                     <span class="how-icon">3️⃣</span>
                     <div class="how-content">
-                        <h4>Get Results</h4>
-                        <p>See banned vs safe hashtags</p>
+                        <h4>Get Probability</h4>
+                        <p>Risk score + safe hashtags to copy</p>
                     </div>
                 </div>
             </div>
-            
-            <!-- Detailed Methodology -->
+        </div>
+    </section>
+
+    <!-- Methodology Section -->
+    <section class="section section-alt">
+        <div class="container">
             <div class="methodology-section reveal">
                 <button class="engine-info-btn" id="engine-info-btn" aria-label="View 5-Factor Engine details" type="button">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -349,33 +447,37 @@
                     </svg>
                 </button>
                 
-                <h3 class="methodology-title">Our Detection Engine</h3>
-                <p class="methodology-intro">Platforms constantly update their banned hashtag lists without warning. Our system monitors multiple data sources to keep you informed about which hashtags are safe to use.</p>
+                <h3 class="methodology-title">Why Probability, Not Yes/No?</h3>
+                <p class="methodology-intro">Hashtag restrictions <strong>change constantly</strong> and vary by platform, region, and context. Our probability score reflects the <em>likelihood</em> of restrictions based on our database and real-time analysis.</p>
                 
                 <div class="methodology-grid">
                     <div class="method-card">
-                        <span class="method-icon">📊</span>
-                        <h4>Curated Database</h4>
-                        <p>We maintain a database of 1,800+ known banned and restricted hashtags across all major platforms, updated daily.</p>
+                        <span class="method-icon">#️⃣</span>
+                        <h4>Hashtag Database</h4>
+                        <p>1,800+ banned and restricted hashtags across all major platforms, updated daily from community reports.</p>
                     </div>
                     
                     <div class="method-card">
                         <span class="method-icon">🔍</span>
-                        <h4>Real-Time Visibility Tests</h4>
-                        <p>Our automated system performs live searches to verify if hashtags are currently blocked or showing reduced results.</p>
+                        <h4>Web Analysis</h4>
+                        <p>Real-time visibility tests verify if hashtags are currently blocked or showing reduced results.</p>
+                    </div>
+                    
+                    <div class="method-card">
+                        <span class="method-icon">📊</span>
+                        <h4>Historical Patterns</h4>
+                        <p>Track restriction history and identify hashtags that are trending toward bans.</p>
                     </div>
                     
                     <div class="method-card">
                         <span class="method-icon">🤖</span>
-                        <h4>AI Pattern Detection</h4>
-                        <p>Our machine learning model analyzes hashtag patterns to identify spam-associated tags and predict restrictions.</p>
+                        <h4>AI Risk Assessment</h4>
+                        <p>Our AI combines all factors to calculate overall risk probability for your hashtag set.</p>
                     </div>
-                    
-                    <div class="method-card">
-                        <span class="method-icon">👥</span>
-                        <h4>Community Reports</h4>
-                        <p>We aggregate reports from creators to catch newly banned hashtags before they appear in official lists.</p>
-                    </div>
+                </div>
+                
+                <div class="methodology-note">
+                    <p><strong>Note:</strong> Hashtag checks use 3 of our 5 factors. Platform APIs and IP Analysis are only used for account/post checks.</p>
                 </div>
             </div>
         </div>
@@ -386,15 +488,23 @@
         <div class="container">
             <div class="section-header">
                 <h2 class="section-title">Also Check</h2>
-                <p class="section-desc">Get a complete picture of your social media health</p>
+                <p class="section-desc">Get a complete picture of your social media visibility</p>
             </div>
             
             <div class="cross-promote-grid">
+                <a href="index.html#power-check" class="cross-promote-card highlight">
+                    <span class="cross-promote-icon">⚡</span>
+                    <div class="cross-promote-content">
+                        <h3>Power Check <span class="badge-new">3-in-1</span></h3>
+                        <p>Account + Post + Hashtag analysis in one scan</p>
+                    </div>
+                    <span class="cross-promote-arrow">→</span>
+                </a>
                 <a href="checker.html" class="cross-promote-card">
                     <span class="cross-promote-icon">👤</span>
                     <div class="cross-promote-content">
                         <h3>Account Checker</h3>
-                        <p>Check if your account is shadow banned on any platform</p>
+                        <p>Check your account's overall probability score</p>
                     </div>
                     <span class="cross-promote-arrow">→</span>
                 </a>
@@ -402,7 +512,7 @@
                     <span class="cross-promote-icon">📝</span>
                     <div class="cross-promote-content">
                         <h3>Post URL Checker</h3>
-                        <p>Check if a specific post is being shown or restricted</p>
+                        <p>Check if a specific post is being restricted</p>
                     </div>
                     <span class="cross-promote-arrow">→</span>
                 </a>
@@ -410,62 +520,32 @@
         </div>
     </section>
 
-    <!-- 5-Factor Engine Info Modal (for hashtag checker card) -->
+    <!-- Hashtag Info Modal -->
     <div id="hashtag-info-modal" class="modal hidden">
         <div class="modal-overlay"></div>
         <div class="modal-content">
             <button class="modal-close">&times;</button>
-            <div class="modal-icon">🧠</div>
-            <h3 class="modal-title">Powered by Our 5-Factor Detection Engine</h3>
+            <div class="modal-icon">#️⃣</div>
+            <h3 class="modal-title">Hashtag Probability Check</h3>
             <div class="modal-body">
-                <p class="modal-intro">The Hashtag Checker uses <strong>3 of our 5 detection factors</strong>:</p>
+                <p class="modal-intro">Our Hashtag Checker calculates risk probability by analyzing:</p>
                 
-                <ul class="engine-factors">
-                    <li class="factor-inactive">
-                        <span class="factor-check">○</span>
-                        <span class="factor-icon">🔌</span>
-                        <div class="factor-content">
-                            <span class="factor-name">Platform APIs</span>
-                            <span class="factor-desc">Not needed for hashtag lookups</span>
-                        </div>
-                    </li>
-                    <li class="factor-active">
-                        <span class="factor-check">✓</span>
-                        <span class="factor-icon">🌐</span>
-                        <div class="factor-content">
-                            <span class="factor-name">Web Analysis</span>
-                            <span class="factor-desc">Live search visibility tests across platforms</span>
-                        </div>
-                    </li>
-                    <li class="factor-active">
-                        <span class="factor-check">✓</span>
-                        <span class="factor-icon">📊</span>
-                        <div class="factor-content">
-                            <span class="factor-name">Historical Data</span>
-                            <span class="factor-desc">Pattern tracking & restriction history</span>
-                        </div>
-                    </li>
-                    <li class="factor-active">
-                        <span class="factor-check">✓</span>
-                        <span class="factor-icon">#️⃣</span>
-                        <div class="factor-content">
-                            <span class="factor-name">Hashtag Database</span>
-                            <span class="factor-desc">1,800+ banned/restricted tags across 5 platforms</span>
-                        </div>
-                    </li>
-                    <li class="factor-inactive">
-                        <span class="factor-check">○</span>
-                        <span class="factor-icon">🔍</span>
-                        <div class="factor-content">
-                            <span class="factor-name">IP Analysis</span>
-                            <span class="factor-desc">Not applicable for hashtag-only checks</span>
-                        </div>
-                    </li>
+                <ul class="check-list">
+                    <li>1,800+ banned/restricted hashtags across 5 platforms</li>
+                    <li>Real-time visibility tests</li>
+                    <li>Historical restriction patterns</li>
+                    <li>Platform-specific rules</li>
+                    <li>Community reports (updated daily)</li>
                 </ul>
                 
                 <div class="modal-tech-note">
-                    <h4>💡 Our Engine combines all applicable signals to determine hashtag safety</h4>
-                    <p>Each hashtag is cross-referenced against our database, verified with live visibility tests, and analyzed for restriction patterns.</p>
+                    <h4>💡 Why Check Before Posting?</h4>
+                    <p>Using even ONE banned hashtag can shadow ban your entire post. Check your hashtags before you post to maximize reach.</p>
+                </div>
+                
+                <div class="modal-privacy-note">
+                    <h4>📋 Free Tier Notice</h4>
+                    <p>Free results are stored permanently and publicly indexed for SEO. Upgrade to Pro for private results with deletion capability.</p>
                 </div>
             </div>
             <div class="modal-footer">
@@ -474,15 +554,15 @@
         </div>
     </div>
 
-    <!-- Engine Info Modal (for methodology section) -->
+    <!-- Engine Info Modal -->
     <div id="engine-info-modal" class="modal hidden">
         <div class="modal-overlay"></div>
         <div class="modal-content">
             <button class="modal-close">&times;</button>
             <div class="modal-icon">🧠</div>
-            <h3 class="modal-title">Our 5-Factor Detection Engine</h3>
+            <h3 class="modal-title">5-Factor Detection Engine</h3>
             <div class="modal-body">
-                <p class="modal-intro">The Hashtag Checker uses <strong>3 of our 5 factors</strong>:</p>
+                <p class="modal-intro">The Hashtag Checker uses <strong>3 of our 5 detection factors</strong> to calculate probability:</p>
                 
                 <ul class="engine-factors">
                     <li class="factor-inactive">
@@ -495,10 +575,10 @@
                     </li>
                     <li class="factor-active">
                         <span class="factor-check">✓</span>
-                        <span class="factor-icon">🌐</span>
+                        <span class="factor-icon">🔍</span>
                         <div class="factor-content">
                             <span class="factor-name">Web Analysis</span>
-                            <span class="factor-desc">Live search visibility tests across platforms</span>
+                            <span class="factor-desc">Real-time visibility tests across platforms</span>
                         </div>
                     </li>
                     <li class="factor-active">
@@ -519,7 +599,7 @@
                     </li>
                     <li class="factor-inactive">
                         <span class="factor-check">○</span>
-                        <span class="factor-icon">🔍</span>
+                        <span class="factor-icon">🌐</span>
                         <div class="factor-content">
                             <span class="factor-name">IP Analysis</span>
                             <span class="factor-desc">Not applicable for hashtag-only checks</span>
@@ -528,8 +608,8 @@
                 </ul>
                 
                 <div class="modal-tech-note">
-                    <h4>💡 Why only 3 factors for hashtags?</h4>
-                    <p>Hashtag checking doesn't require account-level API access or IP analysis. We focus on our comprehensive database, real-time visibility tests, and historical pattern data.</p>
+                    <h4>💡 Why Probability?</h4>
+                    <p>Hashtag restrictions vary by platform, region, and time. Our probability score reflects the <strong>likelihood</strong> of restrictions based on current data — the most honest approach possible.</p>
                 </div>
             </div>
             <div class="modal-footer">
@@ -546,15 +626,15 @@
             <div class="modal-icon">🔒</div>
             <h3 class="modal-title">Daily Limit Reached</h3>
             <div class="modal-body">
-                <p class="modal-intro">You've used all <strong>3 free hashtag checks</strong> for today!</p>
+                <p class="modal-intro">You've used your free hashtag check for today!</p>
                 
                 <h4>Upgrade Benefits</h4>
                 <ul class="check-list">
                     <li>✓ Unlimited hashtag checks</li>
                     <li>✓ Priority database updates</li>
-                    <li>✓ Account shadow ban monitoring</li>
-                    <li>✓ Instant email/text alerts</li>
-                    <li>✓ Historical tracking</li>
+                    <li>✓ Private results (not indexed)</li>
+                    <li>✓ Delete results anytime</li>
+                    <li>✓ Bulk hashtag analysis</li>
                 </ul>
             </div>
             <div class="modal-footer">

@@ -3,8 +3,52 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Check Results - ShadowBanCheck.io</title>
-    <meta name="description" content="Your shadow ban check results powered by our 5-Factor Detection Engine">
+    
+    <!-- Dynamic title/meta - will be updated by JS based on results -->
+    <title id="page-title">Shadow Ban Probability Results - ShadowBanCheck.io</title>
+    <meta name="description" id="page-description" content="Shadow ban probability analysis results from ShadowBanCheck.io's 5-Factor Detection Engine.">
+    
+    <!-- Open Graph - Dynamic -->
+    <meta property="og:title" id="og-title" content="Shadow Ban Probability Results - ShadowBanCheck.io">
+    <meta property="og:description" id="og-description" content="Shadow ban probability analysis powered by 5-Factor Detection Engine.">
+    <meta property="og:type" content="article">
+    <meta property="og:url" id="og-url" content="https://shadowbancheck.io/results">
+    <meta property="og:image" content="https://shadowbancheck.io/og-results.png">
+    <meta property="og:site_name" content="ShadowBanCheck.io">
+    
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" id="twitter-title" content="Shadow Ban Probability Results">
+    <meta name="twitter:description" id="twitter-description" content="Analysis powered by 5-Factor Detection Engine">
+    <meta name="twitter:site" content="@ghost081280">
+    
+    <!-- Schema.org for AI citation - will be populated by JS -->
+    <script type="application/ld+json" id="schema-json">
+    {
+        "@context": "https://schema.org",
+        "@type": "TechArticle",
+        "headline": "Shadow Ban Probability Analysis",
+        "description": "Shadow ban probability results calculated by 5-Factor Detection Engine",
+        "author": {
+            "@type": "Organization",
+            "name": "ShadowBanCheck.io",
+            "url": "https://shadowbancheck.io"
+        },
+        "publisher": {
+            "@type": "Organization",
+            "name": "ShadowBanCheck.io"
+        },
+        "datePublished": "",
+        "dateModified": "",
+        "mainEntity": {
+            "@type": "AnalysisNewsArticle",
+            "analysisAspect": "Shadow ban probability"
+        }
+    }
+    </script>
+    
+    <!-- Canonical URL - will be set by JS -->
+    <link rel="canonical" id="canonical-url" href="https://shadowbancheck.io/results">
     
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>">
@@ -16,124 +60,389 @@
 </head>
 <body>
     <!-- ===================================
-         SHARED COMPONENTS
-         Header, Mobile Nav, Footer loaded by shared-components.js
+         HEADER - Loaded by shared-components.js
          =================================== -->
 
-    <!-- Hero - Compact -->
-    <section class="hero">
-        <div class="container">
-            <div class="hero-badge" id="results-badge">📊 Analysis Complete</div>
-            <h1 class="hero-title" id="results-title">Your Results</h1>
-            <p class="hero-subtitle" id="results-subtitle">Here's what our 5-Factor Detection Engine found</p>
-        </div>
-    </section>
-
-    <!-- Main Content -->
-    <main class="results-main">
-        <div class="container">
-            <!-- Overall Status Card -->
-            <div class="status-card" id="status-card">
-                <div class="status-header">
-                    <div class="status-icon" id="status-icon">🔍</div>
-                    <div class="status-info">
-                        <span class="status-platform" id="status-platform">Platform</span>
-                        <span class="status-query" id="status-query">@username</span>
+    <!-- AI-Optimized Results Content -->
+    <main class="results-page">
+        
+        <!-- ============================================
+             SHORT ANSWER SECTION (AI-optimized for quick citation)
+             ============================================ -->
+        <section class="short-answer-section" id="short-answer">
+            <div class="container">
+                <!-- Breadcrumb for SEO -->
+                <nav class="results-breadcrumb" aria-label="Breadcrumb">
+                    <a href="/">ShadowBanCheck.io</a>
+                    <span>›</span>
+                    <a href="/results">Results</a>
+                    <span>›</span>
+                    <span id="breadcrumb-platform">Twitter/X</span>
+                </nav>
+                
+                <!-- Short Answer Card - The AI-citable summary -->
+                <article class="short-answer-card" itemscope itemtype="https://schema.org/AnalysisNewsArticle">
+                    <header class="short-answer-header">
+                        <div class="result-platform-badge" id="platform-badge">
+                            <span class="platform-icon" id="result-platform-icon">𝕏</span>
+                            <span class="platform-name" id="result-platform-name">Twitter/X</span>
+                        </div>
+                        <time class="result-timestamp" id="result-timestamp" datetime="" itemprop="datePublished">
+                            Analyzed: Loading...
+                        </time>
+                    </header>
+                    
+                    <!-- THE SHORT ANSWER - Most important for AI citation -->
+                    <div class="short-answer-content">
+                        <h1 class="result-query" id="result-query" itemprop="about">
+                            @username
+                        </h1>
+                        
+                        <div class="probability-display">
+                            <div class="probability-ring" id="probability-ring">
+                                <svg viewBox="0 0 100 100">
+                                    <circle class="probability-bg" cx="50" cy="50" r="45"/>
+                                    <circle class="probability-fill" cx="50" cy="50" r="45" id="probability-circle"/>
+                                </svg>
+                                <div class="probability-center">
+                                    <span class="probability-value" id="probability-value">28%</span>
+                                    <span class="probability-label">probability</span>
+                                </div>
+                            </div>
+                            
+                            <div class="probability-summary" itemprop="articleBody">
+                                <p class="short-answer-text" id="short-answer-text">
+                                    <strong>Short Answer:</strong> Based on 5 independent signals, this account has a <strong id="probability-inline">28%</strong> shadow ban probability. 
+                                    <span id="probability-interpretation">Most signals indicate normal visibility, with minor concerns detected.</span>
+                                </p>
+                                
+                                <div class="verdict-badge-wrap">
+                                    <span class="verdict-badge" id="verdict-badge">Likely Visible</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Key Findings - Quick scannable list for AI -->
+                        <div class="key-findings" id="key-findings">
+                            <h2>Key Findings</h2>
+                            <ul class="findings-list" id="findings-list">
+                                <li class="finding-good"><span>✓</span> <span>Account appears in search results</span></li>
+                                <li class="finding-good"><span>✓</span> <span>Profile accessible to public</span></li>
+                                <li class="finding-warning"><span>⚠</span> <span>No verification badge detected (may affect visibility)</span></li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <!-- Citation Block - For AI and researchers -->
+                    <footer class="citation-block">
+                        <p class="citation-text">
+                            <strong>Source:</strong> ShadowBanCheck.io 5-Factor Detection Engine | 
+                            <span id="citation-date">Date</span> | 
+                            <a href="#methodology">Methodology</a>
+                        </p>
+                    </footer>
+                </article>
+            </div>
+        </section>
+        
+        <!-- ============================================
+             DEEP DIVE SECTION (Detailed analysis)
+             ============================================ -->
+        <section class="deep-dive-section section" id="deep-dive">
+            <div class="container">
+                <h2 class="section-title">Detailed Analysis</h2>
+                <p class="section-desc">How we calculated this probability score</p>
+                
+                <!-- 5-Factor Engine Breakdown -->
+                <div class="engine-breakdown" id="engine-breakdown">
+                    <div class="engine-summary-card">
+                        <div class="engine-summary-header">
+                            <span class="engine-icon">🧠</span>
+                            <div>
+                                <h3>5-Factor Detection Engine</h3>
+                                <p id="engine-factors-used">5/5 factors analyzed</p>
+                            </div>
+                        </div>
+                        
+                        <div class="factors-breakdown" id="factors-breakdown">
+                            <!-- Factor 1: Platform APIs -->
+                            <div class="factor-row" id="factor-api">
+                                <div class="factor-indicator active">
+                                    <span class="factor-icon">🔌</span>
+                                </div>
+                                <div class="factor-details">
+                                    <h4>Platform APIs</h4>
+                                    <p class="factor-finding" id="factor-api-finding">Direct API query confirmed account exists and is active</p>
+                                </div>
+                                <div class="factor-status good">
+                                    <span>✓</span>
+                                </div>
+                            </div>
+                            
+                            <!-- Factor 2: Web Analysis -->
+                            <div class="factor-row" id="factor-web">
+                                <div class="factor-indicator active">
+                                    <span class="factor-icon">🔍</span>
+                                </div>
+                                <div class="factor-details">
+                                    <h4>Web Analysis</h4>
+                                    <p class="factor-finding" id="factor-web-finding">Search visibility tests from U.S. servers passed</p>
+                                </div>
+                                <div class="factor-status good">
+                                    <span>✓</span>
+                                </div>
+                            </div>
+                            
+                            <!-- Factor 3: Historical Data -->
+                            <div class="factor-row" id="factor-historical">
+                                <div class="factor-indicator active">
+                                    <span class="factor-icon">📊</span>
+                                </div>
+                                <div class="factor-details">
+                                    <h4>Historical Data</h4>
+                                    <p class="factor-finding" id="factor-historical-finding">Engagement patterns within normal baseline</p>
+                                </div>
+                                <div class="factor-status good">
+                                    <span>✓</span>
+                                </div>
+                            </div>
+                            
+                            <!-- Factor 4: Hashtag Database -->
+                            <div class="factor-row" id="factor-hashtag">
+                                <div class="factor-indicator active">
+                                    <span class="factor-icon">#️⃣</span>
+                                </div>
+                                <div class="factor-details">
+                                    <h4>Hashtag Database</h4>
+                                    <p class="factor-finding" id="factor-hashtag-finding">No banned or restricted hashtags detected</p>
+                                </div>
+                                <div class="factor-status good">
+                                    <span>✓</span>
+                                </div>
+                            </div>
+                            
+                            <!-- Factor 5: IP Analysis -->
+                            <div class="factor-row" id="factor-ip">
+                                <div class="factor-indicator active">
+                                    <span class="factor-icon">🌐</span>
+                                </div>
+                                <div class="factor-details">
+                                    <h4>IP Analysis</h4>
+                                    <p class="factor-finding" id="factor-ip-finding">Residential IP detected, no VPN/proxy flags</p>
+                                </div>
+                                <div class="factor-status good">
+                                    <span>✓</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div class="status-result">
-                    <div class="probability-circle" id="probability-circle">
-                        <span class="probability-value" id="probability-value">0%</span>
-                        <span class="probability-label">Shadow Ban<br>Probability</span>
+                
+                <!-- Platform-Specific Checks (Twitter example) -->
+                <div class="platform-checks" id="platform-checks">
+                    <h3>Platform-Specific Signals</h3>
+                    
+                    <div class="checks-grid" id="checks-grid">
+                        <!-- Populated by JS based on platform -->
                     </div>
-                    <div class="status-verdict">
-                        <span class="verdict-badge" id="verdict-badge">Analyzing...</span>
-                        <p class="verdict-text" id="verdict-text">Processing your request...</p>
+                </div>
+                
+                <!-- Twitter Blue Checkmark Section (Twitter-specific) -->
+                <div class="verification-section hidden" id="verification-section">
+                    <h3>Verification Status</h3>
+                    <div class="verification-card" id="verification-card">
+                        <div class="verification-icon" id="verification-icon">❌</div>
+                        <div class="verification-content">
+                            <h4 id="verification-title">No Verification Badge</h4>
+                            <p id="verification-text">This account does not have a verification badge (Blue ✓, Gold ✓ for organizations, or Grey ✓ for government). On Twitter/X, unverified accounts may receive lower visibility in search results and recommendations compared to verified accounts.</p>
+                            <p class="verification-note"><strong>Impact on probability:</strong> <span id="verification-impact">+5% added to probability score</span></p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Hashtag Analysis (if applicable) -->
+                <div class="hashtag-analysis hidden" id="hashtag-analysis">
+                    <h3>Hashtag Analysis</h3>
+                    <div class="hashtag-results" id="hashtag-results">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+                
+                <!-- IP Analysis Details -->
+                <div class="ip-analysis" id="ip-analysis">
+                    <h3>Your Connection Analysis</h3>
+                    <div class="ip-card" id="ip-card">
+                        <div class="ip-info">
+                            <span class="ip-icon">🌐</span>
+                            <div class="ip-details">
+                                <span class="ip-address" id="ip-address">192.168.1.42</span>
+                                <span class="ip-type-badge" id="ip-type-badge">Residential</span>
+                            </div>
+                            <span class="ip-flag" id="ip-flag">🇺🇸</span>
+                        </div>
+                        <p class="ip-explanation" id="ip-explanation">Your IP appears to be a residential connection. Platforms generally trust residential IPs more than VPNs or datacenter IPs, which can positively affect content visibility.</p>
                     </div>
                 </div>
             </div>
-
-            <!-- 5-Factor Engine Summary -->
-            <div class="engine-card">
-                <div class="engine-header">
-                    <div class="engine-title">
-                        <span>🧠</span>
-                        <h3>5-Factor Detection Engine</h3>
+        </section>
+        
+        <!-- ============================================
+             METHODOLOGY SECTION (For credibility/citation)
+             ============================================ -->
+        <section class="methodology-section section section-alt" id="methodology">
+            <div class="container">
+                <h2 class="section-title">Methodology</h2>
+                <p class="section-desc">How we calculate shadow ban probability</p>
+                
+                <div class="methodology-content">
+                    <div class="methodology-intro">
+                        <p><strong>Why probability, not yes/no?</strong> No tool can definitively determine if content is being suppressed—platforms don't disclose their algorithms. Instead, we analyze <strong>5 independent signals</strong> and calculate the <strong>probability</strong> of restrictions. This honest approach produces more accurate, trustworthy results.</p>
                     </div>
-                    <span class="factors-badge" id="factors-badge">0/5 Factors</span>
-                </div>
-                <div class="engine-factors-row" id="engine-factors-row">
-                    <!-- Populated by JS -->
-                </div>
-                <div class="ip-display" id="ip-display">
-                    <!-- Populated by JS if IP data available -->
+                    
+                    <div class="methodology-factors">
+                        <div class="method-factor">
+                            <span class="method-icon">🔌</span>
+                            <h4>Platform APIs</h4>
+                            <p>Direct queries to official platform APIs where available. We check account status, visibility flags, and any restriction indicators exposed by the platform.</p>
+                        </div>
+                        <div class="method-factor">
+                            <span class="method-icon">🔍</span>
+                            <h4>Web Analysis</h4>
+                            <p>Automated browser testing from U.S.-based servers. We check if content appears in search results when logged in, logged out, and in private browsing mode.</p>
+                        </div>
+                        <div class="method-factor">
+                            <span class="method-icon">📊</span>
+                            <h4>Historical Data</h4>
+                            <p>We compare current engagement patterns against historical baselines. Sudden drops or anomalies contribute to higher probability scores.</p>
+                        </div>
+                        <div class="method-factor">
+                            <span class="method-icon">#️⃣</span>
+                            <h4>Hashtag Database</h4>
+                            <p>Cross-reference against our database of banned, restricted, and low-reach hashtags, updated daily from multiple sources.</p>
+                        </div>
+                        <div class="method-factor">
+                            <span class="method-icon">🌐</span>
+                            <h4>IP Analysis</h4>
+                            <p>We analyze YOUR connection for VPN, proxy, or datacenter indicators. Platforms may treat content differently based on IP reputation.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="methodology-note">
+                        <p><strong>Note:</strong> Our web analysis runs from U.S.-based servers because most major platforms (Twitter, Reddit, etc.) are U.S. companies. Results may vary for users in other regions. Global server expansion is planned.</p>
+                    </div>
                 </div>
             </div>
-
-            <!-- Detailed Checks -->
-            <div class="checks-section">
-                <h2>📋 Detailed Analysis</h2>
-                <div class="checks-grid" id="checks-grid">
-                    <!-- Populated by JS -->
-                </div>
-            </div>
-
-            <!-- Recommendations -->
-            <div class="recommendations-section">
-                <h2>💡 Recommendations</h2>
+        </section>
+        
+        <!-- ============================================
+             RECOMMENDATIONS SECTION
+             ============================================ -->
+        <section class="recommendations-section section" id="recommendations">
+            <div class="container">
+                <h2 class="section-title">Recommendations</h2>
+                <p class="section-desc">Based on your probability analysis</p>
+                
                 <div class="recommendations-list" id="recommendations-list">
                     <!-- Populated by JS -->
                 </div>
             </div>
-
-            <!-- Action Buttons -->
-            <div class="results-actions">
-                <button id="share-results-btn" class="btn-action secondary">
-                    <span>📤</span>
-                    <span>Share Results</span>
-                </button>
-                <button id="download-report" class="btn-action secondary">
-                    <span>📄</span>
-                    <span>Download Report</span>
-                </button>
+        </section>
+        
+        <!-- ============================================
+             ACTIONS & SHARE
+             ============================================ -->
+        <section class="actions-section section section-alt">
+            <div class="container">
+                <div class="actions-grid">
+                    <div class="action-card">
+                        <h3>📤 Share This Result</h3>
+                        <p>This result has a permanent URL. Share it or save for future reference.</p>
+                        <div class="share-buttons-inline">
+                            <button class="btn-share-sm" id="share-twitter-btn" title="Share on X">𝕏</button>
+                            <button class="btn-share-sm" id="share-facebook-btn" title="Share on Facebook">f</button>
+                            <button class="btn-share-sm" id="share-linkedin-btn" title="Share on LinkedIn">in</button>
+                            <button class="btn-share-sm" id="copy-link-btn" title="Copy Link">🔗</button>
+                        </div>
+                        <div class="permanent-url">
+                            <label>Permanent URL:</label>
+                            <input type="text" id="permanent-url" readonly value="https://shadowbancheck.io/results/twitter/username">
+                        </div>
+                    </div>
+                    
+                    <div class="action-card">
+                        <h3>📄 Download Report</h3>
+                        <p>Get a detailed PDF report with all analysis data.</p>
+                        <button class="btn btn-secondary" id="download-report-btn">Download PDF</button>
+                        <p class="action-note">Includes all 5 factors, methodology, and timestamp</p>
+                    </div>
+                    
+                    <div class="action-card highlight">
+                        <h3>🤖 Ask Shadow AI</h3>
+                        <p>Get personalized advice based on these results.</p>
+                        <button class="btn btn-primary" id="ask-ai-btn">Open Shadow AI</button>
+                        <p class="action-note">AI has access to your probability data</p>
+                    </div>
+                </div>
             </div>
-        </div>
+        </section>
+        
+        <!-- ============================================
+             CHECK ANOTHER / RELATED TOOLS
+             ============================================ -->
+        <section class="related-tools section">
+            <div class="container">
+                <h2 class="section-title">Run Another Analysis</h2>
+                <p class="section-desc">Check other accounts, posts, or hashtags</p>
+                
+                <div class="tools-grid" id="tools-grid">
+                    <a href="index.html" class="tool-card">
+                        <span class="tool-icon">⚡</span>
+                        <h4>Power Check (3-in-1)</h4>
+                        <p>Analyze post, account & hashtags together</p>
+                        <span class="tool-arrow">→</span>
+                    </a>
+                    <a href="checker.html" class="tool-card" data-check-type="username">
+                        <span class="tool-icon">👤</span>
+                        <h4>Account Check</h4>
+                        <p>Calculate probability for any username</p>
+                        <span class="tool-arrow">→</span>
+                    </a>
+                    <a href="post-checker.html" class="tool-card" data-check-type="post">
+                        <span class="tool-icon">📝</span>
+                        <h4>Post URL Check</h4>
+                        <p>Analyze a specific post's visibility</p>
+                        <span class="tool-arrow">→</span>
+                    </a>
+                    <a href="hashtag-checker.html" class="tool-card" data-check-type="hashtag">
+                        <span class="tool-icon">🚫</span>
+                        <h4>Hashtag Checker</h4>
+                        <p>Check if hashtags are banned/restricted</p>
+                        <span class="tool-arrow">→</span>
+                    </a>
+                </div>
+            </div>
+        </section>
+        
+        <!-- ============================================
+             PRIVACY NOTICE (Free tier disclosure)
+             ============================================ -->
+        <section class="privacy-notice-section">
+            <div class="container">
+                <div class="privacy-notice">
+                    <span class="privacy-icon">📋</span>
+                    <div class="privacy-content">
+                        <p><strong>Free Tier Notice:</strong> This result is stored permanently and publicly indexed. This helps AI search engines cite our data and keeps the free tier sustainable. Need private results? <a href="index.html#pricing">Upgrade to Pro ($9/mo)</a> for full privacy control, including the ability to delete results.</p>
+                        <p class="privacy-link">Concerned about a result? <a href="index.html#contact">Submit a takedown request</a>.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
     </main>
 
-    <!-- Check Other Tools Section -->
-    <section class="section section-alt">
-        <div class="container">
-            <div class="section-header">
-                <h2 class="section-title">Check Something Else?</h2>
-                <p class="section-desc">Use our other tools to get a complete picture</p>
-            </div>
-            
-            <div class="tools-grid" id="tools-grid">
-                <a href="checker.html" class="tool-card" data-check-type="username">
-                    <span class="tool-icon">👤</span>
-                    <h4>Account Check</h4>
-                    <p>Check if your account is shadow banned</p>
-                    <span class="tool-arrow">→</span>
-                </a>
-                <a href="post-checker.html" class="tool-card" data-check-type="post">
-                    <span class="tool-icon">📝</span>
-                    <h4>Post URL Check</h4>
-                    <p>Check if a specific post is restricted</p>
-                    <span class="tool-arrow">→</span>
-                </a>
-                <a href="hashtag-checker.html" class="tool-card" data-check-type="hashtag">
-                    <span class="tool-icon">🚫</span>
-                    <h4>Hashtag Checker</h4>
-                    <p>Check if your hashtags are banned</p>
-                    <span class="tool-arrow">→</span>
-                </a>
-            </div>
-            
-            <div class="back-home">
-                <a href="index.html#shadow-ai" class="btn btn-primary btn-lg">Explore Shadow AI Pro →</a>
-            </div>
-        </div>
-    </section>
+    <!-- ===================================
+         FOOTER - Loaded by shared-components.js
+         =================================== -->
 
     <!-- Share Modal -->
     <div id="share-modal" class="modal hidden">
@@ -141,9 +450,9 @@
         <div class="modal-content" style="max-width: 400px;">
             <button class="modal-close">&times;</button>
             <div class="modal-icon">📤</div>
-            <h3 class="modal-title">Share Your Results</h3>
+            <h3 class="modal-title">Share This Result</h3>
             <div class="modal-body">
-                <p style="margin-bottom: var(--space-lg); text-align: center;">Invite others to check their accounts!</p>
+                <p style="margin-bottom: var(--space-lg); text-align: center;">This result has a permanent, shareable URL.</p>
                 
                 <div style="display: flex; flex-direction: column; gap: var(--space-sm);">
                     <button class="btn btn-primary btn-full" id="share-modal-twitter">
@@ -154,52 +463,20 @@
                         <span>f</span>
                         <span>Share on Facebook</span>
                     </button>
-                    <button class="btn btn-secondary btn-full" id="share-modal-telegram">
-                        <span>✈️</span>
-                        <span>Share on Telegram</span>
+                    <button class="btn btn-secondary btn-full" id="share-modal-linkedin">
+                        <span>in</span>
+                        <span>Share on LinkedIn</span>
                     </button>
                     <button class="btn btn-secondary btn-full" id="share-modal-copy">
                         <span>📋</span>
-                        <span>Copy Link</span>
+                        <span>Copy Permanent URL</span>
                     </button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- 5-Factor Engine Info Modal -->
-    <div id="engine-info-modal" class="modal hidden">
-        <div class="modal-overlay"></div>
-        <div class="modal-content">
-            <button class="modal-close">&times;</button>
-            <div class="modal-icon">🧠</div>
-            <h3 class="modal-title">Our 5-Factor Detection Engine</h3>
-            <div class="modal-body">
-                <p class="modal-intro">We combine <strong>5 detection factors</strong> to deliver the most accurate shadow ban analysis:</p>
-                
-                <ul class="engine-factors" id="modal-engine-factors">
-                    <!-- Populated by JS based on check type -->
-                </ul>
-                
-                <div class="modal-tech-note">
-                    <h4>💡 How We Calculate Your Score</h4>
-                    <p>Each active factor contributes signals that our engine combines into your final Shadow Ban Probability Score. More factors = more accurate results.</p>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-primary btn-lg" onclick="document.getElementById('engine-info-modal').classList.add('hidden'); document.body.style.overflow = '';">Got It!</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- ===================================
-         SHARED COMPONENTS (Loaded by shared-components.js):
-         - Footer
-         - Cookie Popup
-         - Back to Top Button
-         =================================== -->
-
-    <!-- Scripts - platforms.js loads FIRST -->
+    <!-- Scripts -->
     <script src="js/platforms.js"></script>
     <script src="js/shared-components.js"></script>
     <script src="js/main.js"></script>

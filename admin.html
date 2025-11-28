@@ -22,7 +22,6 @@
             try {
                 const data = JSON.parse(session);
                 if (!data.loggedIn || (!data.isAdmin && data.role !== 'admin')) {
-                    // Not admin - redirect appropriately
                     if (data.isAgency || data.role === 'agency') {
                         window.location.href = 'agency.html';
                     } else {
@@ -54,7 +53,7 @@
                 <a href="#messages" class="nav-item" data-section="messages">
                     <span class="nav-icon">✉️</span>
                     <span>Messages</span>
-                    <span class="nav-badge" id="nav-unread">5</span>
+                    <span class="nav-badge" id="nav-unread">3</span>
                 </a>
                 <a href="#chats" class="nav-item" data-section="chats">
                     <span class="nav-icon">💬</span>
@@ -138,8 +137,8 @@
                     <button class="quick-btn" onclick="switchSection('messages')">
                         <span>✉️</span> View Messages
                     </button>
-                    <button class="quick-btn" onclick="window.ShadowAI && window.ShadowAI.open()">
-                        <span>🤖</span> Shadow AI
+                    <button class="quick-btn" onclick="switchSection('chats')">
+                        <span>💬</span> Live Chats
                     </button>
                     <button class="quick-btn" onclick="switchSection('api-keys')">
                         <span>🔑</span> API Keys
@@ -152,37 +151,8 @@
                             <h2>✉️ Recent Messages</h2>
                             <button class="link-btn" onclick="switchSection('messages')">View All →</button>
                         </div>
-                        <div class="card-body">
-                            <div class="message-item unread">
-                                <div class="message-avatar">👩</div>
-                                <div class="message-content">
-                                    <div class="message-header">
-                                        <span class="message-name">Sarah Mitchell</span>
-                                        <span class="message-time">10 min ago</span>
-                                    </div>
-                                    <p class="message-preview">Hi, I think my Instagram account is shadow banned...</p>
-                                </div>
-                            </div>
-                            <div class="message-item unread">
-                                <div class="message-avatar">👨</div>
-                                <div class="message-content">
-                                    <div class="message-header">
-                                        <span class="message-name">Mike Johnson</span>
-                                        <span class="message-time">1 hour ago</span>
-                                    </div>
-                                    <p class="message-preview">Thanks for the help yesterday! My TikTok account is back...</p>
-                                </div>
-                            </div>
-                            <div class="message-item">
-                                <div class="message-avatar">👩‍🦰</div>
-                                <div class="message-content">
-                                    <div class="message-header">
-                                        <span class="message-name">Emma Davis</span>
-                                        <span class="message-time">2 hours ago</span>
-                                    </div>
-                                    <p class="message-preview">I upgraded to Pro but I can't see the new features...</p>
-                                </div>
-                            </div>
+                        <div class="card-body" id="dashboard-messages">
+                            <!-- Populated by JS -->
                         </div>
                     </div>
                     
@@ -191,23 +161,8 @@
                             <h2>💬 Active Chats</h2>
                             <button class="link-btn" onclick="switchSection('chats')">View All →</button>
                         </div>
-                        <div class="card-body">
-                            <div class="chat-item">
-                                <div class="chat-avatar">👩<span class="online-dot" style="position: absolute; bottom: 0; right: 0; width: 8px; height: 8px; background: var(--success); border-radius: 50%;"></span></div>
-                                <div class="chat-info">
-                                    <div class="chat-name">Sarah Mitchell</div>
-                                    <div class="chat-preview">Typing...</div>
-                                </div>
-                                <span class="chat-time">now</span>
-                            </div>
-                            <div class="chat-item">
-                                <div class="chat-avatar">👨‍🎤</div>
-                                <div class="chat-info">
-                                    <div class="chat-name">David Park</div>
-                                    <div class="chat-preview">How long does recovery usually take?</div>
-                                </div>
-                                <span class="chat-time">5 min ago</span>
-                            </div>
+                        <div class="card-body" id="dashboard-chats">
+                            <!-- Populated by JS -->
                         </div>
                     </div>
                 </div>
@@ -224,46 +179,27 @@
                     <div class="card list-panel">
                         <div class="card-header">
                             <h2>📥 Inbox</h2>
-                            <span class="badge warning">5 unread</span>
+                            <span class="badge warning" id="unread-badge">3 unread</span>
                         </div>
                         <div class="card-body" id="messages-list">
-                            <div class="message-item unread">
-                                <div class="message-avatar">👩</div>
-                                <div class="message-content">
-                                    <div class="message-header">
-                                        <span class="message-name">Sarah Mitchell</span>
-                                        <span class="message-time">10 min ago</span>
-                                    </div>
-                                    <p class="message-preview">Hi, I think my Instagram account is shadow banned...</p>
-                                </div>
-                            </div>
-                            <div class="message-item unread">
-                                <div class="message-avatar">👨</div>
-                                <div class="message-content">
-                                    <div class="message-header">
-                                        <span class="message-name">Mike Johnson</span>
-                                        <span class="message-time">1 hour ago</span>
-                                    </div>
-                                    <p class="message-preview">Thanks for the help yesterday!</p>
-                                </div>
-                            </div>
+                            <!-- Populated by JS -->
                         </div>
                     </div>
                     
                     <div class="card detail-panel">
                         <div class="card-header">
-                            <h2>📧 Select a message</h2>
+                            <h2 id="message-detail-title">📧 Select a message</h2>
                         </div>
                         <div class="chat-window">
-                            <div class="chat-messages">
+                            <div class="chat-messages" id="message-chat-area">
                                 <div class="empty-state">
                                     <div class="empty-icon">📧</div>
                                     <p>Select a message to view and reply</p>
                                 </div>
                             </div>
                             <div class="chat-input-area">
-                                <input type="text" placeholder="Type your reply..." disabled>
-                                <button class="send-btn" disabled>Send</button>
+                                <input type="text" placeholder="Type your reply..." id="message-reply-input" disabled>
+                                <button class="send-btn" id="message-reply-btn" disabled>Send</button>
                             </div>
                         </div>
                     </div>
@@ -281,42 +217,27 @@
                     <div class="card list-panel">
                         <div class="card-header">
                             <h2>🟢 Online Now</h2>
-                            <span class="badge success">2 online</span>
+                            <span class="badge success" id="online-badge">2 online</span>
                         </div>
-                        <div class="card-body">
-                            <div class="chat-item">
-                                <div class="chat-avatar">👩</div>
-                                <div class="chat-info">
-                                    <div class="chat-name">Sarah Mitchell</div>
-                                    <div class="chat-preview">Typing...</div>
-                                </div>
-                                <span class="chat-time">now</span>
-                            </div>
-                            <div class="chat-item">
-                                <div class="chat-avatar">👨‍🎤</div>
-                                <div class="chat-info">
-                                    <div class="chat-name">David Park</div>
-                                    <div class="chat-preview">How long does recovery take?</div>
-                                </div>
-                                <span class="chat-time">5 min ago</span>
-                            </div>
+                        <div class="card-body" id="chats-list">
+                            <!-- Populated by JS -->
                         </div>
                     </div>
                     
                     <div class="card detail-panel">
                         <div class="card-header">
-                            <h2>💬 Select a chat</h2>
+                            <h2 id="chat-detail-title">💬 Select a chat</h2>
                         </div>
                         <div class="chat-window">
-                            <div class="chat-messages">
+                            <div class="chat-messages" id="live-chat-area">
                                 <div class="empty-state">
                                     <div class="empty-icon">💬</div>
                                     <p>Select a conversation to start chatting</p>
                                 </div>
                             </div>
                             <div class="chat-input-area">
-                                <input type="text" placeholder="Type your reply..." disabled>
-                                <button class="send-btn" disabled>Send</button>
+                                <input type="text" placeholder="Type your reply..." id="chat-reply-input" disabled>
+                                <button class="send-btn" id="chat-reply-btn" disabled>Send</button>
                             </div>
                         </div>
                     </div>
@@ -340,11 +261,11 @@
                         <p>Pro Subscribers</p>
                     </div>
                     <div class="stat-card">
-                        <h3>18</h3>
-                        <p>Premium</p>
+                        <h3>8</h3>
+                        <p>Agency</p>
                     </div>
                     <div class="stat-card">
-                        <h3>96</h3>
+                        <h3>106</h3>
                         <p>Free Users</p>
                     </div>
                 </div>
@@ -379,7 +300,7 @@
                                     <tr>
                                         <td><div class="user-row-avatar"><div class="user-avatar">👤</div><span>Mike Johnson</span></div></td>
                                         <td>mike.j@outlook.com</td>
-                                        <td><span class="plan-badge starter">Starter</span></td>
+                                        <td><span class="plan-badge free">Free</span></td>
                                         <td>Nov 18, 2025</td>
                                         <td><span class="status-badge active">Active</span></td>
                                         <td><button class="action-btn">View</button><button class="action-btn">Email</button></td>
@@ -387,8 +308,16 @@
                                     <tr>
                                         <td><div class="user-row-avatar"><div class="user-avatar">👤</div><span>Emma Davis</span></div></td>
                                         <td>emma.d@yahoo.com</td>
-                                        <td><span class="plan-badge premium">Premium</span></td>
+                                        <td><span class="plan-badge pro">Pro</span></td>
                                         <td>Nov 15, 2025</td>
+                                        <td><span class="status-badge active">Active</span></td>
+                                        <td><button class="action-btn">View</button><button class="action-btn">Email</button></td>
+                                    </tr>
+                                    <tr>
+                                        <td><div class="user-row-avatar"><div class="user-avatar">👤</div><span>Demo Agency</span></div></td>
+                                        <td>agency@test.com</td>
+                                        <td><span class="plan-badge premium">Agency</span></td>
+                                        <td>Nov 10, 2025</td>
                                         <td><span class="status-badge active">Active</span></td>
                                         <td><button class="action-btn">View</button><button class="action-btn">Email</button></td>
                                     </tr>
@@ -412,7 +341,7 @@
                         <p>Monthly Revenue</p>
                     </div>
                     <div class="stat-card">
-                        <h3>60</h3>
+                        <h3>50</h3>
                         <p>Active Subscribers</p>
                     </div>
                     <div class="stat-card">
@@ -492,7 +421,7 @@
                                 <label>API Key</label>
                                 <div class="input-group">
                                     <input type="password" id="api-anthropic" class="input" placeholder="sk-ant-...">
-                                    <button class="icon-btn">👁️</button>
+                                    <button class="icon-btn" onclick="togglePassword('api-anthropic')">👁️</button>
                                 </div>
                             </div>
                             <div class="config-field">
@@ -503,7 +432,7 @@
                                     <option value="claude-3-haiku-20240307">Claude 3 Haiku</option>
                                 </select>
                             </div>
-                            <button class="primary-btn">Save & Test</button>
+                            <button class="primary-btn" onclick="showToast('✅', 'API key saved!')">Save & Test</button>
                         </div>
                     </div>
                     
@@ -518,11 +447,11 @@
                             <div class="config-field">
                                 <label>Bearer Token</label>
                                 <div class="input-group">
-                                    <input type="password" class="input" placeholder="Bearer token...">
-                                    <button class="icon-btn">👁️</button>
+                                    <input type="password" id="api-twitter" class="input" placeholder="Bearer token...">
+                                    <button class="icon-btn" onclick="togglePassword('api-twitter')">👁️</button>
                                 </div>
                             </div>
-                            <button class="primary-btn">Save & Test</button>
+                            <button class="primary-btn" onclick="showToast('✅', 'API key saved!')">Save & Test</button>
                         </div>
                     </div>
                     
@@ -537,11 +466,11 @@
                             <div class="config-field">
                                 <label>Client ID</label>
                                 <div class="input-group">
-                                    <input type="password" class="input" placeholder="Client ID...">
-                                    <button class="icon-btn">👁️</button>
+                                    <input type="password" id="api-reddit" class="input" placeholder="Client ID...">
+                                    <button class="icon-btn" onclick="togglePassword('api-reddit')">👁️</button>
                                 </div>
                             </div>
-                            <button class="primary-btn">Save & Test</button>
+                            <button class="primary-btn" onclick="showToast('✅', 'API key saved!')">Save & Test</button>
                         </div>
                     </div>
                 </div>
@@ -654,7 +583,7 @@
                                 <input type="password" class="input" placeholder="••••••••">
                             </div>
                             <div class="card-actions">
-                                <button class="primary-btn">Save Profile</button>
+                                <button class="primary-btn" onclick="showToast('✅', 'Profile saved!')">Save Profile</button>
                             </div>
                         </div>
                     </div>
@@ -666,7 +595,7 @@
                         <div class="card-body">
                             <div class="config-field">
                                 <label>Support Email</label>
-                                <input type="email" class="input" value="andrew@ghost081280.com">
+                                <input type="email" class="input" value="support@shadowbancheck.io">
                             </div>
                             <div class="toggle-row">
                                 <label>Maintenance Mode</label>
@@ -677,7 +606,7 @@
                             </div>
                             <p style="font-size: 0.8125rem; color: var(--text-muted); margin-top: 0.75rem;">When enabled, users will see a maintenance notification.</p>
                             <div class="card-actions">
-                                <button class="primary-btn">Save Settings</button>
+                                <button class="primary-btn" onclick="showToast('✅', 'Settings saved!')">Save Settings</button>
                             </div>
                         </div>
                     </div>
@@ -704,7 +633,7 @@
                                 <label class="toggle"><input type="checkbox" checked><span class="slider"></span></label>
                             </div>
                             <div class="card-actions">
-                                <button class="primary-btn">Save Notifications</button>
+                                <button class="primary-btn" onclick="showToast('✅', 'Notifications saved!')">Save Notifications</button>
                             </div>
                         </div>
                     </div>
@@ -717,7 +646,7 @@
                             <div style="margin-bottom: 1rem;">
                                 <div style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid var(--border);">
                                     <span>Version</span>
-                                    <span>1.0.0</span>
+                                    <span>2.0.0</span>
                                 </div>
                                 <div style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid var(--border);">
                                     <span>Environment</span>
@@ -725,12 +654,12 @@
                                 </div>
                                 <div style="display: flex; justify-content: space-between; padding: 0.5rem 0;">
                                     <span>Last Deploy</span>
-                                    <span>Nov 27, 2025</span>
+                                    <span>Nov 28, 2025</span>
                                 </div>
                             </div>
                             <div class="card-actions">
-                                <button class="secondary-btn">Clear Cache</button>
-                                <button class="secondary-btn">View Logs</button>
+                                <button class="secondary-btn" onclick="showToast('✅', 'Cache cleared!')">Clear Cache</button>
+                                <button class="secondary-btn" onclick="showToast('📋', 'Logs opened in new tab')">View Logs</button>
                             </div>
                         </div>
                     </div>
@@ -739,11 +668,16 @@
             
             <!-- FOOTER -->
             <footer class="admin-footer">
-                <span>© 2025 ShadowBanCheck.io</span>
-                <a href="index.html">Home</a>
-                <a href="index.html#faq">FAQ</a>
-                <a href="#">Terms</a>
-                <a href="#">Privacy</a>
+                <div class="footer-content">
+                    <span class="footer-copyright">© 2025 ShadowBanCheck.io</span>
+                    <nav class="footer-links">
+                        <a href="index.html">Home</a>
+                        <a href="index.html#faq">FAQ</a>
+                        <a href="terms.html">Terms of Service</a>
+                        <a href="privacy.html">Privacy Policy</a>
+                        <a href="mailto:support@shadowbancheck.io">Support</a>
+                    </nav>
+                </div>
             </footer>
         </main>
     </div>
@@ -754,8 +688,10 @@
         <span id="toast-message">Success</span>
     </div>
     
-    <!-- Scripts -->
-    <script src="js/dashboard-shared.js"></script>
+    <!-- Dashboard JS -->
+    <script src="js/admin-dashboard.js"></script>
+    
+    <!-- Shadow AI Chatbot -->
     <script src="js/shadow-ai.js"></script>
 </body>
 </html>

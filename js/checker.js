@@ -113,27 +113,19 @@ function initSupportedPlatforms() {
     const container = document.getElementById('supported-platform-icons');
     if (!container || typeof PLATFORMS === 'undefined') return;
     
-    const livePlatforms = PLATFORMS.filter(p => p.status === 'live');
-    const comingSoonCount = PLATFORMS.filter(p => p.status !== 'live').length;
+    // Show all 5 platforms (2 live, 3 coming soon)
+    const allPlatforms = [...PLATFORMS];
     
-    // Sort - prioritize Twitter/X and Reddit
-    const priorityOrder = ['twitter', 'reddit'];
-    livePlatforms.sort((a, b) => {
-        const aIndex = priorityOrder.indexOf(a.id);
-        const bIndex = priorityOrder.indexOf(b.id);
-        if (aIndex !== -1 && bIndex !== -1) return aIndex - bIndex;
-        if (aIndex !== -1) return -1;
-        if (bIndex !== -1) return 1;
+    // Sort - live first, then coming soon
+    allPlatforms.sort((a, b) => {
+        if (a.status === 'live' && b.status !== 'live') return -1;
+        if (a.status !== 'live' && b.status === 'live') return 1;
         return 0;
     });
     
-    let html = livePlatforms.map(p => `
-        <span class="platform-chip" data-platform="${p.id}" title="${p.name}">${p.icon}</span>
+    const html = allPlatforms.map(p => `
+        <span class="platform-chip ${p.status === 'soon' ? 'coming' : ''}" data-platform="${p.id}" title="${p.name}${p.status === 'soon' ? ' (Coming Soon)' : ''}">${p.icon}</span>
     `).join('');
-    
-    if (comingSoonCount > 0) {
-        html += `<span class="platform-chip coming" id="show-more-platforms" title="View all platforms">+${comingSoonCount}</span>`;
-    }
     
     container.innerHTML = html;
     
@@ -141,8 +133,6 @@ function initSupportedPlatforms() {
     container.querySelectorAll('.platform-chip[data-platform]').forEach(chip => {
         chip.addEventListener('click', () => showPlatformInfoModal(chip.dataset.platform));
     });
-    
-    document.getElementById('show-more-platforms')?.addEventListener('click', showAllPlatformsModal);
 }
 
 function handlePlatformChange(platformId) {
@@ -634,72 +624,6 @@ function showPlatformInfoModal(platformId) {
             <p style="color: var(--text-muted);">We're working to add ${platform.name} to our detection engine.</p>
         `;
     }
-    
-    modal.classList.remove('hidden');
-    document.body.style.overflow = 'hidden';
-}
-
-function showAllPlatformsModal() {
-    const livePlatforms = PLATFORMS.filter(p => p.status === 'live');
-    const comingSoon = PLATFORMS.filter(p => p.status !== 'live');
-    
-    let modal = document.getElementById('all-platforms-modal');
-    if (!modal) {
-        modal = document.createElement('div');
-        modal.id = 'all-platforms-modal';
-        modal.className = 'modal hidden';
-        modal.innerHTML = `
-            <div class="modal-overlay"></div>
-            <div class="modal-content">
-                <button class="modal-close">&times;</button>
-                <div class="modal-icon">🌐</div>
-                <h3 class="modal-title">Account Probability Checker - Platforms</h3>
-                <div class="modal-body" id="all-platforms-body"></div>
-                <div class="modal-footer">
-                    <button class="btn btn-primary btn-lg" onclick="document.getElementById('all-platforms-modal').classList.add('hidden'); document.body.style.overflow = '';">Got It!</button>
-                </div>
-            </div>
-        `;
-        document.body.appendChild(modal);
-        
-        modal.querySelector('.modal-close').addEventListener('click', () => {
-            modal.classList.add('hidden');
-            document.body.style.overflow = '';
-        });
-        modal.querySelector('.modal-overlay').addEventListener('click', () => {
-            modal.classList.add('hidden');
-            document.body.style.overflow = '';
-        });
-    }
-    
-    const bodyEl = document.getElementById('all-platforms-body');
-    let html = '<div class="all-platforms-list">';
-    
-    html += '<div class="platforms-group"><h4 style="color: var(--success); margin-bottom: var(--space-sm);">✓ Live Now</h4>';
-    html += '<div class="platforms-grid">';
-    livePlatforms.forEach(p => {
-        html += `<div class="platform-item" data-platform="${p.id}" style="cursor: pointer;"><span class="platform-item-icon">${p.icon}</span><span>${p.name}</span></div>`;
-    });
-    html += '</div></div>';
-    
-    if (comingSoon.length > 0) {
-        html += '<div class="platforms-group" style="margin-top: var(--space-lg);"><h4 style="color: var(--warning); margin-bottom: var(--space-sm);">◷ Coming Soon</h4>';
-        html += '<div class="platforms-grid">';
-        comingSoon.forEach(p => {
-            html += `<div class="platform-item coming"><span class="platform-item-icon">${p.icon}</span><span>${p.name}</span></div>`;
-        });
-        html += '</div></div>';
-    }
-    
-    html += '</div>';
-    bodyEl.innerHTML = html;
-    
-    bodyEl.querySelectorAll('.platform-item[data-platform]').forEach(item => {
-        item.addEventListener('click', () => {
-            modal.classList.add('hidden');
-            showPlatformInfoModal(item.dataset.platform);
-        });
-    });
     
     modal.classList.remove('hidden');
     document.body.style.overflow = 'hidden';

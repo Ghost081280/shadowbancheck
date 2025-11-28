@@ -87,6 +87,63 @@
                             placeholder="https://twitter.com/username/status/123456789..."
                             aria-label="Enter post URL"
                         >
+                        
+                        <!-- Connection Step (Hidden until URL detected) -->
+                        <div class="connection-step hidden" id="connection-step">
+                            <div class="connection-header">
+                                <span class="connection-icon">🔗</span>
+                                <div class="connection-text">
+                                    <strong>Connect for Maximum Accuracy</strong>
+                                    <p>Follow our test account so we can check your in-network visibility</p>
+                                </div>
+                            </div>
+                            
+                            <div class="connection-account" id="connection-account">
+                                <!-- Twitter/X -->
+                                <div class="account-to-follow" id="follow-twitter" data-platform="twitter">
+                                    <div class="account-info">
+                                        <span class="account-platform-icon">𝕏</span>
+                                        <div>
+                                            <strong>@ghost081280</strong>
+                                            <span class="account-label">ShadowBanCheck Test Account</span>
+                                        </div>
+                                    </div>
+                                    <a href="https://twitter.com/intent/follow?screen_name=ghost081280" target="_blank" rel="noopener" class="btn-follow">
+                                        <span>Follow</span>
+                                        <span class="follow-icon">→</span>
+                                    </a>
+                                </div>
+                                
+                                <!-- Reddit (placeholder for now) -->
+                                <div class="account-to-follow hidden" id="follow-reddit" data-platform="reddit">
+                                    <div class="account-info">
+                                        <span class="account-platform-icon">🤖</span>
+                                        <div>
+                                            <strong>u/ShadowBanCheck</strong>
+                                            <span class="account-label">ShadowBanCheck Test Account</span>
+                                        </div>
+                                    </div>
+                                    <a href="https://reddit.com/user/ShadowBanCheck" target="_blank" rel="noopener" class="btn-follow">
+                                        <span>Follow</span>
+                                        <span class="follow-icon">→</span>
+                                    </a>
+                                </div>
+                            </div>
+                            
+                            <label class="connection-confirm">
+                                <input type="checkbox" id="connection-confirmed">
+                                <span class="checkmark"></span>
+                                <span class="confirm-text">I've followed the account (or I'll skip this for basic results)</span>
+                            </label>
+                            
+                            <div class="connection-why">
+                                <details>
+                                    <summary>Why does this help?</summary>
+                                    <p>When you follow us, we can test if your content is visible <strong>to your followers</strong> vs <strong>non-followers</strong> vs <strong>logged-out users</strong>. This multi-angle approach catches shadow bans that single-check tools miss. Without the connection, we can still run tests—but with fewer data points.</p>
+                                </details>
+                            </div>
+                        </div>
+                        
                         <button type="submit" class="btn-power-analyze" id="power-analyze-btn">
                             <span class="btn-text">Run Power Check</span>
                             <span class="btn-icon">⚡</span>
@@ -117,6 +174,99 @@
                     <p>Supported platforms:</p>
                     <div class="platform-icons" id="power-platform-icons">
                         <!-- Populated by JS -->
+                    </div>
+                </div>
+                
+                <!-- Engine Animation (Shows during scan) -->
+                <div class="engine-animation hidden" id="engine-animation">
+                    <div class="engine-animation-card">
+                        <!-- Phase 1: Engine Starting -->
+                        <div class="engine-phase" id="engine-phase-1">
+                            <div class="engine-header">
+                                <span class="engine-icon-animated">⚙️</span>
+                                <div>
+                                    <h3>5-Factor Detection Engine</h3>
+                                    <p class="engine-status">Initializing scan sequence...</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Terminal-style code output -->
+                            <div class="engine-terminal">
+                                <div class="terminal-header">
+                                    <span class="terminal-dot red"></span>
+                                    <span class="terminal-dot yellow"></span>
+                                    <span class="terminal-dot green"></span>
+                                    <span class="terminal-title">shadowban-engine v1.0</span>
+                                </div>
+                                <div class="terminal-body" id="terminal-output">
+                                    <!-- Lines added by JS animation -->
+                                </div>
+                            </div>
+                            
+                            <!-- Factor progress indicators -->
+                            <div class="engine-factors-progress">
+                                <div class="factor-progress" id="factor-1-progress">
+                                    <span class="factor-icon">🔌</span>
+                                    <span class="factor-name">Platform APIs</span>
+                                    <span class="factor-status pending">○</span>
+                                </div>
+                                <div class="factor-progress" id="factor-2-progress">
+                                    <span class="factor-icon">🔍</span>
+                                    <span class="factor-name">Web Analysis</span>
+                                    <span class="factor-status pending">○</span>
+                                </div>
+                                <div class="factor-progress" id="factor-3-progress">
+                                    <span class="factor-icon">📊</span>
+                                    <span class="factor-name">Historical Data</span>
+                                    <span class="factor-status pending">○</span>
+                                </div>
+                                <div class="factor-progress" id="factor-4-progress">
+                                    <span class="factor-icon">#️⃣</span>
+                                    <span class="factor-name">Hashtag Database</span>
+                                    <span class="factor-status pending">○</span>
+                                </div>
+                                <div class="factor-progress" id="factor-5-progress">
+                                    <span class="factor-icon">🌐</span>
+                                    <span class="factor-name">IP Analysis</span>
+                                    <span class="factor-status pending">○</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Phase 2: AI Analysis -->
+                        <div class="engine-phase hidden" id="engine-phase-2">
+                            <div class="engine-header ai-mode">
+                                <span class="engine-icon-animated">🤖</span>
+                                <div>
+                                    <h3>Shadow AI Analyzing</h3>
+                                    <p class="engine-status">Processing 5-factor data...</p>
+                                </div>
+                            </div>
+                            
+                            <div class="ai-analysis-visual">
+                                <div class="ai-brain">
+                                    <div class="brain-pulse"></div>
+                                    <span>🧠</span>
+                                </div>
+                                <div class="ai-processing-text">
+                                    <span id="ai-processing-message">Identifying patterns...</span>
+                                </div>
+                            </div>
+                            
+                            <div class="ai-data-flow">
+                                <div class="data-stream">
+                                    <span class="data-label">Raw Data</span>
+                                    <div class="data-dots">
+                                        <span></span><span></span><span></span>
+                                    </div>
+                                    <span class="data-label">Analysis</span>
+                                    <div class="data-dots">
+                                        <span></span><span></span><span></span>
+                                    </div>
+                                    <span class="data-label">Results</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 
@@ -729,6 +879,202 @@
             <div class="cta-buttons">
                 <a href="#pricing" class="btn btn-primary btn-lg">Get Pro - $9/mo</a>
                 <a href="checker.html" class="btn btn-ghost">Try Free Tools</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Under the Hood - Technical Deep Dive -->
+    <section class="engine-deep-dive section" id="how-it-works">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Under the Hood</h2>
+                <p class="section-desc">A detection engine built for accuracy, not guesswork</p>
+            </div>
+            
+            <div class="engine-intro">
+                <p class="engine-lead">Other "shadow ban checkers" run one simple test and call it a day. We built a <strong>real detection engine</strong> that attacks the problem from 5 different angles, cross-references multiple data sources, and uses AI to synthesize findings into actionable intelligence.</p>
+            </div>
+            
+            <!-- 5-Factor Grid with Technical Details -->
+            <div class="engine-factors-grid">
+                <!-- Factor 1: Platform APIs -->
+                <div class="engine-factor-card">
+                    <div class="factor-card-header">
+                        <span class="factor-number">01</span>
+                        <div class="factor-icon-wrap">🔌</div>
+                        <h3>Platform APIs</h3>
+                        <button class="factor-info-btn" data-factor="platform-api" aria-label="Technical details">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M12 16V12M12 8H12.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                        </button>
+                    </div>
+                    <p class="factor-desc">Direct integration with official platform APIs where available. We query account status, visibility flags, and restriction indicators straight from the source.</p>
+                    <div class="factor-tech-preview">
+                        <code>GET /users/:id/status</code>
+                        <span class="tech-tag">Twitter API v2</span>
+                        <span class="tech-tag">Reddit API</span>
+                    </div>
+                </div>
+                
+                <!-- Factor 2: Web Analysis -->
+                <div class="engine-factor-card">
+                    <div class="factor-card-header">
+                        <span class="factor-number">02</span>
+                        <div class="factor-icon-wrap">🔍</div>
+                        <h3>Web Analysis</h3>
+                        <button class="factor-info-btn" data-factor="web-analysis" aria-label="Technical details">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M12 16V12M12 8H12.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                        </button>
+                    </div>
+                    <p class="factor-desc">Automated browser testing from multiple vantage points. We check search visibility logged-in, logged-out, private browsing, and from different network perspectives.</p>
+                    <div class="factor-tech-preview">
+                        <code>Playwright + Headless Chrome</code>
+                        <span class="tech-tag">Multi-browser</span>
+                        <span class="tech-tag">Geo-distributed</span>
+                    </div>
+                </div>
+                
+                <!-- Factor 3: Historical Data -->
+                <div class="engine-factor-card">
+                    <div class="factor-card-header">
+                        <span class="factor-number">03</span>
+                        <div class="factor-icon-wrap">📊</div>
+                        <h3>Historical Data</h3>
+                        <button class="factor-info-btn" data-factor="historical" aria-label="Technical details">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M12 16V12M12 8H12.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                        </button>
+                    </div>
+                    <p class="factor-desc">We track your account over time to establish baselines. Sudden engagement drops, visibility changes, and pattern anomalies are detected by comparing against your historical norm.</p>
+                    <div class="factor-tech-preview">
+                        <code>PostgreSQL + Time-series</code>
+                        <span class="tech-tag">Trend analysis</span>
+                        <span class="tech-tag">Anomaly detection</span>
+                    </div>
+                </div>
+                
+                <!-- Factor 4: Hashtag Database -->
+                <div class="engine-factor-card">
+                    <div class="factor-card-header">
+                        <span class="factor-number">04</span>
+                        <div class="factor-icon-wrap">#️⃣</div>
+                        <h3>Hashtag Intelligence</h3>
+                        <button class="factor-info-btn" data-factor="hashtag-db" aria-label="Technical details">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M12 16V12M12 8H12.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                        </button>
+                    </div>
+                    <p class="factor-desc">Our database of banned, restricted, and low-reach hashtags is updated daily. We scrape platform data, monitor community reports, and verify restrictions in real-time.</p>
+                    <div class="factor-tech-preview">
+                        <code>Daily automated updates</code>
+                        <span class="tech-tag">Growing database</span>
+                        <span class="tech-tag">Multi-platform</span>
+                    </div>
+                </div>
+                
+                <!-- Factor 5: IP Analysis -->
+                <div class="engine-factor-card">
+                    <div class="factor-card-header">
+                        <span class="factor-number">05</span>
+                        <div class="factor-icon-wrap">🌐</div>
+                        <h3>IP Analysis</h3>
+                        <button class="factor-info-btn" data-factor="ip-analysis" aria-label="Technical details">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M12 16V12M12 8H12.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                        </button>
+                    </div>
+                    <p class="factor-desc">We analyze your connection for VPN, proxy, or datacenter detection. Platforms treat these differently—we factor that into your risk assessment.</p>
+                    <div class="factor-tech-preview">
+                        <code>IPQualityScore API</code>
+                        <span class="tech-tag">VPN detection</span>
+                        <span class="tech-tag">Risk scoring</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- The Secret Sauce: Multi-Angle Testing -->
+            <div class="engine-methodology">
+                <div class="methodology-header">
+                    <h3>🎯 Multi-Angle Visibility Testing</h3>
+                    <p>We don't just check once. We check from <strong>every angle</strong> platforms use to hide content.</p>
+                </div>
+                <div class="methodology-angles">
+                    <div class="angle-item">
+                        <span class="angle-icon">👤</span>
+                        <div>
+                            <strong>In-Network Test</strong>
+                            <p>Can your followers see your content?</p>
+                        </div>
+                    </div>
+                    <div class="angle-item">
+                        <span class="angle-icon">👥</span>
+                        <div>
+                            <strong>Out-of-Network Test</strong>
+                            <p>Can non-followers discover you?</p>
+                        </div>
+                    </div>
+                    <div class="angle-item">
+                        <span class="angle-icon">🚪</span>
+                        <div>
+                            <strong>Logged-Out Test</strong>
+                            <p>Visible to the public web?</p>
+                        </div>
+                    </div>
+                    <div class="angle-item">
+                        <span class="angle-icon">🕵️</span>
+                        <div>
+                            <strong>Private Browser Test</strong>
+                            <p>Clean session, no cookies</p>
+                        </div>
+                    </div>
+                    <div class="angle-item">
+                        <span class="angle-icon">🔎</span>
+                        <div>
+                            <strong>Search Visibility Test</strong>
+                            <p>Do you appear in search results?</p>
+                        </div>
+                    </div>
+                    <div class="angle-item">
+                        <span class="angle-icon">🌍</span>
+                        <div>
+                            <strong>Multi-Region Test</strong>
+                            <p>Same results globally?</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- AI Integration -->
+            <div class="engine-ai-section">
+                <div class="ai-section-content">
+                    <div class="ai-badge">🤖 Shadow AI Integration</div>
+                    <h3>Raw Data → Actionable Intelligence</h3>
+                    <p>Our 5-Factor Engine collects the data. Shadow AI makes sense of it. Every scan result is analyzed by our AI to identify patterns humans might miss, explain what's happening in plain English, and provide step-by-step recovery recommendations tailored to your specific situation.</p>
+                    <div class="ai-flow">
+                        <div class="ai-flow-step">
+                            <span>📥</span>
+                            <span>5-Factor Data</span>
+                        </div>
+                        <div class="ai-flow-arrow">→</div>
+                        <div class="ai-flow-step">
+                            <span>🧠</span>
+                            <span>AI Analysis</span>
+                        </div>
+                        <div class="ai-flow-arrow">→</div>
+                        <div class="ai-flow-step">
+                            <span>📋</span>
+                            <span>Your Report</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Tech Stack Credibility -->
+            <div class="tech-stack-bar">
+                <span class="tech-stack-label">Built With:</span>
+                <div class="tech-stack-items">
+                    <span>Node.js</span>
+                    <span>PostgreSQL</span>
+                    <span>Redis</span>
+                    <span>Playwright</span>
+                    <span>Claude AI</span>
+                </div>
             </div>
         </div>
     </section>

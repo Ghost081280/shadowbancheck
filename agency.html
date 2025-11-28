@@ -74,6 +74,10 @@
                     <span class="nav-icon">💬</span>
                     <span>Support</span>
                 </a>
+                <a href="#alerts" class="nav-item" data-section="alerts">
+                    <span class="nav-icon">🔔</span>
+                    <span>Alerts</span>
+                </a>
                 <a href="#team" class="nav-item" data-section="team">
                     <span class="nav-icon">👤</span>
                     <span>Team</span>
@@ -552,6 +556,73 @@
                                 <div class="client-meta">mike@agency.com</div>
                             </div>
                             <span class="badge">Member</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- ALERTS -->
+            <section class="agency-section" id="section-alerts">
+                <div class="agency-header">
+                    <div>
+                        <h1>🔔 Alerts & Notifications</h1>
+                        <span class="header-subtitle">Configure how you're notified about client account status changes</span>
+                    </div>
+                </div>
+                
+                <div class="two-column">
+                    <div class="card">
+                        <div class="card-header">
+                            <h2>📱 Notification Channels</h2>
+                        </div>
+                        <div class="card-body">
+                            <div class="config-field">
+                                <label>📧 Email Address</label>
+                                <input type="email" id="alert-email" class="input" placeholder="agency@example.com">
+                            </div>
+                            <div class="config-field">
+                                <label>📱 Phone Number (for SMS)</label>
+                                <input type="tel" id="alert-phone" class="input" placeholder="+1 555 123 4567">
+                            </div>
+                            <div class="toggle-row">
+                                <span>📧 Email Alerts</span>
+                                <label class="toggle"><input type="checkbox" checked><span class="slider"></span></label>
+                            </div>
+                            <div class="toggle-row">
+                                <span>📱 SMS Alerts</span>
+                                <label class="toggle"><input type="checkbox"><span class="slider"></span></label>
+                            </div>
+                            <div class="card-actions">
+                                <button class="primary-btn" onclick="showToast('✅', 'Settings saved!')">Save Settings</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h2>🔔 Alert Types</h2>
+                        </div>
+                        <div class="card-body">
+                            <div class="toggle-row">
+                                <span>🚫 Client Shadow Ban Detected</span>
+                                <label class="toggle"><input type="checkbox" checked><span class="slider"></span></label>
+                            </div>
+                            <div class="toggle-row">
+                                <span>⚠️ Client Reduced Reach Warning</span>
+                                <label class="toggle"><input type="checkbox" checked><span class="slider"></span></label>
+                            </div>
+                            <div class="toggle-row">
+                                <span>✅ Client Account Restored</span>
+                                <label class="toggle"><input type="checkbox" checked><span class="slider"></span></label>
+                            </div>
+                            <div class="toggle-row">
+                                <span>📋 Dispute Status Update</span>
+                                <label class="toggle"><input type="checkbox" checked><span class="slider"></span></label>
+                            </div>
+                            <div class="toggle-row">
+                                <span>📊 Weekly Summary Report</span>
+                                <label class="toggle"><input type="checkbox"><span class="slider"></span></label>
+                            </div>
                         </div>
                     </div>
                 </div>

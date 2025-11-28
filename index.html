@@ -3,8 +3,46 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ShadowBanCheck.io - Are You Shadow Banned? Free Detection Tools</title>
-    <meta name="description" content="Check if you're shadow banned on Twitter, Instagram, TikTok, Reddit & 22+ platforms. Free AI-powered detection with instant results in 60 seconds.">
+    <title>ShadowBanCheck.io - Calculate Your Shadow Ban Probability | Free Detection Tools</title>
+    <meta name="description" content="Calculate your shadow ban probability on Twitter, Instagram, TikTok, Reddit & 22+ platforms. Our 5-Factor Detection Engine analyzes multiple signals to give you accurate probability scores in 60 seconds.">
+    
+    <!-- Open Graph -->
+    <meta property="og:title" content="ShadowBanCheck.io - Calculate Your Shadow Ban Probability">
+    <meta property="og:description" content="Our 5-Factor Detection Engine analyzes multiple independent signals to calculate your shadow ban probability. Free checks create permanent, citable results.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://shadowbancheck.io">
+    <meta property="og:image" content="https://shadowbancheck.io/og-image.png">
+    
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="ShadowBanCheck.io - Shadow Ban Probability Calculator">
+    <meta name="twitter:description" content="Calculate your shadow ban probability with our 5-Factor Detection Engine. Analyzes platform APIs, web visibility, historical data, hashtags, and IP signals.">
+    
+    <!-- Schema.org for AI citation -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "ShadowBanCheck.io",
+        "description": "Shadow ban probability calculator using 5-Factor Detection Engine",
+        "url": "https://shadowbancheck.io",
+        "applicationCategory": "SocialMediaTool",
+        "operatingSystem": "Web",
+        "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD",
+            "description": "Free tier with permanent public results"
+        },
+        "featureList": [
+            "Platform API integration",
+            "Multi-browser web analysis",
+            "Historical baseline comparison",
+            "Hashtag database cross-reference",
+            "IP and VPN detection"
+        ]
+    }
+    </script>
     
     <!-- Preconnect for performance -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -25,15 +63,15 @@
     <!-- Hero Section -->
     <section class="hero">
         <div class="container">
-            <div class="hero-badge">⚡ 3-in-1 Power Check</div>
-            <h1 class="hero-title"><span class="text-gradient">Complete Shadow Ban Analysis</span></h1>
-            <p class="hero-subtitle">Paste any post URL. We analyze the post visibility, account status, AND hashtag health in one comprehensive scan.</p>
+            <div class="hero-badge">⚡ 5-Factor Detection Engine</div>
+            <h1 class="hero-title"><span class="text-gradient">Calculate Your Shadow Ban Probability</span></h1>
+            <p class="hero-subtitle">Paste any post URL. Our engine analyzes 5 independent signals to calculate the probability your content is being suppressed.</p>
             
             <!-- Power Check - Primary Feature -->
             <div class="power-check">
-                <div class="power-check-card">
+                <div class="power-check-card" id="power-check-card">
                     <!-- Info Button -->
-                    <button class="power-info-btn" id="power-info-btn" aria-label="What we check" type="button">
+                    <button class="power-info-btn" id="power-info-btn" aria-label="How we calculate probability" type="button">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
                             <path d="M12 16V12M12 8H12.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
@@ -46,18 +84,18 @@
                             <span class="power-icon">⚡</span>
                             <div>
                                 <h3>Power Check <span class="power-badge-new">3-in-1</span></h3>
-                                <p>Post + Account + Hashtags analyzed together</p>
+                                <p>Post + Account + Hashtags → Probability Score</p>
                             </div>
                         </div>
                     </div>
                     
-                    <!-- What We Check Preview -->
-                    <div class="power-preview">
+                    <!-- What We Analyze Preview -->
+                    <div class="power-preview" id="power-preview">
                         <div class="preview-item">
                             <span class="preview-icon">🔗</span>
                             <div class="preview-text">
                                 <span class="preview-label">Post Visibility</span>
-                                <span class="preview-desc">Is your content hidden?</span>
+                                <span class="preview-desc">Search & feed presence</span>
                             </div>
                         </div>
                         <div class="preview-divider">+</div>
@@ -65,7 +103,7 @@
                             <span class="preview-icon">👤</span>
                             <div class="preview-text">
                                 <span class="preview-label">Account Status</span>
-                                <span class="preview-desc">Are you restricted?</span>
+                                <span class="preview-desc">Restrictions & flags</span>
                             </div>
                         </div>
                         <div class="preview-divider">+</div>
@@ -73,7 +111,7 @@
                             <span class="preview-icon">#️⃣</span>
                             <div class="preview-text">
                                 <span class="preview-label">Hashtag Health</span>
-                                <span class="preview-desc">Any banned tags?</span>
+                                <span class="preview-desc">Banned tag detection</span>
                             </div>
                         </div>
                     </div>
@@ -87,68 +125,67 @@
                             placeholder="https://twitter.com/username/status/123456789..."
                             aria-label="Enter post URL"
                         >
-                        
-                        <!-- Connection Step (Hidden until URL detected) -->
-                        <div class="connection-step hidden" id="connection-step">
-                            <div class="connection-header">
-                                <span class="connection-icon">🔗</span>
-                                <div class="connection-text">
-                                    <strong>Connect for Maximum Accuracy</strong>
-                                    <p>Follow our test account so we can check your in-network visibility</p>
-                                </div>
-                            </div>
-                            
-                            <div class="connection-account" id="connection-account">
-                                <!-- Twitter/X -->
-                                <div class="account-to-follow" id="follow-twitter" data-platform="twitter">
-                                    <div class="account-info">
-                                        <span class="account-platform-icon">𝕏</span>
-                                        <div>
-                                            <strong>@ghost081280</strong>
-                                            <span class="account-label">ShadowBanCheck Test Account</span>
-                                        </div>
-                                    </div>
-                                    <a href="https://twitter.com/intent/follow?screen_name=ghost081280" target="_blank" rel="noopener" class="btn-follow">
-                                        <span>Follow</span>
-                                        <span class="follow-icon">→</span>
-                                    </a>
-                                </div>
-                                
-                                <!-- Reddit (placeholder for now) -->
-                                <div class="account-to-follow hidden" id="follow-reddit" data-platform="reddit">
-                                    <div class="account-info">
-                                        <span class="account-platform-icon">🤖</span>
-                                        <div>
-                                            <strong>u/ShadowBanCheck</strong>
-                                            <span class="account-label">ShadowBanCheck Test Account</span>
-                                        </div>
-                                    </div>
-                                    <a href="https://reddit.com/user/ShadowBanCheck" target="_blank" rel="noopener" class="btn-follow">
-                                        <span>Follow</span>
-                                        <span class="follow-icon">→</span>
-                                    </a>
-                                </div>
-                            </div>
-                            
-                            <label class="connection-confirm">
-                                <input type="checkbox" id="connection-confirmed">
-                                <span class="checkmark"></span>
-                                <span class="confirm-text">I've followed the account (or I'll skip this for basic results)</span>
-                            </label>
-                            
-                            <div class="connection-why">
-                                <details>
-                                    <summary>Why does this help?</summary>
-                                    <p>When you follow us, we can test if your content is visible <strong>to your followers</strong> vs <strong>non-followers</strong> vs <strong>logged-out users</strong>. This multi-angle approach catches shadow bans that single-check tools miss. Without the connection, we can still run tests—but with fewer data points.</p>
-                                </details>
-                            </div>
-                        </div>
-                        
                         <button type="submit" class="btn-power-analyze" id="power-analyze-btn">
-                            <span class="btn-text">Run Power Check</span>
+                            <span class="btn-text">Calculate Probability</span>
                             <span class="btn-icon">⚡</span>
                         </button>
                     </form>
+                    
+                    <!-- Connection Step (Shows after URL detected) -->
+                    <div class="connection-step hidden" id="connection-step">
+                        <div class="connection-header">
+                            <span class="connection-icon">🔗</span>
+                            <div class="connection-text">
+                                <strong>Connect for Maximum Accuracy</strong>
+                                <p>Follow our test account so we can check your in-network visibility</p>
+                            </div>
+                        </div>
+                        
+                        <div class="connection-account" id="connection-account">
+                            <!-- Twitter/X -->
+                            <div class="account-to-follow" id="follow-twitter" data-platform="twitter">
+                                <div class="account-info">
+                                    <span class="account-platform-icon">𝕏</span>
+                                    <div>
+                                        <strong>@ghost081280</strong>
+                                        <span class="account-label">ShadowBanCheck Test Account</span>
+                                    </div>
+                                </div>
+                                <a href="https://twitter.com/intent/follow?screen_name=ghost081280" target="_blank" rel="noopener" class="btn-follow">
+                                    <span>Follow</span>
+                                    <span class="follow-icon">→</span>
+                                </a>
+                            </div>
+                            
+                            <!-- Reddit (placeholder) -->
+                            <div class="account-to-follow hidden" id="follow-reddit" data-platform="reddit">
+                                <div class="account-info">
+                                    <span class="account-platform-icon">🤖</span>
+                                    <div>
+                                        <strong>u/ShadowBanCheck</strong>
+                                        <span class="account-label">ShadowBanCheck Test Account</span>
+                                    </div>
+                                </div>
+                                <a href="https://reddit.com/user/ShadowBanCheck" target="_blank" rel="noopener" class="btn-follow">
+                                    <span>Follow</span>
+                                    <span class="follow-icon">→</span>
+                                </a>
+                            </div>
+                        </div>
+                        
+                        <label class="connection-confirm">
+                            <input type="checkbox" id="connection-confirmed">
+                            <span class="checkmark"></span>
+                            <span class="confirm-text">I've followed (or skip for basic analysis)</span>
+                        </label>
+                        
+                        <div class="connection-why">
+                            <details>
+                                <summary>Why does this improve accuracy?</summary>
+                                <p>When you follow us, we can test if your content is visible <strong>to followers</strong> vs <strong>non-followers</strong> vs <strong>logged-out users</strong>. This multi-angle approach catches restrictions that single-check tools miss. Without the connection, we run fewer tests but still calculate a probability score.</p>
+                            </details>
+                        </div>
+                    </div>
                     
                     <!-- IP Display -->
                     <div class="power-ip-wrapper">
@@ -163,9 +200,14 @@
                     
                     <!-- Features -->
                     <div class="power-features">
-                        <span>✓ 3 checks in 1 scan</span>
+                        <span>✓ 5-factor analysis</span>
                         <span>✓ Results in 60 seconds</span>
-                        <span>✓ Free: 1/day (or 3 individual)</span>
+                        <span>✓ Permanent shareable URL</span>
+                    </div>
+                    
+                    <!-- Engine Badge -->
+                    <div class="power-engine-badge">
+                        <span>🧠 Powered by 5-Factor Detection Engine</span>
                     </div>
                 </div>
                 
@@ -177,7 +219,7 @@
                     </div>
                 </div>
                 
-                <!-- Engine Animation (Shows during scan) -->
+                <!-- Engine Animation (Shows during scan - before redirect) -->
                 <div class="engine-animation hidden" id="engine-animation">
                     <div class="engine-animation-card">
                         <!-- Phase 1: Engine Starting -->
@@ -186,11 +228,11 @@
                                 <span class="engine-icon-animated">⚙️</span>
                                 <div>
                                     <h3>5-Factor Detection Engine</h3>
-                                    <p class="engine-status">Initializing scan sequence...</p>
+                                    <p class="engine-status">Analyzing multiple signals...</p>
                                 </div>
                             </div>
                             
-                            <!-- Terminal-style code output -->
+                            <!-- Terminal-style output -->
                             <div class="engine-terminal">
                                 <div class="terminal-header">
                                     <span class="terminal-dot red"></span>
@@ -222,7 +264,7 @@
                                 </div>
                                 <div class="factor-progress" id="factor-4-progress">
                                     <span class="factor-icon">#️⃣</span>
-                                    <span class="factor-name">Hashtag Database</span>
+                                    <span class="factor-name">Hashtag DB</span>
                                     <span class="factor-status pending">○</span>
                                 </div>
                                 <div class="factor-progress" id="factor-5-progress">
@@ -238,8 +280,8 @@
                             <div class="engine-header ai-mode">
                                 <span class="engine-icon-animated">🤖</span>
                                 <div>
-                                    <h3>Shadow AI Analyzing</h3>
-                                    <p class="engine-status">Processing 5-factor data...</p>
+                                    <h3>Calculating Probability</h3>
+                                    <p class="engine-status">Synthesizing 5-factor data...</p>
                                 </div>
                             </div>
                             
@@ -249,13 +291,13 @@
                                     <span>🧠</span>
                                 </div>
                                 <div class="ai-processing-text">
-                                    <span id="ai-processing-message">Identifying patterns...</span>
+                                    <span id="ai-processing-message">Cross-referencing signals...</span>
                                 </div>
                             </div>
                             
                             <div class="ai-data-flow">
                                 <div class="data-stream">
-                                    <span class="data-label">Raw Data</span>
+                                    <span class="data-label">Raw Signals</span>
                                     <div class="data-dots">
                                         <span></span><span></span><span></span>
                                     </div>
@@ -263,167 +305,9 @@
                                     <div class="data-dots">
                                         <span></span><span></span><span></span>
                                     </div>
-                                    <span class="data-label">Results</span>
+                                    <span class="data-label">Probability</span>
                                 </div>
                             </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Results Area (Hidden Initially) -->
-                <div class="power-results hidden" id="power-results">
-                    
-                    <!-- Overall Score Header -->
-                    <div class="results-overall">
-                        <div class="overall-header">
-                            <div class="overall-icon" id="overall-icon">📊</div>
-                            <div class="overall-info">
-                                <h3>Power Check Complete</h3>
-                                <p class="overall-platform" id="overall-platform">Twitter/X • @username • 3 hashtags detected</p>
-                            </div>
-                        </div>
-                        <div class="overall-score-wrap">
-                            <div class="overall-score" id="overall-score-circle">
-                                <span class="score-number" id="overall-score-value">28%</span>
-                                <span class="score-text">Shadow Ban<br>Probability</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Three Panel Results -->
-                    <div class="results-panels">
-                        
-                        <!-- Panel 1: Post Visibility -->
-                        <div class="result-panel" id="panel-post">
-                            <div class="panel-header">
-                                <span class="panel-icon">🔗</span>
-                                <div class="panel-title">
-                                    <h4>Post Visibility</h4>
-                                    <p>Is this post being suppressed?</p>
-                                </div>
-                                <div class="panel-score" id="post-score">
-                                    <span class="panel-score-value">15%</span>
-                                    <span class="panel-score-label">Risk</span>
-                                </div>
-                            </div>
-                            <ul class="panel-factors" id="post-factors">
-                                <li class="factor-good"><span>✓</span> Post appears in search results</li>
-                                <li class="factor-good"><span>✓</span> Visible to logged-out users</li>
-                                <li class="factor-good"><span>✓</span> Engagement rate normal</li>
-                            </ul>
-                        </div>
-                        
-                        <!-- Panel 2: Account Status -->
-                        <div class="result-panel" id="panel-account">
-                            <div class="panel-header">
-                                <span class="panel-icon">👤</span>
-                                <div class="panel-title">
-                                    <h4>Account Status</h4>
-                                    <p id="account-username">@username</p>
-                                </div>
-                                <div class="panel-score" id="account-score">
-                                    <span class="panel-score-value">22%</span>
-                                    <span class="panel-score-label">Risk</span>
-                                </div>
-                            </div>
-                            <ul class="panel-factors" id="account-factors">
-                                <li class="factor-good"><span>✓</span> Profile accessible</li>
-                                <li class="factor-good"><span>✓</span> Not search banned</li>
-                                <li class="factor-warning"><span>⚠</span> QFD partially enabled</li>
-                            </ul>
-                        </div>
-                        
-                        <!-- Panel 3: Hashtag Health -->
-                        <div class="result-panel" id="panel-hashtag">
-                            <div class="panel-header">
-                                <span class="panel-icon">#️⃣</span>
-                                <div class="panel-title">
-                                    <h4>Hashtag Health</h4>
-                                    <p id="hashtag-count">3 hashtags detected</p>
-                                </div>
-                                <div class="panel-score" id="hashtag-score">
-                                    <span class="panel-score-value">45%</span>
-                                    <span class="panel-score-label">Risk</span>
-                                </div>
-                            </div>
-                            <div class="hashtag-list" id="hashtag-list">
-                                <span class="hashtag-tag safe">#coding</span>
-                                <span class="hashtag-tag warning">#followforfollow</span>
-                                <span class="hashtag-tag danger">#fyp</span>
-                            </div>
-                            <ul class="panel-factors" id="hashtag-factors">
-                                <li class="factor-good"><span>✓</span> 1 hashtag safe</li>
-                                <li class="factor-warning"><span>⚠</span> 1 hashtag low-reach</li>
-                                <li class="factor-bad"><span>✗</span> 1 hashtag restricted</li>
-                            </ul>
-                        </div>
-                    </div>
-                    
-                    <!-- Engine Analysis -->
-                    <div class="results-sources">
-                        <h5>🧠 Our 5-Factor Detection Engine Analyzed</h5>
-                        <div class="sources-grid" id="sources-grid">
-                            <div class="source-item">
-                                <span class="source-icon">🔌</span>
-                                <div>
-                                    <strong>Platform APIs</strong>
-                                    <p>Direct integration where available</p>
-                                </div>
-                            </div>
-                            <div class="source-item">
-                                <span class="source-icon">🔍</span>
-                                <div>
-                                    <strong>Web Analysis</strong>
-                                    <p>Search visibility & scraping tests</p>
-                                </div>
-                            </div>
-                            <div class="source-item">
-                                <span class="source-icon">📊</span>
-                                <div>
-                                    <strong>Historical Data</strong>
-                                    <p>Baseline comparison & trend analysis</p>
-                                </div>
-                            </div>
-                            <div class="source-item">
-                                <span class="source-icon">#️⃣</span>
-                                <div>
-                                    <strong>Hashtag Database</strong>
-                                    <p>Banned/restricted tags, updated daily</p>
-                                </div>
-                            </div>
-                            <div class="source-item">
-                                <span class="source-icon">🌐</span>
-                                <div>
-                                    <strong>IP Analysis</strong>
-                                    <p>VPN/proxy/datacenter detection</p>
-                                </div>
-                            </div>
-                        </div>
-                        <p class="engine-note">Our 5-Factor Engine combines all signals and assigns a <strong>Shadow Ban Probability Score</strong>. We check from U.S.-based servers—platforms may treat regional, VPN, or datacenter IPs differently, which our engine accounts for.</p>
-                        
-                        <!-- Pro Upsell for Detailed Report -->
-                        <div class="pro-report-upsell">
-                            <div class="pro-report-header">
-                                <span class="pro-badge">🔓 Pro</span>
-                                <strong>Want the Full Details?</strong>
-                            </div>
-                            <p>These results are accurate but summarized. Upgrade to Pro to unlock:</p>
-                            <ul class="pro-report-features">
-                                <li>📄 Downloadable PDF report with complete analysis</li>
-                                <li>📊 Raw data from all 5 detection factors</li>
-                                <li>⚖️ Use as evidence for platform disputes & appeals</li>
-                                <li>📁 Historical report archive for your records</li>
-                            </ul>
-                            <a href="#pricing" class="btn btn-primary btn-sm">Unlock Full Reports →</a>
-                        </div>
-                    </div>
-                    
-                    <!-- Results CTA -->
-                    <div class="results-cta-section">
-                        <p>Want continuous monitoring & instant alerts for all your accounts?</p>
-                        <div class="results-cta-buttons">
-                            <a href="#pricing" class="btn btn-primary">Get Pro - $9/mo →</a>
-                            <button class="btn btn-ghost" id="power-check-another-btn">Run Another Check</button>
                         </div>
                     </div>
                 </div>
@@ -439,7 +323,7 @@
                     <span class="option-icon">👤</span>
                     <div class="option-content">
                         <h3>Account Check</h3>
-                        <p>Check if your account is shadow banned on any platform</p>
+                        <p>Calculate shadow ban probability for any username</p>
                     </div>
                     <div class="option-meta">
                         <span class="option-tag free">Free • 1/day</span>
@@ -451,7 +335,7 @@
                     <span class="option-icon">📝</span>
                     <div class="option-content">
                         <h3>Post URL Check</h3>
-                        <p>Check if a specific post is being shown or restricted</p>
+                        <p>Analyze if a specific post is being suppressed</p>
                     </div>
                     <div class="option-meta">
                         <span class="option-tag free">Free • 1/day</span>
@@ -463,7 +347,7 @@
                     <span class="option-icon">🚫</span>
                     <div class="option-content">
                         <h3>Hashtag Checker</h3>
-                        <p>Verify hashtags before posting to avoid reach penalties</p>
+                        <p>Verify hashtags before posting to avoid penalties</p>
                     </div>
                     <div class="option-meta">
                         <span class="option-tag free">Free • 1/day</span>
@@ -479,7 +363,7 @@
         <div class="container">
             <div class="section-header">
                 <h2 class="section-title">Made for You</h2>
-                <p class="section-desc">Shadow bans kill your reach. We help you detect and fix it.</p>
+                <p class="section-desc">Unexplained reach drops? Our engine calculates the probability of hidden restrictions.</p>
             </div>
             
             <div class="audience-grid">
@@ -493,7 +377,7 @@
                     <span class="audience-icon">📱</span>
                     <div class="audience-content">
                         <h4>Influencers & Creators</h4>
-                        <p>Engagement dropped? Posts not showing? We check if platforms are limiting your reach.</p>
+                        <p>Engagement dropped? We calculate the probability platforms are limiting your reach.</p>
                     </div>
                     <a href="#pricing" class="audience-btn">Get Started →</a>
                 </div>
@@ -507,7 +391,7 @@
                     <span class="audience-icon">🗳️</span>
                     <div class="audience-content">
                         <h4>Politicians & Officials</h4>
-                        <p>Your message needs to reach voters. We verify your visibility on all platforms.</p>
+                        <p>Your message needs to reach voters. We analyze your visibility across platforms.</p>
                     </div>
                     <a href="#pricing" class="audience-btn">Get Started →</a>
                 </div>
@@ -545,7 +429,7 @@
         </div>
     </section>
 
-    <!-- Trust Strip - No Cards -->
+    <!-- Trust Strip -->
     <section class="trust-strip">
         <div class="container">
             <div class="trust-items">
@@ -556,7 +440,7 @@
                 <div class="trust-divider">•</div>
                 <div class="trust-item-inline">
                     <span>⚡</span>
-                    <span>60-Second Results</span>
+                    <span>60-Second Analysis</span>
                 </div>
                 <div class="trust-divider">•</div>
                 <div class="trust-item-inline">
@@ -579,14 +463,14 @@
                 <div class="spotlight-content">
                     <div class="spotlight-tag">🤖 Powered by Shadow AI Pro</div>
                     <h2>Your AI Shadow Ban Detective</h2>
-                    <p class="lead">Unlike generic AI chatbots, Shadow AI Pro is purpose-built for shadow ban detection. It has direct access to our 5-Factor Detection Engine data and platform-specific knowledge that general AI simply doesn't have.</p>
+                    <p class="lead">Unlike generic AI chatbots, Shadow AI Pro is purpose-built for shadow ban analysis. It has direct access to our 5-Factor Detection Engine data and platform-specific knowledge that general AI simply doesn't have.</p>
                     
                     <div class="features-list">
                         <div class="feature-item">
                             <span class="feature-icon">🔍</span>
                             <div>
-                                <strong>Reads Your Scan Results</strong>
-                                <p>Analyzes your actual detection data—not generic guesses</p>
+                                <strong>Reads Your Analysis Results</strong>
+                                <p>Interprets your actual probability data—not generic guesses</p>
                             </div>
                         </div>
                         <div class="feature-item">
@@ -600,7 +484,7 @@
                             <span class="feature-icon">🛠️</span>
                             <div>
                                 <strong>Recovery Strategies</strong>
-                                <p>Step-by-step guidance based on your specific situation</p>
+                                <p>Step-by-step guidance based on your specific probability factors</p>
                             </div>
                         </div>
                     </div>
@@ -631,8 +515,8 @@
     <section class="platforms section" id="platforms">
         <div class="container">
             <div class="section-header">
-                <h2 class="section-title">Platforms We Support</h2>
-                <p class="section-desc">Click any platform to see what we check for</p>
+                <h2 class="section-title">Platforms We Analyze</h2>
+                <p class="section-desc">Click any platform to see what signals we check</p>
             </div>
             <div class="platform-grid" id="platform-grid">
                 <!-- Platforms injected via JS from platforms.js -->
@@ -645,7 +529,7 @@
         <div class="container">
             <div class="section-header">
                 <h2 class="section-title">Simple, Usage-Based Pricing</h2>
-                <p class="section-desc">Pay for what you use. No per-account limits. Any scan frequency.</p>
+                <p class="section-desc">Pay for what you use. Free tier results are permanent & public.</p>
             </div>
             
             <div class="pricing-grid">
@@ -657,15 +541,15 @@
                         <span class="value">0</span>
                         <span class="period">/forever</span>
                     </div>
-                    <p class="price-subtitle">No account required</p>
+                    <p class="price-subtitle">Results are permanent & public</p>
                     <ul class="price-features">
                         <li>✓ 1 Account check/day</li>
                         <li>✓ 1 Post check/day</li>
                         <li>✓ 1 Hashtag check/day</li>
                         <li>✓ OR 1 Power Check (3-in-1)/day</li>
                         <li>✓ 3 AI questions/day</li>
-                        <li>✓ 30-day data retention</li>
-                        <li>✗ No dashboard or monitoring</li>
+                        <li>✓ Permanent shareable URL</li>
+                        <li>✗ Results are public (the trade-off)</li>
                     </ul>
                     <a href="checker.html" class="btn-price btn-price-secondary">Start Free Check</a>
                 </div>
@@ -678,15 +562,15 @@
                         <span class="value">9</span>
                         <span class="period">/mo</span>
                     </div>
-                    <p class="price-subtitle">Unlimited accounts, any frequency</p>
+                    <p class="price-subtitle">Private results, full control</p>
                     <ul class="price-features">
                         <li>✓ Dashboard with unlimited accounts</li>
                         <li>✓ Choose: Hourly / 6hr / 12hr / 24hr</li>
-                        <li>✓ 100 scans included/mo</li>
+                        <li>✓ 100 analyses included/mo</li>
                         <li>✓ 25 AI questions included/mo</li>
                         <li>✓ Email + SMS alerts</li>
+                        <li>✓ Private results (can delete)</li>
                         <li>✓ Exportable reports</li>
-                        <li>✓ Overage: $0.08/scan, $0.04/question</li>
                     </ul>
                     <a href="#" class="btn-price btn-price-primary" onclick="alert('Coming soon!'); return false;">Start Free Trial</a>
                 </div>
@@ -705,22 +589,22 @@
                         <li>✓ Manage unlimited client accounts</li>
                         <li>✓ 5 team seats included</li>
                         <li>✓ Email + SMS alerts</li>
-                        <li>✓ Exportable reports</li>
-                        <li>✓ Usage-based: $0.05/scan</li>
+                        <li>✓ Private results for all clients</li>
+                        <li>✓ Usage-based: $0.05/analysis</li>
                         <li>✓ Usage-based: $0.02/question</li>
                     </ul>
                     <a href="#" class="btn-price btn-price-secondary" onclick="alert('Coming soon!'); return false;">Contact Sales</a>
                 </div>
             </div>
             
-            <p class="pricing-note">Pro: Cancel anytime • Agency: Volume discounts available</p>
+            <p class="pricing-note">Free tier: Results stored permanently & publicly indexed. Pro/Agency: Full privacy control.</p>
             
-            <!-- Pricing Extras - Enhanced Styling -->
+            <!-- Pricing Extras -->
             <div class="pricing-extras">
                 <div class="extra-card glow reveal">
                     <span class="extra-icon">📊</span>
                     <h4>Usage Example: Pro</h4>
-                    <p>3 accounts, daily checks = 90 scans/mo. Included in your 100! Most users never hit overage.</p>
+                    <p>3 accounts, daily checks = 90 analyses/mo. Included in your 100! Most users never hit overage.</p>
                     <span class="extra-note">💡 Typical user: $9/mo flat</span>
                 </div>
                 
@@ -742,7 +626,7 @@
         </div>
     </section>
 
-    <!-- Shadow AI Pro Section - Simplified -->
+    <!-- Shadow AI Pro Section -->
     <section class="shadow-ai-section" id="shadow-ai-pro">
         <div class="container">
             <div class="ai-wrapper">
@@ -756,7 +640,7 @@
                 <span class="ai-badge-top">🤖 Included with Pro</span>
                 <div class="ai-header">
                     <h2 class="text-gradient">Shadow AI Pro</h2>
-                    <p class="ai-tagline">Not another AI chatbot—a purpose-built shadow ban expert with access to your real data</p>
+                    <p class="ai-tagline">Not another AI chatbot—a purpose-built shadow ban analyst with access to your real data</p>
                 </div>
                 
                 <div class="ai-grid">
@@ -767,7 +651,7 @@
                                 <span class="benefit-icon">🔍</span>
                                 <div>
                                     <strong>Reads Your Actual Data</strong>
-                                    <p>Analyzes results from your scans—AI chatbots can only guess</p>
+                                    <p>Analyzes probability results from your analyses—AI chatbots can only guess</p>
                                 </div>
                             </li>
                             <li>
@@ -788,7 +672,7 @@
                                 <span class="benefit-icon">🛠️</span>
                                 <div>
                                     <strong>Actionable Recovery Plans</strong>
-                                    <p>Specific steps based on YOUR situation, not generic advice</p>
+                                    <p>Specific steps based on YOUR probability factors, not generic advice</p>
                                 </div>
                             </li>
                         </ul>
@@ -806,9 +690,9 @@
                         
                         <ul class="featured-features">
                             <li><span class="check-icon">✓</span> 25 AI questions included/mo</li>
-                            <li><span class="check-icon">✓</span> Reads your scan results</li>
+                            <li><span class="check-icon">✓</span> Reads your probability results</li>
                             <li><span class="check-icon">✓</span> Platform-specific recovery advice</li>
-                            <li><span class="check-icon">✓</span> 100 engine scans included/mo</li>
+                            <li><span class="check-icon">✓</span> 100 engine analyses included/mo</li>
                             <li><span class="check-icon">✓</span> Email + SMS alerts</li>
                             <li><span class="check-icon">✓</span> Exportable reports</li>
                         </ul>
@@ -820,11 +704,11 @@
                 
                 <div class="upgrade-info">
                     <h4>💡 Need More?</h4>
-                    <p>Pro includes 100 scans and 25 AI questions per month. If you need more:</p>
+                    <p>Pro includes 100 analyses and 25 AI questions per month. If you need more:</p>
                     <div class="upgrade-tiers">
                         <div class="tier">
                             <div class="tier-header">
-                                <strong>🧠 Extra Scans</strong>
+                                <strong>🧠 Extra Analyses</strong>
                                 <span class="tier-price">$0.08 each</span>
                             </div>
                             <p>Only pay if you exceed 100/mo. Most users with 3 accounts on daily checks use ~90.</p>
@@ -848,7 +732,7 @@
         <div class="container">
             <div class="section-header">
                 <h2 class="section-title">Spread the Word</h2>
-                <p class="section-desc">Help others discover if they're shadow banned</p>
+                <p class="section-desc">Help others discover their shadow ban probability</p>
             </div>
             <div class="share-buttons">
                 <button class="btn-share" id="share-twitter">
@@ -874,8 +758,8 @@
     <!-- CTA -->
     <section class="cta-section">
         <div class="container">
-            <h2>Ready to Know Your Real Reach?</h2>
-            <p>Join thousands protecting their visibility across social media</p>
+            <h2>Ready to Know Your Probability?</h2>
+            <p>Join thousands calculating their shadow ban probability across social media</p>
             <div class="cta-buttons">
                 <a href="#pricing" class="btn btn-primary btn-lg">Get Pro - $9/mo</a>
                 <a href="checker.html" class="btn btn-ghost">Try Free Tools</a>
@@ -883,189 +767,76 @@
         </div>
     </section>
 
-    <!-- Under the Hood - Technical Deep Dive -->
+    <!-- Under the Hood - COMPACT VERSION -->
     <section class="engine-deep-dive section" id="how-it-works">
         <div class="container">
             <div class="section-header">
                 <h2 class="section-title">Under the Hood</h2>
-                <p class="section-desc">A detection engine built for accuracy, not guesswork</p>
+                <p class="section-desc">How we calculate your shadow ban probability</p>
             </div>
             
-            <div class="engine-intro">
-                <p class="engine-lead">Other "shadow ban checkers" run one simple test and call it a day. We built a <strong>real detection engine</strong> that attacks the problem from 5 different angles, cross-references multiple data sources, and uses AI to synthesize findings into actionable intelligence.</p>
-            </div>
-            
-            <!-- 5-Factor Grid with Technical Details -->
-            <div class="engine-factors-grid">
-                <!-- Factor 1: Platform APIs -->
-                <div class="engine-factor-card">
-                    <div class="factor-card-header">
-                        <span class="factor-number">01</span>
-                        <div class="factor-icon-wrap">🔌</div>
-                        <h3>Platform APIs</h3>
-                        <button class="factor-info-btn" data-factor="platform-api" aria-label="Technical details">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M12 16V12M12 8H12.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-                        </button>
+            <!-- Compact 5-Factor Grid -->
+            <div class="engine-compact-grid">
+                <div class="engine-factor-compact" data-factor="platform-api">
+                    <div class="factor-compact-icon">🔌</div>
+                    <div class="factor-compact-content">
+                        <h4>Platform APIs</h4>
+                        <p>Direct integration with official APIs where available. We query account status, visibility flags, and restriction indicators.</p>
+                        <span class="factor-compact-tech">Twitter API v2 • Reddit API</span>
                     </div>
-                    <p class="factor-desc">Direct integration with official platform APIs where available. We query account status, visibility flags, and restriction indicators straight from the source.</p>
-                    <div class="factor-tech-preview">
-                        <code>GET /users/:id/status</code>
-                        <span class="tech-tag">Twitter API v2</span>
-                        <span class="tech-tag">Reddit API</span>
-                    </div>
+                    <button class="factor-compact-info" aria-label="More info">ⓘ</button>
                 </div>
                 
-                <!-- Factor 2: Web Analysis -->
-                <div class="engine-factor-card">
-                    <div class="factor-card-header">
-                        <span class="factor-number">02</span>
-                        <div class="factor-icon-wrap">🔍</div>
-                        <h3>Web Analysis</h3>
-                        <button class="factor-info-btn" data-factor="web-analysis" aria-label="Technical details">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M12 16V12M12 8H12.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-                        </button>
+                <div class="engine-factor-compact" data-factor="web-analysis">
+                    <div class="factor-compact-icon">🔍</div>
+                    <div class="factor-compact-content">
+                        <h4>Web Analysis</h4>
+                        <p>Automated browser testing from U.S. servers. We check search visibility logged-in, logged-out, and private browsing.</p>
+                        <span class="factor-compact-tech">Playwright • Multi-browser • U.S. servers</span>
                     </div>
-                    <p class="factor-desc">Automated browser testing from multiple vantage points. We check search visibility logged-in, logged-out, private browsing, and from different network perspectives.</p>
-                    <div class="factor-tech-preview">
-                        <code>Playwright + Headless Chrome</code>
-                        <span class="tech-tag">Multi-browser</span>
-                        <span class="tech-tag">Geo-distributed</span>
-                    </div>
+                    <button class="factor-compact-info" aria-label="More info">ⓘ</button>
                 </div>
                 
-                <!-- Factor 3: Historical Data -->
-                <div class="engine-factor-card">
-                    <div class="factor-card-header">
-                        <span class="factor-number">03</span>
-                        <div class="factor-icon-wrap">📊</div>
-                        <h3>Historical Data</h3>
-                        <button class="factor-info-btn" data-factor="historical" aria-label="Technical details">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M12 16V12M12 8H12.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-                        </button>
+                <div class="engine-factor-compact" data-factor="historical">
+                    <div class="factor-compact-icon">📊</div>
+                    <div class="factor-compact-content">
+                        <h4>Historical Data</h4>
+                        <p>We track accounts over time to establish baselines. Sudden engagement drops and pattern anomalies affect probability.</p>
+                        <span class="factor-compact-tech">Trend analysis • Anomaly detection</span>
                     </div>
-                    <p class="factor-desc">We track your account over time to establish baselines. Sudden engagement drops, visibility changes, and pattern anomalies are detected by comparing against your historical norm.</p>
-                    <div class="factor-tech-preview">
-                        <code>PostgreSQL + Time-series</code>
-                        <span class="tech-tag">Trend analysis</span>
-                        <span class="tech-tag">Anomaly detection</span>
-                    </div>
+                    <button class="factor-compact-info" aria-label="More info">ⓘ</button>
                 </div>
                 
-                <!-- Factor 4: Hashtag Database -->
-                <div class="engine-factor-card">
-                    <div class="factor-card-header">
-                        <span class="factor-number">04</span>
-                        <div class="factor-icon-wrap">#️⃣</div>
-                        <h3>Hashtag Intelligence</h3>
-                        <button class="factor-info-btn" data-factor="hashtag-db" aria-label="Technical details">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M12 16V12M12 8H12.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-                        </button>
+                <div class="engine-factor-compact" data-factor="hashtag-db">
+                    <div class="factor-compact-icon">#️⃣</div>
+                    <div class="factor-compact-content">
+                        <h4>Hashtag Database</h4>
+                        <p>Our database of banned, restricted, and low-reach hashtags is updated daily. We verify restrictions in real-time.</p>
+                        <span class="factor-compact-tech">Daily updates • Multi-platform</span>
                     </div>
-                    <p class="factor-desc">Our database of banned, restricted, and low-reach hashtags is updated daily. We scrape platform data, monitor community reports, and verify restrictions in real-time.</p>
-                    <div class="factor-tech-preview">
-                        <code>Daily automated updates</code>
-                        <span class="tech-tag">Growing database</span>
-                        <span class="tech-tag">Multi-platform</span>
-                    </div>
+                    <button class="factor-compact-info" aria-label="More info">ⓘ</button>
                 </div>
                 
-                <!-- Factor 5: IP Analysis -->
-                <div class="engine-factor-card">
-                    <div class="factor-card-header">
-                        <span class="factor-number">05</span>
-                        <div class="factor-icon-wrap">🌐</div>
-                        <h3>IP Analysis</h3>
-                        <button class="factor-info-btn" data-factor="ip-analysis" aria-label="Technical details">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M12 16V12M12 8H12.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-                        </button>
+                <div class="engine-factor-compact" data-factor="ip-analysis">
+                    <div class="factor-compact-icon">🌐</div>
+                    <div class="factor-compact-content">
+                        <h4>IP Analysis</h4>
+                        <p>We analyze YOUR connection for VPN, proxy, or datacenter detection. Platforms treat these differently—we factor that into your probability.</p>
+                        <span class="factor-compact-tech">VPN detection • Risk scoring</span>
                     </div>
-                    <p class="factor-desc">We analyze your connection for VPN, proxy, or datacenter detection. Platforms treat these differently—we factor that into your risk assessment.</p>
-                    <div class="factor-tech-preview">
-                        <code>IPQualityScore API</code>
-                        <span class="tech-tag">VPN detection</span>
-                        <span class="tech-tag">Risk scoring</span>
-                    </div>
+                    <button class="factor-compact-info" aria-label="More info">ⓘ</button>
                 </div>
             </div>
             
-            <!-- The Secret Sauce: Multi-Angle Testing -->
-            <div class="engine-methodology">
-                <div class="methodology-header">
-                    <h3>🎯 Multi-Angle Visibility Testing</h3>
-                    <p>We don't just check once. We check from <strong>every angle</strong> platforms use to hide content.</p>
-                </div>
-                <div class="methodology-angles">
-                    <div class="angle-item">
-                        <span class="angle-icon">👤</span>
-                        <div>
-                            <strong>In-Network Test</strong>
-                            <p>Can your followers see your content?</p>
-                        </div>
-                    </div>
-                    <div class="angle-item">
-                        <span class="angle-icon">👥</span>
-                        <div>
-                            <strong>Out-of-Network Test</strong>
-                            <p>Can non-followers discover you?</p>
-                        </div>
-                    </div>
-                    <div class="angle-item">
-                        <span class="angle-icon">🚪</span>
-                        <div>
-                            <strong>Logged-Out Test</strong>
-                            <p>Visible to the public web?</p>
-                        </div>
-                    </div>
-                    <div class="angle-item">
-                        <span class="angle-icon">🕵️</span>
-                        <div>
-                            <strong>Private Browser Test</strong>
-                            <p>Clean session, no cookies</p>
-                        </div>
-                    </div>
-                    <div class="angle-item">
-                        <span class="angle-icon">🔎</span>
-                        <div>
-                            <strong>Search Visibility Test</strong>
-                            <p>Do you appear in search results?</p>
-                        </div>
-                    </div>
-                    <div class="angle-item">
-                        <span class="angle-icon">🌍</span>
-                        <div>
-                            <strong>Multi-Region Test</strong>
-                            <p>Same results globally?</p>
-                        </div>
-                    </div>
+            <!-- Probability Explanation -->
+            <div class="probability-explanation">
+                <div class="prob-explanation-content">
+                    <h4>🎯 Why "Probability" Not "Yes/No"?</h4>
+                    <p>No tool can give 100% certainty about shadow bans—platforms don't disclose their algorithms. We analyze <strong>5 independent signals</strong> and calculate the <strong>probability</strong> your content is being suppressed. A 15% probability means most signals look healthy. A 75% probability means multiple signals indicate restrictions. This honest approach makes our results more trustworthy and citable.</p>
                 </div>
             </div>
             
-            <!-- AI Integration -->
-            <div class="engine-ai-section">
-                <div class="ai-section-content">
-                    <div class="ai-badge">🤖 Shadow AI Integration</div>
-                    <h3>Raw Data → Actionable Intelligence</h3>
-                    <p>Our 5-Factor Engine collects the data. Shadow AI makes sense of it. Every scan result is analyzed by our AI to identify patterns humans might miss, explain what's happening in plain English, and provide step-by-step recovery recommendations tailored to your specific situation.</p>
-                    <div class="ai-flow">
-                        <div class="ai-flow-step">
-                            <span>📥</span>
-                            <span>5-Factor Data</span>
-                        </div>
-                        <div class="ai-flow-arrow">→</div>
-                        <div class="ai-flow-step">
-                            <span>🧠</span>
-                            <span>AI Analysis</span>
-                        </div>
-                        <div class="ai-flow-arrow">→</div>
-                        <div class="ai-flow-step">
-                            <span>📋</span>
-                            <span>Your Report</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Tech Stack Credibility -->
+            <!-- Tech Stack Bar -->
             <div class="tech-stack-bar">
                 <span class="tech-stack-label">Built With:</span>
                 <div class="tech-stack-items">
@@ -1079,12 +850,12 @@
         </div>
     </section>
 
-    <!-- FAQ - Two Columns -->
+    <!-- FAQ -->
     <section class="faq-section section-alt" id="faq">
         <div class="container">
             <div class="section-header">
                 <h2 class="section-title">Frequently Asked Questions</h2>
-                <p class="section-desc">Everything you need to know about shadow ban detection</p>
+                <p class="section-desc">Everything you need to know about shadow ban probability calculation</p>
             </div>
             
             <div class="faq-grid">
@@ -1095,7 +866,7 @@
                             <span class="faq-toggle">+</span>
                         </button>
                         <div class="faq-answer">
-                            <p>Power Check is our 3-in-1 comprehensive analysis tool. When you paste a post URL, we analyze the post visibility, the account that posted it, AND any hashtags used—all in one scan. Free users get 1 Power Check per day (which uses all 3 of your daily checks), or you can use the 3 individual checkers separately. Pro users get unlimited checks.</p>
+                            <p>Power Check is our 3-in-1 comprehensive analysis tool. When you paste a post URL, we analyze the post visibility, the account that posted it, AND any hashtags used—all in one analysis. We calculate a combined probability score based on all 5 detection factors. Free users get 1 Power Check per day, and the results are stored permanently as a public, shareable URL.</p>
                         </div>
                     </div>
                     
@@ -1105,27 +876,27 @@
                             <span class="faq-toggle">+</span>
                         </button>
                         <div class="faq-answer">
-                            <p>Generic AI chatbots can only give you general advice based on their training data. Shadow AI Pro is different: it has direct access to YOUR scan results from our 5-Factor Detection Engine, our database of platform-specific ToS rules, and can provide actionable recovery strategies based on your specific situation. It's not guessing—it's analyzing your actual data.</p>
+                            <p>Generic AI chatbots can only give you general advice based on their training data. Shadow AI Pro is different: it has direct access to YOUR probability results from our 5-Factor Detection Engine, our database of platform-specific ToS rules, and can provide actionable recovery strategies based on your specific signals. It's not guessing—it's analyzing your actual data.</p>
                         </div>
                     </div>
                     
                     <div class="faq-item">
                         <button class="faq-question">
-                            ⚖️ How do disputes work?
+                            📊 Why probability instead of yes/no?
                             <span class="faq-toggle">+</span>
                         </button>
                         <div class="faq-answer">
-                            <p>Pro users get access to our Dispute Findings feature in the dashboard. Here's how it works: (1) We detect what's wrong using our 5-Factor Engine, (2) Shadow AI analyzes your results and generates actionable recommendations, (3) We compile everything into a formal dispute package with evidence, and (4) We handle the outreach to the platform on your behalf. Whether you need to appeal a restriction or get back into compliance, we provide the data-backed evidence platforms need to review your case. It's like having a shadow ban lawyer in your corner.</p>
+                            <p>No tool can definitively say "you ARE shadow banned" because platforms don't disclose their algorithms. We're honest about this. Instead, we analyze 5 independent signals and calculate the <strong>probability</strong> your content is being suppressed. "28% shadow ban probability based on 5 signals" is more accurate and trustworthy than a false binary. This honesty makes our results more citable by AI search engines and researchers.</p>
                         </div>
                     </div>
                     
                     <div class="faq-item">
                         <button class="faq-question">
-                            🔒 Is my data safe?
+                            🔒 Why are free results public?
                             <span class="faq-toggle">+</span>
                         </button>
                         <div class="faq-answer">
-                            <p>Absolutely! We take privacy seriously. We only store your email and account identifiers needed for monitoring. We <strong>never</strong> ask for or store your platform passwords. All checks are performed in real-time through official APIs and public data. Everything is SSL encrypted. Free users get 30-day data retention by username lookup.</p>
+                            <p>Free tier results are stored permanently and publicly indexed—this is the trade-off for free access. This helps us build a valuable database that AI search engines (like Perplexity, ChatGPT) can cite, which drives traffic and keeps the free tier sustainable. <strong>Pro users</strong> get full privacy control: private results, ability to delete, and no public indexing. If you need privacy, Pro is $9/mo.</p>
                         </div>
                     </div>
                     
@@ -1135,7 +906,7 @@
                             <span class="faq-toggle">+</span>
                         </button>
                         <div class="faq-answer">
-                            <p>Pro ($9/mo) includes 100 scans and 25 AI questions per month. If you exceed these, you pay small overages: $0.08/scan and $0.04/question, billed at the end of your cycle. Most users with 1-3 accounts on daily monitoring use about 90 scans/month and stay well under the limit. No surprises—you can track usage in your dashboard.</p>
+                            <p>Pro ($9/mo) includes 100 analyses and 25 AI questions per month. If you exceed these, you pay small overages: $0.08/analysis and $0.04/question, billed at the end of your cycle. Most users with 1-3 accounts on daily monitoring use about 90 analyses/month and stay well under the limit. No surprises—you can track usage in your dashboard.</p>
                         </div>
                     </div>
                 </div>
@@ -1147,17 +918,27 @@
                             <span class="faq-toggle">+</span>
                         </button>
                         <div class="faq-answer">
-                            <p>Our 5-Factor Engine analyzes shadow bans from multiple angles: (1) Platform APIs for direct data, (2) Web Analysis for search visibility, (3) Historical Data for baseline comparisons, (4) Hashtag Database with banned/restricted tags updated daily, and (5) IP Analysis for VPN/proxy detection. This multi-source approach gives you probability scores even when platforms aren't transparent.</p>
+                            <p>Our 5-Factor Engine analyzes shadow ban probability from multiple angles: (1) Platform APIs for direct data, (2) Web Analysis from U.S. servers for search visibility, (3) Historical Data for baseline comparisons, (4) Hashtag Database with banned/restricted tags updated daily, and (5) IP Analysis to check if YOUR connection is VPN/datacenter (which affects platform trust). This multi-source approach gives you probability scores even when platforms aren't transparent.</p>
                         </div>
                     </div>
                     
                     <div class="faq-item">
                         <button class="faq-question">
-                            📱 Which platforms do you check?
+                            📱 Which platforms do you analyze?
                             <span class="faq-toggle">+</span>
                         </button>
                         <div class="faq-answer">
-                            <p>We support a growing list of platforms! Currently live platforms include Twitter/X and Reddit, with many more rolling out continuously including Instagram, TikTok, Facebook, YouTube, LinkedIn, and others. <a href="#platforms">See the full list</a> and click any platform to see exactly what we check—you'll see which are live now and which are coming soon.</p>
+                            <p>We support a growing list of platforms! Currently live: Twitter/X (including blue checkmark analysis) and Reddit, with Instagram, TikTok, Facebook, YouTube, LinkedIn, and others rolling out. <a href="#platforms">See the full list</a> and click any platform to see exactly what signals we check.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="faq-item">
+                        <button class="faq-question">
+                            🇺🇸 What does "U.S.-Based Servers" mean?
+                            <span class="faq-toggle">+</span>
+                        </button>
+                        <div class="faq-answer">
+                            <p>Our web analysis runs from U.S.-based servers because most major platforms (Twitter, Reddit, etc.) are U.S. companies. This gives us accurate visibility testing for U.S. audiences. The IP Analysis factor checks YOUR connection—whether you're on VPN, proxy, or datacenter IP—because platforms may treat your content differently based on your IP reputation. Future expansion: global server locations.</p>
                         </div>
                     </div>
                     
@@ -1167,27 +948,17 @@
                             <span class="faq-toggle">+</span>
                         </button>
                         <div class="faq-answer">
-                            <p>Agency ($29/mo + $5/client) is for social media managers, marketing agencies, and PR firms who manage multiple clients. You get a separate Agency dashboard to organize clients, 5 team seats, and volume pricing on scans ($0.05 each) and AI questions ($0.02 each). Perfect for managing 5+ clients with multiple accounts each.</p>
+                            <p>Agency ($29/mo + $5/client) is for social media managers, marketing agencies, and PR firms who manage multiple clients. You get a separate Agency dashboard to organize clients, 5 team seats, and volume pricing on analyses ($0.05 each) and AI questions ($0.02 each). All client results are private. Perfect for managing 5+ clients with multiple accounts each.</p>
                         </div>
                     </div>
                     
                     <div class="faq-item">
                         <button class="faq-question">
-                            🔄 Can I change my scan frequency?
+                            ⏱️ How long does analysis take?
                             <span class="faq-toggle">+</span>
                         </button>
                         <div class="faq-answer">
-                            <p>Yes! Pro users can set any account to check hourly, every 6 hours, every 12 hours, or daily. You can mix and match—check your main account hourly while secondary accounts check daily. More frequent checks use more of your monthly scan allocation, so you control the balance of coverage vs. cost.</p>
-                        </div>
-                    </div>
-                    
-                    <div class="faq-item">
-                        <button class="faq-question">
-                            ⏱️ How long does a scan take?
-                            <span class="faq-toggle">+</span>
-                        </button>
-                        <div class="faq-answer">
-                            <p>Most scans complete in under 60 seconds! Our 5-Factor Detection Engine runs multiple checks in parallel—API calls, search visibility tests, hashtag analysis, and more. Power Checks (3-in-1) take slightly longer since they analyze post, account, and hashtags together. Pro users with dashboard monitoring get results even faster since we pre-cache some data.</p>
+                            <p>Most analyses complete in under 60 seconds! Our 5-Factor Detection Engine runs multiple checks in parallel—API calls, search visibility tests, hashtag analysis, and more. Power Checks (3-in-1) take slightly longer since they analyze post, account, and hashtags together. You'll see a live animation showing each factor's progress.</p>
                         </div>
                     </div>
                 </div>
@@ -1264,6 +1035,7 @@
                                 <option value="question">General Question</option>
                                 <option value="bug-report">Report a Bug</option>
                                 <option value="feature-request">Feature Request</option>
+                                <option value="takedown-request">Takedown Request</option>
                                 <option value="other">Other</option>
                             </select>
                         </div>
@@ -1293,58 +1065,13 @@
         <div class="modal-content">
             <button class="modal-close">&times;</button>
             <div class="modal-icon">⚡</div>
-            <h3 class="modal-title">Power Check: 3-in-1 Analysis</h3>
+            <h3 class="modal-title">How We Calculate Probability</h3>
             <div class="modal-body">
-                <p class="modal-intro">One URL, three comprehensive checks. Here's everything we analyze:</p>
-                
-                <div class="modal-check-section">
-                    <div class="modal-check-header">
-                        <span>🔗</span>
-                        <h4>Post Visibility Check</h4>
-                    </div>
-                    <ul class="check-list">
-                        <li>Search result presence (is the post findable?)</li>
-                        <li>Feed visibility status (shown to followers?)</li>
-                        <li>Logged-out accessibility test</li>
-                        <li>Engagement rate vs. expected baseline</li>
-                        <li>Time-decay and velocity patterns</li>
-                        <li>Sensitive content/warning flags</li>
-                    </ul>
-                </div>
-                
-                <div class="modal-check-section">
-                    <div class="modal-check-header">
-                        <span>👤</span>
-                        <h4>Account Status Check</h4>
-                    </div>
-                    <ul class="check-list">
-                        <li>Profile accessibility (public/restricted)</li>
-                        <li>Search ban status (account hidden from search)</li>
-                        <li>Reply deboosting (replies hidden behind "Show more")</li>
-                        <li>Quality Filter Detection (QFD) status</li>
-                        <li>Ghost ban detection (posts invisible)</li>
-                        <li>Account age & trust signals</li>
-                    </ul>
-                </div>
-                
-                <div class="modal-check-section">
-                    <div class="modal-check-header">
-                        <span>#️⃣</span>
-                        <h4>Hashtag Health Check</h4>
-                    </div>
-                    <ul class="check-list">
-                        <li>Banned hashtag detection across platforms</li>
-                        <li>Restricted/limited reach hashtags</li>
-                        <li>Spam-flagged hashtag identification</li>
-                        <li>Hashtag competition & saturation</li>
-                        <li>Platform-specific restrictions</li>
-                    </ul>
-                </div>
+                <p class="modal-intro">One URL, five detection factors. Here's how we calculate your shadow ban probability:</p>
                 
                 <div class="modal-tech-note">
-                    <h4>🧠 Powered by Our 5-Factor Detection Engine</h4>
+                    <h4>🧠 5-Factor Detection Engine</h4>
                     <div class="engine-description">
-                        <p>The Power Check uses <strong>all 5 factors</strong> of our detection engine for the most comprehensive analysis:</p>
                         <ul class="engine-factors">
                             <li class="factor-active">
                                 <span class="factor-check">✓</span>
@@ -1356,10 +1083,10 @@
                             </li>
                             <li class="factor-active">
                                 <span class="factor-check">✓</span>
-                                <span class="factor-icon">🌐</span>
+                                <span class="factor-icon">🔍</span>
                                 <div class="factor-content">
                                     <span class="factor-name">Web Analysis</span>
-                                    <span class="factor-desc">Live scraping & search visibility checks</span>
+                                    <span class="factor-desc">Search visibility from U.S. servers, logged-in/out tests</span>
                                 </div>
                             </li>
                             <li class="factor-active">
@@ -1367,7 +1094,7 @@
                                 <span class="factor-icon">📊</span>
                                 <div class="factor-content">
                                     <span class="factor-name">Historical Data</span>
-                                    <span class="factor-desc">Baseline comparisons from tracked accounts</span>
+                                    <span class="factor-desc">Baseline comparisons, engagement trend analysis</span>
                                 </div>
                             </li>
                             <li class="factor-active">
@@ -1380,15 +1107,23 @@
                             </li>
                             <li class="factor-active">
                                 <span class="factor-check">✓</span>
-                                <span class="factor-icon">🔍</span>
+                                <span class="factor-icon">🌐</span>
                                 <div class="factor-content">
                                     <span class="factor-name">IP Analysis</span>
-                                    <span class="factor-desc">VPN/proxy detection, datacenter flagging</span>
+                                    <span class="factor-desc">YOUR connection: VPN/proxy/datacenter detection</span>
                                 </div>
                             </li>
                         </ul>
-                        <p class="engine-conclusion">Our Engine combines all signals and assigns a <strong>Shadow Ban Probability Score</strong> with detailed breakdowns.</p>
+                        <p class="engine-conclusion">Each factor contributes signals. We combine them into a <strong>Shadow Ban Probability Score</strong>—not a yes/no, because no tool can be 100% certain.</p>
                     </div>
+                </div>
+                
+                <div class="modal-check-section">
+                    <div class="modal-check-header">
+                        <span>📄</span>
+                        <h4>Free Tier Note</h4>
+                    </div>
+                    <p style="font-size: 0.875rem; color: var(--text-muted);">Free checks create <strong>permanent, public results</strong> at a unique URL. This helps AI search engines cite our data and keeps the free tier sustainable. Need privacy? <a href="#pricing" style="color: var(--primary-light);">Pro is $9/mo</a> with full privacy control.</p>
                 </div>
             </div>
             <div class="modal-footer">
@@ -1413,9 +1148,9 @@
                         <h4>What AI Chatbots CAN'T Do</h4>
                     </div>
                     <ul class="check-list" style="list-style: none;">
-                        <li style="color: var(--text-muted);">✗ Access your actual scan results</li>
+                        <li style="color: var(--text-muted);">✗ Access your actual probability results</li>
                         <li style="color: var(--text-muted);">✗ Know current platform ToS details</li>
-                        <li style="color: var(--text-muted);">✗ Provide probability scores based on real data</li>
+                        <li style="color: var(--text-muted);">✗ Provide probability scores based on real signals</li>
                         <li style="color: var(--text-muted);">✗ Give platform-specific recovery steps</li>
                         <li style="color: var(--text-muted);">✗ Track changes to your account over time</li>
                     </ul>
@@ -1427,18 +1162,12 @@
                         <h4>What Shadow AI Pro CAN Do</h4>
                     </div>
                     <ul class="check-list">
-                        <li>Read and analyze YOUR scan results from our 5-Factor Engine</li>
+                        <li>Read and analyze YOUR probability results from our 5-Factor Engine</li>
                         <li>Access our database of platform-specific ToS rules</li>
-                        <li>Provide probability scores based on multiple real signals</li>
+                        <li>Explain exactly which factors contributed to your probability</li>
                         <li>Generate actionable recovery plans for YOUR situation</li>
                         <li>Compare your current status to historical data</li>
-                        <li>Explain exactly which factors triggered detection</li>
                     </ul>
-                </div>
-                
-                <div class="modal-tech-note">
-                    <h4>💡 The Bottom Line</h4>
-                    <p>AI chatbots give generic advice based on training data. Shadow AI Pro gives <strong>specific answers</strong> based on <strong>your actual data</strong>. It's the difference between "shadow bans are usually caused by..." and "your account shows a 78% probability based on these 5 specific factors we detected."</p>
                 </div>
             </div>
             <div class="modal-footer">
@@ -1453,12 +1182,12 @@
         <div class="modal-content">
             <button class="modal-close">&times;</button>
             <div class="modal-icon" id="modal-icon">🐦</div>
-            <h3 class="modal-title" id="modal-title">Check Twitter/X</h3>
+            <h3 class="modal-title" id="modal-title">Twitter/X Analysis</h3>
             <p class="modal-status" id="modal-status">
                 <span class="status-badge live">● Live</span>
             </p>
             <div class="modal-body" id="modal-body">
-                <h4>What We Check:</h4>
+                <h4>Signals We Analyze:</h4>
                 <ul class="check-list" id="modal-checks">
                     <!-- Populated by JS -->
                 </ul>
@@ -1494,8 +1223,8 @@
                 <p class="modal-intro">You've used your free checks for today!</p>
                 <p id="limit-time-remaining">Next free check available in: <strong>23h 45m</strong></p>
                 <hr style="border: none; border-top: 1px solid var(--border); margin: var(--space-lg) 0;">
-                <h4 style="margin-bottom: var(--space-md);">Want unlimited checks + monitoring?</h4>
-                <p style="margin-bottom: var(--space-md);">Upgrade to Pro for $9/mo: unlimited accounts, any frequency, 100 scans included, Email + SMS alerts.</p>
+                <h4 style="margin-bottom: var(--space-md);">Want unlimited checks + private results?</h4>
+                <p style="margin-bottom: var(--space-md);">Upgrade to Pro for $9/mo: unlimited accounts, private results, any frequency, Email + SMS alerts.</p>
             </div>
             <div class="modal-footer">
                 <a href="#pricing" class="btn btn-primary btn-lg" onclick="closeLimitModal()">Get Pro - $9/mo →</a>
@@ -1520,14 +1249,21 @@
         </div>
     </div>
 
-    <!-- ===================================
-         SHARED COMPONENTS (Loaded by shared-components.js):
-         - Cookie Popup
-         - Back to Top Button  
-         - Toast Notification
-         =================================== -->
-
-    <!-- Shadow AI Chatbot - Created dynamically by shadow-ai.js -->
+    <!-- Factor Info Modal -->
+    <div id="factor-info-modal" class="modal hidden">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <button class="modal-close">&times;</button>
+            <div class="modal-icon" id="factor-modal-icon">🔌</div>
+            <h3 class="modal-title" id="factor-modal-title">Platform APIs</h3>
+            <div class="modal-body" id="factor-modal-body">
+                <!-- Content populated by JS -->
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary btn-lg" onclick="document.getElementById('factor-info-modal').classList.add('hidden'); document.body.style.overflow = '';">Got It!</button>
+            </div>
+        </div>
+    </div>
 
     <!-- Scripts -->
     <script src="js/platforms.js"></script>

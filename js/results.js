@@ -62,7 +62,7 @@ function loadResults() {
    DISPLAY RESULTS - Short Answer + Deep Dive
    ============================================================================= */
 function displayResults(results) {
-    const { platform, username, probability, verdict, verdictText, findings, factors, verification, ipData } = results;
+    const { platform, username, probability, verdict, verdictText, findings, factors, verification, ipData, contentScan } = results;
     
     // === SHORT ANSWER SECTION ===
     
@@ -151,8 +151,8 @@ function displayResults(results) {
     
     // === DEEP DIVE SECTION ===
     
-    // Engine factors
-    displayFactors(factors);
+    // Engine factors + content scan
+    displayFactors(factors, contentScan);
     
     // Platform-specific checks
     displayPlatformChecks(platform, probability, verification);
@@ -180,7 +180,7 @@ function displayFindings(findings) {
     }).join('');
 }
 
-function displayFactors(factors) {
+function displayFactors(factors, contentScan) {
     if (!factors) return;
     
     const factorConfig = {
@@ -192,6 +192,7 @@ function displayFactors(factors) {
     };
     
     let activeCount = 0;
+    let totalSignals = 0;
     
     Object.entries(factors).forEach(([key, data]) => {
         const config = factorConfig[key];
@@ -221,11 +222,129 @@ function displayFactors(factors) {
                               data.status === 'warning' ? '<span>⚠</span>' : 
                               data.status === 'bad' ? '<span>✗</span>' : '<span>○</span>';
         }
+        
+        // Display signals if present
+        if (data.signals && data.signals.length > 0) {
+            totalSignals += data.signals.length;
+            displaySignals(row, data.signals);
+        }
     });
+    
+    // Display content scan if present
+    if (contentScan && contentScan.active) {
+        displayContentScan(contentScan);
+    }
     
     // Update factors count
     const factorsUsed = document.getElementById('engine-factors-used');
-    if (factorsUsed) factorsUsed.textContent = `${activeCount}/5 factors analyzed`;
+    if (factorsUsed) {
+        const signalText = totalSignals > 0 ? ` + ${totalSignals} signals` : '';
+        factorsUsed.textContent = `${activeCount}/5 factors${signalText} analyzed`;
+    }
+}
+
+function displaySignals(factorRow, signals) {
+    // Check if signals container already exists
+    let signalsContainer = factorRow.querySelector('.factor-signals');
+    
+    if (!signalsContainer) {
+        signalsContainer = document.createElement('div');
+        signalsContainer.className = 'factor-signals';
+        factorRow.appendChild(signalsContainer);
+    }
+    
+    signalsContainer.innerHTML = signals.map(signal => {
+        const riskClass = signal.risk === 'high' ? 'bad' : 
+                          signal.risk === 'medium' ? 'warning' : 
+                          signal.risk === 'trusted' ? 'good' : 'neutral';
+        const comingSoonBadge = signal.comingSoon ? '<span class="signal-badge coming-soon">Soon</span>' : '';
+        
+        return `
+            <div class="signal-item ${riskClass} ${signal.comingSoon ? 'coming-soon' : ''}">
+                <span class="signal-name">${signal.name}</span>
+                <span class="signal-value">${signal.value}</span>
+                <span class="signal-impact">${signal.impact}</span>
+                ${comingSoonBadge}
+            </div>
+        `;
+    }).join('');
+}
+
+function displayContentScan(contentScan) {
+    // Find or create content scan section
+    let contentSection = document.getElementById('content-scan-section');
+    
+    if (!contentSection) {
+        // Create content scan section after factors
+        const factorsSection = document.querySelector('.engine-results');
+        if (!factorsSection) return;
+        
+        contentSection = document.createElement('div');
+        contentSection.id = 'content-scan-section';
+        contentSection.className = 'content-scan-section';
+        factorsSection.parentNode.insertBefore(contentSection, factorsSection.nextSibling);
+    }
+    
+    const statusClass = contentScan.status === 'bad' ? 'bad' : 
+                        contentScan.status === 'warning' ? 'warning' : 'good';
+    
+    const statusIcon = contentScan.status === 'bad' ? '✗' : 
+                       contentScan.status === 'warning' ? '⚠' : '✓';
+    
+    // Build flagged terms display
+    let flaggedHTML = '';
+    if (contentScan.flaggedTerms) {
+        const { banned, restricted, platformSpecific } = contentScan.flaggedTerms;
+        
+        if (banned && banned.length > 0) {
+            flaggedHTML += `
+                <div class="flagged-group banned">
+                    <span class="flagged-label">Banned:</span>
+                    ${banned.map(t => `<span class="flagged-term">${t}</span>`).join('')}
+                </div>
+            `;
+        }
+        if (restricted && restricted.length > 0) {
+            flaggedHTML += `
+                <div class="flagged-group restricted">
+                    <span class="flagged-label">Restricted:</span>
+                    ${restricted.map(t => `<span class="flagged-term">${t}</span>`).join('')}
+                </div>
+            `;
+        }
+        if (platformSpecific && platformSpecific.length > 0) {
+            flaggedHTML += `
+                <div class="flagged-group platform">
+                    <span class="flagged-label">Platform-specific:</span>
+                    ${platformSpecific.map(t => `<span class="flagged-term">${t}</span>`).join('')}
+                </div>
+            `;
+        }
+    }
+    
+    contentSection.innerHTML = `
+        <div class="content-scan-card ${statusClass}">
+            <div class="content-scan-header">
+                <div class="content-scan-icon">📄</div>
+                <div class="content-scan-title">
+                    <h4>Content Scan</h4>
+                    <span class="content-scan-badge">${contentScan.wordCount} words analyzed</span>
+                </div>
+                <div class="content-scan-status ${statusClass}">
+                    <span>${statusIcon}</span>
+                </div>
+            </div>
+            <div class="content-scan-finding">${contentScan.finding}</div>
+            ${flaggedHTML ? `<div class="content-scan-flagged">${flaggedHTML}</div>` : ''}
+            ${contentScan.penalty > 0 ? `<div class="content-scan-penalty">Impact: +${contentScan.penalty}% probability</div>` : ''}
+            ${contentScan.scannedContent ? `
+                <div class="content-scan-preview">
+                    <span class="preview-label">Scanned:</span>
+                    <span class="preview-text">"${contentScan.scannedContent.substring(0, 100)}${contentScan.scannedContent.length > 100 ? '...' : ''}"</span>
+                </div>
+            ` : ''}
+        </div>
+    `;
 }
 
 function displayPlatformChecks(platform, probability, verification) {

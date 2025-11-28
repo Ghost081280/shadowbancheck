@@ -765,22 +765,33 @@ function initPlatformGrid() {
         item.addEventListener('click', () => openPlatformModal(platform));
         platformGrid.appendChild(item);
     });
+    
+    // Add "Suggest a Platform" card
+    const suggestItem = document.createElement('div');
+    suggestItem.className = 'platform-item suggest-platform';
+    suggestItem.innerHTML = `
+        <span class="platform-icon">💡</span>
+        <span class="platform-name">Suggest a Platform</span>
+        <span class="platform-badge suggest">Request</span>
+    `;
+    suggestItem.addEventListener('click', openSuggestPlatformModal);
+    platformGrid.appendChild(suggestItem);
 }
 
 function initPowerPlatforms() {
     const container = document.getElementById('power-platform-icons');
     if (!container || typeof PLATFORMS === 'undefined') return;
     
-    const livePlatforms = PLATFORMS.filter(p => p.status === 'live');
-    const comingSoonCount = PLATFORMS.filter(p => p.status !== 'live').length;
+    // Show all 5 platforms (2 live, 3 coming soon)
+    const allPlatforms = [...PLATFORMS].sort((a, b) => {
+        if (a.status === 'live' && b.status !== 'live') return -1;
+        if (a.status !== 'live' && b.status === 'live') return 1;
+        return 0;
+    });
     
-    let html = livePlatforms.map(p => `
-        <span class="platform-chip" data-platform="${p.id}" title="${p.name}">${p.icon}</span>
+    const html = allPlatforms.map(p => `
+        <span class="platform-chip ${p.status === 'soon' ? 'coming' : ''}" data-platform="${p.id}" title="${p.name}${p.status === 'soon' ? ' (Coming Soon)' : ''}">${p.icon}</span>
     `).join('');
-    
-    if (comingSoonCount > 0) {
-        html += `<span class="platform-chip coming" id="power-more-platforms" title="View all platforms">+${comingSoonCount}</span>`;
-    }
     
     container.innerHTML = html;
     
@@ -790,8 +801,6 @@ function initPowerPlatforms() {
             if (platform) openPlatformModal(platform);
         });
     });
-    
-    document.getElementById('power-more-platforms')?.addEventListener('click', openAllPlatformsModal);
 }
 
 function openPlatformModal(platform) {
@@ -883,6 +892,86 @@ function openAllPlatformsModal() {
     bodyEl.innerHTML = html;
     
     openModal('all-platforms-modal');
+}
+
+function openSuggestPlatformModal() {
+    let modal = document.getElementById('suggest-platform-modal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'suggest-platform-modal';
+        modal.className = 'modal hidden';
+        modal.innerHTML = `
+            <div class="modal-overlay"></div>
+            <div class="modal-content">
+                <button class="modal-close">&times;</button>
+                <div class="modal-icon">💡</div>
+                <h3 class="modal-title">Suggest a Platform</h3>
+                <div class="modal-body">
+                    <p class="modal-intro">Want us to add shadow ban detection for another platform? Let us know!</p>
+                    
+                    <form id="suggest-platform-form" class="suggest-form">
+                        <div class="form-group">
+                            <label for="suggest-platform-name">Platform Name *</label>
+                            <input type="text" id="suggest-platform-name" placeholder="e.g. YouTube, Snapchat, Threads..." required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="suggest-email">Your Email (optional)</label>
+                            <input type="email" id="suggest-email" placeholder="Get notified when it launches">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="suggest-reason">Why do you need this? (optional)</label>
+                            <textarea id="suggest-reason" rows="3" placeholder="Tell us about your use case..."></textarea>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary btn-lg" style="width: 100%;">Submit Suggestion</button>
+                    </form>
+                    
+                    <p style="margin-top: var(--space-md); font-size: 0.75rem; color: var(--text-muted); text-align: center;">
+                        We review all suggestions and prioritize based on demand.
+                    </p>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+        
+        // Close handlers
+        modal.querySelector('.modal-close').addEventListener('click', () => closeModal('suggest-platform-modal'));
+        modal.querySelector('.modal-overlay').addEventListener('click', () => closeModal('suggest-platform-modal'));
+        
+        // Form submit
+        document.getElementById('suggest-platform-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const platformName = document.getElementById('suggest-platform-name').value.trim();
+            const email = document.getElementById('suggest-email').value.trim();
+            const reason = document.getElementById('suggest-reason').value.trim();
+            
+            // Build mailto link
+            const subject = encodeURIComponent(`Platform Suggestion: ${platformName}`);
+            const body = encodeURIComponent(
+                `Platform: ${platformName}\n` +
+                `Email: ${email || 'Not provided'}\n` +
+                `Reason: ${reason || 'Not provided'}\n\n` +
+                `Submitted from: ${window.location.href}`
+            );
+            
+            // Open mailto
+            window.location.href = `mailto:contact@shadowbancheck.io?subject=${subject}&body=${body}`;
+            
+            // Show success and close modal
+            setTimeout(() => {
+                closeModal('suggest-platform-modal');
+                showToast('Thanks for your suggestion! Check your email app to send.');
+                
+                // Reset form
+                document.getElementById('suggest-platform-form').reset();
+            }, 500);
+        });
+    }
+    
+    openModal('suggest-platform-modal');
 }
 
 /* =============================================================================

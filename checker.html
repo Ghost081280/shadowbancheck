@@ -89,15 +89,6 @@
                     </div>
                 </div>
                 
-                <!-- Warning: Check Your Own Account -->
-                <div class="warning-box">
-                    <span class="warning-icon">⚠️</span>
-                    <div class="warning-content">
-                        <strong>Check your own account only</strong>
-                        <p>Checking someone else's account uses YOUR IP address in the calculation, which skews results.</p>
-                    </div>
-                </div>
-                
                 <form id="account-check-form" class="checker-form">
                     <div class="input-group">
                         <div class="input-row">
@@ -119,17 +110,6 @@
                     <div class="platform-note hidden" id="platform-note">
                         <span class="platform-note-icon">💡</span>
                         <span class="platform-note-text" id="platform-note-text"></span>
-                    </div>
-                    
-                    <!-- IP Display -->
-                    <div class="ip-display-section">
-                        <div class="ip-badge" id="ip-badge">
-                            <span class="ip-icon">🌐</span>
-                            <span class="ip-label">Your IP:</span>
-                            <span class="ip-value" id="ip-address">Detecting...</span>
-                            <span class="ip-type" id="ip-type"></span>
-                            <span class="ip-flag" id="ip-flag"></span>
-                        </div>
                     </div>
                     
                     <button type="submit" id="check-account-btn" class="btn-check-account" disabled>
@@ -225,7 +205,7 @@
                 </div>
                 
                 <div class="checker-features">
-                    <span>✓ 5-Factor Detection Engine</span>
+                    <span>✓ 4-Factor Detection Engine</span>
                     <span>✓ Probability score in 60 seconds</span>
                     <span>✓ Permanent results page</span>
                 </div>
@@ -256,7 +236,7 @@
                         <div class="engine-header">
                             <span class="engine-icon-animated">⚙️</span>
                             <div>
-                                <h3>5-Factor Detection Engine</h3>
+                                <h3>4-Factor Detection Engine</h3>
                                 <p class="engine-status">Analyzing account signals...</p>
                             </div>
                         </div>
@@ -272,31 +252,27 @@
                         </div>
                         
                         <div class="engine-factors-progress">
-                            <div class="factor-progress" id="factor-1-progress">
+                            <div class="factor-progress" id="factor-1">
                                 <span class="factor-icon">🔌</span>
                                 <span class="factor-name">API</span>
-                                <span class="factor-status pending">○</span>
+                                <span class="factor-compact-status pending">○</span>
                             </div>
-                            <div class="factor-progress" id="factor-2-progress">
+                            <div class="factor-progress" id="factor-2">
                                 <span class="factor-icon">🔍</span>
                                 <span class="factor-name">Web</span>
-                                <span class="factor-status pending">○</span>
+                                <span class="factor-compact-status pending">○</span>
                             </div>
-                            <div class="factor-progress" id="factor-3-progress">
+                            <div class="factor-progress" id="factor-3">
                                 <span class="factor-icon">📊</span>
                                 <span class="factor-name">History</span>
-                                <span class="factor-status pending">○</span>
+                                <span class="factor-compact-status pending">○</span>
                             </div>
-                            <div class="factor-progress" id="factor-4-progress">
+                            <div class="factor-progress" id="factor-4">
                                 <span class="factor-icon">#️⃣</span>
                                 <span class="factor-name">Hashtags</span>
-                                <span class="factor-status pending">○</span>
+                                <span class="factor-compact-status pending">○</span>
                             </div>
-                            <div class="factor-progress" id="factor-5-progress">
-                                <span class="factor-icon">🌐</span>
-                                <span class="factor-name">IP</span>
-                                <span class="factor-status pending">○</span>
-                            </div>
+                            <!-- No IP factor for account checks - doesn't make sense for username lookup -->
                         </div>
                     </div>
                     
@@ -336,7 +312,7 @@
             <!-- Supported Platforms -->
             <div class="supported-platforms">
                 <p>Supported platforms:</p>
-                <div class="platform-icons" id="supported-platform-icons">
+                <div class="platform-icons" id="checker-platform-icons">
                     <!-- Populated by JS -->
                 </div>
             </div>

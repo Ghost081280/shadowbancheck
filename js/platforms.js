@@ -4,6 +4,8 @@
    
    This file is loaded FIRST on all pages.
    7 platforms (2 live, 5 coming soon)
+   
+   Last Updated: 2025
    ============================================================================= */
 
 window.platformData = [
@@ -33,10 +35,34 @@ window.platformData = [
             pinnedTweetId: '', // TO BE FILLED when tweet is created
             pinnedTweetUrl: '', // TO BE FILLED
             steps: [
-                { id: 'follow', label: 'Follow @ghost081280', icon: '👤' },
-                { id: 'like', label: 'Like our pinned tweet', icon: '❤️' },
-                { id: 'retweet', label: 'Retweet our pinned tweet', icon: '🔁' },
-                { id: 'reply', label: 'Reply with "check @yourusername"', icon: '💬' },
+                { 
+                    id: 'follow', 
+                    label: 'Follow @ghost081280', 
+                    icon: '👤',
+                    url: 'https://twitter.com/intent/follow?screen_name=ghost081280',
+                    description: 'Lets us check if your content appears to followers'
+                },
+                { 
+                    id: 'like', 
+                    label: 'Like our pinned tweet', 
+                    icon: '❤️',
+                    url: 'https://twitter.com/ghost081280',
+                    description: 'Helps verify your engagement actions are visible'
+                },
+                { 
+                    id: 'retweet', 
+                    label: 'Retweet our pinned tweet', 
+                    icon: '🔁',
+                    url: 'https://twitter.com/ghost081280',
+                    description: 'Tests if your retweets appear on timelines'
+                },
+                { 
+                    id: 'reply', 
+                    label: 'Reply with "check @yourusername"', 
+                    icon: '💬',
+                    url: 'https://twitter.com/ghost081280',
+                    description: 'Verifies your replies aren\'t being hidden'
+                },
             ],
         },
         
@@ -94,12 +120,12 @@ window.platformData = [
             postCheck: true,
             hashtagCheck: false,  // Reddit doesn't use hashtags!
             powerCheck: true,
-            engagementTest: false, // TBD
+            engagementTest: false,
         },
         
         engagementTest: {
             enabled: false,
-            testAccount: 'ShadowBanCheck', // To be created
+            testAccount: 'ShadowBanCheck',
         },
         
         accountChecks: [
@@ -121,6 +147,11 @@ window.platformData = [
             subredditBans: true,
             karmaAnalysis: true,
             automodDetection: true,
+            karmaThresholds: {
+                low: 100,
+                medium: 1000,
+                high: 10000,
+            },
         },
         
         powerChecks: [
@@ -325,8 +356,16 @@ window.platformData = [
             'Restricted topic detection',
         ],
         
+        // LinkedIn-specific - Known suppression patterns
+        linkedinSpecific: {
+            cryptoSuppression: true,      // Known to suppress crypto content
+            politicalFiltering: true,     // Filters political content
+            externalLinkPenalty: true,    // Penalizes posts with external links
+            engagementBaiting: true,      // Detects and suppresses engagement bait
+        },
+        
         messages: {
-            platformNote: 'LinkedIn content reach varies based on multiple factors we analyze.',
+            platformNote: 'LinkedIn is known to suppress crypto-related content and filter political posts. External links may reduce reach.',
         },
     },
 ];
@@ -337,6 +376,8 @@ window.platformData = [
 
 /**
  * Get platform by ID
+ * @param {string} id - Platform ID (e.g., 'twitter', 'reddit')
+ * @returns {object|undefined} Platform object or undefined
  */
 window.getPlatformById = function(id) {
     return window.platformData.find(p => p.id === id);
@@ -344,6 +385,8 @@ window.getPlatformById = function(id) {
 
 /**
  * Get platform by name (case-insensitive, handles slashes)
+ * @param {string} name - Platform name (e.g., 'Twitter/X', 'twitter')
+ * @returns {object|undefined} Platform object or undefined
  */
 window.getPlatformByName = function(name) {
     const normalized = name.toLowerCase().replace(/\s+/g, '').replace(/\//g, '');
@@ -355,6 +398,7 @@ window.getPlatformByName = function(name) {
 
 /**
  * Get all live platforms
+ * @returns {array} Array of live platform objects
  */
 window.getLivePlatforms = function() {
     return window.platformData.filter(p => p.status === 'live');
@@ -362,6 +406,7 @@ window.getLivePlatforms = function() {
 
 /**
  * Get all coming soon platforms
+ * @returns {array} Array of coming soon platform objects
  */
 window.getComingSoonPlatforms = function() {
     return window.platformData.filter(p => p.status === 'soon');
@@ -369,6 +414,8 @@ window.getComingSoonPlatforms = function() {
 
 /**
  * Get platforms that support hashtags (for Hashtag Checker)
+ * Excludes Reddit since it doesn't use hashtags
+ * @returns {array} Array of platform objects that support hashtag checking
  */
 window.getHashtagPlatforms = function() {
     return window.platformData.filter(p => p.supports && p.supports.hashtagCheck);
@@ -376,6 +423,7 @@ window.getHashtagPlatforms = function() {
 
 /**
  * Get LIVE platforms that support hashtags
+ * @returns {array} Array of live platform objects that support hashtag checking
  */
 window.getLiveHashtagPlatforms = function() {
     return window.platformData.filter(p => p.status === 'live' && p.supports && p.supports.hashtagCheck);
@@ -383,6 +431,7 @@ window.getLiveHashtagPlatforms = function() {
 
 /**
  * Get platforms that support engagement test
+ * @returns {array} Array of platform objects with engagement test enabled
  */
 window.getEngagementTestPlatforms = function() {
     return window.platformData.filter(p => p.supports && p.supports.engagementTest && p.engagementTest && p.engagementTest.enabled);
@@ -390,14 +439,18 @@ window.getEngagementTestPlatforms = function() {
 
 /**
  * Check if platform supports a specific feature
+ * @param {string} platformId - Platform ID
+ * @param {string} feature - Feature name (e.g., 'hashtagCheck', 'engagementTest')
+ * @returns {boolean} Whether the platform supports the feature
  */
 window.platformSupports = function(platformId, feature) {
     const platform = window.getPlatformById(platformId);
-    return platform && platform.supports && platform.supports[feature];
+    return platform && platform.supports && platform.supports[feature] === true;
 };
 
 /**
- * Get platform count
+ * Get total platform count
+ * @returns {number} Total number of platforms
  */
 window.getPlatformCount = function() {
     return window.platformData.length;
@@ -405,13 +458,24 @@ window.getPlatformCount = function() {
 
 /**
  * Get live platform count
+ * @returns {number} Number of live platforms
  */
 window.getLivePlatformCount = function() {
     return window.platformData.filter(p => p.status === 'live').length;
 };
 
 /**
+ * Get coming soon platform count
+ * @returns {number} Number of coming soon platforms
+ */
+window.getComingSoonPlatformCount = function() {
+    return window.platformData.filter(p => p.status === 'soon').length;
+};
+
+/**
  * Detect platform from URL
+ * @param {string} url - URL to analyze
+ * @returns {object|null} Platform object or null if not detected
  */
 window.detectPlatformFromUrl = function(url) {
     if (!url) return null;
@@ -420,22 +484,22 @@ window.detectPlatformFromUrl = function(url) {
     if (lowerUrl.includes('twitter.com') || lowerUrl.includes('x.com')) {
         return window.getPlatformById('twitter');
     }
-    if (lowerUrl.includes('reddit.com')) {
+    if (lowerUrl.includes('reddit.com') || lowerUrl.includes('redd.it')) {
         return window.getPlatformById('reddit');
     }
-    if (lowerUrl.includes('instagram.com')) {
+    if (lowerUrl.includes('instagram.com') || lowerUrl.includes('instagr.am')) {
         return window.getPlatformById('instagram');
     }
-    if (lowerUrl.includes('tiktok.com')) {
+    if (lowerUrl.includes('tiktok.com') || lowerUrl.includes('vm.tiktok.com')) {
         return window.getPlatformById('tiktok');
     }
-    if (lowerUrl.includes('facebook.com') || lowerUrl.includes('fb.com')) {
+    if (lowerUrl.includes('facebook.com') || lowerUrl.includes('fb.com') || lowerUrl.includes('fb.watch')) {
         return window.getPlatformById('facebook');
     }
     if (lowerUrl.includes('youtube.com') || lowerUrl.includes('youtu.be')) {
         return window.getPlatformById('youtube');
     }
-    if (lowerUrl.includes('linkedin.com')) {
+    if (lowerUrl.includes('linkedin.com') || lowerUrl.includes('lnkd.in')) {
         return window.getPlatformById('linkedin');
     }
     
@@ -444,6 +508,9 @@ window.detectPlatformFromUrl = function(url) {
 
 /**
  * Extract username from URL (platform-specific)
+ * @param {string} url - URL to parse
+ * @param {string} platformId - Platform ID for context
+ * @returns {string|null} Extracted username or null
  */
 window.extractUsernameFromUrl = function(url, platformId) {
     if (!url) return null;
@@ -452,7 +519,7 @@ window.extractUsernameFromUrl = function(url, platformId) {
         if (platformId === 'twitter') {
             // https://twitter.com/username/status/123 or https://x.com/username/status/123
             const match = url.match(/(?:twitter\.com|x\.com)\/([^\/\?]+)/i);
-            if (match && match[1] && !['status', 'home', 'search', 'explore', 'i'].includes(match[1])) {
+            if (match && match[1] && !['status', 'home', 'search', 'explore', 'i', 'intent', 'hashtag'].includes(match[1])) {
                 return match[1];
             }
         }
@@ -460,11 +527,31 @@ window.extractUsernameFromUrl = function(url, platformId) {
             // https://reddit.com/user/username or https://reddit.com/u/username
             const userMatch = url.match(/reddit\.com\/u(?:ser)?\/([^\/\?]+)/i);
             if (userMatch) return userMatch[1];
-            
-            // https://reddit.com/r/subreddit/comments/id/title - extract from post
-            // Would need API to get actual username from post
         }
-        // Add more platforms as needed
+        if (platformId === 'instagram') {
+            // https://instagram.com/username
+            const match = url.match(/instagram\.com\/([^\/\?]+)/i);
+            if (match && match[1] && !['p', 'reel', 'stories', 'explore', 'tv'].includes(match[1])) {
+                return match[1];
+            }
+        }
+        if (platformId === 'tiktok') {
+            // https://tiktok.com/@username
+            const match = url.match(/tiktok\.com\/@([^\/\?]+)/i);
+            if (match) return match[1];
+        }
+        if (platformId === 'youtube') {
+            // https://youtube.com/@username or /channel/id or /c/name
+            const handleMatch = url.match(/youtube\.com\/@([^\/\?]+)/i);
+            if (handleMatch) return '@' + handleMatch[1];
+            const channelMatch = url.match(/youtube\.com\/(?:channel|c)\/([^\/\?]+)/i);
+            if (channelMatch) return channelMatch[1];
+        }
+        if (platformId === 'linkedin') {
+            // https://linkedin.com/in/username
+            const match = url.match(/linkedin\.com\/in\/([^\/\?]+)/i);
+            if (match) return match[1];
+        }
     } catch (e) {
         console.error('Error extracting username:', e);
     }
@@ -472,244 +559,94 @@ window.extractUsernameFromUrl = function(url, platformId) {
     return null;
 };
 
+/**
+ * Extract post ID from URL (platform-specific)
+ * @param {string} url - URL to parse
+ * @param {string} platformId - Platform ID for context
+ * @returns {string|null} Extracted post ID or null
+ */
+window.extractPostIdFromUrl = function(url, platformId) {
+    if (!url) return null;
+    
+    try {
+        if (platformId === 'twitter') {
+            const match = url.match(/status\/(\d+)/i);
+            if (match) return match[1];
+        }
+        if (platformId === 'reddit') {
+            const match = url.match(/comments\/([a-z0-9]+)/i);
+            if (match) return match[1];
+        }
+        if (platformId === 'instagram') {
+            const match = url.match(/(?:p|reel)\/([A-Za-z0-9_-]+)/i);
+            if (match) return match[1];
+        }
+        if (platformId === 'tiktok') {
+            const match = url.match(/video\/(\d+)/i);
+            if (match) return match[1];
+        }
+        if (platformId === 'youtube') {
+            const match = url.match(/(?:v=|youtu\.be\/)([A-Za-z0-9_-]+)/i);
+            if (match) return match[1];
+        }
+        if (platformId === 'linkedin') {
+            const match = url.match(/(?:posts|activity)\/([0-9]+)/i);
+            if (match) return match[1];
+        }
+    } catch (e) {
+        console.error('Error extracting post ID:', e);
+    }
+    
+    return null;
+};
+
+/**
+ * Get checks preview for a platform (what will be analyzed)
+ * @param {string} platformId - Platform ID
+ * @param {string} checkType - Type of check: 'account', 'post', 'hashtag', 'power'
+ * @returns {array} Array of check descriptions
+ */
+window.getChecksPreview = function(platformId, checkType) {
+    const platform = window.getPlatformById(platformId);
+    if (!platform) return [];
+    
+    switch(checkType) {
+        case 'account':
+            return platform.accountChecks || [];
+        case 'hashtag':
+            return platform.hashtagChecks || [];
+        case 'power':
+            return platform.powerChecks || [];
+        case 'post':
+            return platform.powerChecks || []; // Post uses similar checks to power
+        default:
+            return [];
+    }
+};
+
+/**
+ * Get platform-specific message
+ * @param {string} platformId - Platform ID
+ * @param {string} messageType - Message type (e.g., 'accountCheck', 'platformNote')
+ * @returns {string|null} Message or null
+ */
+window.getPlatformMessage = function(platformId, messageType) {
+    const platform = window.getPlatformById(platformId);
+    if (!platform || !platform.messages) return null;
+    return platform.messages[messageType] || null;
+};
+
+// =========================================================================
+// INITIALIZATION LOG
+// =========================================================================
 console.log('✅ Platforms loaded:', window.platformData.length, 'platforms (', 
     window.getLivePlatformCount(), 'live,',
-    window.getComingSoonPlatforms().length, 'coming soon)');
+    window.getComingSoonPlatformCount(), 'coming soon)');
+console.log('   Hashtag-enabled platforms:', window.getHashtagPlatforms().map(p => p.name).join(', '));
+console.log('   Engagement test platforms:', window.getEngagementTestPlatforms().map(p => p.name).join(', ') || 'None active');
 
-// Backwards compatibility
+// =========================================================================
+// BACKWARDS COMPATIBILITY
+// =========================================================================
 window.PLATFORMS = window.platformData;
 var PLATFORMS = window.platformData;
-```
-
----
-
-Now here's the **updated final prompt** with your additions:
-
----
-```
-Claude, I need help updating ShadowBanCheck.io's front-end to reflect our refined offering structure. This is a foundational update before we build the detection engine.
-
-## OVERVIEW
-
-We're building a shadow ban detection tool focused on gathering intelligence, analyzing signals, and reporting with the best variables per platform.
-
-Key insights driving this update:
-
-1. A post URL check in isolation is incomplete - if an account is shadowbanned, ALL posts are affected. We can't accurately score a post without knowing the account status.
-
-2. Reddit doesn't use hashtags, so the Hashtag Checker shouldn't show Reddit as an option.
-
-3. Each platform has unique checks - the UI should adapt to show what's relevant per platform.
-
-4. Twitter has a unique "engagement test" where users interact with our test account (@ghost081280) so we can verify their visibility through legitimate API calls.
-
-5. Free searches have NO historical data - users must upgrade to Pro and store their account for us to track over time.
-
-6. Users should only search their OWN content - searching someone else's post will use the WRONG IP address in the calculation.
-
-## NEW OFFERING STRUCTURE
-
-KEEP:
-- Power Check (3-in-1) - Main feature, paste a post URL for full analysis
-- Account Checker - Standalone username check
-- Hashtag Checker - Pre-post hashtag research (with platform selector)
-
-REMOVE:
-- Post Checker standalone page - Merged into Power Check
-
-## PLATFORM LINEUP
-
-LIVE (2):
-- Twitter/X - Full support (Account, Post, Hashtags, Engagement Test)
-- Reddit - Full support (Account, Post, NO hashtags, Subreddit bans, Karma analysis)
-
-COMING SOON (5):
-- Instagram - Hashtag-heavy, creator demand
-- TikTok - FYP shadow bans
-- Facebook - News feed throttling
-- YouTube - Search/recommendation suppression
-- LinkedIn - Professional network reach analysis
-
-Keep "Suggest a Platform" option next to the platforms we analyze on the index page.
-
-## IMPORTANT USER WARNINGS TO DISPLAY
-
-### Free vs Pro - Historical Data Warning
-Display prominently on checker pages:
-"⚠️ Free checks have no historical data. Upgrade to Pro and save your account for tracking over time - historical patterns significantly improve accuracy."
-
-### Check Your OWN Content Warning
-Display on Power Check and Account Checker:
-"⚠️ Only check your own accounts and posts. Checking someone else's content will use YOUR IP address in the calculation, which skews the results."
-
-## FILES TO DELETE
-
-- post-checker.html
-- js/post-checker.js
-- css/post-checker.css
-
-## FILE UPDATES NEEDED
-
-### 1. js/platforms.js
-
-Replace entirely with new structure (provided separately) that includes:
-- Feature support flags per platform
-- Engagement test configuration for Twitter
-- Platform-specific checks and messages
-- New utility functions for filtering platforms by features
-- Reddit with supports.hashtagCheck: false
-
-### 2. index.html
-
-Updates needed:
-- Remove Post Checker from "Or check individually" section (keep only Account Checker and Hashtag Checker)
-- Remove Post Checker from navigation
-- Keep "Suggest a Platform" card in the platforms section
-- Add "checks preview" to Power Check showing what will be analyzed based on detected platform
-- Add platform detection message (e.g., "Reddit detected - hashtag analysis not applicable")
-- Expand the connection-step div with full Twitter engagement test UI
-- Add warning: "Only check your own posts - checking others uses your IP in calculation"
-- Update footer links removing Post Checker
-
-### 3. checker.html (Account Checker)
-
-Updates needed:
-- Add Twitter engagement test section when Twitter/X is selected
-- Add platform-specific messaging
-- Add cross-promotion section recommending Power Check and Hashtag Checker
-- Add warning about checking only your own account
-- Add note about free vs Pro historical data
-- Remove any Post Checker references
-- Update navigation
-
-### 4. hashtag-checker.html
-
-Updates needed:
-- ADD platform selector dropdown at top of form
-- Only show platforms that support hashtags (NOT Reddit)
-- Twitter/X as only live option, others as "Coming Soon" (disabled)
-- Add note: "Reddit does not use hashtags for discovery"
-- Add cross-promotion section recommending Power Check and Account Checker
-- Update supported platforms display to exclude Reddit
-- Remove any Post Checker references
-- Update navigation
-
-### 5. results.html
-
-Updates needed:
-- Make factor sections conditionally visible based on platform
-- If Reddit: Hide hashtag factor section OR show "Not applicable for Reddit"
-- If Reddit: Add subreddit bans section, karma analysis section
-- If Twitter: Add engagement test results section (if completed)
-- Update "Run Another Analysis" section - remove Post Checker
-- Add note if free user: "Upgrade to Pro for historical tracking and improved accuracy"
-- Remove Post Checker from navigation
-
-### 6. JavaScript files (index.js, checker.js, hashtag-checker.js, results.js)
-
-Updates needed:
-- Platform detection from URL
-- Show/hide engagement test based on platform
-- Show/hide checks preview based on platform
-- Handle engagement test checkbox tracking
-- Platform selector for hashtag checker (exclude Reddit)
-- Conditional rendering on results page
-- Warning displays for IP and historical data
-
-### 7. CSS files
-
-Add styles for:
-- Engagement test section (steps, progress bar, checkboxes)
-- Platform detection badge and checks preview
-- Cross-promotion sections
-- Warning/notice boxes
-- Conditional visibility classes
-- Omitted check styling (grayed out)
-- Platform-specific sections
-
-### 8. NEW FILE: js/flagged-words.js
-
-Create content scanning database with:
-- High risk terms (violence, hate, adult, spam, crypto scams)
-- Medium risk terms (political, health misinfo, promotional)
-- Low risk terms (engagement bait)
-- Pattern detection (excessive caps, emojis, hashtags)
-- Risk weights for scoring
-
-### 9. NEW FILE: js/banned-hashtags.js
-
-Create hashtag database with:
-- Banned hashtags by category
-- Restricted hashtags
-- Platform-specific restrictions
-- Safe alternatives to suggest
-- Risk weights for scoring
-
-## TWITTER ENGAGEMENT TEST UI
-
-When Twitter is detected, show section with:
-- Header: "Enhanced Analysis Available"
-- Four steps: Follow, Like, Retweet, Reply (each links to Twitter)
-- Progress indicator (0/4 completed)
-- Checkbox: "I've completed the steps above"
-- Skip option: "Skip → Run Basic Analysis"
-- Expandable "Why does this improve accuracy?" explanation
-
-## CROSS-PROMOTION SECTIONS
-
-Each checker page recommends the others:
-- Account Checker → Power Check (highlighted), Hashtag Checker
-- Hashtag Checker → Power Check (highlighted), Account Checker
-- Power Check → Account Checker, Hashtag Checker as "Or check individually"
-
-## WARNING BOXES
-
-Style these prominently but not intrusively:
-```html
-<div class="warning-box">
-    <span class="warning-icon">⚠️</span>
-    <div class="warning-content">
-        <strong>Check your own content only</strong>
-        <p>Checking someone else's post uses YOUR IP address, which skews results.</p>
-    </div>
-</div>
-
-<div class="info-box">
-    <span class="info-icon">💡</span>
-    <div class="info-content">
-        <strong>Want historical tracking?</strong>
-        <p>Free checks have no historical data. <a href="#pricing">Upgrade to Pro</a> and save your account for tracking over time.</p>
-    </div>
-</div>
-```
-
-## NAVIGATION
-
-All pages should have:
-- Home (Power Check)
-- Account Checker  
-- Hashtag Checker
-- Pricing
-- FAQ
-
-Remove Post Checker from all navigation, footers, and cross-links.
-
-## DEMO DATA
-
-Use demo data since API isn't connected:
-- Twitter result with engagement test, content scan, hashtag scan
-- Reddit result with subreddit bans, karma analysis, NO hashtag section
-
-## SUMMARY
-
-This update is about:
-1. Removing Post Checker (merged into Power Check)
-2. Making Hashtag Checker platform-aware (no Reddit)
-3. Adding Twitter engagement test UI
-4. Warning users to check only their own content
-5. Explaining free vs Pro historical data difference
-6. Platform-adaptive UI throughout
-7. Cross-promotion between tools
-8. Foundation for the detection engine
-
-Please update all files systematically. Start with platforms.js, then HTML files, then JS files, then CSS. Create the two new database files. Use demo data for testing.

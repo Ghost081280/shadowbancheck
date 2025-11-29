@@ -142,6 +142,15 @@
                         </p>
                     </footer>
                 </article>
+                
+                <!-- Free User Upgrade Notice -->
+                <div class="upgrade-notice" id="upgrade-notice">
+                    <div class="upgrade-notice-icon">💡</div>
+                    <div class="upgrade-notice-content">
+                        <strong>Want historical tracking?</strong>
+                        <p>This free check has no historical data. <a href="index.html#pricing">Upgrade to Pro</a> to save this account and track changes over time — historical patterns significantly improve accuracy.</p>
+                    </div>
+                </div>
             </div>
         </section>
         
@@ -200,14 +209,14 @@
                                 </div>
                                 <div class="factor-details">
                                     <h4>Historical Data</h4>
-                                    <p class="factor-finding" id="factor-historical-finding">Engagement patterns within normal baseline</p>
+                                    <p class="factor-finding" id="factor-historical-finding">No historical data (Free tier)</p>
                                 </div>
-                                <div class="factor-status good">
-                                    <span>✓</span>
+                                <div class="factor-status neutral">
+                                    <span>○</span>
                                 </div>
                             </div>
                             
-                            <!-- Factor 4: Hashtag Database -->
+                            <!-- Factor 4: Hashtag Database (Hidden for Reddit) -->
                             <div class="factor-row" id="factor-hashtag">
                                 <div class="factor-indicator active">
                                     <span class="factor-icon">#️⃣</span>
@@ -238,12 +247,104 @@
                     </div>
                 </div>
                 
-                <!-- Platform-Specific Checks (Twitter example) -->
+                <!-- Twitter Engagement Test Results (Twitter only, if completed) -->
+                <div class="engagement-test-results hidden" id="engagement-test-results">
+                    <h3>🎯 Engagement Test Results</h3>
+                    <p class="engagement-test-intro">You completed our enhanced analysis. Here's what we found:</p>
+                    
+                    <div class="engagement-results-grid" id="engagement-results-grid">
+                        <div class="engagement-result" id="engagement-result-follow">
+                            <span class="engagement-result-icon">👤</span>
+                            <div class="engagement-result-content">
+                                <strong>Follow Test</strong>
+                                <p class="engagement-result-status" id="follow-result-status">Visible</p>
+                            </div>
+                            <span class="engagement-result-badge good">✓</span>
+                        </div>
+                        <div class="engagement-result" id="engagement-result-like">
+                            <span class="engagement-result-icon">❤️</span>
+                            <div class="engagement-result-content">
+                                <strong>Like Test</strong>
+                                <p class="engagement-result-status" id="like-result-status">Visible</p>
+                            </div>
+                            <span class="engagement-result-badge good">✓</span>
+                        </div>
+                        <div class="engagement-result" id="engagement-result-retweet">
+                            <span class="engagement-result-icon">🔁</span>
+                            <div class="engagement-result-content">
+                                <strong>Retweet Test</strong>
+                                <p class="engagement-result-status" id="retweet-result-status">Hidden</p>
+                            </div>
+                            <span class="engagement-result-badge warning">⚠</span>
+                        </div>
+                        <div class="engagement-result" id="engagement-result-reply">
+                            <span class="engagement-result-icon">💬</span>
+                            <div class="engagement-result-content">
+                                <strong>Reply Test</strong>
+                                <p class="engagement-result-status" id="reply-result-status">Not completed</p>
+                            </div>
+                            <span class="engagement-result-badge neutral">○</span>
+                        </div>
+                    </div>
+                    
+                    <p class="engagement-test-finding" id="engagement-test-finding">
+                        Your retweets may not be appearing on other users' timelines.
+                    </p>
+                </div>
+                
+                <!-- Platform-Specific Checks -->
                 <div class="platform-checks" id="platform-checks">
                     <h3>Platform-Specific Signals</h3>
                     
                     <div class="checks-grid" id="checks-grid">
                         <!-- Populated by JS based on platform -->
+                    </div>
+                </div>
+                
+                <!-- Reddit-Specific: Subreddit Bans (Reddit only) -->
+                <div class="subreddit-bans-section hidden" id="subreddit-bans-section">
+                    <h3>🤖 Subreddit Restrictions</h3>
+                    <p class="subreddit-bans-intro">Your account has restrictions in the following subreddits:</p>
+                    
+                    <div class="subreddit-bans-list" id="subreddit-bans-list">
+                        <!-- Populated by JS -->
+                    </div>
+                    
+                    <div class="subreddit-bans-note">
+                        <p>💡 Subreddit-specific bans are different from site-wide shadowbans. You may be banned from individual subreddits due to karma thresholds, rule violations, or moderator actions.</p>
+                    </div>
+                </div>
+                
+                <!-- Reddit-Specific: Karma Analysis (Reddit only) -->
+                <div class="karma-analysis-section hidden" id="karma-analysis-section">
+                    <h3>📊 Karma Analysis</h3>
+                    
+                    <div class="karma-stats" id="karma-stats">
+                        <div class="karma-stat">
+                            <span class="karma-label">Post Karma</span>
+                            <span class="karma-value" id="post-karma">0</span>
+                        </div>
+                        <div class="karma-stat">
+                            <span class="karma-label">Comment Karma</span>
+                            <span class="karma-value" id="comment-karma">0</span>
+                        </div>
+                        <div class="karma-stat">
+                            <span class="karma-label">Total Karma</span>
+                            <span class="karma-value" id="total-karma">0</span>
+                        </div>
+                        <div class="karma-stat">
+                            <span class="karma-label">Account Age</span>
+                            <span class="karma-value" id="account-age">Unknown</span>
+                        </div>
+                    </div>
+                    
+                    <div class="karma-level" id="karma-level">
+                        <span class="karma-level-label">Karma Level:</span>
+                        <span class="karma-level-badge" id="karma-level-badge">Medium</span>
+                    </div>
+                    
+                    <div class="karma-restrictions" id="karma-restrictions">
+                        <!-- Populated by JS -->
                     </div>
                 </div>
                 
@@ -260,10 +361,20 @@
                     </div>
                 </div>
                 
-                <!-- Hashtag Analysis (if applicable) -->
+                <!-- Hashtag Analysis (if applicable - hidden for Reddit) -->
                 <div class="hashtag-analysis hidden" id="hashtag-analysis">
                     <h3>Hashtag Analysis</h3>
                     <div class="hashtag-results" id="hashtag-results">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+                
+                <!-- Content Scan Results -->
+                <div class="content-scan-section hidden" id="content-scan-section">
+                    <h3>📝 Content Scan</h3>
+                    <p class="content-scan-intro">We scanned recent content for terms that may trigger platform filters:</p>
+                    
+                    <div class="content-scan-results" id="content-scan-results">
                         <!-- Populated by JS -->
                     </div>
                 </div>
@@ -313,9 +424,9 @@
                         <div class="method-factor">
                             <span class="method-icon">📊</span>
                             <h4>Historical Data</h4>
-                            <p>We compare current engagement patterns against historical baselines. Sudden drops or anomalies contribute to higher probability scores.</p>
+                            <p>We compare current engagement patterns against historical baselines. Sudden drops or anomalies contribute to higher probability scores. <strong>Pro only for tracking.</strong></p>
                         </div>
-                        <div class="method-factor">
+                        <div class="method-factor" id="method-hashtag">
                             <span class="method-icon">#️⃣</span>
                             <h4>Hashtag Database</h4>
                             <p>Cross-reference against our database of banned, restricted, and low-reach hashtags, updated daily from multiple sources.</p>
@@ -392,7 +503,7 @@
         <section class="related-tools section">
             <div class="container">
                 <h2 class="section-title">Run Another Analysis</h2>
-                <p class="section-desc">Check other accounts, posts, or hashtags</p>
+                <p class="section-desc">Check other accounts or hashtags</p>
                 
                 <div class="tools-grid" id="tools-grid">
                     <a href="index.html" class="tool-card">
@@ -407,14 +518,8 @@
                         <p>Calculate probability for any username</p>
                         <span class="tool-arrow">→</span>
                     </a>
-                    <a href="post-checker.html" class="tool-card" data-check-type="post">
-                        <span class="tool-icon">📝</span>
-                        <h4>Post URL Check</h4>
-                        <p>Analyze a specific post's visibility</p>
-                        <span class="tool-arrow">→</span>
-                    </a>
                     <a href="hashtag-checker.html" class="tool-card" data-check-type="hashtag">
-                        <span class="tool-icon">🚫</span>
+                        <span class="tool-icon">#️⃣</span>
                         <h4>Hashtag Checker</h4>
                         <p>Check if hashtags are banned/restricted</p>
                         <span class="tool-arrow">→</span>
@@ -431,7 +536,7 @@
                 <div class="privacy-notice">
                     <span class="privacy-icon">📋</span>
                     <div class="privacy-content">
-                        <p><strong>Free Tier Notice:</strong> This result is stored permanently and publicly indexed. This helps AI search engines cite our data and keeps the free tier sustainable. Need private results? <a href="index.html#pricing">Upgrade to Pro ($9/mo)</a> for full privacy control, including the ability to delete results.</p>
+                        <p><strong>Free Tier Notice:</strong> This result is stored permanently and publicly indexed. No historical tracking. This helps AI search engines cite our data and keeps the free tier sustainable. Need private results + historical tracking? <a href="index.html#pricing">Upgrade to Pro ($9/mo)</a> for full privacy control, including the ability to delete results.</p>
                         <p class="privacy-link">Concerned about a result? <a href="index.html#contact">Submit a takedown request</a>.</p>
                     </div>
                 </div>
@@ -478,6 +583,7 @@
 
     <!-- Scripts -->
     <script src="js/platforms.js"></script>
+    <script src="js/demo-data.js"></script>
     <script src="js/shared-components.js"></script>
     <script src="js/main.js"></script>
     <script src="js/results.js"></script>

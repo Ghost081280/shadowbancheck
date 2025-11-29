@@ -24,6 +24,7 @@ let engagementTestSection, engagementSteps, engagementProgressFill, engagementPr
 let engagementConfirmed, skipEngagementBtn;
 let engineAnimation, powerCheckCard;
 let platformGrid, powerPlatformIcons;
+let initialized = false;
 
 // ============================================
 // STATE
@@ -40,16 +41,35 @@ let engagementStepsCompleted = {
 // INITIALIZATION
 // ============================================
 function init() {
-    // Wait for shared components to load
+    // Multiple initialization strategies for reliability
     document.addEventListener('sharedComponentsLoaded', onComponentsLoaded);
+    document.addEventListener('DOMContentLoaded', tryInit);
+    document.addEventListener('platformsReady', tryInit);
     
-    // Also try immediate init in case components already loaded
-    if (document.querySelector('header')) {
-        onComponentsLoaded();
+    // Fallback with delay
+    setTimeout(tryInit, 100);
+    setTimeout(tryInit, 300);
+}
+
+function tryInit() {
+    if (initialized) return;
+    if (!window.platformData) {
+        console.log('⏳ Waiting for platformData...');
+        return;
     }
+    onComponentsLoaded();
 }
 
 function onComponentsLoaded() {
+    if (initialized) return;
+    if (!window.platformData) {
+        setTimeout(onComponentsLoaded, 100);
+        return;
+    }
+    
+    initialized = true;
+    console.log('🚀 Index.js initializing...');
+    
     // Get DOM elements
     powerForm = document.getElementById('power-check-form');
     powerUrlInput = document.getElementById('power-url-input');
@@ -82,6 +102,8 @@ function onComponentsLoaded() {
     
     // Detect IP
     detectUserIP();
+    
+    console.log('✅ Index.js initialized');
 }
 
 // ============================================
@@ -142,7 +164,7 @@ function setupEventListeners() {
             if (typeof window.openShadowAI === 'function') {
                 window.openShadowAI();
             } else {
-                alert('Shadow AI coming soon!');
+                showToast('Shadow AI coming soon!', 'info');
             }
         });
     }
@@ -154,7 +176,7 @@ function setupEventListeners() {
             if (typeof window.openShadowAI === 'function') {
                 window.openShadowAI();
             } else {
-                alert('Shadow AI coming soon!');
+                showToast('Shadow AI coming soon!', 'info');
             }
         });
     }
@@ -184,7 +206,7 @@ function setupEventListeners() {
 // URL INPUT & PLATFORM DETECTION
 // ============================================
 function handleUrlInput() {
-    const url = powerUrlInput.value.trim();
+    const url = powerUrlInput ? powerUrlInput.value.trim() : '';
     
     if (!url) {
         hidePlatformDetection();
@@ -193,16 +215,22 @@ function handleUrlInput() {
         return;
     }
     
-    // Detect platform
-    const platform = window.detectPlatformFromUrl(url);
+    // Detect platform using the global function
+    const platform = window.detectPlatformFromUrl ? window.detectPlatformFromUrl(url) : null;
+    
+    console.log('🔍 URL detection:', url, '→', platform ? platform.name : 'none');
     
     if (platform) {
         currentPlatform = platform;
         showPlatformDetection(platform);
         updateChecksPreview(platform);
         
-        // Show engagement test for Twitter
-        if (platform.id === 'twitter' && platform.supports.engagementTest) {
+        // Show engagement test for Twitter (with proper null checking)
+        if (platform.id === 'twitter' && 
+            platform.supports && 
+            platform.supports.engagementTest && 
+            platform.engagementTest && 
+            platform.engagementTest.enabled) {
             showEngagementTest();
         } else {
             hideEngagementTest();
@@ -215,24 +243,28 @@ function handleUrlInput() {
 }
 
 function showPlatformDetection(platform) {
-    if (!platformDetected) return;
+    if (!platformDetected || !platform) return;
     
     platformDetected.classList.remove('hidden');
-    detectedPlatformIcon.textContent = platform.icon;
-    detectedPlatformName.textContent = platform.name;
     
-    // Show platform note if applicable
-    if (platform.messages && platform.messages.platformNote) {
-        platformDetectedNote.textContent = platform.messages.platformNote;
-        platformDetectedNote.classList.remove('hidden');
-    } else {
-        platformDetectedNote.classList.add('hidden');
+    if (detectedPlatformIcon) {
+        detectedPlatformIcon.textContent = platform.icon;
+    }
+    if (detectedPlatformName) {
+        detectedPlatformName.textContent = platform.name;
     }
     
-    // Handle platform-specific UI
-    if (platform.id === 'reddit') {
-        platformDetectedNote.textContent = 'Reddit does not use hashtags — hashtag analysis will be skipped.';
-        platformDetectedNote.classList.remove('hidden');
+    // Show platform note if applicable
+    if (platformDetectedNote) {
+        if (platform.messages && platform.messages.platformNote) {
+            platformDetectedNote.textContent = platform.messages.platformNote;
+            platformDetectedNote.classList.remove('hidden');
+        } else if (platform.id === 'reddit') {
+            platformDetectedNote.textContent = 'Reddit does not use hashtags — hashtag analysis will be skipped.';
+            platformDetectedNote.classList.remove('hidden');
+        } else {
+            platformDetectedNote.classList.add('hidden');
+        }
     }
 }
 
@@ -243,19 +275,22 @@ function hidePlatformDetection() {
 }
 
 function updateChecksPreview(platform) {
-    if (!previewHashtag) return;
+    if (!previewHashtag || !platform) return;
+    
+    const statusEl = previewHashtag.querySelector('.preview-status');
+    if (!statusEl) return;
     
     // Update hashtag check visibility based on platform
-    if (platform.supports.hashtagCheck === false) {
+    if (platform.supports && platform.supports.hashtagCheck === false) {
         previewHashtag.classList.add('check-na');
-        previewHashtag.querySelector('.preview-status').textContent = 'N/A';
-        previewHashtag.querySelector('.preview-status').classList.remove('active');
-        previewHashtag.querySelector('.preview-status').classList.add('na');
+        statusEl.textContent = 'N/A';
+        statusEl.classList.remove('active');
+        statusEl.classList.add('na');
     } else {
         previewHashtag.classList.remove('check-na');
-        previewHashtag.querySelector('.preview-status').textContent = '✓';
-        previewHashtag.querySelector('.preview-status').classList.add('active');
-        previewHashtag.querySelector('.preview-status').classList.remove('na');
+        statusEl.textContent = '✓';
+        statusEl.classList.add('active');
+        statusEl.classList.remove('na');
     }
 }
 
@@ -330,14 +365,14 @@ function handleSkipEngagement() {
 function handlePowerCheckSubmit(e) {
     e.preventDefault();
     
-    const url = powerUrlInput.value.trim();
+    const url = powerUrlInput ? powerUrlInput.value.trim() : '';
     if (!url) {
         showToast('Please enter a post URL', 'error');
         return;
     }
     
     if (!currentPlatform) {
-        showToast('Could not detect platform from URL', 'error');
+        showToast('Could not detect platform from URL. Supported: Twitter/X, Reddit', 'error');
         return;
     }
     
@@ -378,12 +413,14 @@ function showEngineAnimation() {
 
 function runEngineAnimation() {
     const terminalOutput = document.getElementById('terminal-output');
+    const isReddit = currentPlatform && currentPlatform.id === 'reddit';
+    
     const factors = [
-        { id: 'factor-1-progress', message: '> Querying Platform API...', delay: 500 },
-        { id: 'factor-2-progress', message: '> Running web analysis from U.S. servers...', delay: 1000 },
-        { id: 'factor-3-progress', message: '> Checking historical patterns...', delay: 1500 },
-        { id: 'factor-4-progress', message: '> Scanning hashtag database...', delay: 2000 },
-        { id: 'factor-5-progress', message: '> Analyzing your IP connection...', delay: 2500 }
+        { id: 'factor-1-progress', message: '> Querying Platform API...', delay: 500, active: true },
+        { id: 'factor-2-progress', message: '> Running web analysis from U.S. servers...', delay: 1000, active: true },
+        { id: 'factor-3-progress', message: '> Checking historical patterns...', delay: 1500, active: true },
+        { id: 'factor-4-progress', message: isReddit ? '> Hashtag analysis... (skipped for Reddit)' : '> Scanning hashtag database...', delay: 2000, active: !isReddit },
+        { id: 'factor-5-progress', message: '> Analyzing your IP connection...', delay: 2500, active: true }
     ];
     
     // Clear terminal
@@ -392,7 +429,7 @@ function runEngineAnimation() {
     }
     
     // Animate each factor
-    factors.forEach((factor, index) => {
+    factors.forEach((factor) => {
         setTimeout(() => {
             // Add terminal line
             if (terminalOutput) {
@@ -408,9 +445,15 @@ function runEngineAnimation() {
             if (factorEl) {
                 const status = factorEl.querySelector('.factor-status');
                 if (status) {
-                    status.textContent = '✓';
-                    status.classList.remove('pending');
-                    status.classList.add('complete');
+                    if (factor.active) {
+                        status.textContent = '✓';
+                        status.classList.remove('pending');
+                        status.classList.add('complete');
+                    } else {
+                        status.textContent = '—';
+                        status.classList.remove('pending');
+                        status.classList.add('na');
+                    }
                 }
             }
         }, factor.delay);
@@ -450,11 +493,13 @@ function simulateAnalysis(withEngagement) {
         if (demoResult) {
             demoResult.withEngagement = withEngagement;
             demoResult.engagementSteps = { ...engagementStepsCompleted };
+            demoResult.checkType = 'power';
+            demoResult.factorsUsed = 5;
             sessionStorage.setItem('lastAnalysisResult', JSON.stringify(demoResult));
         }
         
         // Redirect to results page
-        window.location.href = `results.html?platform=${platformId}&demo=true`;
+        window.location.href = `results.html?platform=${platformId}&type=power&demo=true`;
     }, 5000);
 }
 
@@ -506,7 +551,7 @@ function populatePlatformGrid() {
                 return;
             }
             
-            const platform = window.getPlatformById(platformId);
+            const platform = window.getPlatformById ? window.getPlatformById(platformId) : null;
             if (platform) {
                 showPlatformModal(platform);
             }
@@ -535,7 +580,7 @@ function populatePlatformIcons() {
     powerPlatformIcons.querySelectorAll('.platform-icon-badge').forEach(icon => {
         icon.addEventListener('click', () => {
             const platformId = icon.dataset.platform;
-            const platform = window.platformData.find(p => p.id === platformId);
+            const platform = window.getPlatformById ? window.getPlatformById(platformId) : null;
             if (platform) {
                 showPlatformModal(platform);
             }
@@ -550,22 +595,28 @@ function showPlatformModal(platform) {
     const modalStatus = document.getElementById('modal-status');
     const modalBody = document.getElementById('modal-body');
     
-    if (!modal) return;
+    if (!modal || !platform) return;
     
-    modalIcon.textContent = platform.icon;
-    modalTitle.textContent = `${platform.name} Analysis`;
+    if (modalIcon) modalIcon.textContent = platform.icon;
+    if (modalTitle) modalTitle.textContent = `${platform.name} Analysis`;
     
-    const statusClass = platform.status === 'live' ? 'live' : 'soon';
-    const statusText = platform.status === 'live' ? 'Live' : 'Coming Soon';
-    modalStatus.innerHTML = `<span class="status-badge ${statusClass}">● ${statusText}</span>`;
+    if (modalStatus) {
+        const statusClass = platform.status === 'live' ? 'live' : 'soon';
+        const statusText = platform.status === 'live' ? 'Live' : 'Coming Soon';
+        modalStatus.innerHTML = `<span class="status-badge ${statusClass}">● ${statusText}</span>`;
+    }
     
     // Build checks list
     let checksHtml = '<h4>Signals We Analyze:</h4><ul class="check-list" id="modal-checks">';
     
-    if (platform.accountChecks) {
+    if (platform.accountChecks && platform.accountChecks.length > 0) {
         platform.accountChecks.forEach(check => {
             checksHtml += `<li>${check}</li>`;
         });
+    } else {
+        checksHtml += '<li>Account visibility analysis</li>';
+        checksHtml += '<li>Search presence detection</li>';
+        checksHtml += '<li>Profile accessibility</li>';
     }
     
     checksHtml += '</ul>';
@@ -575,7 +626,7 @@ function showPlatformModal(platform) {
         checksHtml += `<p class="platform-modal-note">💡 ${platform.messages.platformNote}</p>`;
     }
     
-    modalBody.innerHTML = checksHtml;
+    if (modalBody) modalBody.innerHTML = checksHtml;
     
     openModal('platform-modal');
 }
@@ -646,9 +697,13 @@ function showFactorInfo(factorId) {
     const modal = document.getElementById('factor-info-modal');
     if (!modal) return;
     
-    document.getElementById('factor-modal-icon').textContent = data.icon;
-    document.getElementById('factor-modal-title').textContent = data.title;
-    document.getElementById('factor-modal-body').innerHTML = `<p>${data.content}</p>`;
+    const iconEl = document.getElementById('factor-modal-icon');
+    const titleEl = document.getElementById('factor-modal-title');
+    const bodyEl = document.getElementById('factor-modal-body');
+    
+    if (iconEl) iconEl.textContent = data.icon;
+    if (titleEl) titleEl.textContent = data.title;
+    if (bodyEl) bodyEl.innerHTML = `<p>${data.content}</p>`;
     
     openModal('factor-info-modal');
 }
@@ -683,9 +738,13 @@ function showAudienceInfo(audience) {
     const modal = document.getElementById('audience-modal');
     if (!modal) return;
     
-    document.getElementById('audience-modal-icon').textContent = data.icon;
-    document.getElementById('audience-modal-title').textContent = data.title;
-    document.getElementById('audience-modal-body').innerHTML = data.content;
+    const iconEl = document.getElementById('audience-modal-icon');
+    const titleEl = document.getElementById('audience-modal-title');
+    const bodyEl = document.getElementById('audience-modal-body');
+    
+    if (iconEl) iconEl.textContent = data.icon;
+    if (titleEl) titleEl.textContent = data.title;
+    if (bodyEl) bodyEl.innerHTML = data.content;
     
     openModal('audience-modal');
 }
@@ -728,8 +787,20 @@ function detectUserIP() {
 // TOAST
 // ============================================
 function showToast(message, type = 'info') {
-    const toast = document.getElementById('toast');
-    if (!toast) return;
+    // Try global toast first
+    if (window.showToast && typeof window.showToast === 'function') {
+        window.showToast(message, type);
+        return;
+    }
+    
+    // Fallback to local toast
+    let toast = document.getElementById('toast');
+    if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'toast';
+        toast.className = 'toast';
+        document.body.appendChild(toast);
+    }
     
     toast.textContent = message;
     toast.className = `toast ${type} show`;

@@ -105,7 +105,7 @@ function initModalHandlers() {
 /* =============================================================================
    TOAST NOTIFICATION
    ============================================================================= */
-function showToast(message) {
+function showToast(message, type = 'info') {
     let toast = document.getElementById('toast');
     if (!toast) {
         toast = document.createElement('div');
@@ -115,9 +115,87 @@ function showToast(message) {
     }
     
     toast.textContent = message;
-    toast.classList.add('visible');
+    toast.className = `toast ${type}`;
     
-    setTimeout(() => toast.classList.remove('visible'), 3000);
+    // Force reflow to restart animation
+    toast.offsetHeight;
+    
+    toast.classList.add('visible');
+    toast.classList.add('show');
+    
+    setTimeout(() => {
+        toast.classList.remove('visible');
+        toast.classList.remove('show');
+    }, 3000);
+}
+
+/* =============================================================================
+   COOKIE POPUP
+   ============================================================================= */
+function initCookiePopup() {
+    const popup = document.getElementById('cookie-popup');
+    const acceptBtn = document.getElementById('cookie-accept');
+    const dismissBtn = document.getElementById('cookie-dismiss');
+    
+    if (!popup) return;
+    
+    // Check if already accepted
+    const cookieAccepted = localStorage.getItem('cookiesAccepted');
+    
+    if (!cookieAccepted) {
+        // Show popup after a short delay
+        setTimeout(() => {
+            popup.classList.add('show');
+        }, 1500);
+    }
+    
+    // Accept button
+    if (acceptBtn) {
+        acceptBtn.addEventListener('click', () => {
+            localStorage.setItem('cookiesAccepted', 'true');
+            popup.classList.add('dismissed');
+            setTimeout(() => {
+                popup.classList.remove('show');
+                popup.classList.remove('dismissed');
+            }, 400);
+        });
+    }
+    
+    // Dismiss button
+    if (dismissBtn) {
+        dismissBtn.addEventListener('click', () => {
+            popup.classList.add('dismissed');
+            setTimeout(() => {
+                popup.classList.remove('show');
+                popup.classList.remove('dismissed');
+            }, 400);
+        });
+    }
+}
+
+/* =============================================================================
+   FAQ ACCORDION
+   ============================================================================= */
+function initFaqAccordion() {
+    const faqItems = document.querySelectorAll('.faq-item');
+    
+    faqItems.forEach(item => {
+        const question = item.querySelector('.faq-question');
+        
+        if (question) {
+            question.addEventListener('click', () => {
+                // Close other items
+                faqItems.forEach(otherItem => {
+                    if (otherItem !== item && otherItem.classList.contains('active')) {
+                        otherItem.classList.remove('active');
+                    }
+                });
+                
+                // Toggle current item
+                item.classList.toggle('active');
+            });
+        }
+    });
 }
 
 /* =============================================================================
@@ -172,6 +250,60 @@ function initBackToTop() {
 }
 
 /* =============================================================================
+   PLATFORM HELPER FUNCTIONS (Global accessors for platforms.js data)
+   ============================================================================= */
+
+// These functions provide global access to platform data
+// The actual data and logic is in platforms.js
+
+function getPlatformById(id) {
+    if (window.getPlatformById) {
+        return window.getPlatformById(id);
+    }
+    if (window.platformData) {
+        return window.platformData.find(p => p.id === id);
+    }
+    return null;
+}
+
+function getLivePlatforms() {
+    if (window.getLivePlatforms) {
+        return window.getLivePlatforms();
+    }
+    if (window.platformData) {
+        return window.platformData.filter(p => p.status === 'live');
+    }
+    return [];
+}
+
+function getComingSoonPlatforms() {
+    if (window.getComingSoonPlatforms) {
+        return window.getComingSoonPlatforms();
+    }
+    if (window.platformData) {
+        return window.platformData.filter(p => p.status === 'soon');
+    }
+    return [];
+}
+
+function getHashtagPlatforms() {
+    if (window.getHashtagPlatforms) {
+        return window.getHashtagPlatforms();
+    }
+    if (window.platformData) {
+        return window.platformData.filter(p => p.supports && p.supports.hashtagCheck !== false);
+    }
+    return [];
+}
+
+function detectPlatformFromUrl(url) {
+    if (window.detectPlatformFromUrl) {
+        return window.detectPlatformFromUrl(url);
+    }
+    return null;
+}
+
+/* =============================================================================
    INITIALIZE SHARED FUNCTIONALITY
    ============================================================================= */
 function initSharedFunctionality() {
@@ -180,6 +312,8 @@ function initSharedFunctionality() {
     initScrollReveal();
     initHeaderScroll();
     initBackToTop();
+    initCookiePopup();
+    initFaqAccordion();
     
     console.log('✅ Shared functionality initialized');
 }
@@ -208,10 +342,23 @@ Object.assign(window.ShadowBan, {
     openModal,
     closeModal,
     sleep,
-    debounce
+    debounce,
+    getPlatformById,
+    getLivePlatforms,
+    getComingSoonPlatforms,
+    getHashtagPlatforms,
+    detectPlatformFromUrl
 });
 
-// Make closeModal and closeLimitModal globally accessible
+// Make functions globally accessible
 window.closeModal = closeModal;
 window.closeLimitModal = () => closeModal('limit-modal');
 window.showToast = showToast;
+window.openModal = openModal;
+
+// Platform helpers (fallbacks if platforms.js not loaded)
+if (!window.getPlatformById) window.getPlatformById = getPlatformById;
+if (!window.getLivePlatforms) window.getLivePlatforms = getLivePlatforms;
+if (!window.getComingSoonPlatforms) window.getComingSoonPlatforms = getComingSoonPlatforms;
+if (!window.getHashtagPlatforms) window.getHashtagPlatforms = getHashtagPlatforms;
+if (!window.detectPlatformFromUrl) window.detectPlatformFromUrl = detectPlatformFromUrl;

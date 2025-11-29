@@ -89,6 +89,15 @@
                     </div>
                 </div>
                 
+                <!-- Warning: Check Your Own Account -->
+                <div class="warning-box">
+                    <span class="warning-icon">⚠️</span>
+                    <div class="warning-content">
+                        <strong>Check your own account only</strong>
+                        <p>Checking someone else's account uses YOUR IP address in the calculation, which skews results.</p>
+                    </div>
+                </div>
+                
                 <form id="account-check-form" class="checker-form">
                     <div class="input-group">
                         <div class="input-row">
@@ -104,6 +113,12 @@
                             <span id="platform-status">Select a platform to continue</span>
                             <span id="checks-remaining-display">Free results are permanent & public</span>
                         </div>
+                    </div>
+                    
+                    <!-- Platform-specific note (shows when platform selected) -->
+                    <div class="platform-note hidden" id="platform-note">
+                        <span class="platform-note-icon">💡</span>
+                        <span class="platform-note-text" id="platform-note-text"></span>
                     </div>
                     
                     <!-- IP Display -->
@@ -123,10 +138,105 @@
                     </button>
                 </form>
                 
+                <!-- Twitter Engagement Test Section (Shows when Twitter selected) -->
+                <div class="engagement-test-section hidden" id="engagement-test-section">
+                    <div class="engagement-test-header">
+                        <span class="engagement-test-icon">🎯</span>
+                        <div class="engagement-test-title">
+                            <strong>Enhanced Analysis Available</strong>
+                            <p>Complete these steps for maximum accuracy</p>
+                        </div>
+                    </div>
+                    
+                    <div class="engagement-test-steps" id="engagement-test-steps">
+                        <div class="engagement-step" data-step="follow">
+                            <input type="checkbox" id="step-follow" class="engagement-checkbox">
+                            <label for="step-follow" class="engagement-step-content">
+                                <span class="step-number">1</span>
+                                <span class="step-icon">👤</span>
+                                <span class="step-text">Follow @ghost081280</span>
+                                <a href="https://twitter.com/intent/follow?screen_name=ghost081280" target="_blank" rel="noopener" class="step-action-btn">Follow →</a>
+                            </label>
+                        </div>
+                        
+                        <div class="engagement-step" data-step="like">
+                            <input type="checkbox" id="step-like" class="engagement-checkbox">
+                            <label for="step-like" class="engagement-step-content">
+                                <span class="step-number">2</span>
+                                <span class="step-icon">❤️</span>
+                                <span class="step-text">Like our pinned tweet</span>
+                                <a href="https://twitter.com/ghost081280" target="_blank" rel="noopener" class="step-action-btn">View →</a>
+                            </label>
+                        </div>
+                        
+                        <div class="engagement-step" data-step="retweet">
+                            <input type="checkbox" id="step-retweet" class="engagement-checkbox">
+                            <label for="step-retweet" class="engagement-step-content">
+                                <span class="step-number">3</span>
+                                <span class="step-icon">🔁</span>
+                                <span class="step-text">Retweet our pinned tweet</span>
+                                <a href="https://twitter.com/ghost081280" target="_blank" rel="noopener" class="step-action-btn">View →</a>
+                            </label>
+                        </div>
+                        
+                        <div class="engagement-step" data-step="reply">
+                            <input type="checkbox" id="step-reply" class="engagement-checkbox">
+                            <label for="step-reply" class="engagement-step-content">
+                                <span class="step-number">4</span>
+                                <span class="step-icon">💬</span>
+                                <span class="step-text">Reply with "check @yourusername"</span>
+                                <a href="https://twitter.com/ghost081280" target="_blank" rel="noopener" class="step-action-btn">Reply →</a>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="engagement-progress">
+                        <div class="engagement-progress-bar">
+                            <div class="engagement-progress-fill" id="engagement-progress-fill" style="width: 0%"></div>
+                        </div>
+                        <span class="engagement-progress-text" id="engagement-progress-text">0 of 4 steps completed</span>
+                    </div>
+                    
+                    <div class="engagement-confirm">
+                        <label class="engagement-confirm-label">
+                            <input type="checkbox" id="engagement-confirmed" class="engagement-confirm-checkbox">
+                            <span class="checkmark"></span>
+                            <span>I've completed the steps above</span>
+                        </label>
+                    </div>
+                    
+                    <div class="engagement-skip">
+                        <button type="button" class="btn-skip-engagement" id="skip-engagement-btn">
+                            Skip → Run Basic Analysis
+                        </button>
+                        <p class="skip-note">Basic analysis uses 4 factors. Enhanced uses 5+ signals.</p>
+                    </div>
+                    
+                    <details class="engagement-why">
+                        <summary>Why does this improve accuracy?</summary>
+                        <div class="engagement-why-content">
+                            <p><strong>Follow:</strong> Lets us check if your content appears to followers vs non-followers.</p>
+                            <p><strong>Like:</strong> Helps verify your engagement actions are visible to others.</p>
+                            <p><strong>Retweet:</strong> Tests if your retweets appear on timelines or are hidden.</p>
+                            <p><strong>Reply:</strong> Verifies your replies aren't being hidden behind "Show more replies".</p>
+                            <p class="engagement-why-note">Without these steps, we run fewer visibility tests but still calculate a probability score based on available signals.</p>
+                        </div>
+                    </details>
+                </div>
+                
                 <div class="checker-features">
                     <span>✓ 5-Factor Detection Engine</span>
                     <span>✓ Probability score in 60 seconds</span>
                     <span>✓ Permanent results page</span>
+                </div>
+                
+                <!-- Info Box: Historical Data -->
+                <div class="info-box">
+                    <span class="info-icon">💡</span>
+                    <div class="info-content">
+                        <strong>Want historical tracking?</strong>
+                        <p>Free checks have no historical data. <a href="index.html#pricing">Upgrade to Pro</a> and save your account for tracking over time — historical patterns significantly improve accuracy.</p>
+                    </div>
                 </div>
                 
                 <div class="checker-note">
@@ -297,7 +407,7 @@
                     <div class="method-card">
                         <span class="method-icon">📊</span>
                         <h4>Historical Pattern Analysis</h4>
-                        <p>We compare your current visibility against historical baselines to detect anomalies in your account's reach.</p>
+                        <p>We compare your current visibility against historical baselines to detect anomalies in your account's reach. <strong>Pro only for tracking.</strong></p>
                     </div>
                     
                     <div class="method-card">
@@ -328,14 +438,6 @@
                     <div class="cross-promote-content">
                         <h3>Power Check <span class="badge-new">3-in-1</span></h3>
                         <p>Account + Post + Hashtag analysis in one scan</p>
-                    </div>
-                    <span class="cross-promote-arrow">→</span>
-                </a>
-                <a href="post-checker.html" class="cross-promote-card">
-                    <span class="cross-promote-icon">📝</span>
-                    <div class="cross-promote-content">
-                        <h3>Post URL Checker</h3>
-                        <p>Check if a specific post is being shown or restricted</p>
                     </div>
                     <span class="cross-promote-arrow">→</span>
                 </a>
@@ -399,7 +501,7 @@
                         <span class="factor-icon">📊</span>
                         <div class="factor-content">
                             <span class="factor-name">Historical Data</span>
-                            <span class="factor-desc">Baseline comparisons from tracked accounts</span>
+                            <span class="factor-desc">Baseline comparisons (Pro only for tracking)</span>
                         </div>
                     </li>
                     <li class="factor-inactive">
@@ -457,7 +559,7 @@
                 
                 <div class="modal-privacy-note">
                     <h4>📋 Free Tier Notice</h4>
-                    <p>Free results are stored permanently and publicly indexed for SEO. This helps us provide the service for free. Upgrade to Pro for private results with deletion capability.</p>
+                    <p>Free results are stored permanently and publicly indexed for SEO. No historical tracking. Upgrade to Pro for private results with deletion capability and historical tracking over time.</p>
                 </div>
             </div>
             <div class="modal-footer">
@@ -475,6 +577,7 @@
 
     <!-- Scripts -->
     <script src="js/platforms.js"></script>
+    <script src="js/demo-data.js"></script>
     <script src="js/shared-components.js"></script>
     <script src="js/main.js"></script>
     <script src="js/checker.js"></script>

@@ -89,6 +89,113 @@
 }
 
 /* =============================================================================
+   1.5. PLATFORM SELECTOR
+   ============================================================================= */
+.platform-selector-group {
+    margin-bottom: var(--space-lg);
+}
+
+.platform-selector-label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: var(--space-xs);
+}
+
+.platform-select-wrapper {
+    position: relative;
+}
+
+.platform-select {
+    width: 100%;
+    padding: var(--space-sm) var(--space-md);
+    padding-right: var(--space-2xl);
+    background: var(--card);
+    border: 2px solid var(--border);
+    border-radius: var(--radius-md);
+    color: var(--text);
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236366f1' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right var(--space-md) center;
+}
+
+.platform-select:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+}
+
+.platform-select option {
+    background: var(--card);
+    color: var(--text);
+    padding: var(--space-sm);
+}
+
+.platform-select option:disabled {
+    color: var(--text-muted);
+}
+
+.platform-selector-note {
+    margin-top: var(--space-xs);
+    font-size: 0.8125rem;
+    color: var(--text-muted);
+}
+
+/* =============================================================================
+   1.6. REDDIT NOTICE - STARTS HIDDEN
+   ============================================================================= */
+.reddit-notice {
+    display: none; /* Hidden by default */
+    align-items: flex-start;
+    gap: var(--space-md);
+    padding: var(--space-md);
+    background: rgba(255, 69, 0, 0.1);
+    border: 1px solid rgba(255, 69, 0, 0.3);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--space-lg);
+}
+
+/* Show when not hidden */
+.reddit-notice:not(.hidden) {
+    display: flex;
+}
+
+/* Ensure hidden class works */
+.reddit-notice.hidden {
+    display: none !important;
+}
+
+.reddit-notice-icon {
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+.reddit-notice-content {
+    flex: 1;
+}
+
+.reddit-notice-content strong {
+    display: block;
+    margin-bottom: var(--space-xs);
+    color: var(--text-primary);
+}
+
+.reddit-notice-content p {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    margin: 0;
+}
+
+.reddit-notice-content a {
+    color: var(--primary-light);
+}
+
+/* =============================================================================
    2. FORM INPUTS
    ============================================================================= */
 .checker-form {
@@ -420,6 +527,16 @@
 }
 .factor-progress .factor-status.complete { color: var(--success); }
 .factor-progress .factor-status.skipped { color: var(--text-muted); opacity: 0.5; }
+.factor-progress .factor-status.na { color: var(--text-muted); opacity: 0.5; }
+
+/* Factor inactive state */
+.factor-progress.factor-inactive {
+    opacity: 0.5;
+}
+
+.factor-progress.factor-inactive .factor-status {
+    color: var(--text-muted);
+}
 
 @keyframes blink {
     0%, 100% { opacity: 1; }
@@ -797,9 +914,9 @@
    ============================================================================= */
 .cross-promote-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, 1fr);
     gap: var(--space-lg);
-    max-width: 1000px;
+    max-width: 800px;
     margin: 0 auto;
 }
 
@@ -999,6 +1116,10 @@
     .hashtag-checker-card .checker-features {
         flex-direction: column;
         align-items: center;
+    }
+    
+    .engine-factors-progress {
+        grid-template-columns: repeat(2, 1fr);
     }
 }
 

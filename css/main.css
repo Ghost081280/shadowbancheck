@@ -3670,6 +3670,20 @@ strong, b {
     color: var(--text-muted);
 }
 
+/* Support for both factor-status and factor-compact-status class names */
+.factor-compact-status {
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+.factor-compact-status.pending { color: var(--text-muted); }
+.factor-compact-status.running {
+    color: var(--warning);
+    animation: blink 0.5s ease-in-out infinite;
+}
+.factor-compact-status.complete { color: var(--success); }
+.factor-compact-status.na { color: var(--text-muted); opacity: 0.5; }
+
 /* =============================================================================
    12. RESPONSIVE BREAKPOINTS
    ============================================================================= */

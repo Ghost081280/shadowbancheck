@@ -1,991 +1,826 @@
 /* =============================================================================
    RESULTS.JS - Results Page Functionality
-   AI-Optimized "Short Answer + Deep Dive" Format
+   ShadowBanCheck.io
+   
+   Handles:
+   - Loading and displaying analysis results
+   - Platform-adaptive section rendering
+   - Reddit-specific: subreddit bans, karma analysis (no hashtags)
+   - Twitter-specific: engagement test results
+   - Sharing and download functionality
    ============================================================================= */
 
-/* =============================================================================
-   INITIALIZATION
-   ============================================================================= */
-document.addEventListener('DOMContentLoaded', function() {
-    loadResults();
-    initActions();
-    initShareButtons();
-    console.log('✅ Results page initialized');
-});
+(function() {
+'use strict';
 
-/* =============================================================================
-   LOAD RESULTS
-   ============================================================================= */
-function loadResults() {
-    // Try to get results from URL params or sessionStorage
-    const urlParams = new URLSearchParams(window.location.search);
-    const storedResults = sessionStorage.getItem('shadowban_results');
+// ============================================
+// STATE
+// ============================================
+let resultData = null;
+let platform = null;
+
+// ============================================
+// INITIALIZATION
+// ============================================
+function init() {
+    document.addEventListener('sharedComponentsLoaded', onComponentsLoaded);
     
-    let results = null;
-    
-    // Priority: sessionStorage (fresh results), then URL params (for demo/testing)
-    if (storedResults) {
-        try {
-            results = JSON.parse(storedResults);
-        } catch (e) {
-            console.error('Failed to parse stored results:', e);
-        }
+    if (document.querySelector('header')) {
+        onComponentsLoaded();
     }
-    
-    // If no stored results, check for demo mode via URL
-    if (!results && urlParams.has('demo')) {
-        results = generateDemoResults(urlParams.get('demo'));
-    }
-    
-    // If still no results, redirect to home
-    if (!results) {
-        console.log('No results found, redirecting to home');
-        window.location.href = 'index.html';
-        return;
-    }
-    
-    // Store for Shadow AI access
-    window.latestScanResults = results;
-    window.lastSearchType = results.type || 'power';
-    
-    // Display results
-    displayResults(results);
-    
-    // Update page metadata for SEO/AI
-    updatePageMetadata(results);
-    
-    // Update permanent URL display
-    updatePermanentUrl(results);
 }
 
-/* =============================================================================
-   DISPLAY RESULTS - Short Answer + Deep Dive
-   ============================================================================= */
-function displayResults(results) {
-    const { platform, username, probability, verdict, verdictText, findings, factors, verification, ipData, contentScan } = results;
+function onComponentsLoaded() {
+    // Load result data
+    loadResultData();
     
-    // === SHORT ANSWER SECTION ===
+    // Setup event listeners
+    setupEventListeners();
+}
+
+// ============================================
+// LOAD RESULT DATA
+// ============================================
+function loadResultData() {
+    // Get URL parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const platformId = urlParams.get('platform') || 'twitter';
+    const isDemo = urlParams.get('demo') === 'true';
+    const checkType = urlParams.get('type') || 'account';
+    
+    // Get platform info
+    platform = window.getPlatformById(platformId);
+    
+    // Try to get data from session storage
+    const storedResult = sessionStorage.getItem('lastAnalysisResult');
+    
+    if (storedResult) {
+        resultData = JSON.parse(storedResult);
+    } else if (isDemo && window.DemoData) {
+        // Use demo data
+        resultData = window.DemoData.getResult(platformId, checkType === 'hashtag' ? 'hashtagCheck' : 'accountCheck');
+    }
+    
+    if (resultData) {
+        renderResults();
+    } else {
+        showNoResults();
+    }
+}
+
+// ============================================
+// RENDER RESULTS
+// ============================================
+function renderResults() {
+    // Update page title and meta
+    updatePageMeta();
+    
+    // Update platform badge
+    updatePlatformBadge();
+    
+    // Update probability display
+    updateProbabilityDisplay();
+    
+    // Update key findings
+    updateKeyFindings();
+    
+    // Update factors breakdown
+    updateFactorsBreakdown();
+    
+    // Platform-specific sections
+    renderPlatformSpecificSections();
+    
+    // Update recommendations
+    updateRecommendations();
+    
+    // Update share URLs
+    updateShareUrls();
+}
+
+// ============================================
+// PAGE META
+// ============================================
+function updatePageMeta() {
+    const username = resultData.username || 'Unknown';
+    const probability = resultData.probability || 0;
+    const platformName = platform ? platform.name : 'Unknown';
+    
+    // Title
+    document.title = `${username} - ${probability}% Shadow Ban Probability | ShadowBanCheck.io`;
+    
+    // Meta description
+    const metaDesc = document.getElementById('page-description');
+    if (metaDesc) {
+        metaDesc.content = `Shadow ban probability analysis for ${username} on ${platformName}: ${probability}% probability based on 5-Factor Detection Engine.`;
+    }
     
     // Breadcrumb
     const breadcrumbPlatform = document.getElementById('breadcrumb-platform');
     if (breadcrumbPlatform) {
-        breadcrumbPlatform.textContent = platform.name;
+        breadcrumbPlatform.textContent = platformName;
     }
-    
-    // Platform badge
-    const platformIcon = document.getElementById('result-platform-icon');
-    const platformName = document.getElementById('result-platform-name');
-    if (platformIcon) platformIcon.textContent = platform.icon;
-    if (platformName) platformName.textContent = platform.name;
     
     // Timestamp
-    const timestampEl = document.getElementById('result-timestamp');
-    if (timestampEl && results.timestamp) {
-        const date = new Date(results.timestamp);
-        timestampEl.textContent = `Analyzed: ${date.toLocaleDateString()} at ${date.toLocaleTimeString()}`;
-        timestampEl.setAttribute('datetime', date.toISOString());
+    const timestamp = document.getElementById('result-timestamp');
+    if (timestamp && resultData.timestamp) {
+        const date = new Date(resultData.timestamp);
+        timestamp.textContent = `Analyzed: ${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
+        timestamp.setAttribute('datetime', resultData.timestamp);
     }
-    
-    // Query/Username
-    const queryEl = document.getElementById('result-query');
-    if (queryEl) queryEl.textContent = username;
-    
-    // Probability Ring
-    const probabilityValue = document.getElementById('probability-value');
-    const probabilityInline = document.getElementById('probability-inline');
-    const probabilityCircle = document.getElementById('probability-circle');
-    
-    if (probabilityValue) probabilityValue.textContent = `${probability}%`;
-    if (probabilityInline) probabilityInline.textContent = `${probability}%`;
-    
-    // Animate probability ring
-    if (probabilityCircle) {
-        const circumference = 2 * Math.PI * 45; // radius = 45
-        const offset = circumference - (probability / 100) * circumference;
-        
-        setTimeout(() => {
-            probabilityCircle.style.strokeDashoffset = offset;
-            
-            // Color based on probability
-            if (probability >= 60) {
-                probabilityCircle.classList.add('danger');
-            } else if (probability >= 30) {
-                probabilityCircle.classList.add('warning');
-            }
-        }, 100);
-    }
-    
-    // Probability interpretation
-    const interpretationEl = document.getElementById('probability-interpretation');
-    if (interpretationEl) {
-        if (probability < 20) {
-            interpretationEl.textContent = 'All 5 signals indicate normal visibility. Your content appears to be reaching your audience without restrictions.';
-        } else if (probability < 40) {
-            interpretationEl.textContent = 'Most signals look healthy, with minor concerns detected. Content is likely visible but may have slight reach limitations.';
-        } else if (probability < 60) {
-            interpretationEl.textContent = 'Multiple signals indicate potential visibility issues. Some content may not be reaching your full audience.';
-        } else {
-            interpretationEl.textContent = 'Significant visibility concerns detected across multiple signals. Content is likely being suppressed or filtered.';
-        }
-    }
-    
-    // Verdict badge
-    const verdictBadge = document.getElementById('verdict-badge');
-    if (verdictBadge) {
-        verdictBadge.textContent = verdictText;
-        verdictBadge.className = `verdict-badge ${verdict}`;
-    }
-    
-    // Key Findings
-    displayFindings(findings);
     
     // Citation date
     const citationDate = document.getElementById('citation-date');
-    if (citationDate && results.timestamp) {
-        citationDate.textContent = new Date(results.timestamp).toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
-        });
+    if (citationDate && resultData.timestamp) {
+        citationDate.textContent = new Date(resultData.timestamp).toLocaleDateString();
     }
     
-    // === DEEP DIVE SECTION ===
-    
-    // Engine factors + content scan
-    displayFactors(factors, contentScan);
-    
-    // Platform-specific checks
-    displayPlatformChecks(platform, probability, verification);
-    
-    // Verification section (Twitter-specific)
-    displayVerification(verification, platform);
-    
-    // IP Analysis
-    displayIPAnalysis(ipData);
-    
-    // Recommendations
-    displayRecommendations(results);
+    // Query (username or post)
+    const resultQuery = document.getElementById('result-query');
+    if (resultQuery) {
+        resultQuery.textContent = resultData.username ? `@${resultData.username}` : resultData.postUrl || 'Analysis';
+    }
 }
 
-/* =============================================================================
-   DISPLAY COMPONENTS
-   ============================================================================= */
-function displayFindings(findings) {
-    const findingsList = document.getElementById('findings-list');
-    if (!findingsList || !findings) return;
+// ============================================
+// PLATFORM BADGE
+// ============================================
+function updatePlatformBadge() {
+    const platformIcon = document.getElementById('result-platform-icon');
+    const platformName = document.getElementById('result-platform-name');
     
-    findingsList.innerHTML = findings.map(f => {
-        const icon = f.type === 'good' ? '✓' : f.type === 'warning' ? '⚠' : '✗';
-        return `<li class="finding-${f.type}"><span>${icon}</span><span>${f.text}</span></li>`;
-    }).join('');
+    if (platform) {
+        if (platformIcon) platformIcon.textContent = platform.icon;
+        if (platformName) platformName.textContent = platform.name;
+    }
 }
 
-function displayFactors(factors, contentScan) {
-    if (!factors) return;
+// ============================================
+// PROBABILITY DISPLAY
+// ============================================
+function updateProbabilityDisplay() {
+    const probability = resultData.probability || 0;
     
-    const factorConfig = {
-        api: { id: 'factor-api', icon: '🔌', name: 'Platform APIs' },
-        web: { id: 'factor-web', icon: '🔍', name: 'Web Analysis' },
-        historical: { id: 'factor-historical', icon: '📊', name: 'Historical Data' },
-        hashtag: { id: 'factor-hashtag', icon: '#️⃣', name: 'Hashtag Database' },
-        ip: { id: 'factor-ip', icon: '🌐', name: 'IP Analysis' }
-    };
+    // Probability value
+    const probValue = document.getElementById('probability-value');
+    if (probValue) probValue.textContent = `${probability}%`;
     
-    let activeCount = 0;
-    let totalSignals = 0;
+    // Inline probability
+    const probInline = document.getElementById('probability-inline');
+    if (probInline) probInline.textContent = `${probability}%`;
     
-    Object.entries(factors).forEach(([key, data]) => {
-        const config = factorConfig[key];
-        if (!config) return;
+    // Probability ring
+    const probCircle = document.getElementById('probability-circle');
+    if (probCircle) {
+        const circumference = 2 * Math.PI * 45;
+        const offset = circumference - (probability / 100) * circumference;
+        probCircle.style.strokeDasharray = circumference;
+        probCircle.style.strokeDashoffset = offset;
         
-        const row = document.getElementById(config.id);
-        if (!row) return;
-        
-        const indicator = row.querySelector('.factor-indicator');
-        const finding = row.querySelector('.factor-finding');
-        const status = row.querySelector('.factor-status');
-        
-        if (data.active) {
-            activeCount++;
-            indicator?.classList.add('active');
-            indicator?.classList.remove('inactive');
+        // Color based on probability
+        if (probability <= 30) {
+            probCircle.style.stroke = 'var(--success)';
+        } else if (probability <= 60) {
+            probCircle.style.stroke = 'var(--warning)';
         } else {
-            indicator?.classList.add('inactive');
-            indicator?.classList.remove('active');
+            probCircle.style.stroke = 'var(--danger)';
         }
+    }
+    
+    // Verdict
+    const verdictBadge = document.getElementById('verdict-badge');
+    if (verdictBadge) {
+        const verdict = resultData.verdict || getVerdictText(probability);
+        verdictBadge.textContent = verdict;
+        verdictBadge.className = `verdict-badge ${resultData.verdictClass || getVerdictClass(probability)}`;
+    }
+    
+    // Interpretation
+    const interpretation = document.getElementById('probability-interpretation');
+    if (interpretation) {
+        interpretation.textContent = getInterpretation(probability);
+    }
+}
+
+function getVerdictText(probability) {
+    if (probability <= 20) return 'Likely Visible';
+    if (probability <= 40) return 'Mostly Visible';
+    if (probability <= 60) return 'Likely Limited';
+    if (probability <= 80) return 'Probably Restricted';
+    return 'High Restriction Risk';
+}
+
+function getVerdictClass(probability) {
+    if (probability <= 40) return 'good';
+    if (probability <= 60) return 'warning';
+    return 'danger';
+}
+
+function getInterpretation(probability) {
+    if (probability <= 20) {
+        return 'All signals indicate normal visibility. Your content appears to be reaching your audience.';
+    }
+    if (probability <= 40) {
+        return 'Most signals indicate normal visibility, with minor concerns detected.';
+    }
+    if (probability <= 60) {
+        return 'Several signals suggest your visibility may be limited. Review the recommendations below.';
+    }
+    if (probability <= 80) {
+        return 'Multiple signals indicate restrictions. Your content is likely not reaching its full potential audience.';
+    }
+    return 'Strong indicators of shadow ban detected. Immediate action recommended.';
+}
+
+// ============================================
+// KEY FINDINGS
+// ============================================
+function updateKeyFindings() {
+    const findingsList = document.getElementById('findings-list');
+    if (!findingsList || !resultData.keyFindings) return;
+    
+    let html = '';
+    resultData.keyFindings.forEach(finding => {
+        const statusClass = finding.status === 'good' ? 'finding-good' : 
+                           finding.status === 'warning' ? 'finding-warning' : 'finding-neutral';
+        const icon = finding.status === 'good' ? '✓' : 
+                    finding.status === 'warning' ? '⚠' : '○';
         
-        if (finding) finding.textContent = data.finding || 'Analysis complete';
-        
-        if (status) {
-            status.className = `factor-status ${data.status || 'good'}`;
-            status.innerHTML = data.status === 'good' ? '<span>✓</span>' : 
-                              data.status === 'warning' ? '<span>⚠</span>' : 
-                              data.status === 'bad' ? '<span>✗</span>' : '<span>○</span>';
-        }
-        
-        // Display signals if present
-        if (data.signals && data.signals.length > 0) {
-            totalSignals += data.signals.length;
-            displaySignals(row, data.signals);
-        }
+        html += `<li class="${statusClass}"><span>${icon}</span> <span>${finding.text}</span></li>`;
     });
     
-    // Display content scan if present
-    if (contentScan && contentScan.active) {
-        displayContentScan(contentScan);
+    findingsList.innerHTML = html;
+}
+
+// ============================================
+// FACTORS BREAKDOWN
+// ============================================
+function updateFactorsBreakdown() {
+    if (!resultData.factors) return;
+    
+    const factors = resultData.factors;
+    const isReddit = platform && platform.id === 'reddit';
+    
+    // API Factor
+    updateFactor('factor-api', factors.api, true);
+    
+    // Web Factor
+    updateFactor('factor-web', factors.web, true);
+    
+    // Historical Factor
+    updateFactor('factor-historical', factors.historical, true);
+    
+    // Hashtag Factor - Hide for Reddit
+    const hashtagFactor = document.getElementById('factor-hashtag');
+    if (hashtagFactor) {
+        if (isReddit || !factors.hashtag) {
+            hashtagFactor.classList.add('factor-na');
+            const finding = hashtagFactor.querySelector('.factor-finding');
+            if (finding) finding.textContent = 'Not applicable for Reddit (no hashtags)';
+            const status = hashtagFactor.querySelector('.factor-status');
+            if (status) {
+                status.innerHTML = '<span>—</span>';
+                status.className = 'factor-status na';
+            }
+        } else {
+            updateFactor('factor-hashtag', factors.hashtag, true);
+        }
     }
     
-    // Update factors count
+    // IP Factor
+    updateFactor('factor-ip', factors.ip, true);
+    
+    // Update factors used count
     const factorsUsed = document.getElementById('engine-factors-used');
     if (factorsUsed) {
-        const signalText = totalSignals > 0 ? ` + ${totalSignals} signals` : '';
-        factorsUsed.textContent = `${activeCount}/5 factors${signalText} analyzed`;
+        const activeCount = isReddit ? 4 : 5;
+        factorsUsed.textContent = `${activeCount}/5 factors analyzed`;
     }
 }
 
-function displaySignals(factorRow, signals) {
-    // Check if signals container already exists
-    let signalsContainer = factorRow.querySelector('.factor-signals');
+function updateFactor(factorId, data, active) {
+    const factorEl = document.getElementById(factorId);
+    if (!factorEl || !data) return;
     
-    if (!signalsContainer) {
-        signalsContainer = document.createElement('div');
-        signalsContainer.className = 'factor-signals';
-        factorRow.appendChild(signalsContainer);
+    const finding = factorEl.querySelector('.factor-finding');
+    if (finding) finding.textContent = data.finding;
+    
+    const status = factorEl.querySelector('.factor-status');
+    if (status) {
+        const statusClass = data.status === 'good' ? 'good' : 
+                           data.status === 'warning' ? 'warning' : 
+                           data.status === 'neutral' ? 'neutral' : 'danger';
+        const icon = data.status === 'good' ? '✓' : 
+                    data.status === 'warning' ? '⚠' : '○';
+        status.innerHTML = `<span>${icon}</span>`;
+        status.className = `factor-status ${statusClass}`;
     }
-    
-    signalsContainer.innerHTML = signals.map(signal => {
-        const riskClass = signal.risk === 'high' ? 'bad' : 
-                          signal.risk === 'medium' ? 'warning' : 
-                          signal.risk === 'trusted' ? 'good' : 'neutral';
-        const comingSoonBadge = signal.comingSoon ? '<span class="signal-badge coming-soon">Soon</span>' : '';
-        
-        return `
-            <div class="signal-item ${riskClass} ${signal.comingSoon ? 'coming-soon' : ''}">
-                <span class="signal-name">${signal.name}</span>
-                <span class="signal-value">${signal.value}</span>
-                <span class="signal-impact">${signal.impact}</span>
-                ${comingSoonBadge}
-            </div>
-        `;
-    }).join('');
 }
 
-function displayContentScan(contentScan) {
-    // Find or create content scan section
-    let contentSection = document.getElementById('content-scan-section');
+// ============================================
+// PLATFORM-SPECIFIC SECTIONS
+// ============================================
+function renderPlatformSpecificSections() {
+    const isReddit = platform && platform.id === 'reddit';
+    const isTwitter = platform && platform.id === 'twitter';
     
-    if (!contentSection) {
-        // Create content scan section after factors
-        const factorsSection = document.querySelector('.engine-results');
-        if (!factorsSection) return;
-        
-        contentSection = document.createElement('div');
-        contentSection.id = 'content-scan-section';
-        contentSection.className = 'content-scan-section';
-        factorsSection.parentNode.insertBefore(contentSection, factorsSection.nextSibling);
-    }
-    
-    const statusClass = contentScan.status === 'bad' ? 'bad' : 
-                        contentScan.status === 'warning' ? 'warning' : 'good';
-    
-    const statusIcon = contentScan.status === 'bad' ? '✗' : 
-                       contentScan.status === 'warning' ? '⚠' : '✓';
-    
-    // Build flagged terms display
-    let flaggedHTML = '';
-    if (contentScan.flaggedTerms) {
-        const { banned, restricted, platformSpecific } = contentScan.flaggedTerms;
-        
-        if (banned && banned.length > 0) {
-            flaggedHTML += `
-                <div class="flagged-group banned">
-                    <span class="flagged-label">Banned:</span>
-                    ${banned.map(t => `<span class="flagged-term">${t}</span>`).join('')}
-                </div>
-            `;
-        }
-        if (restricted && restricted.length > 0) {
-            flaggedHTML += `
-                <div class="flagged-group restricted">
-                    <span class="flagged-label">Restricted:</span>
-                    ${restricted.map(t => `<span class="flagged-term">${t}</span>`).join('')}
-                </div>
-            `;
-        }
-        if (platformSpecific && platformSpecific.length > 0) {
-            flaggedHTML += `
-                <div class="flagged-group platform">
-                    <span class="flagged-label">Platform-specific:</span>
-                    ${platformSpecific.map(t => `<span class="flagged-term">${t}</span>`).join('')}
-                </div>
-            `;
-        }
-    }
-    
-    contentSection.innerHTML = `
-        <div class="content-scan-card ${statusClass}">
-            <div class="content-scan-header">
-                <div class="content-scan-icon">📄</div>
-                <div class="content-scan-title">
-                    <h4>Content Scan</h4>
-                    <span class="content-scan-badge">${contentScan.wordCount} words analyzed</span>
-                </div>
-                <div class="content-scan-status ${statusClass}">
-                    <span>${statusIcon}</span>
-                </div>
-            </div>
-            <div class="content-scan-finding">${contentScan.finding}</div>
-            ${flaggedHTML ? `<div class="content-scan-flagged">${flaggedHTML}</div>` : ''}
-            ${contentScan.penalty > 0 ? `<div class="content-scan-penalty">Impact: +${contentScan.penalty}% probability</div>` : ''}
-            ${contentScan.scannedContent ? `
-                <div class="content-scan-preview">
-                    <span class="preview-label">Scanned:</span>
-                    <span class="preview-text">"${contentScan.scannedContent.substring(0, 100)}${contentScan.scannedContent.length > 100 ? '...' : ''}"</span>
-                </div>
-            ` : ''}
-        </div>
-    `;
-}
-
-function displayPlatformChecks(platform, probability, verification) {
-    const checksGrid = document.getElementById('checks-grid');
-    if (!checksGrid) return;
-    
-    let checks = [];
-    
-    if (platform.key === 'twitter') {
-        checks = [
-            {
-                icon: '🔍',
-                name: 'Search Visibility',
-                status: probability < 40 ? 'pass' : 'warning',
-                description: probability < 40 
-                    ? 'Account appears in Twitter/X search results' 
-                    : 'Reduced visibility in search results detected'
-            },
-            {
-                icon: '💬',
-                name: 'Reply Visibility (QFD)',
-                status: probability < 50 ? 'pass' : 'warning',
-                description: probability < 50 
-                    ? 'Replies visible without quality filter restrictions' 
-                    : 'Replies may be hidden behind "Show more replies"'
-            },
-            {
-                icon: '👤',
-                name: 'Profile Accessibility',
-                status: 'pass',
-                description: 'Profile is accessible to logged-out users'
-            },
-            {
-                icon: '📊',
-                name: 'Engagement Rate',
-                status: probability < 30 ? 'pass' : 'warning',
-                description: probability < 30 
-                    ? 'Engagement aligns with historical baseline' 
-                    : 'Engagement below historical baseline'
-            },
-            {
-                icon: verification?.hasCheckmark ? '✓' : '❌',
-                name: 'Verification Badge',
-                status: verification?.hasCheckmark ? 'pass' : 'warning',
-                description: verification?.hasCheckmark 
-                    ? `${verification.type === 'blue' ? 'Blue' : verification.type === 'gold' ? 'Gold' : 'Grey'} verification badge detected` 
-                    : 'No verification badge (may affect algorithmic visibility)'
-            }
-        ];
-    } else if (platform.key === 'reddit') {
-        checks = [
-            {
-                icon: '🌐',
-                name: 'Site-wide Shadowban',
-                status: probability < 50 ? 'pass' : 'warning',
-                description: probability < 50 
-                    ? 'Account is not site-wide shadowbanned' 
-                    : 'Potential site-wide restrictions detected'
-            },
-            {
-                icon: '📋',
-                name: 'Subreddit Bans',
-                status: 'pass',
-                description: 'No subreddit-specific bans detected in recent activity'
-            },
-            {
-                icon: '📝',
-                name: 'Post Visibility',
-                status: probability < 40 ? 'pass' : 'warning',
-                description: probability < 40 
-                    ? 'Recent posts visible in subreddit feeds' 
-                    : 'Some posts may be filtered or removed'
-            },
-            {
-                icon: '⬆️',
-                name: 'Karma Status',
-                status: 'pass',
-                description: 'Karma accumulation appears to be functioning normally'
-            }
-        ];
+    // Reddit-specific sections
+    if (isReddit) {
+        renderSubredditBans();
+        renderKarmaAnalysis();
+        hideHashtagSection();
+        hideMethodHashtag();
     } else {
-        // Generic checks
-        checks = [
-            {
-                icon: '👤',
-                name: 'Profile Visibility',
-                status: probability < 40 ? 'pass' : 'warning',
-                description: probability < 40 ? 'Profile accessible to public' : 'Profile may have limited visibility'
-            },
-            {
-                icon: '🔍',
-                name: 'Search Presence',
-                status: probability < 50 ? 'pass' : 'warning',
-                description: probability < 50 ? 'Account appears in search' : 'Search visibility may be reduced'
-            }
-        ];
+        hideRedditSections();
     }
     
-    checksGrid.innerHTML = checks.map(check => `
-        <div class="check-card ${check.status}">
-            <span class="check-icon">${check.icon}</span>
-            <div class="check-content">
-                <h4>${check.name}</h4>
-                <p>${check.description}</p>
-            </div>
-        </div>
-    `).join('');
+    // Twitter-specific sections
+    if (isTwitter) {
+        renderEngagementTestResults();
+        renderVerificationSection();
+    }
+    
+    // Content scan (if available)
+    if (resultData.contentScan) {
+        renderContentScan();
+    }
+    
+    // Hashtag analysis (if available and not Reddit)
+    if (!isReddit && resultData.factors && resultData.factors.hashtag && resultData.factors.hashtag.flaggedHashtags) {
+        renderHashtagAnalysis();
+    }
+    
+    // IP Analysis
+    renderIpAnalysis();
+    
+    // Platform checks
+    renderPlatformChecks();
 }
 
-function displayVerification(verification, platform) {
-    const section = document.getElementById('verification-section');
+// ============================================
+// REDDIT-SPECIFIC SECTIONS
+// ============================================
+function renderSubredditBans() {
+    const section = document.getElementById('subreddit-bans-section');
+    const list = document.getElementById('subreddit-bans-list');
+    
+    if (!section || !list) return;
+    
+    if (resultData.subredditBans && resultData.subredditBans.found > 0) {
+        section.classList.remove('hidden');
+        
+        let html = '';
+        resultData.subredditBans.bans.forEach(ban => {
+            html += `
+                <div class="subreddit-ban-item">
+                    <span class="subreddit-name">${ban.subreddit}</span>
+                    <span class="ban-type">${ban.type.replace('_', ' ')}</span>
+                    <span class="ban-reason">${ban.reason}</span>
+                    ${ban.canAppeal ? '<span class="ban-appeal">Can appeal</span>' : ''}
+                </div>
+            `;
+        });
+        list.innerHTML = html;
+    } else {
+        section.classList.add('hidden');
+    }
+}
+
+function renderKarmaAnalysis() {
+    const section = document.getElementById('karma-analysis-section');
+    
     if (!section) return;
     
-    // Only show for Twitter
-    if (platform.key !== 'twitter') {
+    if (resultData.karmaAnalysis) {
+        section.classList.remove('hidden');
+        
+        const karma = resultData.karmaAnalysis;
+        
+        document.getElementById('post-karma').textContent = karma.postKarma.toLocaleString();
+        document.getElementById('comment-karma').textContent = karma.commentKarma.toLocaleString();
+        document.getElementById('total-karma').textContent = karma.totalKarma.toLocaleString();
+        document.getElementById('account-age').textContent = karma.accountAge;
+        
+        const levelBadge = document.getElementById('karma-level-badge');
+        if (levelBadge) {
+            levelBadge.textContent = karma.karmaLevel.charAt(0).toUpperCase() + karma.karmaLevel.slice(1);
+            levelBadge.className = `karma-level-badge ${karma.karmaLevel}`;
+        }
+        
+        // Restrictions
+        const restrictions = document.getElementById('karma-restrictions');
+        if (restrictions && karma.restrictions) {
+            let html = '<ul>';
+            karma.restrictions.forEach(r => {
+                html += `<li>${r}</li>`;
+            });
+            html += '</ul>';
+            restrictions.innerHTML = html;
+        }
+    } else {
         section.classList.add('hidden');
-        return;
     }
+}
+
+function hideHashtagSection() {
+    const section = document.getElementById('hashtag-analysis');
+    if (section) section.classList.add('hidden');
+}
+
+function hideMethodHashtag() {
+    const method = document.getElementById('method-hashtag');
+    if (method) {
+        method.style.opacity = '0.5';
+        const p = method.querySelector('p');
+        if (p) p.textContent = 'Not applicable for Reddit - Reddit does not use hashtags for discovery.';
+    }
+}
+
+function hideRedditSections() {
+    const subredditSection = document.getElementById('subreddit-bans-section');
+    const karmaSection = document.getElementById('karma-analysis-section');
     
+    if (subredditSection) subredditSection.classList.add('hidden');
+    if (karmaSection) karmaSection.classList.add('hidden');
+}
+
+// ============================================
+// TWITTER-SPECIFIC SECTIONS
+// ============================================
+function renderEngagementTestResults() {
+    const section = document.getElementById('engagement-test-results');
+    
+    if (!section) return;
+    
+    if (resultData.engagementTest && resultData.engagementTest.completed) {
+        section.classList.remove('hidden');
+        
+        const test = resultData.engagementTest;
+        
+        // Update each result
+        ['follow', 'like', 'retweet', 'reply'].forEach(step => {
+            const result = test.results[step];
+            const statusEl = document.getElementById(`${step}-result-status`);
+            const resultEl = document.getElementById(`engagement-result-${step}`);
+            
+            if (statusEl && result) {
+                if (!result.completed) {
+                    statusEl.textContent = 'Not completed';
+                } else if (result.visible) {
+                    statusEl.textContent = 'Visible';
+                } else {
+                    statusEl.textContent = result.note || 'Hidden';
+                }
+            }
+            
+            if (resultEl && result) {
+                const badge = resultEl.querySelector('.engagement-result-badge');
+                if (badge) {
+                    if (!result.completed) {
+                        badge.className = 'engagement-result-badge neutral';
+                        badge.textContent = '○';
+                    } else if (result.visible) {
+                        badge.className = 'engagement-result-badge good';
+                        badge.textContent = '✓';
+                    } else {
+                        badge.className = 'engagement-result-badge warning';
+                        badge.textContent = '⚠';
+                    }
+                }
+            }
+        });
+        
+        // Overall finding
+        const finding = document.getElementById('engagement-test-finding');
+        if (finding && test.finding) {
+            finding.textContent = test.finding;
+        }
+    } else {
+        section.classList.add('hidden');
+    }
+}
+
+function renderVerificationSection() {
+    const section = document.getElementById('verification-section');
+    
+    if (!section) return;
+    
+    // Show for Twitter
     section.classList.remove('hidden');
     
-    const card = document.getElementById('verification-card');
-    const iconEl = document.getElementById('verification-icon');
-    const titleEl = document.getElementById('verification-title');
-    const textEl = document.getElementById('verification-text');
-    const impactEl = document.getElementById('verification-impact');
-    
-    if (verification?.hasCheckmark) {
-        card?.classList.add('verified');
+    // Check verification status in platform checks
+    if (resultData.platformChecks && resultData.platformChecks.verification) {
+        const verification = resultData.platformChecks.verification;
+        const icon = document.getElementById('verification-icon');
+        const title = document.getElementById('verification-title');
+        const text = document.getElementById('verification-text');
+        const impact = document.getElementById('verification-impact');
         
-        const badgeType = verification.type === 'blue' ? 'Blue ✓' : 
-                         verification.type === 'gold' ? 'Gold ✓ (Organization)' : 
-                         'Grey ✓ (Government)';
-        
-        if (iconEl) iconEl.textContent = '✓';
-        if (titleEl) titleEl.textContent = `${badgeType} Verified`;
-        if (textEl) textEl.textContent = 'This account has a verification badge, which generally provides improved visibility in search results and recommendations on Twitter/X.';
-        if (impactEl) impactEl.textContent = 'Positive factor for visibility';
-    } else {
-        card?.classList.remove('verified');
-        if (iconEl) iconEl.textContent = '❌';
-        if (titleEl) titleEl.textContent = 'No Verification Badge';
-        if (textEl) textEl.textContent = 'This account does not have a verification badge (Blue ✓, Gold ✓ for organizations, or Grey ✓ for government). On Twitter/X, unverified accounts may receive lower visibility in search results and recommendations compared to verified accounts.';
-        if (impactEl) impactEl.textContent = '+5% added to probability score';
-    }
-}
-
-function displayIPAnalysis(ipData) {
-    const section = document.getElementById('ip-analysis');
-    if (!section || !ipData) return;
-    
-    const addressEl = document.getElementById('ip-address');
-    const badgeEl = document.getElementById('ip-type-badge');
-    const flagEl = document.getElementById('ip-flag');
-    const explanationEl = document.getElementById('ip-explanation');
-    
-    if (addressEl) addressEl.textContent = ipData.ip || 'Unknown';
-    
-    if (badgeEl) {
-        badgeEl.textContent = ipData.typeLabel || 'Unknown';
-        badgeEl.className = `ip-type-badge ${ipData.type || 'unknown'}`;
-    }
-    
-    if (flagEl && ipData.countryCode) {
-        flagEl.textContent = countryCodeToFlag(ipData.countryCode);
-    }
-    
-    if (explanationEl) {
-        if (ipData.isVPN) {
-            explanationEl.textContent = 'Your IP appears to be a VPN or proxy connection. Platforms may treat content posted from VPNs with lower trust, potentially affecting visibility. This added +10% to your probability score.';
-        } else if (ipData.isDatacenter) {
-            explanationEl.textContent = 'Your IP appears to be from a datacenter or hosting provider. Platforms often restrict content from server IPs to prevent automation abuse. This added +15% to your probability score.';
+        if (verification.value === 'none') {
+            if (icon) icon.textContent = '❌';
+            if (title) title.textContent = 'No Verification Badge';
+            if (text) text.textContent = 'This account does not have a verification badge. On Twitter/X, unverified accounts may receive lower visibility in search results and recommendations.';
+            if (impact) impact.textContent = '+5% added to probability score';
         } else {
-            explanationEl.textContent = 'Your IP appears to be a residential connection. Platforms generally trust residential IPs more than VPNs or datacenter IPs, which positively affects content visibility.';
+            if (icon) icon.textContent = '✓';
+            if (title) title.textContent = `Verified (${verification.value})`;
+            if (text) text.textContent = 'This account has a verification badge, which typically improves visibility in search and recommendations.';
+            if (impact) impact.textContent = 'No impact on probability score';
         }
     }
 }
 
-function displayRecommendations(results) {
-    const list = document.getElementById('recommendations-list');
-    if (!list) return;
+// ============================================
+// CONTENT SCAN
+// ============================================
+function renderContentScan() {
+    const section = document.getElementById('content-scan-section');
+    const results = document.getElementById('content-scan-results');
     
-    const { probability, platform, verification, ipData } = results;
-    const recommendations = [];
+    if (!section || !results || !resultData.contentScan) return;
     
-    // Based on probability level
-    if (probability < 20) {
-        recommendations.push({
-            type: 'success',
-            icon: '✅',
-            title: 'Looking Good!',
-            text: 'Your account shows healthy signals across all 5 factors. Continue posting quality content and engaging authentically.'
+    if (resultData.contentScan.flaggedTermsFound > 0) {
+        section.classList.remove('hidden');
+        
+        let html = '<div class="content-scan-items">';
+        resultData.contentScan.terms.forEach(term => {
+            const riskClass = term.risk === 'high' ? 'danger' : term.risk === 'medium' ? 'warning' : 'neutral';
+            html += `
+                <div class="content-scan-item ${riskClass}">
+                    <span class="term">"${term.term}"</span>
+                    <span class="risk-badge ${riskClass}">${term.risk} risk</span>
+                    <span class="context">${term.context}</span>
+                </div>
+            `;
         });
-        recommendations.push({
-            type: 'info',
-            icon: '📊',
-            title: 'Set Up Monitoring',
-            text: 'Consider setting up regular monitoring to catch any changes early. Pro users get automatic alerts when probability increases.'
-        });
-    } else if (probability < 40) {
-        recommendations.push({
-            type: 'info',
-            icon: '👀',
-            title: 'Minor Concerns Detected',
-            text: 'A few signals show minor concerns. This is often temporary and may resolve on its own. Monitor your engagement over the next few days.'
-        });
-    } else if (probability < 60) {
-        recommendations.push({
-            type: 'warning',
-            icon: '⚠️',
-            title: 'Visibility May Be Affected',
-            text: 'Multiple signals indicate potential visibility issues. Review your recent content for anything that might trigger algorithmic filters.'
-        });
+        html += '</div>';
+        
+        results.innerHTML = html;
     } else {
-        recommendations.push({
-            type: 'warning',
-            icon: '🚨',
-            title: 'Significant Concerns',
-            text: 'Multiple signals indicate likely suppression. Consider reviewing platform guidelines and appealing if you believe this is in error.'
+        section.classList.add('hidden');
+    }
+}
+
+// ============================================
+// HASHTAG ANALYSIS
+// ============================================
+function renderHashtagAnalysis() {
+    const section = document.getElementById('hashtag-analysis');
+    const results = document.getElementById('hashtag-results');
+    
+    if (!section || !results) return;
+    
+    const flagged = resultData.factors.hashtag.flaggedHashtags;
+    
+    if (flagged && flagged.length > 0) {
+        section.classList.remove('hidden');
+        
+        let html = '<div class="hashtag-items">';
+        flagged.forEach(h => {
+            const riskClass = h.risk === 'banned' ? 'danger' : h.risk === 'restricted' ? 'warning' : 'neutral';
+            html += `
+                <div class="hashtag-item ${riskClass}">
+                    <span class="hashtag">#${h.tag}</span>
+                    <span class="risk-badge ${riskClass}">${h.risk}</span>
+                    <span class="reason">${h.reason}</span>
+                </div>
+            `;
         });
+        html += '</div>';
+        
+        results.innerHTML = html;
+    } else {
+        section.classList.add('hidden');
+    }
+}
+
+// ============================================
+// IP ANALYSIS
+// ============================================
+function renderIpAnalysis() {
+    if (!resultData.factors || !resultData.factors.ip) return;
+    
+    const ip = resultData.factors.ip;
+    
+    const ipAddress = document.getElementById('ip-address');
+    const ipTypeBadge = document.getElementById('ip-type-badge');
+    const ipFlag = document.getElementById('ip-flag');
+    const ipExplanation = document.getElementById('ip-explanation');
+    
+    if (ip.signals) {
+        const ipSignal = ip.signals.find(s => s.name === 'IP type');
+        const countrySignal = ip.signals.find(s => s.name === 'Country');
+        
+        if (ipAddress && ipSignal) {
+            // Get actual IP from demo data if available
+            const demoIp = window.DemoData ? window.DemoData.getIpData() : null;
+            ipAddress.textContent = demoIp ? demoIp.ip : '192.168.1.42';
+        }
+        
+        if (ipTypeBadge && ipSignal) {
+            ipTypeBadge.textContent = ipSignal.value;
+            ipTypeBadge.className = `ip-type-badge ${ipSignal.status}`;
+        }
+        
+        if (ipFlag && countrySignal) {
+            const flags = { 'US': '🇺🇸', 'UK': '🇬🇧', 'DE': '🇩🇪', 'CA': '🇨🇦' };
+            ipFlag.textContent = flags[countrySignal.value] || '🌐';
+        }
     }
     
-    // Verification-specific (Twitter)
-    if (platform.key === 'twitter' && !verification?.hasCheckmark) {
-        recommendations.push({
-            type: 'info',
-            icon: '✓',
-            title: 'Consider Verification',
-            text: 'Getting verified on Twitter/X can improve your visibility in search and recommendations. Blue verification is available through Twitter Blue subscription.'
-        });
+    if (ipExplanation) {
+        ipExplanation.textContent = ip.finding;
+    }
+}
+
+// ============================================
+// PLATFORM CHECKS
+// ============================================
+function renderPlatformChecks() {
+    const grid = document.getElementById('checks-grid');
+    if (!grid || !resultData.platformChecks) return;
+    
+    let html = '';
+    
+    for (const [key, check] of Object.entries(resultData.platformChecks)) {
+        const statusClass = check.status === 'good' ? 'good' : 
+                           check.status === 'warning' ? 'warning' : 'neutral';
+        const icon = check.status === 'good' ? '✓' : 
+                    check.status === 'warning' ? '⚠' : '○';
+        
+        let displayValue = check.value;
+        if (typeof check.value === 'boolean') {
+            displayValue = check.value ? 'Yes' : 'No';
+        }
+        
+        html += `
+            <div class="check-item ${statusClass}">
+                <span class="check-icon">${icon}</span>
+                <div class="check-content">
+                    <span class="check-label">${check.label}</span>
+                    <span class="check-value">${displayValue}</span>
+                </div>
+            </div>
+        `;
     }
     
-    // IP-specific
-    if (ipData?.isVPN) {
-        recommendations.push({
-            type: 'warning',
-            icon: '🌐',
-            title: 'VPN Detected',
-            text: 'Consider disabling your VPN when posting content. Platforms may apply additional scrutiny to content posted from VPN connections.'
-        });
-    }
+    grid.innerHTML = html;
+}
+
+// ============================================
+// RECOMMENDATIONS
+// ============================================
+function updateRecommendations() {
+    const list = document.getElementById('recommendations-list');
+    if (!list || !resultData.recommendations) return;
     
-    // Always add Shadow AI suggestion
-    recommendations.push({
-        type: 'info',
-        icon: '🤖',
-        title: 'Ask Shadow AI',
-        text: 'Get personalized advice based on your specific results. Shadow AI can analyze your probability factors and suggest targeted recovery steps.'
+    let html = '';
+    
+    resultData.recommendations.forEach((rec, index) => {
+        const priorityClass = rec.priority === 'high' ? 'high' : 
+                             rec.priority === 'medium' ? 'medium' : 'low';
+        
+        html += `
+            <div class="recommendation-item ${priorityClass}">
+                <span class="rec-number">${index + 1}</span>
+                <div class="rec-content">
+                    <h4>${rec.title}</h4>
+                    <p>${rec.description}</p>
+                </div>
+                <span class="rec-priority ${priorityClass}">${rec.priority}</span>
+            </div>
+        `;
     });
     
-    list.innerHTML = recommendations.map(rec => `
-        <div class="recommendation-item ${rec.type}">
-            <span class="recommendation-icon">${rec.icon}</span>
-            <div class="recommendation-content">
-                <h4>${rec.title}</h4>
-                <p>${rec.text}</p>
+    list.innerHTML = html;
+}
+
+// ============================================
+// SHARE URLs
+// ============================================
+function updateShareUrls() {
+    const permanentUrl = document.getElementById('permanent-url');
+    const currentUrl = window.location.href;
+    
+    if (permanentUrl) {
+        permanentUrl.value = currentUrl;
+    }
+}
+
+// ============================================
+// NO RESULTS
+// ============================================
+function showNoResults() {
+    const shortAnswer = document.getElementById('short-answer');
+    if (shortAnswer) {
+        shortAnswer.innerHTML = `
+            <div class="container">
+                <div class="no-results">
+                    <span class="no-results-icon">🔍</span>
+                    <h2>No Results Found</h2>
+                    <p>We couldn't find any analysis data. Please run a new check.</p>
+                    <a href="index.html" class="btn btn-primary">Run New Analysis</a>
+                </div>
             </div>
-        </div>
-    `).join('');
+        `;
+    }
 }
 
-/* =============================================================================
-   PAGE METADATA - SEO & AI Optimization
-   ============================================================================= */
-function updatePageMetadata(results) {
-    const { platform, username, probability, verdictText, timestamp } = results;
+// ============================================
+// EVENT LISTENERS
+// ============================================
+function setupEventListeners() {
+    // Share buttons
+    const shareTwitterBtn = document.getElementById('share-twitter-btn');
+    const shareFacebookBtn = document.getElementById('share-facebook-btn');
+    const shareLinkedinBtn = document.getElementById('share-linkedin-btn');
+    const copyLinkBtn = document.getElementById('copy-link-btn');
     
-    // Page title
-    const titleEl = document.getElementById('page-title');
-    if (titleEl) {
-        titleEl.textContent = `${username} on ${platform.name}: ${probability}% Shadow Ban Probability - ShadowBanCheck.io`;
-        document.title = titleEl.textContent;
+    if (shareTwitterBtn) {
+        shareTwitterBtn.addEventListener('click', () => shareOnPlatform('twitter'));
+    }
+    if (shareFacebookBtn) {
+        shareFacebookBtn.addEventListener('click', () => shareOnPlatform('facebook'));
+    }
+    if (shareLinkedinBtn) {
+        shareLinkedinBtn.addEventListener('click', () => shareOnPlatform('linkedin'));
+    }
+    if (copyLinkBtn) {
+        copyLinkBtn.addEventListener('click', copyLink);
     }
     
-    // Meta description
-    const descEl = document.getElementById('page-description');
-    if (descEl) {
-        const desc = `Shadow ban probability analysis for ${username} on ${platform.name}. Result: ${probability}% probability (${verdictText}). Analyzed by 5-Factor Detection Engine on ${new Date(timestamp).toLocaleDateString()}.`;
-        descEl.setAttribute('content', desc);
+    // Download report
+    const downloadBtn = document.getElementById('download-report-btn');
+    if (downloadBtn) {
+        downloadBtn.addEventListener('click', downloadReport);
     }
-    
-    // Open Graph
-    const ogTitle = document.getElementById('og-title');
-    const ogDesc = document.getElementById('og-description');
-    if (ogTitle) ogTitle.setAttribute('content', `${username}: ${probability}% Shadow Ban Probability on ${platform.name}`);
-    if (ogDesc) ogDesc.setAttribute('content', `5-Factor Detection Engine analysis: ${verdictText}. Analyzed platform APIs, web visibility, historical data, hashtags, and IP signals.`);
-    
-    // Twitter Card
-    const twitterTitle = document.getElementById('twitter-title');
-    const twitterDesc = document.getElementById('twitter-description');
-    if (twitterTitle) twitterTitle.setAttribute('content', `${username}: ${probability}% Shadow Ban Probability`);
-    if (twitterDesc) twitterDesc.setAttribute('content', `${platform.name} analysis by ShadowBanCheck.io's 5-Factor Detection Engine`);
-    
-    // Schema.org JSON-LD
-    updateSchemaOrg(results);
-    
-    // Canonical URL
-    updateCanonicalUrl(results);
-}
-
-function updateSchemaOrg(results) {
-    const schemaEl = document.getElementById('schema-json');
-    if (!schemaEl) return;
-    
-    const { platform, username, probability, verdictText, timestamp, findings, factors } = results;
-    const dateStr = new Date(timestamp).toISOString();
-    
-    const schema = {
-        "@context": "https://schema.org",
-        "@type": "TechArticle",
-        "headline": `${username} Shadow Ban Probability Analysis on ${platform.name}`,
-        "description": `Shadow ban probability: ${probability}% (${verdictText}). Analysis based on 5-Factor Detection Engine examining platform APIs, web visibility, historical data, hashtag database, and IP analysis.`,
-        "author": {
-            "@type": "Organization",
-            "name": "ShadowBanCheck.io",
-            "url": "https://shadowbancheck.io"
-        },
-        "publisher": {
-            "@type": "Organization",
-            "name": "ShadowBanCheck.io",
-            "logo": {
-                "@type": "ImageObject",
-                "url": "https://shadowbancheck.io/logo.png"
-            }
-        },
-        "datePublished": dateStr,
-        "dateModified": dateStr,
-        "mainEntity": {
-            "@type": "Thing",
-            "name": username,
-            "description": `Social media account on ${platform.name}`
-        },
-        "about": {
-            "@type": "Thing",
-            "name": "Shadow Ban Analysis",
-            "description": "Probability analysis of content visibility restrictions on social media"
-        },
-        "mentions": [
-            {
-                "@type": "Thing",
-                "name": platform.name,
-                "description": "Social media platform"
-            }
-        ],
-        "keywords": `shadow ban, ${platform.name}, probability analysis, content visibility, social media`,
-        "isAccessibleForFree": true,
-        "creativeWorkStatus": "Published",
-        "inLanguage": "en-US"
-    };
-    
-    schemaEl.textContent = JSON.stringify(schema, null, 2);
-}
-
-function updateCanonicalUrl(results) {
-    const canonicalEl = document.getElementById('canonical-url');
-    const ogUrl = document.getElementById('og-url');
-    
-    // Build canonical URL (placeholder structure until backend)
-    const platform = results.platform.key;
-    const identifier = results.username.replace('@', '').replace('u/', '');
-    const url = `https://shadowbancheck.io/results/${platform}/${encodeURIComponent(identifier)}`;
-    
-    if (canonicalEl) canonicalEl.setAttribute('href', url);
-    if (ogUrl) ogUrl.setAttribute('content', url);
-}
-
-function updatePermanentUrl(results) {
-    const urlInput = document.getElementById('permanent-url');
-    if (!urlInput) return;
-    
-    const platform = results.platform.key;
-    const identifier = results.username.replace('@', '').replace('u/', '');
-    const url = `https://shadowbancheck.io/results/${platform}/${encodeURIComponent(identifier)}`;
-    
-    urlInput.value = url;
-}
-
-/* =============================================================================
-   ACTIONS
-   ============================================================================= */
-function initActions() {
-    // Download PDF
-    document.getElementById('download-report-btn')?.addEventListener('click', downloadReport);
     
     // Ask AI
-    document.getElementById('ask-ai-btn')?.addEventListener('click', () => {
-        // Open Shadow AI chatbot
-        if (typeof window.openShadowAI === 'function') {
-            window.openShadowAI();
-        } else {
-            // Fallback: scroll to AI section or show message
-            window.location.href = 'index.html#shadow-ai-pro';
-        }
-    });
+    const askAiBtn = document.getElementById('ask-ai-btn');
+    if (askAiBtn) {
+        askAiBtn.addEventListener('click', () => {
+            if (typeof window.openShadowAI === 'function') {
+                window.openShadowAI();
+            } else {
+                alert('Shadow AI coming soon!');
+            }
+        });
+    }
 }
 
-function initShareButtons() {
-    const results = window.latestScanResults;
-    if (!results) return;
+function shareOnPlatform(platform) {
+    const url = encodeURIComponent(window.location.href);
+    const text = encodeURIComponent(`My shadow ban probability: ${resultData ? resultData.probability : '?'}% - Check yours at ShadowBanCheck.io`);
     
-    const shareUrl = window.location.href;
-    const shareText = `My ${results.platform.name} account has a ${results.probability}% shadow ban probability. Check yours free at`;
+    let shareUrl = '';
+    switch (platform) {
+        case 'twitter':
+            shareUrl = `https://twitter.com/intent/tweet?url=${url}&text=${text}`;
+            break;
+        case 'facebook':
+            shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${url}`;
+            break;
+        case 'linkedin':
+            shareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${url}`;
+            break;
+    }
     
-    // Inline share buttons
-    document.getElementById('share-twitter-btn')?.addEventListener('click', () => {
-        window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`, '_blank');
-    });
-    
-    document.getElementById('share-facebook-btn')?.addEventListener('click', () => {
-        window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`, '_blank');
-    });
-    
-    document.getElementById('share-linkedin-btn')?.addEventListener('click', () => {
-        window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`, '_blank');
-    });
-    
-    document.getElementById('copy-link-btn')?.addEventListener('click', function() {
-        const urlInput = document.getElementById('permanent-url');
-        if (urlInput) {
-            navigator.clipboard.writeText(urlInput.value).then(() => {
-                this.textContent = '✓';
-                setTimeout(() => this.textContent = '🔗', 2000);
-            });
-        }
-    });
-    
-    // Modal share buttons
-    document.getElementById('share-modal-twitter')?.addEventListener('click', () => {
-        window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`, '_blank');
-    });
-    
-    document.getElementById('share-modal-facebook')?.addEventListener('click', () => {
-        window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`, '_blank');
-    });
-    
-    document.getElementById('share-modal-linkedin')?.addEventListener('click', () => {
-        window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`, '_blank');
-    });
-    
-    document.getElementById('share-modal-copy')?.addEventListener('click', function() {
-        const urlInput = document.getElementById('permanent-url');
-        if (urlInput) {
-            navigator.clipboard.writeText(urlInput.value).then(() => {
-                this.innerHTML = '<span>✓</span><span>Copied!</span>';
-                setTimeout(() => this.innerHTML = '<span>📋</span><span>Copy Permanent URL</span>', 2000);
-            });
-        }
+    if (shareUrl) {
+        window.open(shareUrl, '_blank', 'width=600,height=400');
+    }
+}
+
+function copyLink() {
+    const url = window.location.href;
+    navigator.clipboard.writeText(url).then(() => {
+        showToast('Link copied to clipboard!', 'success');
+    }).catch(() => {
+        showToast('Failed to copy link', 'error');
     });
 }
 
 function downloadReport() {
-    const results = window.latestScanResults;
-    if (!results) return;
-    
-    const { platform, username, probability, verdictText, timestamp, findings, factors, verification, ipData } = results;
-    const date = new Date(timestamp);
-    
-    let report = `SHADOW BAN PROBABILITY REPORT
-==============================
-Generated by ShadowBanCheck.io 5-Factor Detection Engine
-
-SUMMARY
--------
-Platform: ${platform.name}
-Account: ${username}
-Date: ${date.toLocaleDateString()} at ${date.toLocaleTimeString()}
-
-PROBABILITY SCORE: ${probability}%
-STATUS: ${verdictText}
-
-KEY FINDINGS
-------------
-`;
-    
-    findings.forEach(f => {
-        const icon = f.type === 'good' ? '[✓]' : f.type === 'warning' ? '[⚠]' : '[✗]';
-        report += `${icon} ${f.text}\n`;
-    });
-    
-    report += `
-5-FACTOR DETECTION ENGINE ANALYSIS
-----------------------------------
-`;
-    
-    const factorNames = {
-        api: 'Platform APIs',
-        web: 'Web Analysis',
-        historical: 'Historical Data',
-        hashtag: 'Hashtag Database',
-        ip: 'IP Analysis'
-    };
-    
-    Object.entries(factors).forEach(([key, data]) => {
-        const status = data.status === 'good' ? '[✓]' : data.status === 'warning' ? '[⚠]' : '[○]';
-        report += `${status} ${factorNames[key]}: ${data.finding}\n`;
-    });
-    
-    if (verification && platform.key === 'twitter') {
-        report += `
-VERIFICATION STATUS
--------------------
-`;
-        if (verification.hasCheckmark) {
-            report += `[✓] ${verification.type === 'blue' ? 'Blue' : verification.type === 'gold' ? 'Gold' : 'Grey'} verification badge detected\n`;
-        } else {
-            report += `[⚠] No verification badge (adds +5% to probability)\n`;
-        }
-    }
-    
-    if (ipData) {
-        report += `
-IP ANALYSIS
------------
-IP: ${ipData.ip}
-Type: ${ipData.typeLabel}
-Location: ${ipData.country || 'Unknown'}
-`;
-    }
-    
-    report += `
-METHODOLOGY
------------
-This probability score is calculated by analyzing 5 independent signals:
-1. Platform APIs - Direct queries to official APIs
-2. Web Analysis - Automated browser tests from U.S. servers
-3. Historical Data - Comparison against engagement baselines
-4. Hashtag Database - Cross-reference against banned/restricted tags
-5. IP Analysis - VPN/proxy/datacenter detection
-
-No tool can definitively determine shadow ban status—platforms don't
-disclose their algorithms. This probability score represents the
-likelihood of restrictions based on observable signals.
-
----
-Report generated by ShadowBanCheck.io
-https://shadowbancheck.io
-`;
-    
-    // Download as text file
-    const blob = new Blob([report], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `shadowban-report-${platform.key}-${username.replace('@', '').replace('u/', '')}-${Date.now()}.txt`;
-    a.click();
-    URL.revokeObjectURL(url);
+    // For now, just show coming soon
+    showToast('PDF reports coming soon!', 'info');
 }
 
-/* =============================================================================
-   DEMO DATA GENERATOR
-   ============================================================================= */
-function generateDemoResults(demoType) {
-    const demos = {
-        'twitter': {
-            type: 'power',
-            platform: { name: 'Twitter/X', icon: '𝕏', key: 'twitter', id: 'twitter' },
-            url: 'https://twitter.com/example/status/123456789',
-            username: '@exampleuser',
-            postId: '123456789',
-            timestamp: Date.now(),
-            probability: 28,
-            verdict: 'likely-visible',
-            verdictText: 'Likely Visible',
-            findings: [
-                { type: 'good', text: 'Account appears in search results' },
-                { type: 'good', text: 'Profile accessible to public' },
-                { type: 'warning', text: 'No verification badge detected (may affect visibility)' }
-            ],
-            factors: {
-                api: { active: true, status: 'good', finding: 'Account active and accessible via Twitter API v2' },
-                web: { active: true, status: 'good', finding: 'Search visibility confirmed from U.S. servers' },
-                historical: { active: true, status: 'good', finding: 'Engagement within normal baseline' },
-                hashtag: { active: true, status: 'good', finding: 'No banned or restricted hashtags detected' },
-                ip: { active: true, status: 'good', finding: 'Residential IP verified' }
-            },
-            verification: { type: 'none', hasCheckmark: false, impact: '+5% added to probability' },
-            ipData: { ip: '192.168.1.42', type: 'residential', typeLabel: 'Residential', countryCode: 'US', country: 'United States' }
-        },
-        'warning': {
-            type: 'power',
-            platform: { name: 'Twitter/X', icon: '𝕏', key: 'twitter', id: 'twitter' },
-            url: 'https://twitter.com/example/status/123456789',
-            username: '@testaccount',
-            postId: '123456789',
-            timestamp: Date.now(),
-            probability: 52,
-            verdict: 'possibly-limited',
-            verdictText: 'Possibly Limited',
-            findings: [
-                { type: 'good', text: 'Account exists and is accessible' },
-                { type: 'warning', text: 'Search visibility below normal' },
-                { type: 'warning', text: 'VPN detected - may affect platform trust' }
-            ],
-            factors: {
-                api: { active: true, status: 'good', finding: 'Account status confirmed via API' },
-                web: { active: true, status: 'warning', finding: 'Reduced search visibility detected from U.S. servers' },
-                historical: { active: true, status: 'warning', finding: 'Engagement 30% below baseline' },
-                hashtag: { active: true, status: 'good', finding: 'No problematic hashtags detected' },
-                ip: { active: true, status: 'warning', finding: 'VPN detected (+10% probability)' }
-            },
-            verification: { type: 'none', hasCheckmark: false, impact: '+5% added to probability' },
-            ipData: { ip: '10.0.0.1', type: 'vpn', typeLabel: 'VPN/Proxy', countryCode: 'US', country: 'United States', isVPN: true }
-        },
-        'reddit': {
-            type: 'power',
-            platform: { name: 'Reddit', icon: '🤖', key: 'reddit', id: 'reddit' },
-            url: 'https://reddit.com/user/example',
-            username: 'u/exampleuser',
-            postId: 'abc123',
-            timestamp: Date.now(),
-            probability: 15,
-            verdict: 'likely-visible',
-            verdictText: 'Likely Visible',
-            findings: [
-                { type: 'good', text: 'Account is not shadowbanned site-wide' },
-                { type: 'good', text: 'Posts visible in subreddit feeds' },
-                { type: 'good', text: 'Karma accumulation normal' }
-            ],
-            factors: {
-                api: { active: true, status: 'good', finding: 'Account verified via Reddit API' },
-                web: { active: true, status: 'good', finding: 'Profile accessible from multiple browsers' },
-                historical: { active: true, status: 'good', finding: 'Karma patterns normal' },
-                hashtag: { active: false, status: 'inactive', finding: 'N/A for Reddit' },
-                ip: { active: true, status: 'good', finding: 'Residential IP verified' }
-            },
-            verification: null,
-            ipData: { ip: '192.168.1.100', type: 'residential', typeLabel: 'Residential', countryCode: 'US', country: 'United States' }
-        }
-    };
+// ============================================
+// TOAST
+// ============================================
+function showToast(message, type = 'info') {
+    const toast = document.getElementById('toast');
+    if (!toast) return;
     
-    return demos[demoType] || demos['twitter'];
+    toast.textContent = message;
+    toast.className = `toast ${type} show`;
+    
+    setTimeout(() => {
+        toast.classList.remove('show');
+    }, 3000);
 }
 
-/* =============================================================================
-   UTILITIES
-   ============================================================================= */
-function countryCodeToFlag(countryCode) {
-    if (!countryCode) return '';
-    const codePoints = countryCode
-        .toUpperCase()
-        .split('')
-        .map(char => 127397 + char.charCodeAt(0));
-    return String.fromCodePoint(...codePoints);
-}
+// ============================================
+// INIT
+// ============================================
+init();
+
+})();

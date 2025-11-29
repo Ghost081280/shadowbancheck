@@ -450,18 +450,29 @@ function simulateAnalysis(username, withEngagement) {
 // MODALS
 // ============================================
 function showPlatformInfoModal(platform) {
-    const modal = document.getElementById('platform-info-modal');
+    // Try multiple possible modal IDs
+    const modal = document.getElementById('platform-modal') || 
+                  document.getElementById('platform-info-modal') || 
+                  document.getElementById('checker-info-modal');
     if (!modal || !platform) return;
     
-    const icon = document.getElementById('platform-modal-icon');
-    const title = document.getElementById('platform-modal-title');
-    const body = document.getElementById('platform-modal-body');
+    // Find modal elements (try multiple selectors)
+    const icon = modal.querySelector('.modal-icon') || document.getElementById('modal-icon') || document.getElementById('platform-modal-icon');
+    const title = modal.querySelector('.modal-title') || document.getElementById('modal-title') || document.getElementById('platform-modal-title');
+    const body = modal.querySelector('.modal-body') || document.getElementById('modal-body') || document.getElementById('platform-modal-body');
+    const statusEl = modal.querySelector('.modal-status') || document.getElementById('modal-status');
     
     if (icon) icon.textContent = platform.icon;
-    if (title) title.textContent = `${platform.name} Account Checks`;
+    if (title) title.textContent = `${platform.name} Account Analysis`;
+    
+    if (statusEl) {
+        const statusClass = platform.status === 'live' ? 'live' : 'soon';
+        const statusText = platform.status === 'live' ? 'Live' : 'Coming Soon';
+        statusEl.innerHTML = `<span class="status-badge ${statusClass}">● ${statusText}</span>`;
+    }
     
     if (body) {
-        let html = '<p class="modal-intro">We analyze the following signals:</p><ul class="check-list">';
+        let html = '<h4>Account Signals We Analyze:</h4><ul class="check-list">';
         const checks = platform.accountChecks || ['Account visibility', 'Search presence', 'Profile accessibility'];
         checks.forEach(check => {
             html += `<li>${check}</li>`;
@@ -469,13 +480,13 @@ function showPlatformInfoModal(platform) {
         html += '</ul>';
         
         if (platform.messages && platform.messages.platformNote) {
-            html += `<div class="modal-tech-note"><h4>💡 Platform Note</h4><p>${platform.messages.platformNote}</p></div>`;
+            html += `<p style="margin-top: var(--space-md); padding: var(--space-md); background: rgba(99, 102, 241, 0.1); border-radius: var(--radius-md);">💡 ${platform.messages.platformNote}</p>`;
         }
         
         body.innerHTML = html;
     }
     
-    openModal('platform-info-modal');
+    openModal(modal.id);
 }
 
 function openModal(modalId) {

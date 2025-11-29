@@ -521,14 +521,26 @@ function populatePlatformIcons() {
     
     window.platformData.forEach(platform => {
         const statusClass = platform.status === 'live' ? 'live' : 'soon';
+        const title = platform.status === 'soon' ? `${platform.name} (Coming Soon)` : platform.name;
         html += `
-            <span class="platform-icon-badge ${statusClass}" title="${platform.name}">
+            <span class="platform-icon-badge ${statusClass}" title="${title}" data-platform="${platform.id}" style="cursor:pointer;">
                 ${platform.icon}
             </span>
         `;
     });
     
     powerPlatformIcons.innerHTML = html;
+    
+    // Add click handlers for platform modals
+    powerPlatformIcons.querySelectorAll('.platform-icon-badge').forEach(icon => {
+        icon.addEventListener('click', () => {
+            const platformId = icon.dataset.platform;
+            const platform = window.platformData.find(p => p.id === platformId);
+            if (platform) {
+                showPlatformModal(platform);
+            }
+        });
+    });
 }
 
 function showPlatformModal(platform) {

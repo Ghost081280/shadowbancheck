@@ -250,63 +250,72 @@ function initBackToTop() {
 }
 
 /* =============================================================================
-   PLATFORM HELPER FUNCTIONS (Global accessors for platforms.js data)
+   PLATFORM HELPER FUNCTIONS (Fallbacks ONLY if platforms.js fails to load)
+   
+   IMPORTANT: These are FALLBACK functions that directly access platformData.
+   They do NOT call window.getPlatformById etc. to avoid infinite recursion.
+   platforms.js should always load first and define the real functions.
    ============================================================================= */
 
-// These functions provide global access to platform data
-// The actual data and logic is in platforms.js
-
-function getPlatformById(id) {
-    if (window.getPlatformById) {
-        return window.getPlatformById(id);
-    }
-    if (window.platformData) {
-        return window.platformData.find(p => p.id === id);
-    }
-    return null;
+function _fallbackGetPlatformById(id) {
+    if (!id || !window.platformData) return null;
+    return window.platformData.find(p => p.id === id) || null;
 }
 
-function getLivePlatforms() {
-    if (window.getLivePlatforms) {
-        return window.getLivePlatforms();
-    }
-    if (window.platformData) {
-        return window.platformData.filter(p => p.status === 'live');
-    }
-    return [];
+function _fallbackGetLivePlatforms() {
+    if (!window.platformData) return [];
+    return window.platformData.filter(p => p.status === 'live');
 }
 
-function getComingSoonPlatforms() {
-    if (window.getComingSoonPlatforms) {
-        return window.getComingSoonPlatforms();
-    }
-    if (window.platformData) {
-        return window.platformData.filter(p => p.status === 'soon');
-    }
-    return [];
+function _fallbackGetComingSoonPlatforms() {
+    if (!window.platformData) return [];
+    return window.platformData.filter(p => p.status === 'soon');
 }
 
-function getHashtagPlatforms() {
-    if (window.getHashtagPlatforms) {
-        return window.getHashtagPlatforms();
-    }
-    if (window.platformData) {
-        return window.platformData.filter(p => p.supports && p.supports.hashtagCheck !== false);
-    }
-    return [];
+function _fallbackGetHashtagPlatforms() {
+    if (!window.platformData) return [];
+    return window.platformData.filter(p => p.supports && p.supports.hashtagCheck === true);
 }
 
-function detectPlatformFromUrl(url) {
-    if (window.detectPlatformFromUrl) {
-        return window.detectPlatformFromUrl(url);
+function _fallbackDetectPlatformFromUrl(url) {
+    if (!url || typeof url !== 'string' || !window.platformData) return null;
+    
+    const lowerUrl = url.toLowerCase().trim();
+    
+    if (lowerUrl.includes('x.com') || lowerUrl.includes('twitter.com')) {
+        return _fallbackGetPlatformById('twitter');
     }
+    if (lowerUrl.includes('reddit.com') || lowerUrl.includes('redd.it')) {
+        return _fallbackGetPlatformById('reddit');
+    }
+    if (lowerUrl.includes('instagram.com') || lowerUrl.includes('instagr.am')) {
+        return _fallbackGetPlatformById('instagram');
+    }
+    if (lowerUrl.includes('tiktok.com')) {
+        return _fallbackGetPlatformById('tiktok');
+    }
+    if (lowerUrl.includes('facebook.com') || lowerUrl.includes('fb.com')) {
+        return _fallbackGetPlatformById('facebook');
+    }
+    if (lowerUrl.includes('youtube.com') || lowerUrl.includes('youtu.be')) {
+        return _fallbackGetPlatformById('youtube');
+    }
+    if (lowerUrl.includes('linkedin.com')) {
+        return _fallbackGetPlatformById('linkedin');
+    }
+    
     return null;
 }
 
 /* =============================================================================
    INITIALIZE SHARED FUNCTIONALITY
    ============================================================================= */
+let sharedInitialized = false;
+
 function initSharedFunctionality() {
+    if (sharedInitialized) return;
+    sharedInitialized = true;
+    
     initMobileNav();
     initModalHandlers();
     initScrollReveal();
@@ -324,15 +333,6 @@ document.addEventListener('DOMContentLoaded', initSharedFunctionality);
 // Also init after shared components load
 document.addEventListener('sharedComponentsLoaded', initSharedFunctionality);
 
-// Prevent double init
-let sharedInitialized = false;
-const originalSharedInit = initSharedFunctionality;
-initSharedFunctionality = function() {
-    if (sharedInitialized) return;
-    sharedInitialized = true;
-    originalSharedInit();
-};
-
 /* =============================================================================
    EXPORTS (Global)
    ============================================================================= */
@@ -342,23 +342,30 @@ Object.assign(window.ShadowBan, {
     openModal,
     closeModal,
     sleep,
-    debounce,
-    getPlatformById,
-    getLivePlatforms,
-    getComingSoonPlatforms,
-    getHashtagPlatforms,
-    detectPlatformFromUrl
+    debounce
 });
 
-// Make functions globally accessible
+// Make modal/toast functions globally accessible
 window.closeModal = closeModal;
 window.closeLimitModal = () => closeModal('limit-modal');
 window.showToast = showToast;
 window.openModal = openModal;
 
-// Platform helpers (fallbacks if platforms.js not loaded)
-if (!window.getPlatformById) window.getPlatformById = getPlatformById;
-if (!window.getLivePlatforms) window.getLivePlatforms = getLivePlatforms;
-if (!window.getComingSoonPlatforms) window.getComingSoonPlatforms = getComingSoonPlatforms;
-if (!window.getHashtagPlatforms) window.getHashtagPlatforms = getHashtagPlatforms;
-if (!window.detectPlatformFromUrl) window.detectPlatformFromUrl = detectPlatformFromUrl;
+// Set fallback platform helpers ONLY if platforms.js didn't load them
+// This prevents the infinite recursion bug
+if (typeof window.getPlatformById !== 'function') {
+    window.getPlatformById = _fallbackGetPlatformById;
+    console.warn('⚠️ Using fallback getPlatformById - platforms.js may not have loaded');
+}
+if (typeof window.getLivePlatforms !== 'function') {
+    window.getLivePlatforms = _fallbackGetLivePlatforms;
+}
+if (typeof window.getComingSoonPlatforms !== 'function') {
+    window.getComingSoonPlatforms = _fallbackGetComingSoonPlatforms;
+}
+if (typeof window.getHashtagPlatforms !== 'function') {
+    window.getHashtagPlatforms = _fallbackGetHashtagPlatforms;
+}
+if (typeof window.detectPlatformFromUrl !== 'function') {
+    window.detectPlatformFromUrl = _fallbackDetectPlatformFromUrl;
+}

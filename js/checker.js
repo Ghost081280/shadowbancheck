@@ -1,167 +1,116 @@
 /* =============================================================================
-   CHECKER.JS - Account Checker Page Functionality
+   CHECKER.JS - Account Checker Page
    ShadowBanCheck.io
-   
-   Handles:
-   - Platform selection dropdown
-   - Username input
-   - Twitter engagement test UI (optional but recommended)
-   - Platform-specific messaging
-   - Engine animation (4 factors - NO IP for account check)
-   - Form submission
    ============================================================================= */
 
 (function() {
 'use strict';
 
-// ============================================
-// DOM ELEMENTS
-// ============================================
-let platformSelect, usernameInput, checkAccountBtn, accountCheckForm;
-let platformNote;
-let engagementTestSection, engagementProgressFill, engagementProgressText;
-let engagementConfirmed, skipEngagementBtn;
-let engineAnimation, checkerCard;
-let supportedPlatformIcons;
 let initialized = false;
-
-// ============================================
-// STATE
-// ============================================
 let currentPlatform = null;
-let engagementStepsCompleted = {
-    follow: false,
-    like: false,
-    retweet: false,
-    reply: false
-};
+let engagementStepsCompleted = { follow: false, like: false, retweet: false, reply: false };
 
 // ============================================
 // INITIALIZATION
 // ============================================
 function init() {
-    // Multiple initialization strategies for reliability
-    document.addEventListener('sharedComponentsLoaded', tryInit);
-    document.addEventListener('DOMContentLoaded', tryInit);
-    document.addEventListener('platformsReady', tryInit);
-    
-    // Fallback with delays
-    setTimeout(tryInit, 100);
-    setTimeout(tryInit, 300);
-    setTimeout(tryInit, 500);
-}
-
-function tryInit() {
     if (initialized) return;
+    
     if (!window.platformData || !Array.isArray(window.platformData)) {
-        console.log('⏳ Checker: Waiting for platformData...');
+        console.log('⏳ checker.js waiting for platformData...');
+        setTimeout(init, 50);
         return;
     }
-    onComponentsLoaded();
-}
-
-function onComponentsLoaded() {
-    // Prevent double initialization
-    if (initialized) return;
-    initialized = true;
     
+    initialized = true;
     console.log('🚀 Checker.js initializing...');
     
-    // Get DOM elements
-    platformSelect = document.getElementById('platform-select');
-    usernameInput = document.getElementById('username-input');
-    checkAccountBtn = document.getElementById('check-account-btn');
-    accountCheckForm = document.getElementById('account-check-form');
-    
-    platformNote = document.getElementById('platform-note');
-    
-    engagementTestSection = document.getElementById('engagement-test-section');
-    engagementProgressFill = document.getElementById('engagement-progress-fill');
-    engagementProgressText = document.getElementById('engagement-progress-text');
-    engagementConfirmed = document.getElementById('engagement-confirmed');
-    skipEngagementBtn = document.getElementById('skip-engagement-btn');
-    
-    engineAnimation = document.getElementById('engine-animation');
-    checkerCard = document.getElementById('checker-card');
-    
-    supportedPlatformIcons = document.getElementById('checker-platform-icons');
-    
-    // Populate platform dropdown
     populatePlatformSelect();
-    
-    // Populate platform icons
     populatePlatformIcons();
-    
-    // Setup event listeners
     setupEventListeners();
     
     console.log('✅ Checker.js initialized');
 }
 
+// Multiple init triggers
+document.addEventListener('DOMContentLoaded', init);
+document.addEventListener('platformsReady', init);
+setTimeout(init, 100);
+setTimeout(init, 300);
+
 // ============================================
 // PLATFORM DROPDOWN
 // ============================================
 function populatePlatformSelect() {
-    if (!platformSelect) {
-        console.warn('❌ Platform select element not found');
+    const select = document.getElementById('platform-select');
+    if (!select) {
+        console.warn('⚠️ #platform-select not found');
         return;
     }
     
-    if (!window.platformData || !Array.isArray(window.platformData)) {
-        console.warn('❌ platformData not available');
-        return;
-    }
+    // Clear existing options except placeholder
+    select.innerHTML = '<option value="">Select Platform</option>';
     
-    console.log('📋 Populating platform dropdown with', window.platformData.length, 'platforms');
+    // Get platforms that support account checks
+    const platforms = window.platformData.filter(p => 
+        p.supports && p.supports.accountCheck === true
+    );
     
-    let optionsHtml = '<option value="">Select Platform</option>';
+    // Add live platforms first
+    const livePlatforms = platforms.filter(p => p.status === 'live');
+    const soonPlatforms = platforms.filter(p => p.status === 'soon');
     
-    // Live platforms first
-    const livePlatforms = window.platformData.filter(p => p.status === 'live');
     livePlatforms.forEach(platform => {
-        optionsHtml += `<option value="${platform.id}">${platform.icon} ${platform.name}</option>`;
+        const option = document.createElement('option');
+        option.value = platform.id;
+        option.textContent = `${platform.icon} ${platform.name}`;
+        select.appendChild(option);
     });
     
-    // Coming soon platforms (disabled)
-    const soonPlatforms = window.platformData.filter(p => p.status === 'soon');
-    if (soonPlatforms.length > 0) {
-        optionsHtml += '<optgroup label="Coming Soon">';
-        soonPlatforms.forEach(platform => {
-            optionsHtml += `<option value="${platform.id}" disabled>${platform.icon} ${platform.name} (Coming Soon)</option>`;
-        });
-        optionsHtml += '</optgroup>';
+    // Add separator if we have both live and coming soon
+    if (livePlatforms.length > 0 && soonPlatforms.length > 0) {
+        const separator = document.createElement('option');
+        separator.disabled = true;
+        separator.textContent = '── Coming Soon ──';
+        select.appendChild(separator);
     }
     
-    platformSelect.innerHTML = optionsHtml;
-    console.log('✅ Platform dropdown populated');
+    soonPlatforms.forEach(platform => {
+        const option = document.createElement('option');
+        option.value = platform.id;
+        option.textContent = `${platform.icon} ${platform.name} (Soon)`;
+        option.disabled = true;
+        select.appendChild(option);
+    });
+    
+    console.log('✅ Platform dropdown populated with', livePlatforms.length, 'live +', soonPlatforms.length, 'coming soon');
 }
 
 function populatePlatformIcons() {
-    if (!supportedPlatformIcons) return;
-    if (!window.platformData || !Array.isArray(window.platformData)) return;
+    const container = document.getElementById('checker-platform-icons');
+    if (!container || !window.platformData) return;
     
     let html = '';
     
-    window.platformData.forEach(platform => {
+    // Only show platforms that support account checks
+    const platforms = window.platformData.filter(p => 
+        p.supports && p.supports.accountCheck === true
+    );
+    
+    platforms.forEach(platform => {
         const statusClass = platform.status === 'live' ? 'live' : 'soon';
         const title = platform.status === 'soon' ? `${platform.name} (Coming Soon)` : platform.name;
-        html += `
-            <span class="platform-icon-badge ${statusClass}" title="${title}" data-platform="${platform.id}" style="cursor:pointer;">
-                ${platform.icon}
-            </span>
-        `;
+        html += `<span class="platform-chip ${statusClass}" title="${title}" data-platform="${platform.id}">${platform.icon}</span>`;
     });
     
-    supportedPlatformIcons.innerHTML = html;
+    container.innerHTML = html;
     
-    // Add click handlers for platform modals
-    supportedPlatformIcons.querySelectorAll('.platform-icon-badge').forEach(icon => {
-        icon.addEventListener('click', () => {
-            const platformId = icon.dataset.platform;
+    // Add click handlers
+    container.querySelectorAll('.platform-chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+            const platformId = chip.dataset.platform;
             const platform = window.getPlatformById ? window.getPlatformById(platformId) : null;
-            if (platform) {
-                showPlatformModal(platform);
-            }
+            if (platform) showPlatformInfoModal(platform);
         });
     });
 }
@@ -170,175 +119,189 @@ function populatePlatformIcons() {
 // EVENT LISTENERS
 // ============================================
 function setupEventListeners() {
-    // Platform selection
+    // Platform select change
+    const platformSelect = document.getElementById('platform-select');
     if (platformSelect) {
         platformSelect.addEventListener('change', handlePlatformChange);
     }
     
     // Username input
+    const usernameInput = document.getElementById('username-input');
     if (usernameInput) {
-        usernameInput.addEventListener('input', validateForm);
+        usernameInput.addEventListener('input', handleUsernameInput);
     }
     
     // Form submission
-    if (accountCheckForm) {
-        accountCheckForm.addEventListener('submit', handleFormSubmit);
-    }
-    
-    // Engagement checkboxes
-    const engagementCheckboxes = document.querySelectorAll('.engagement-checkbox');
-    engagementCheckboxes.forEach(checkbox => {
-        checkbox.addEventListener('change', handleEngagementCheckboxChange);
-    });
-    
-    // Engagement confirmed
-    if (engagementConfirmed) {
-        engagementConfirmed.addEventListener('change', handleEngagementConfirmed);
-    }
-    
-    // Skip engagement
-    if (skipEngagementBtn) {
-        skipEngagementBtn.addEventListener('click', handleSkipEngagement);
-    }
-    
-    // Info button
-    const checkerInfoBtn = document.getElementById('checker-info-btn');
-    if (checkerInfoBtn) {
-        checkerInfoBtn.addEventListener('click', () => {
-            showInfoModal();
-        });
+    const form = document.getElementById('account-check-form');
+    if (form) {
+        form.addEventListener('submit', handleFormSubmit);
     }
     
     // Clear button
     const clearBtn = document.getElementById('clear-btn');
     if (clearBtn) {
-        clearBtn.addEventListener('click', () => {
-            if (usernameInput) usernameInput.value = '';
-            if (platformSelect) platformSelect.value = '';
-            currentPlatform = null;
-            hidePlatformNote();
-            hideEngagementTest();
-            validateForm();
-        });
+        clearBtn.addEventListener('click', handleClear);
+    }
+    
+    // Info buttons
+    const checkerInfoBtn = document.getElementById('checker-info-btn');
+    if (checkerInfoBtn) {
+        checkerInfoBtn.addEventListener('click', () => openModal('checker-info-modal'));
+    }
+    
+    const engineInfoBtn = document.getElementById('engine-info-btn');
+    if (engineInfoBtn) {
+        engineInfoBtn.addEventListener('click', () => openModal('engine-info-modal'));
+    }
+    
+    // Engagement test
+    document.querySelectorAll('.engagement-checkbox').forEach(cb => {
+        cb.addEventListener('change', handleEngagementCheckboxChange);
+    });
+    
+    const engagementConfirmed = document.getElementById('engagement-confirmed');
+    if (engagementConfirmed) {
+        engagementConfirmed.addEventListener('change', handleEngagementConfirmed);
+    }
+    
+    const skipEngagementBtn = document.getElementById('skip-engagement-btn');
+    if (skipEngagementBtn) {
+        skipEngagementBtn.addEventListener('click', handleSkipEngagement);
     }
 }
 
 // ============================================
-// PLATFORM CHANGE HANDLER
+// HANDLERS
 // ============================================
-function handlePlatformChange() {
-    const platformId = platformSelect ? platformSelect.value : '';
+function handlePlatformChange(e) {
+    const platformId = e.target.value;
+    currentPlatform = platformId ? window.getPlatformById(platformId) : null;
+    
+    const platformStatus = document.getElementById('platform-status');
+    const platformNote = document.getElementById('platform-note');
+    const platformNoteText = document.getElementById('platform-note-text');
+    const checkBtn = document.getElementById('check-account-btn');
+    const engagementSection = document.getElementById('engagement-test-section');
     
     if (!platformId) {
-        currentPlatform = null;
-        hidePlatformNote();
-        hideEngagementTest();
-        validateForm();
+        if (platformStatus) platformStatus.textContent = 'Select a platform to continue';
+        if (platformNote) platformNote.classList.add('hidden');
+        if (checkBtn) checkBtn.disabled = true;
+        if (engagementSection) engagementSection.classList.add('hidden');
         return;
     }
     
-    currentPlatform = window.getPlatformById ? window.getPlatformById(platformId) : null;
+    if (currentPlatform) {
+        if (platformStatus) {
+            platformStatus.textContent = currentPlatform.status === 'live' 
+                ? `${currentPlatform.name} - Ready to analyze` 
+                : `${currentPlatform.name} - Coming soon`;
+        }
+        
+        // Show platform note if available
+        if (platformNote && platformNoteText && currentPlatform.messages && currentPlatform.messages.platformNote) {
+            platformNoteText.textContent = currentPlatform.messages.platformNote;
+            platformNote.classList.remove('hidden');
+        } else if (platformNote) {
+            platformNote.classList.add('hidden');
+        }
+        
+        // Show engagement test for Twitter
+        if (currentPlatform.id === 'twitter' && 
+            currentPlatform.supports && currentPlatform.supports.engagementTest &&
+            currentPlatform.engagementTest && currentPlatform.engagementTest.enabled) {
+            if (engagementSection) engagementSection.classList.remove('hidden');
+        } else {
+            if (engagementSection) engagementSection.classList.add('hidden');
+        }
+    }
+    
+    updateSubmitButton();
+}
+
+function handleUsernameInput(e) {
+    let value = e.target.value.trim();
+    
+    // Auto-add @ if missing
+    if (value && !value.startsWith('@')) {
+        e.target.value = '@' + value;
+    }
+    
+    updateSubmitButton();
+}
+
+function updateSubmitButton() {
+    const platformSelect = document.getElementById('platform-select');
+    const usernameInput = document.getElementById('username-input');
+    const checkBtn = document.getElementById('check-account-btn');
+    
+    const hasPlatform = platformSelect && platformSelect.value;
+    const hasUsername = usernameInput && usernameInput.value.trim().length > 1;
+    const isLive = currentPlatform && currentPlatform.status === 'live';
+    
+    if (checkBtn) {
+        checkBtn.disabled = !(hasPlatform && hasUsername && isLive);
+    }
+}
+
+function handleFormSubmit(e) {
+    e.preventDefault();
+    
+    const usernameInput = document.getElementById('username-input');
+    const username = usernameInput ? usernameInput.value.trim() : '';
     
     if (!currentPlatform) {
-        hidePlatformNote();
-        hideEngagementTest();
-        validateForm();
+        showToast('Please select a platform', 'warning');
         return;
     }
     
-    console.log('🔄 Platform selected:', currentPlatform.name);
-    
-    // Show platform-specific note
-    if (currentPlatform.id === 'reddit') {
-        showPlatformNote('ℹ️ Reddit does not use hashtags. We focus on account visibility, subreddit bans, and karma analysis.');
-    } else if (currentPlatform.messages && currentPlatform.messages.platformNote) {
-        showPlatformNote('ℹ️ ' + currentPlatform.messages.platformNote);
-    } else {
-        hidePlatformNote();
+    if (!username || username.length < 2) {
+        showToast('Please enter a username', 'warning');
+        return;
     }
     
-    // Show/hide engagement test (optional but recommended for Twitter)
-    if (currentPlatform.id === 'twitter' && 
-        currentPlatform.supports && 
-        currentPlatform.supports.engagementTest) {
-        showEngagementTest();
-    } else {
-        hideEngagementTest();
+    if (currentPlatform.status !== 'live') {
+        showToast(`${currentPlatform.name} is coming soon!`, 'info');
+        return;
     }
     
-    validateForm();
+    // Check engagement confirmation
+    const engagementSection = document.getElementById('engagement-test-section');
+    const engagementConfirmed = document.getElementById('engagement-confirmed');
+    const withEngagement = engagementSection && 
+                          !engagementSection.classList.contains('hidden') &&
+                          engagementConfirmed && 
+                          engagementConfirmed.checked;
+    
+    runAnalysis(username, withEngagement);
 }
 
-function showPlatformNote(text) {
-    if (platformNote) {
-        const noteText = platformNote.querySelector('.platform-note-text') || platformNote.querySelector('#platform-note-text');
-        if (noteText) {
-            noteText.textContent = text;
-        } else {
-            platformNote.innerHTML = `<span class="platform-note-icon">💡</span><span class="platform-note-text">${text}</span>`;
-        }
-        platformNote.classList.remove('hidden');
-    }
-}
-
-function hidePlatformNote() {
-    if (platformNote) {
-        platformNote.classList.add('hidden');
-    }
-}
-
-// ============================================
-// ENGAGEMENT TEST (Optional but Recommended)
-// ============================================
-function showEngagementTest() {
-    if (engagementTestSection) {
-        engagementTestSection.classList.remove('hidden');
-    }
-}
-
-function hideEngagementTest() {
-    if (engagementTestSection) {
-        engagementTestSection.classList.add('hidden');
-    }
+function handleClear() {
+    const platformSelect = document.getElementById('platform-select');
+    const usernameInput = document.getElementById('username-input');
+    const checkBtn = document.getElementById('check-account-btn');
+    const platformStatus = document.getElementById('platform-status');
+    const platformNote = document.getElementById('platform-note');
+    const engagementSection = document.getElementById('engagement-test-section');
+    
+    if (platformSelect) platformSelect.value = '';
+    if (usernameInput) usernameInput.value = '';
+    if (checkBtn) checkBtn.disabled = true;
+    if (platformStatus) platformStatus.textContent = 'Select a platform to continue';
+    if (platformNote) platformNote.classList.add('hidden');
+    if (engagementSection) engagementSection.classList.add('hidden');
+    
+    currentPlatform = null;
     resetEngagementSteps();
 }
 
-function resetEngagementSteps() {
-    engagementStepsCompleted = {
-        follow: false,
-        like: false,
-        retweet: false,
-        reply: false
-    };
-    
-    const checkboxes = document.querySelectorAll('.engagement-checkbox');
-    checkboxes.forEach(cb => cb.checked = false);
-    
-    if (engagementConfirmed) {
-        engagementConfirmed.checked = false;
-    }
-    
-    updateEngagementProgress();
-}
-
+// ============================================
+// ENGAGEMENT TEST
+// ============================================
 function handleEngagementCheckboxChange(e) {
     const step = e.target.id.replace('step-', '');
     engagementStepsCompleted[step] = e.target.checked;
     updateEngagementProgress();
-}
-
-function updateEngagementProgress() {
-    const completed = Object.values(engagementStepsCompleted).filter(v => v).length;
-    const total = 4;
-    const percentage = (completed / total) * 100;
-    
-    if (engagementProgressFill) {
-        engagementProgressFill.style.width = `${percentage}%`;
-    }
-    
-    if (engagementProgressText) {
-        engagementProgressText.textContent = `${completed} of ${total} steps completed`;
-    }
 }
 
 function handleEngagementConfirmed(e) {
@@ -346,108 +309,95 @@ function handleEngagementConfirmed(e) {
 }
 
 function handleSkipEngagement() {
-    runAccountCheck(false);
-}
-
-// ============================================
-// FORM VALIDATION
-// ============================================
-function validateForm() {
-    const platformSelected = platformSelect && platformSelect.value;
-    const usernameEntered = usernameInput && usernameInput.value.trim().length > 0;
+    const engagementSection = document.getElementById('engagement-test-section');
+    if (engagementSection) engagementSection.classList.add('hidden');
+    resetEngagementSteps();
     
-    if (checkAccountBtn) {
-        checkAccountBtn.disabled = !(platformSelected && usernameEntered);
+    // Auto-submit
+    const usernameInput = document.getElementById('username-input');
+    const username = usernameInput ? usernameInput.value.trim() : '';
+    if (username && currentPlatform) {
+        runAnalysis(username, false);
     }
 }
 
-// ============================================
-// FORM SUBMISSION
-// ============================================
-function handleFormSubmit(e) {
-    e.preventDefault();
-    
-    if (!currentPlatform) {
-        showToast('Please select a platform', 'error');
-        return;
-    }
-    
-    const username = usernameInput ? usernameInput.value.trim().replace(/^@/, '') : '';
-    if (!username) {
-        showToast('Please enter a username', 'error');
-        return;
-    }
-    
-    // Check if coming soon
-    if (currentPlatform.status === 'soon') {
-        showToast(`${currentPlatform.name} coming soon!`, 'warning');
-        return;
-    }
-    
-    // Check if engagement test completed
-    const withEngagement = engagementConfirmed && engagementConfirmed.checked;
-    
-    runAccountCheck(withEngagement);
+function resetEngagementSteps() {
+    engagementStepsCompleted = { follow: false, like: false, retweet: false, reply: false };
+    document.querySelectorAll('.engagement-checkbox').forEach(cb => cb.checked = false);
+    const ec = document.getElementById('engagement-confirmed');
+    if (ec) ec.checked = false;
+    updateEngagementProgress();
 }
 
-function runAccountCheck(withEngagement) {
-    // Show engine animation
-    showEngineAnimation();
+function updateEngagementProgress() {
+    const completed = Object.values(engagementStepsCompleted).filter(v => v).length;
+    const fill = document.getElementById('engagement-progress-fill');
+    const text = document.getElementById('engagement-progress-text');
     
-    // Simulate analysis
-    simulateAnalysis(withEngagement);
+    if (fill) fill.style.width = `${(completed / 4) * 100}%`;
+    if (text) text.textContent = `${completed} of 4 steps completed`;
 }
 
 // ============================================
-// ENGINE ANIMATION (4 FACTORS - NO IP)
+// ANALYSIS
 // ============================================
-function showEngineAnimation() {
-    if (checkerCard) {
-        checkerCard.classList.add('hidden');
-    }
-    if (engineAnimation) {
-        engineAnimation.classList.remove('hidden');
-    }
+function runAnalysis(username, withEngagement) {
+    const checkerCard = document.getElementById('checker-card');
+    const engineAnimation = document.getElementById('engine-animation');
+    
+    if (checkerCard) checkerCard.classList.add('hidden');
+    if (engineAnimation) engineAnimation.classList.remove('hidden');
     
     runEngineAnimation();
+    simulateAnalysis(username, withEngagement);
 }
 
 function runEngineAnimation() {
     const terminalOutput = document.getElementById('terminal-output');
-    const isReddit = currentPlatform && currentPlatform.id === 'reddit';
+    if (terminalOutput) terminalOutput.innerHTML = '';
     
-    // Account check uses 4 factors (NO IP - doesn't make sense for username check)
-    const factors = [
-        { id: 'factor-1', message: '> Querying Platform API...', delay: 500, active: true },
-        { id: 'factor-2', message: '> Running web analysis...', delay: 1000, active: true },
-        { id: 'factor-3', message: '> Checking historical data...', delay: 1500, active: true },
-        { id: 'factor-4', message: isReddit ? '> Hashtag analysis... (N/A for Reddit)' : '> Scanning hashtag database...', delay: 2000, active: !isReddit }
-        // NO factor 5 (IP) for account checks
+    const platform = currentPlatform || { id: 'twitter', name: 'Twitter/X' };
+    const isReddit = platform.id === 'reddit';
+    
+    const lines = [
+        { text: `> Initializing 4-Factor Detection Engine...`, delay: 0 },
+        { text: `> Target platform: ${platform.name}`, delay: 400 },
+        { text: `> Connecting to platform API...`, delay: 800 },
+        { text: `> Querying account status...`, delay: 1200 },
+        { text: `> Running web visibility tests...`, delay: 1800 },
+        { text: `> Analyzing historical patterns...`, delay: 2400 },
+        { text: isReddit ? `> Hashtag check: N/A (Reddit)` : `> Scanning hashtag database...`, delay: 2800 },
+        { text: `> Calculating probability score...`, delay: 3200 },
     ];
     
-    // Clear terminal
-    if (terminalOutput) {
-        terminalOutput.innerHTML = '';
-    }
-    
-    // Animate each factor
-    factors.forEach((factor) => {
+    lines.forEach(line => {
         setTimeout(() => {
-            // Add terminal line
             if (terminalOutput) {
-                const line = document.createElement('div');
-                line.className = 'terminal-line';
-                line.textContent = factor.message;
-                terminalOutput.appendChild(line);
+                const lineEl = document.createElement('div');
+                lineEl.className = 'terminal-line';
+                lineEl.textContent = line.text;
+                terminalOutput.appendChild(lineEl);
                 terminalOutput.scrollTop = terminalOutput.scrollHeight;
             }
-            
-            // Update factor status - try both class selectors
-            const factorEl = document.getElementById(factor.id);
-            if (factorEl) {
-                const status = factorEl.querySelector('.factor-compact-status') || factorEl.querySelector('.factor-status');
+        }, line.delay);
+    });
+    
+    // 4 factors for account check (no IP)
+    const factors = [
+        { id: 'factor-1', delay: 1000, status: 'complete' },
+        { id: 'factor-2', delay: 1800, status: 'complete' },
+        { id: 'factor-3', delay: 2400, status: 'complete' },
+        { id: 'factor-4', delay: 2800, status: isReddit ? 'na' : 'complete' },
+    ];
+    
+    factors.forEach(factor => {
+        setTimeout(() => {
+            const el = document.getElementById(factor.id);
+            if (el) {
+                // Try both class names for status indicator
+                let status = el.querySelector('.factor-compact-status') || el.querySelector('.factor-status');
                 if (status) {
-                    if (factor.active) {
+                    if (factor.status === 'complete') {
                         status.textContent = '✓';
                         status.classList.remove('pending');
                         status.classList.add('complete');
@@ -461,177 +411,107 @@ function runEngineAnimation() {
         }, factor.delay);
     });
     
-    // Phase 2 - AI Processing
+    // Phase 2: AI Analysis
     setTimeout(() => {
         const phase1 = document.getElementById('engine-phase-1');
         const phase2 = document.getElementById('engine-phase-2');
         if (phase1) phase1.classList.add('hidden');
         if (phase2) phase2.classList.remove('hidden');
         
-        // AI processing messages
-        const aiMessages = [
-            'Cross-referencing signals...',
-            'Calculating probability weights...',
-            'Generating final score...'
-        ];
-        
+        const aiMessages = ['Cross-referencing signals...', 'Calculating probability weights...', 'Generating score...'];
         const aiMessageEl = document.getElementById('ai-processing-message');
         aiMessages.forEach((msg, i) => {
             setTimeout(() => {
                 if (aiMessageEl) aiMessageEl.textContent = msg;
-            }, i * 600);
+            }, i * 700);
         });
-    }, 3000);
+    }, 3500);
 }
 
-function simulateAnalysis(withEngagement) {
+function simulateAnalysis(username, withEngagement) {
     setTimeout(() => {
         const platformId = currentPlatform ? currentPlatform.id : 'twitter';
-        const username = usernameInput ? usernameInput.value.trim().replace(/^@/, '') : 'demo_user';
-        
-        // Get demo data
         const demoResult = window.DemoData ? window.DemoData.getResult(platformId, 'accountCheck') : null;
         
         if (demoResult) {
             demoResult.username = username;
             demoResult.withEngagement = withEngagement;
             demoResult.engagementSteps = { ...engagementStepsCompleted };
-            demoResult.factorsUsed = 4; // Account check uses 4 factors, not 5
             demoResult.checkType = 'account';
+            demoResult.factorsUsed = 4;
             sessionStorage.setItem('lastAnalysisResult', JSON.stringify(demoResult));
         }
         
-        // Redirect to results
-        window.location.href = `results.html?platform=${platformId}&username=${encodeURIComponent(username)}&type=account&demo=true`;
-    }, 4500);
+        window.location.href = `results.html?platform=${platformId}&type=account&username=${encodeURIComponent(username)}&demo=true`;
+    }, 5000);
 }
 
 // ============================================
-// PLATFORM MODAL
+// MODALS
 // ============================================
-function showPlatformModal(platform) {
-    if (!platform) return;
+function showPlatformInfoModal(platform) {
+    const modal = document.getElementById('platform-info-modal');
+    if (!modal || !platform) return;
     
-    // Create modal if it doesn't exist
-    let modal = document.getElementById('platform-modal');
-    if (!modal) {
-        const modalHtml = `
-            <div id="platform-modal" class="modal hidden">
-                <div class="modal-overlay"></div>
-                <div class="modal-content">
-                    <button class="modal-close">&times;</button>
-                    <div class="modal-header">
-                        <span class="modal-icon" id="platform-modal-icon">📱</span>
-                        <h3 class="modal-title" id="platform-modal-title">Platform Analysis</h3>
-                        <div id="platform-modal-status"></div>
-                    </div>
-                    <div class="modal-body" id="platform-modal-body"></div>
-                    <div class="modal-footer">
-                        <button class="btn btn-primary btn-lg" onclick="document.getElementById('platform-modal').classList.add('hidden');document.body.style.overflow='';">Got It!</button>
-                    </div>
-                </div>
-            </div>
-        `;
-        document.body.insertAdjacentHTML('beforeend', modalHtml);
-        modal = document.getElementById('platform-modal');
-    }
+    const icon = document.getElementById('platform-modal-icon');
+    const title = document.getElementById('platform-modal-title');
+    const body = document.getElementById('platform-modal-body');
     
-    const modalIcon = document.getElementById('platform-modal-icon');
-    const modalTitle = document.getElementById('platform-modal-title');
-    const modalStatus = document.getElementById('platform-modal-status');
-    const modalBody = document.getElementById('platform-modal-body');
+    if (icon) icon.textContent = platform.icon;
+    if (title) title.textContent = `${platform.name} Account Checks`;
     
-    if (modalIcon) modalIcon.textContent = platform.icon;
-    if (modalTitle) modalTitle.textContent = platform.name;
-    
-    if (modalStatus) {
-        const statusClass = platform.status === 'live' ? 'status-live' : 'status-soon';
-        const statusText = platform.status === 'live' ? '● Live' : '○ Coming Soon';
-        modalStatus.innerHTML = `<span class="${statusClass}">${statusText}</span>`;
-    }
-    
-    if (modalBody) {
-        let html = '<h4>Account Signals We Analyze:</h4><ul class="modal-check-list">';
-        if (platform.accountChecks && platform.accountChecks.length > 0) {
-            platform.accountChecks.slice(0, 6).forEach(check => {
-                html += `<li>✓ ${check}</li>`;
-            });
-        } else {
-            html += '<li>✓ Account visibility analysis</li>';
-            html += '<li>✓ Search presence detection</li>';
-        }
+    if (body) {
+        let html = '<p class="modal-intro">We analyze the following signals:</p><ul class="check-list">';
+        const checks = platform.accountChecks || ['Account visibility', 'Search presence', 'Profile accessibility'];
+        checks.forEach(check => {
+            html += `<li>${check}</li>`;
+        });
         html += '</ul>';
         
-        if (platform.status === 'soon') {
-            html += `<p class="modal-note">🚀 ${platform.name} analysis is coming soon! We're working on integrating this platform.</p>`;
+        if (platform.messages && platform.messages.platformNote) {
+            html += `<div class="modal-tech-note"><h4>💡 Platform Note</h4><p>${platform.messages.platformNote}</p></div>`;
         }
         
-        modalBody.innerHTML = html;
+        body.innerHTML = html;
     }
+    
+    openModal('platform-info-modal');
+}
+
+function openModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (!modal) return;
     
     modal.classList.remove('hidden');
     document.body.style.overflow = 'hidden';
     
-    // Close on overlay click
     const overlay = modal.querySelector('.modal-overlay');
-    if (overlay) {
-        overlay.onclick = () => {
-            modal.classList.add('hidden');
-            document.body.style.overflow = '';
-        };
-    }
+    if (overlay) overlay.onclick = () => closeModal(modalId);
     
-    // Close on X button
     const closeBtn = modal.querySelector('.modal-close');
-    if (closeBtn) {
-        closeBtn.onclick = () => {
-            modal.classList.add('hidden');
-            document.body.style.overflow = '';
-        };
-    }
+    if (closeBtn) closeBtn.onclick = () => closeModal(modalId);
 }
 
-// ============================================
-// INFO MODAL
-// ============================================
-function showInfoModal() {
-    const modal = document.getElementById('checker-info-modal');
+function closeModal(modalId) {
+    const modal = document.getElementById(modalId);
     if (modal) {
-        modal.classList.remove('hidden');
-        document.body.style.overflow = 'hidden';
-        
-        const overlay = modal.querySelector('.modal-overlay');
-        if (overlay) {
-            overlay.onclick = () => {
-                modal.classList.add('hidden');
-                document.body.style.overflow = '';
-            };
-        }
-        
-        const closeBtn = modal.querySelector('.modal-close');
-        if (closeBtn) {
-            closeBtn.onclick = () => {
-                modal.classList.add('hidden');
-                document.body.style.overflow = '';
-            };
-        }
+        modal.classList.add('hidden');
+        document.body.style.overflow = '';
     }
 }
 
+window.closeModal = closeModal;
+window.closePlatformInfoModal = function() { closeModal('platform-info-modal'); };
+
 // ============================================
-// TOAST
+// HELPERS
 // ============================================
-function showToast(message, type = 'info') {
-    if (window.showToast && typeof window.showToast === 'function') {
+function showToast(message, type) {
+    if (typeof window.showToast === 'function') {
         window.showToast(message, type);
     } else {
-        alert(message);
+        console.log('Toast:', message, type);
     }
 }
-
-// ============================================
-// INIT
-// ============================================
-init();
 
 })();

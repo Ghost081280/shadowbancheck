@@ -5,9 +5,9 @@
    Handles:
    - Platform selection dropdown
    - Username input
-   - Twitter engagement test UI
+   - Twitter engagement test UI (optional but recommended)
    - Platform-specific messaging
-   - Engine animation
+   - Engine animation (4 factors - NO IP for account check)
    - Form submission
    ============================================================================= */
 
@@ -18,12 +18,12 @@
 // DOM ELEMENTS
 // ============================================
 let platformSelect, usernameInput, checkAccountBtn, accountCheckForm;
-let platformStatus, platformNote, platformNoteText;
+let platformNote;
 let engagementTestSection, engagementProgressFill, engagementProgressText;
 let engagementConfirmed, skipEngagementBtn;
 let engineAnimation, checkerCard;
 let supportedPlatformIcons;
-let clearBtn;
+let initialized = false;
 
 // ============================================
 // STATE
@@ -41,23 +41,31 @@ let engagementStepsCompleted = {
 // ============================================
 function init() {
     document.addEventListener('sharedComponentsLoaded', onComponentsLoaded);
+    document.addEventListener('DOMContentLoaded', onComponentsLoaded);
     
-    // Also try immediate init
-    if (document.querySelector('header')) {
-        onComponentsLoaded();
-    }
+    // Also try immediate init with delay
+    setTimeout(onComponentsLoaded, 200);
 }
 
 function onComponentsLoaded() {
+    // Prevent double initialization
+    if (initialized) return;
+    
+    // Wait for platformData
+    if (!window.platformData) {
+        setTimeout(onComponentsLoaded, 100);
+        return;
+    }
+    
+    initialized = true;
+    
     // Get DOM elements
     platformSelect = document.getElementById('platform-select');
     usernameInput = document.getElementById('username-input');
     checkAccountBtn = document.getElementById('check-account-btn');
     accountCheckForm = document.getElementById('account-check-form');
     
-    platformStatus = document.getElementById('platform-status');
     platformNote = document.getElementById('platform-note');
-    platformNoteText = document.getElementById('platform-note-text');
     
     engagementTestSection = document.getElementById('engagement-test-section');
     engagementProgressFill = document.getElementById('engagement-progress-fill');
@@ -68,8 +76,7 @@ function onComponentsLoaded() {
     engineAnimation = document.getElementById('engine-animation');
     checkerCard = document.getElementById('checker-card');
     
-    supportedPlatformIcons = document.getElementById('supported-platform-icons');
-    clearBtn = document.getElementById('clear-btn');
+    supportedPlatformIcons = document.getElementById('checker-platform-icons');
     
     // Populate platform dropdown
     populatePlatformSelect();
@@ -80,26 +87,28 @@ function onComponentsLoaded() {
     // Setup event listeners
     setupEventListeners();
     
-    // Detect IP
-    detectUserIP();
+    console.log('✅ Checker.js initialized');
 }
 
 // ============================================
 // PLATFORM DROPDOWN
 // ============================================
 function populatePlatformSelect() {
-    if (!platformSelect || !window.platformData) return;
+    if (!platformSelect) {
+        console.warn('Platform select element not found');
+        return;
+    }
     
     let optionsHtml = '<option value="">Select Platform</option>';
     
     // Live platforms first
-    const livePlatforms = window.getLivePlatforms();
+    const livePlatforms = window.platformData.filter(p => p.status === 'live');
     livePlatforms.forEach(platform => {
         optionsHtml += `<option value="${platform.id}">${platform.icon} ${platform.name}</option>`;
     });
     
     // Coming soon platforms (disabled)
-    const soonPlatforms = window.getComingSoonPlatforms();
+    const soonPlatforms = window.platformData.filter(p => p.status === 'soon');
     if (soonPlatforms.length > 0) {
         optionsHtml += '<optgroup label="Coming Soon">';
         soonPlatforms.forEach(platform => {
@@ -112,20 +121,32 @@ function populatePlatformSelect() {
 }
 
 function populatePlatformIcons() {
-    if (!supportedPlatformIcons || !window.platformData) return;
+    if (!supportedPlatformIcons) return;
     
     let html = '';
     
     window.platformData.forEach(platform => {
         const statusClass = platform.status === 'live' ? 'live' : 'soon';
+        const title = platform.status === 'soon' ? `${platform.name} (Coming Soon)` : platform.name;
         html += `
-            <span class="platform-icon-badge ${statusClass}" title="${platform.name}${platform.status === 'soon' ? ' (Coming Soon)' : ''}">
+            <span class="platform-icon-badge ${statusClass}" title="${title}" data-platform="${platform.id}" style="cursor:pointer;">
                 ${platform.icon}
             </span>
         `;
     });
     
     supportedPlatformIcons.innerHTML = html;
+    
+    // Add click handlers for platform modals
+    supportedPlatformIcons.querySelectorAll('.platform-icon-badge').forEach(icon => {
+        icon.addEventListener('click', () => {
+            const platformId = icon.dataset.platform;
+            const platform = window.platformData.find(p => p.id === platformId);
+            if (platform) {
+                showPlatformModal(platform);
+            }
+        });
+    });
 }
 
 // ============================================
@@ -163,23 +184,11 @@ function setupEventListeners() {
         skipEngagementBtn.addEventListener('click', handleSkipEngagement);
     }
     
-    // Clear button
-    if (clearBtn) {
-        clearBtn.addEventListener('click', handleClear);
-    }
-    
-    // Info buttons
+    // Info button
     const checkerInfoBtn = document.getElementById('checker-info-btn');
     if (checkerInfoBtn) {
         checkerInfoBtn.addEventListener('click', () => {
-            openModal('checker-info-modal');
-        });
-    }
-    
-    const engineInfoBtn = document.getElementById('engine-info-btn');
-    if (engineInfoBtn) {
-        engineInfoBtn.addEventListener('click', () => {
-            openModal('engine-info-modal');
+            showInfoModal();
         });
     }
 }
@@ -194,12 +203,11 @@ function handlePlatformChange() {
         currentPlatform = null;
         hidePlatformNote();
         hideEngagementTest();
-        updatePlatformStatus('Select a platform to continue');
         validateForm();
         return;
     }
     
-    currentPlatform = window.getPlatformById(platformId);
+    currentPlatform = window.platformData.find(p => p.id === platformId);
     
     if (!currentPlatform) {
         hidePlatformNote();
@@ -207,20 +215,17 @@ function handlePlatformChange() {
         return;
     }
     
-    // Update status
-    updatePlatformStatus(`${currentPlatform.name} selected`);
-    
     // Show platform-specific note
-    if (currentPlatform.messages && currentPlatform.messages.platformNote) {
-        showPlatformNote(currentPlatform.messages.platformNote);
-    } else if (currentPlatform.id === 'reddit') {
-        showPlatformNote('Reddit does not use hashtags. We focus on account visibility, subreddit bans, and karma analysis.');
+    if (currentPlatform.id === 'reddit') {
+        showPlatformNote('ℹ️ Reddit does not use hashtags. We focus on account visibility, subreddit bans, and karma analysis.');
+    } else if (currentPlatform.messages && currentPlatform.messages.platformNote) {
+        showPlatformNote('ℹ️ ' + currentPlatform.messages.platformNote);
     } else {
         hidePlatformNote();
     }
     
-    // Show/hide engagement test
-    if (currentPlatform.id === 'twitter' && currentPlatform.supports.engagementTest) {
+    // Show/hide engagement test (optional but recommended for Twitter)
+    if (currentPlatform.id === 'twitter' && currentPlatform.supports && currentPlatform.supports.engagementTest) {
         showEngagementTest();
     } else {
         hideEngagementTest();
@@ -229,15 +234,9 @@ function handlePlatformChange() {
     validateForm();
 }
 
-function updatePlatformStatus(text) {
-    if (platformStatus) {
-        platformStatus.textContent = text;
-    }
-}
-
 function showPlatformNote(text) {
-    if (platformNote && platformNoteText) {
-        platformNoteText.textContent = text;
+    if (platformNote) {
+        platformNote.innerHTML = `<p>${text}</p>`;
         platformNote.classList.remove('hidden');
     }
 }
@@ -249,7 +248,7 @@ function hidePlatformNote() {
 }
 
 // ============================================
-// ENGAGEMENT TEST
+// ENGAGEMENT TEST (Optional but Recommended)
 // ============================================
 function showEngagementTest() {
     if (engagementTestSection) {
@@ -360,7 +359,7 @@ function runAccountCheck(withEngagement) {
 }
 
 // ============================================
-// ENGINE ANIMATION
+// ENGINE ANIMATION (4 FACTORS - NO IP)
 // ============================================
 function showEngineAnimation() {
     if (checkerCard) {
@@ -375,16 +374,15 @@ function showEngineAnimation() {
 
 function runEngineAnimation() {
     const terminalOutput = document.getElementById('terminal-output');
-    
-    // Determine which factors to show based on platform
     const isReddit = currentPlatform && currentPlatform.id === 'reddit';
     
+    // Account check uses 4 factors (NO IP - doesn't make sense for username check)
     const factors = [
-        { id: 'factor-1-progress', message: '> Querying Platform API...', delay: 500, active: true },
-        { id: 'factor-2-progress', message: '> Running web analysis...', delay: 1000, active: true },
-        { id: 'factor-3-progress', message: '> Checking historical data...', delay: 1500, active: true },
-        { id: 'factor-4-progress', message: '> Scanning hashtag database...', delay: 2000, active: !isReddit },
-        { id: 'factor-5-progress', message: '> Analyzing your IP connection...', delay: 2500, active: true }
+        { id: 'factor-1', message: '> Querying Platform API...', delay: 500, active: true },
+        { id: 'factor-2', message: '> Running web analysis...', delay: 1000, active: true },
+        { id: 'factor-3', message: '> Checking historical data...', delay: 1500, active: true },
+        { id: 'factor-4', message: '> Scanning hashtag database...', delay: 2000, active: !isReddit }
+        // NO factor 5 (IP) for account checks
     ];
     
     // Clear terminal
@@ -407,7 +405,7 @@ function runEngineAnimation() {
             // Update factor status
             const factorEl = document.getElementById(factor.id);
             if (factorEl) {
-                const status = factorEl.querySelector('.factor-status');
+                const status = factorEl.querySelector('.factor-compact-status') || factorEl.querySelector('.factor-status');
                 if (status) {
                     if (factor.active) {
                         status.textContent = '✓';
@@ -423,13 +421,13 @@ function runEngineAnimation() {
         }, factor.delay);
     });
     
-    // Phase 2
+    // Phase 2 - AI Processing
     setTimeout(() => {
         const phase1 = document.getElementById('engine-phase-1');
         const phase2 = document.getElementById('engine-phase-2');
         if (phase1) phase1.classList.add('hidden');
         if (phase2) phase2.classList.remove('hidden');
-    }, 3500);
+    }, 3000);
 }
 
 function simulateAnalysis(withEngagement) {
@@ -444,97 +442,131 @@ function simulateAnalysis(withEngagement) {
             demoResult.username = username;
             demoResult.withEngagement = withEngagement;
             demoResult.engagementSteps = { ...engagementStepsCompleted };
+            demoResult.factorsUsed = 4; // Account check uses 4 factors, not 5
+            demoResult.checkType = 'account';
             sessionStorage.setItem('lastAnalysisResult', JSON.stringify(demoResult));
         }
         
         // Redirect to results
-        window.location.href = `results.html?platform=${platformId}&username=${encodeURIComponent(username)}&demo=true`;
-    }, 5000);
+        window.location.href = `results.html?platform=${platformId}&username=${encodeURIComponent(username)}&type=account&demo=true`;
+    }, 4500);
 }
 
 // ============================================
-// CLEAR
+// PLATFORM MODAL
 // ============================================
-function handleClear() {
-    if (platformSelect) platformSelect.value = '';
-    if (usernameInput) usernameInput.value = '';
-    currentPlatform = null;
-    hidePlatformNote();
-    hideEngagementTest();
-    updatePlatformStatus('Select a platform to continue');
-    validateForm();
-}
-
-// ============================================
-// IP DETECTION
-// ============================================
-function detectUserIP() {
-    const ipElement = document.getElementById('ip-address');
-    const ipTypeElement = document.getElementById('ip-type');
-    const ipFlagElement = document.getElementById('ip-flag');
-    
-    if (!ipElement) return;
-    
-    const demoIp = window.DemoData ? window.DemoData.getIpData('residential') : null;
-    
-    if (demoIp) {
-        ipElement.textContent = demoIp.ip;
-        if (ipTypeElement) {
-            ipTypeElement.textContent = demoIp.type;
-            ipTypeElement.className = `ip-type ${demoIp.typeClass}`;
-        }
-        if (ipFlagElement) {
-            ipFlagElement.textContent = demoIp.countryFlag;
-        }
+function showPlatformModal(platform) {
+    // Create modal if it doesn't exist
+    let modal = document.getElementById('platform-modal');
+    if (!modal) {
+        const modalHtml = `
+            <div id="platform-modal" class="modal hidden">
+                <div class="modal-overlay"></div>
+                <div class="modal-content">
+                    <button class="modal-close" onclick="document.getElementById('platform-modal').classList.add('hidden');document.body.style.overflow='';">×</button>
+                    <div class="modal-header">
+                        <span class="modal-icon" id="platform-modal-icon">📱</span>
+                        <h2 id="platform-modal-title">Platform Analysis</h2>
+                        <div id="platform-modal-status"></div>
+                    </div>
+                    <div class="modal-body" id="platform-modal-body"></div>
+                </div>
+            </div>
+        `;
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+        modal = document.getElementById('platform-modal');
     }
-}
-
-// ============================================
-// MODALS
-// ============================================
-function openModal(modalId) {
-    const modal = document.getElementById(modalId);
-    if (modal) {
-        modal.classList.remove('hidden');
-        document.body.style.overflow = 'hidden';
-        
-        const overlay = modal.querySelector('.modal-overlay');
-        if (overlay) {
-            overlay.onclick = () => closeModal(modalId);
-        }
-        
-        const closeBtn = modal.querySelector('.modal-close');
-        if (closeBtn) {
-            closeBtn.onclick = () => closeModal(modalId);
-        }
+    
+    const modalIcon = document.getElementById('platform-modal-icon');
+    const modalTitle = document.getElementById('platform-modal-title');
+    const modalStatus = document.getElementById('platform-modal-status');
+    const modalBody = document.getElementById('platform-modal-body');
+    
+    if (modalIcon) modalIcon.textContent = platform.icon;
+    if (modalTitle) modalTitle.textContent = platform.name;
+    
+    if (modalStatus) {
+        const statusClass = platform.status === 'live' ? 'status-live' : 'status-soon';
+        const statusText = platform.status === 'live' ? '● Live' : '○ Coming Soon';
+        modalStatus.innerHTML = `<span class="${statusClass}">${statusText}</span>`;
     }
-}
-
-function closeModal(modalId) {
-    const modal = document.getElementById(modalId);
-    if (modal) {
+    
+    if (modalBody) {
+        let html = '<h4>Account Signals We Analyze:</h4><ul class="modal-check-list">';
+        if (platform.accountChecks) {
+            platform.accountChecks.slice(0, 6).forEach(check => {
+                html += `<li>✓ ${check}</li>`;
+            });
+        }
+        html += '</ul>';
+        
+        if (platform.status === 'soon') {
+            html += `<p class="modal-note">🚀 ${platform.name} analysis is coming soon! We're working on integrating this platform.</p>`;
+        }
+        
+        modalBody.innerHTML = html;
+    }
+    
+    modal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+    
+    // Close on overlay click
+    modal.querySelector('.modal-overlay').onclick = () => {
         modal.classList.add('hidden');
         document.body.style.overflow = '';
-    }
+    };
 }
 
-window.closePlatformInfoModal = function() {
-    closeModal('platform-info-modal');
-};
+// ============================================
+// INFO MODAL
+// ============================================
+function showInfoModal() {
+    let modal = document.getElementById('checker-info-modal');
+    if (!modal) {
+        const modalHtml = `
+            <div id="checker-info-modal" class="modal hidden">
+                <div class="modal-overlay"></div>
+                <div class="modal-content">
+                    <button class="modal-close" onclick="document.getElementById('checker-info-modal').classList.add('hidden');document.body.style.overflow='';">×</button>
+                    <div class="modal-header">
+                        <span class="modal-icon">👤</span>
+                        <h2>Account Checker</h2>
+                    </div>
+                    <div class="modal-body">
+                        <p>The Account Checker analyzes your social media account for signs of shadowbanning using <strong>4 independent factors</strong>:</p>
+                        <ul class="modal-check-list">
+                            <li>📡 <strong>Platform API</strong> - Direct query of platform data</li>
+                            <li>🌐 <strong>Web Analysis</strong> - Profile visibility from logged-out view</li>
+                            <li>📊 <strong>Historical Data</strong> - Comparison with baseline patterns</li>
+                            <li>#️⃣ <strong>Hashtag Database</strong> - Check for restricted tag usage</li>
+                        </ul>
+                        <p class="modal-note">💡 <strong>For Twitter/X:</strong> Complete the optional engagement test for enhanced accuracy. This lets us verify your actions are visible to other accounts.</p>
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+        modal = document.getElementById('checker-info-modal');
+    }
+    
+    modal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+    
+    modal.querySelector('.modal-overlay').onclick = () => {
+        modal.classList.add('hidden');
+        document.body.style.overflow = '';
+    };
+}
 
 // ============================================
 // TOAST
 // ============================================
 function showToast(message, type = 'info') {
-    const toast = document.getElementById('toast');
-    if (!toast) return;
-    
-    toast.textContent = message;
-    toast.className = `toast ${type} show`;
-    
-    setTimeout(() => {
-        toast.classList.remove('show');
-    }, 3000);
+    if (window.showToast) {
+        window.showToast(message, type);
+    } else {
+        alert(message);
+    }
 }
 
 // ============================================

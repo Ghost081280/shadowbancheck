@@ -83,13 +83,37 @@
                     <div class="checker-header-content">
                         <span class="checker-icon">#️⃣</span>
                         <div>
-                            <h3>Enter Hashtags to Check</h3>
-                            <p>Enter hashtags separated by spaces or commas (e.g. #fitness #health #wellness)</p>
+                            <h3>Check Your Hashtags</h3>
+                            <p>Select a platform and enter hashtags to check their risk level</p>
                         </div>
                     </div>
                 </div>
                 
                 <form id="hashtag-check-form" class="checker-form">
+                    <!-- Platform Selector -->
+                    <div class="platform-selector-group">
+                        <label for="hashtag-platform-select" class="platform-selector-label">Select Platform</label>
+                        <div class="platform-select-wrapper">
+                            <select id="hashtag-platform-select" class="platform-select" required>
+                                <option value="">Choose a platform...</option>
+                                <!-- Only platforms that support hashtags - populated by JS -->
+                                <!-- Reddit is EXCLUDED because it doesn't use hashtags -->
+                            </select>
+                        </div>
+                        <p class="platform-selector-note" id="platform-selector-note">
+                            Different platforms have different banned hashtags
+                        </p>
+                    </div>
+                    
+                    <!-- Reddit Notice (Hidden by default, shows if someone wonders why) -->
+                    <div class="reddit-notice" id="reddit-notice">
+                        <span class="reddit-notice-icon">🤖</span>
+                        <div class="reddit-notice-content">
+                            <strong>Looking for Reddit?</strong>
+                            <p>Reddit does not use hashtags for discovery. Use our <a href="checker.html">Account Checker</a> or <a href="index.html">Power Check</a> for Reddit analysis.</p>
+                        </div>
+                    </div>
+                    
                     <div class="input-group">
                         <textarea id="hashtag-input" class="hashtag-input" placeholder="#example #hashtag #test&#10;#fitness #viral #fyp" rows="4"></textarea>
                         <div class="input-meta">
@@ -98,7 +122,7 @@
                         </div>
                     </div>
                     
-                    <button type="submit" id="check-hashtags-btn" class="btn-check-hashtags">
+                    <button type="submit" id="check-hashtags-btn" class="btn-check-hashtags" disabled>
                         <span class="btn-text">Calculate Risk Probability</span>
                         <span class="btn-icon">🔍</span>
                     </button>
@@ -116,6 +140,7 @@
                 
                 <div class="quick-actions">
                     <button type="button" id="clear-btn" class="btn-text-link">Clear</button>
+                    <button type="button" id="show-reddit-note" class="btn-text-link">Why no Reddit?</button>
                 </div>
             </div>
             
@@ -143,10 +168,10 @@
                         </div>
                         
                         <div class="engine-factors-progress">
-                            <div class="factor-progress" id="factor-1-progress">
+                            <div class="factor-progress factor-inactive" id="factor-1-progress">
                                 <span class="factor-icon">🔌</span>
                                 <span class="factor-name">API</span>
-                                <span class="factor-status pending">○</span>
+                                <span class="factor-status na">—</span>
                             </div>
                             <div class="factor-progress" id="factor-2-progress">
                                 <span class="factor-icon">🔍</span>
@@ -163,10 +188,10 @@
                                 <span class="factor-name">Hashtags</span>
                                 <span class="factor-status pending">○</span>
                             </div>
-                            <div class="factor-progress" id="factor-5-progress">
+                            <div class="factor-progress factor-inactive" id="factor-5-progress">
                                 <span class="factor-icon">🌐</span>
                                 <span class="factor-name">IP</span>
-                                <span class="factor-status pending">○</span>
+                                <span class="factor-status na">—</span>
                             </div>
                         </div>
                     </div>
@@ -204,11 +229,11 @@
                 </div>
             </div>
             
-            <!-- Supported Platforms -->
+            <!-- Supported Platforms (Hashtag-enabled only, NO Reddit) -->
             <div class="supported-platforms">
                 <p>Hashtags checked for:</p>
                 <div class="platform-icons" id="hashtag-platform-icons">
-                    <!-- Populated by JS from platforms.js -->
+                    <!-- Populated by JS from platforms.js - only platforms with hashtagCheck: true -->
                 </div>
             </div>
         </div>
@@ -227,15 +252,15 @@
                 <div class="how-item reveal">
                     <span class="how-icon">1️⃣</span>
                     <div class="how-content">
-                        <h4>Enter Hashtags</h4>
-                        <p>Paste your hashtags above (any format)</p>
+                        <h4>Select Platform</h4>
+                        <p>Choose Twitter/X (live) or other platforms (coming soon)</p>
                     </div>
                 </div>
                 <div class="how-item reveal">
                     <span class="how-icon">2️⃣</span>
                     <div class="how-content">
-                        <h4>We Analyze</h4>
-                        <p>Database + visibility tests + patterns</p>
+                        <h4>Enter Hashtags</h4>
+                        <p>Paste your hashtags (any format)</p>
                     </div>
                 </div>
                 <div class="how-item reveal">
@@ -321,14 +346,6 @@
                     </div>
                     <span class="cross-promote-arrow">→</span>
                 </a>
-                <a href="post-checker.html" class="cross-promote-card">
-                    <span class="cross-promote-icon">📝</span>
-                    <div class="cross-promote-content">
-                        <h3>Post URL Checker</h3>
-                        <p>Check if a specific post is being restricted</p>
-                    </div>
-                    <span class="cross-promote-arrow">→</span>
-                </a>
             </div>
         </div>
     </section>
@@ -344,7 +361,7 @@
                 <p class="modal-intro">Our Hashtag Checker calculates risk probability by analyzing:</p>
                 
                 <ul class="check-list">
-                    <li>1,800+ banned/restricted hashtags across 5 platforms</li>
+                    <li>1,800+ banned/restricted hashtags across platforms</li>
                     <li>Real-time visibility tests</li>
                     <li>Historical restriction patterns</li>
                     <li>Platform-specific rules</li>
@@ -354,6 +371,11 @@
                 <div class="modal-tech-note">
                     <h4>💡 Why Check Before Posting?</h4>
                     <p>Using even ONE banned hashtag can shadow ban your entire post. Check your hashtags before you post to maximize reach.</p>
+                </div>
+                
+                <div class="modal-tech-note">
+                    <h4>🤖 Why No Reddit?</h4>
+                    <p>Reddit does not use hashtags for content discovery. This tool is designed for platforms where hashtags affect visibility (Twitter/X, Instagram, TikTok, etc.).</p>
                 </div>
                 
                 <div class="modal-privacy-note">
@@ -407,7 +429,7 @@
                         <span class="factor-icon">#️⃣</span>
                         <div class="factor-content">
                             <span class="factor-name">Hashtag Database</span>
-                            <span class="factor-desc">1,800+ banned/restricted tags across 5 platforms</span>
+                            <span class="factor-desc">1,800+ banned/restricted tags across platforms</span>
                         </div>
                     </li>
                     <li class="factor-inactive">
@@ -451,7 +473,7 @@
                 </ul>
             </div>
             <div class="modal-footer">
-                <a href="index.html#pricing" class="btn btn-primary btn-lg">View Plans - From $4.99/mo</a>
+                <a href="index.html#pricing" class="btn btn-primary btn-lg">View Plans - From $9/mo</a>
                 <button class="btn btn-ghost" onclick="document.getElementById('limit-modal').classList.add('hidden'); document.body.style.overflow = '';">Maybe Later</button>
             </div>
         </div>
@@ -467,6 +489,8 @@
 
     <!-- Scripts -->
     <script src="js/platforms.js"></script>
+    <script src="js/demo-data.js"></script>
+    <script src="js/banned-hashtags.js"></script>
     <script src="js/shared-components.js"></script>
     <script src="js/main.js"></script>
     <script src="js/hashtag-checker.js"></script>

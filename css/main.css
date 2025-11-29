@@ -18,7 +18,10 @@
    NOTE: Page-specific styles are in their own files:
    - index.css (homepage)
    - checker.css (account checker)
+   - hashtag-checker.css (hashtag checker)
+   - results.css (results page)
    - shadow-ai.css (AI chat)
+   - additional-features.css (new feature styles)
    ============================================================================= */
 
 /* =============================================================================
@@ -44,14 +47,17 @@
     --bg-secondary: #0f1629;
     --bg-tertiary: #1a2235;
     --bg-elevated: #1e2942;
+    --bg-darker: #070b12;
     
     /* Surface Colors */
     --card: #131b2e;
     --card-hover: #182035;
+    --card-bg: #131b2e;
     --input: #1a2235;
     
     /* Text Colors */
     --text: #f1f5f9;
+    --text-primary: #f1f5f9;
     --text-secondary: #cbd5e1;
     --text-muted: #64748b;
     
@@ -96,6 +102,7 @@
     --shadow-glow-lg: 0 0 60px rgba(99, 102, 241, 0.4);
     
     /* Transitions */
+    --transition: 250ms ease;
     --transition-fast: 150ms ease;
     --transition-base: 250ms ease;
     --transition-slow: 400ms ease;
@@ -435,6 +442,42 @@ strong, b {
     padding: 2px 6px;
     margin-left: var(--space-xs);
     vertical-align: middle;
+}
+
+/* Risk Badges (used in results) */
+.risk-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: var(--space-2xs) var(--space-sm);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    border-radius: var(--radius-full);
+}
+
+.risk-badge.danger,
+.risk-badge.high {
+    background: var(--danger-bg);
+    color: var(--danger);
+}
+
+.risk-badge.warning,
+.risk-badge.medium {
+    background: var(--warning-bg);
+    color: var(--warning);
+}
+
+.risk-badge.neutral,
+.risk-badge.low {
+    background: rgba(100, 116, 139, 0.2);
+    color: var(--text-muted);
+}
+
+.risk-badge.good,
+.risk-badge.safe {
+    background: var(--success-bg);
+    color: var(--success);
 }
 
 /* =============================================================================
@@ -1170,6 +1213,32 @@ strong, b {
 .platform-badge.soon {
     background: var(--warning-bg);
     color: var(--warning);
+}
+
+/* Platform Icon Badge (inline with platform icons) */
+.platform-icon-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    font-size: 1.25rem;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    transition: all var(--transition-fast);
+}
+
+.platform-icon-badge.live {
+    border-color: rgba(16, 185, 129, 0.3);
+}
+
+.platform-icon-badge.soon {
+    opacity: 0.5;
+}
+
+.platform-icon-badge:hover {
+    transform: scale(1.1);
 }
 
 /* =============================================================================
@@ -2487,9 +2556,26 @@ strong, b {
     box-shadow: var(--shadow-lg);
 }
 
-.toast.visible {
+.toast.visible,
+.toast.show {
     opacity: 1;
     transform: translateX(-50%) translateY(0);
+}
+
+.toast.success {
+    border-color: var(--success);
+}
+
+.toast.error {
+    border-color: var(--danger);
+}
+
+.toast.warning {
+    border-color: var(--warning);
+}
+
+.toast.info {
+    border-color: var(--primary);
 }
 
 /* =============================================================================
@@ -2520,6 +2606,11 @@ strong, b {
     border-color: var(--primary);
     transform: translateY(-2px);
     box-shadow: var(--shadow-lg);
+}
+
+.cross-promote-card.highlight {
+    background: var(--gradient-card);
+    border-color: var(--primary);
 }
 
 .cross-promote-card .cross-promote-icon {
@@ -2672,6 +2763,55 @@ strong, b {
 }
 
 /* =============================================================================
+   IP DISPLAY BADGE
+   ============================================================================= */
+.ip-display {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: var(--space-xs) var(--space-md);
+    background: var(--bg-darker);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    font-size: 0.875rem;
+}
+
+.ip-label {
+    color: var(--text-muted);
+}
+
+.ip-address {
+    font-family: monospace;
+    color: var(--text-primary);
+}
+
+.ip-type {
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: var(--radius-sm);
+}
+
+.ip-type.good {
+    background: var(--success-bg);
+    color: var(--success);
+}
+
+.ip-type.warning {
+    background: var(--warning-bg);
+    color: var(--warning);
+}
+
+.ip-type.danger {
+    background: var(--danger-bg);
+    color: var(--danger);
+}
+
+.ip-flag {
+    font-size: 1rem;
+}
+
+/* =============================================================================
    9. UTILITIES
    ============================================================================= */
 .hidden { display: none !important; }
@@ -2729,7 +2869,809 @@ strong, b {
 }
 
 /* =============================================================================
-   11. RESPONSIVE BREAKPOINTS
+   11. WARNING & INFO BOXES
+   ============================================================================= */
+
+.warning-box,
+.info-box {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-md);
+    padding: var(--space-md);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--space-lg);
+}
+
+.warning-box {
+    background: rgba(255, 193, 7, 0.1);
+    border: 1px solid rgba(255, 193, 7, 0.3);
+}
+
+.info-box {
+    background: rgba(99, 102, 241, 0.1);
+    border: 1px solid rgba(99, 102, 241, 0.3);
+}
+
+.warning-icon,
+.info-icon {
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+.warning-content,
+.info-content {
+    flex: 1;
+}
+
+.warning-content strong,
+.info-content strong {
+    display: block;
+    margin-bottom: var(--space-xs);
+    color: var(--text-primary);
+}
+
+.warning-content p,
+.info-content p {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    margin: 0;
+}
+
+.info-content a {
+    color: var(--primary-light);
+    text-decoration: underline;
+}
+
+/* =============================================================================
+   11. PLATFORM DETECTION BADGE
+   ============================================================================= */
+
+.platform-detected {
+    padding: var(--space-md);
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--space-lg);
+    text-align: center;
+}
+
+.platform-detected-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: var(--space-sm) var(--space-md);
+    background: rgba(16, 185, 129, 0.1);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    border-radius: var(--radius-full);
+    margin-bottom: var(--space-sm);
+}
+
+.platform-detected-icon {
+    font-size: 1.25rem;
+}
+
+.platform-detected-name {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.platform-detected-status {
+    font-size: 0.75rem;
+    color: var(--success);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.platform-detected-note {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    margin: 0;
+}
+
+/* =============================================================================
+   11. CHECKS PREVIEW
+   ============================================================================= */
+
+.power-preview {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-sm);
+    flex-wrap: wrap;
+    padding: var(--space-md);
+    background: var(--bg-darker);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--space-lg);
+}
+
+.preview-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: var(--space-sm) var(--space-md);
+    background: var(--card-bg);
+    border-radius: var(--radius-md);
+}
+
+.preview-item.check-na {
+    opacity: 0.5;
+}
+
+.preview-item.check-na .preview-label {
+    text-decoration: line-through;
+}
+
+.preview-icon {
+    font-size: 1.25rem;
+}
+
+.preview-text {
+    display: flex;
+    flex-direction: column;
+}
+
+.preview-label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.preview-desc {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.preview-status {
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.preview-status.active {
+    color: var(--success);
+}
+
+.preview-status.na {
+    color: var(--text-muted);
+}
+
+.preview-divider {
+    color: var(--text-muted);
+    font-weight: 600;
+}
+
+/* =============================================================================
+   11. ENGAGEMENT TEST SECTION
+   ============================================================================= */
+
+.engagement-test-section {
+    padding: var(--space-lg);
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(16, 185, 129, 0.1) 100%);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    margin-top: var(--space-lg);
+}
+
+.engagement-test-header {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-md);
+    margin-bottom: var(--space-lg);
+}
+
+.engagement-test-icon {
+    font-size: 2rem;
+}
+
+.engagement-test-title strong {
+    font-size: 1.125rem;
+    color: var(--text-primary);
+    display: block;
+    margin-bottom: var(--space-xs);
+}
+
+.engagement-test-title p {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    margin: 0;
+}
+
+.engagement-test-steps {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+    margin-bottom: var(--space-lg);
+}
+
+.engagement-step {
+    display: flex;
+    align-items: center;
+}
+
+.engagement-checkbox {
+    display: none;
+}
+
+.engagement-step-content {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    width: 100%;
+    padding: var(--space-md);
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all var(--transition);
+}
+
+.engagement-step-content:hover {
+    border-color: var(--primary);
+}
+
+.engagement-checkbox:checked + .engagement-step-content {
+    background: rgba(16, 185, 129, 0.1);
+    border-color: var(--success);
+}
+
+.step-number {
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-darker);
+    border-radius: var(--radius-full);
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-muted);
+}
+
+.engagement-checkbox:checked + .engagement-step-content .step-number {
+    background: var(--success);
+    color: white;
+}
+
+.step-icon {
+    font-size: 1.25rem;
+}
+
+.step-text {
+    flex: 1;
+    font-size: 0.875rem;
+    color: var(--text-primary);
+}
+
+.step-action-btn {
+    padding: var(--space-xs) var(--space-sm);
+    background: var(--primary);
+    color: white;
+    border-radius: var(--radius-sm);
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all var(--transition);
+}
+
+.step-action-btn:hover {
+    background: var(--primary-dark);
+    transform: translateX(2px);
+    color: white;
+}
+
+.engagement-progress {
+    margin-bottom: var(--space-md);
+}
+
+.engagement-progress-bar {
+    height: 8px;
+    background: var(--bg-darker);
+    border-radius: var(--radius-full);
+    overflow: hidden;
+    margin-bottom: var(--space-xs);
+}
+
+.engagement-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary) 0%, var(--success) 100%);
+    border-radius: var(--radius-full);
+    transition: width 0.3s ease;
+}
+
+.engagement-progress-text {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.engagement-confirm {
+    margin-bottom: var(--space-md);
+}
+
+.engagement-confirm-label {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    cursor: pointer;
+}
+
+.engagement-confirm-checkbox {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--primary);
+}
+
+.engagement-skip {
+    text-align: center;
+    padding-top: var(--space-md);
+    border-top: 1px solid var(--border);
+}
+
+.btn-skip-engagement {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    padding: var(--space-sm) var(--space-md);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    font-size: 0.875rem;
+    transition: all var(--transition);
+}
+
+.btn-skip-engagement:hover {
+    border-color: var(--text-muted);
+    color: var(--text-primary);
+}
+
+.skip-note {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-top: var(--space-xs);
+}
+
+.engagement-why {
+    margin-top: var(--space-md);
+}
+
+.engagement-why summary {
+    cursor: pointer;
+    font-size: 0.875rem;
+    color: var(--primary-light);
+}
+
+.engagement-why-content {
+    padding: var(--space-md);
+    margin-top: var(--space-sm);
+    background: var(--bg-darker);
+    border-radius: var(--radius-md);
+}
+
+.engagement-why-content p {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    margin-bottom: var(--space-sm);
+}
+
+.engagement-why-content p:last-child {
+    margin-bottom: 0;
+}
+
+.engagement-why-note {
+    font-style: italic;
+    opacity: 0.8;
+}
+
+/* =============================================================================
+   11. PLATFORM NOTE
+   ============================================================================= */
+
+.platform-note {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: var(--space-sm) var(--space-md);
+    background: rgba(99, 102, 241, 0.1);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--space-md);
+}
+
+.platform-note-icon {
+    font-size: 1rem;
+}
+
+.platform-note-text {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+/* =============================================================================
+   11. REDDIT NOTICE
+   ============================================================================= */
+
+.reddit-notice {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-md);
+    padding: var(--space-md);
+    background: rgba(255, 69, 0, 0.1);
+    border: 1px solid rgba(255, 69, 0, 0.3);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--space-lg);
+}
+
+.reddit-notice-icon {
+    font-size: 1.5rem;
+}
+
+.reddit-notice-content strong {
+    display: block;
+    margin-bottom: var(--space-xs);
+    color: var(--text-primary);
+}
+
+.reddit-notice-content p {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    margin: 0;
+}
+
+.reddit-notice-content a {
+    color: var(--primary-light);
+}
+
+/* =============================================================================
+   11. REDDIT-SPECIFIC SECTIONS (Subreddit Bans)
+   ============================================================================= */
+
+.subreddit-bans-section {
+    margin-top: var(--space-xl);
+    padding: var(--space-lg);
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+}
+
+.subreddit-bans-section h3 {
+    margin-bottom: var(--space-sm);
+}
+
+.subreddit-bans-intro {
+    color: var(--text-muted);
+    margin-bottom: var(--space-lg);
+}
+
+.subreddit-bans-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+}
+
+.subreddit-ban-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    padding: var(--space-md);
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    border-radius: var(--radius-md);
+}
+
+.subreddit-name {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.ban-type {
+    font-size: 0.75rem;
+    padding: 2px 8px;
+    background: var(--bg-darker);
+    border-radius: var(--radius-full);
+    color: var(--text-muted);
+    text-transform: capitalize;
+}
+
+.ban-reason {
+    flex: 1;
+    font-size: 0.875rem;
+    color: var(--text-muted);
+}
+
+.ban-appeal {
+    font-size: 0.75rem;
+    color: var(--primary-light);
+}
+
+.subreddit-bans-note {
+    margin-top: var(--space-lg);
+    padding: var(--space-md);
+    background: var(--bg-darker);
+    border-radius: var(--radius-md);
+}
+
+.subreddit-bans-note p {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    margin: 0;
+}
+
+/* =============================================================================
+   11. KARMA ANALYSIS (Reddit)
+   ============================================================================= */
+
+.karma-analysis-section {
+    margin-top: var(--space-xl);
+    padding: var(--space-lg);
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+}
+
+.karma-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: var(--space-md);
+    margin-bottom: var(--space-lg);
+}
+
+.karma-stat {
+    padding: var(--space-md);
+    background: var(--bg-darker);
+    border-radius: var(--radius-md);
+    text-align: center;
+}
+
+.karma-label {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-bottom: var(--space-xs);
+}
+
+.karma-value {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.karma-level {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    margin-bottom: var(--space-md);
+}
+
+.karma-level-label {
+    color: var(--text-muted);
+}
+
+.karma-level-badge {
+    padding: var(--space-xs) var(--space-sm);
+    border-radius: var(--radius-full);
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.karma-level-badge.low {
+    background: rgba(239, 68, 68, 0.2);
+    color: var(--danger);
+}
+
+.karma-level-badge.medium {
+    background: rgba(255, 193, 7, 0.2);
+    color: var(--warning);
+}
+
+.karma-level-badge.high {
+    background: rgba(16, 185, 129, 0.2);
+    color: var(--success);
+}
+
+.karma-restrictions ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.karma-restrictions li {
+    padding: var(--space-sm);
+    background: var(--bg-darker);
+    border-radius: var(--radius-md);
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    margin-bottom: var(--space-xs);
+}
+
+/* =============================================================================
+   11. ENGAGEMENT TEST RESULTS (Results Page)
+   ============================================================================= */
+
+.engagement-test-results {
+    margin-top: var(--space-xl);
+    padding: var(--space-lg);
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+}
+
+.engagement-test-intro {
+    color: var(--text-muted);
+    margin-bottom: var(--space-lg);
+}
+
+.engagement-results-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--space-md);
+    margin-bottom: var(--space-lg);
+}
+
+.engagement-result {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    padding: var(--space-md);
+    background: var(--bg-darker);
+    border-radius: var(--radius-md);
+}
+
+.engagement-result-icon {
+    font-size: 1.5rem;
+}
+
+.engagement-result-content {
+    flex: 1;
+}
+
+.engagement-result-content strong {
+    display: block;
+    font-size: 0.875rem;
+    color: var(--text-primary);
+}
+
+.engagement-result-status {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin: 0;
+}
+
+.engagement-result-badge {
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-full);
+    font-size: 0.75rem;
+}
+
+.engagement-result-badge.good {
+    background: rgba(16, 185, 129, 0.2);
+    color: var(--success);
+}
+
+.engagement-result-badge.warning {
+    background: rgba(255, 193, 7, 0.2);
+    color: var(--warning);
+}
+
+.engagement-result-badge.neutral {
+    background: var(--bg-darker);
+    color: var(--text-muted);
+}
+
+.engagement-test-finding {
+    padding: var(--space-md);
+    background: rgba(255, 193, 7, 0.1);
+    border: 1px solid rgba(255, 193, 7, 0.3);
+    border-radius: var(--radius-md);
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+/* =============================================================================
+   11. CONTENT SCAN (Results Page)
+   ============================================================================= */
+
+.content-scan-section {
+    margin-top: var(--space-xl);
+    padding: var(--space-lg);
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+}
+
+.content-scan-intro {
+    color: var(--text-muted);
+    margin-bottom: var(--space-lg);
+}
+
+.content-scan-items {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+}
+
+.content-scan-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    padding: var(--space-md);
+    border-radius: var(--radius-md);
+}
+
+.content-scan-item.danger {
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.content-scan-item.warning {
+    background: rgba(255, 193, 7, 0.1);
+    border: 1px solid rgba(255, 193, 7, 0.3);
+}
+
+.content-scan-item.neutral {
+    background: var(--bg-darker);
+}
+
+.content-scan-item .term {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.content-scan-item .context {
+    flex: 1;
+    font-size: 0.875rem;
+    color: var(--text-muted);
+}
+
+/* =============================================================================
+   11. UPGRADE NOTICE
+   ============================================================================= */
+
+.upgrade-notice {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-md);
+    padding: var(--space-lg);
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(16, 185, 129, 0.1) 100%);
+    border: 1px solid var(--primary);
+    border-radius: var(--radius-lg);
+    margin-top: var(--space-lg);
+}
+
+.upgrade-notice-icon {
+    font-size: 1.5rem;
+}
+
+.upgrade-notice-content strong {
+    display: block;
+    margin-bottom: var(--space-xs);
+    color: var(--text-primary);
+}
+
+.upgrade-notice-content p {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    margin: 0;
+}
+
+.upgrade-notice-content a {
+    color: var(--primary-light);
+    font-weight: 600;
+}
+
+/* =============================================================================
+   11. FACTOR NA STATES
+   ============================================================================= */
+
+.factor-row.factor-na {
+    opacity: 0.5;
+}
+
+.factor-status.na {
+    color: var(--text-muted);
+}
+
+/* =============================================================================
+   12. RESPONSIVE BREAKPOINTS
    ============================================================================= */
 @media (max-width: 1024px) {
     .spotlight-grid {
@@ -2858,6 +3800,46 @@ strong, b {
     
     .btn-cookie {
         width: 100%;
+    }
+    
+    /* New feature responsive styles */
+    .power-preview {
+        flex-direction: column;
+    }
+    
+    .preview-divider {
+        display: none;
+    }
+    
+    .engagement-step-content {
+        flex-wrap: wrap;
+    }
+    
+    .step-action-btn {
+        width: 100%;
+        text-align: center;
+        margin-top: var(--space-sm);
+    }
+    
+    .engagement-results-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .karma-stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .subreddit-ban-item {
+        flex-wrap: wrap;
+    }
+    
+    .ban-reason {
+        width: 100%;
+        margin-top: var(--space-xs);
+    }
+    
+    .cross-promote-grid {
+        grid-template-columns: 1fr;
     }
 }
 

@@ -1,166 +1,91 @@
 /* =============================================================================
    INDEX.JS - Home Page Functionality
    ShadowBanCheck.io
-   
-   Handles:
-   - Power Check form and URL input
-   - Platform detection from URL
-   - Engagement test UI for Twitter
-   - Checks preview based on platform
-   - Platform grid population
-   - Engine animation
    ============================================================================= */
 
 (function() {
 'use strict';
 
-// ============================================
-// DOM ELEMENTS
-// ============================================
-let powerForm, powerUrlInput, powerAnalyzeBtn;
-let platformDetected, detectedPlatformIcon, detectedPlatformName, platformDetectedNote;
-let previewHashtag;
-let engagementTestSection, engagementSteps, engagementProgressFill, engagementProgressText;
-let engagementConfirmed, skipEngagementBtn;
-let engineAnimation, powerCheckCard;
-let platformGrid, powerPlatformIcons;
 let initialized = false;
-
-// ============================================
-// STATE
-// ============================================
 let currentPlatform = null;
-let engagementStepsCompleted = {
-    follow: false,
-    like: false,
-    retweet: false,
-    reply: false
-};
+let engagementStepsCompleted = { follow: false, like: false, retweet: false, reply: false };
 
 // ============================================
 // INITIALIZATION
 // ============================================
 function init() {
-    // Multiple initialization strategies for reliability
-    document.addEventListener('sharedComponentsLoaded', onComponentsLoaded);
-    document.addEventListener('DOMContentLoaded', tryInit);
-    document.addEventListener('platformsReady', tryInit);
+    if (initialized) return;
     
-    // Fallback with delay
-    setTimeout(tryInit, 100);
-    setTimeout(tryInit, 300);
-}
-
-function tryInit() {
-    if (initialized) return;
-    if (!window.platformData) {
-        console.log('⏳ Waiting for platformData...');
-        return;
-    }
-    onComponentsLoaded();
-}
-
-function onComponentsLoaded() {
-    if (initialized) return;
-    if (!window.platformData) {
-        setTimeout(onComponentsLoaded, 100);
+    // Wait for platformData
+    if (!window.platformData || !Array.isArray(window.platformData)) {
+        console.log('⏳ index.js waiting for platformData...');
+        setTimeout(init, 50);
         return;
     }
     
     initialized = true;
     console.log('🚀 Index.js initializing...');
     
-    // Get DOM elements
-    powerForm = document.getElementById('power-check-form');
-    powerUrlInput = document.getElementById('power-url-input');
-    powerAnalyzeBtn = document.getElementById('power-analyze-btn');
-    
-    platformDetected = document.getElementById('platform-detected');
-    detectedPlatformIcon = document.getElementById('detected-platform-icon');
-    detectedPlatformName = document.getElementById('detected-platform-name');
-    platformDetectedNote = document.getElementById('platform-detected-note');
-    previewHashtag = document.getElementById('preview-hashtag');
-    
-    engagementTestSection = document.getElementById('engagement-test-section');
-    engagementProgressFill = document.getElementById('engagement-progress-fill');
-    engagementProgressText = document.getElementById('engagement-progress-text');
-    engagementConfirmed = document.getElementById('engagement-confirmed');
-    skipEngagementBtn = document.getElementById('skip-engagement-btn');
-    
-    engineAnimation = document.getElementById('engine-animation');
-    powerCheckCard = document.getElementById('power-check-card');
-    
-    platformGrid = document.getElementById('platform-grid');
-    powerPlatformIcons = document.getElementById('power-platform-icons');
-    
-    // Setup event listeners
     setupEventListeners();
-    
-    // Populate platforms
     populatePlatformGrid();
     populatePlatformIcons();
-    
-    // Detect IP
     detectUserIP();
     
     console.log('✅ Index.js initialized');
 }
 
+// Multiple init triggers
+document.addEventListener('DOMContentLoaded', init);
+document.addEventListener('platformsReady', init);
+setTimeout(init, 100);
+setTimeout(init, 300);
+
 // ============================================
 // EVENT LISTENERS
 // ============================================
 function setupEventListeners() {
-    // URL input - detect platform as user types
+    // Power Check Form
+    const powerForm = document.getElementById('power-check-form');
+    const powerUrlInput = document.getElementById('power-url-input');
+    
     if (powerUrlInput) {
         powerUrlInput.addEventListener('input', handleUrlInput);
-        powerUrlInput.addEventListener('paste', (e) => {
-            // Delay to let paste complete
-            setTimeout(handleUrlInput, 100);
-        });
+        powerUrlInput.addEventListener('paste', () => setTimeout(handleUrlInput, 50));
     }
     
-    // Form submission
     if (powerForm) {
         powerForm.addEventListener('submit', handlePowerCheckSubmit);
     }
     
-    // Engagement test checkboxes
-    const engagementCheckboxes = document.querySelectorAll('.engagement-checkbox');
-    engagementCheckboxes.forEach(checkbox => {
-        checkbox.addEventListener('change', handleEngagementCheckboxChange);
+    // Engagement test
+    document.querySelectorAll('.engagement-checkbox').forEach(cb => {
+        cb.addEventListener('change', handleEngagementCheckboxChange);
     });
     
-    // Engagement confirmed checkbox
+    const engagementConfirmed = document.getElementById('engagement-confirmed');
     if (engagementConfirmed) {
         engagementConfirmed.addEventListener('change', handleEngagementConfirmed);
     }
     
-    // Skip engagement button
+    const skipEngagementBtn = document.getElementById('skip-engagement-btn');
     if (skipEngagementBtn) {
         skipEngagementBtn.addEventListener('click', handleSkipEngagement);
     }
     
-    // Power info button
+    // Info buttons
     const powerInfoBtn = document.getElementById('power-info-btn');
     if (powerInfoBtn) {
-        powerInfoBtn.addEventListener('click', () => {
-            openModal('power-info-modal');
-        });
+        powerInfoBtn.addEventListener('click', () => openModal('power-info-modal'));
     }
     
-    // AI info button
     const aiInfoBtn = document.getElementById('ai-info-btn');
     if (aiInfoBtn) {
-        aiInfoBtn.addEventListener('click', () => {
-            openModal('ai-info-modal');
-        });
+        aiInfoBtn.addEventListener('click', () => openModal('ai-info-modal'));
     }
     
-    // Try AI button
     const tryAiBtn = document.getElementById('try-ai-btn');
     if (tryAiBtn) {
         tryAiBtn.addEventListener('click', () => {
-            // Open Shadow AI chat
             if (typeof window.openShadowAI === 'function') {
                 window.openShadowAI();
             } else {
@@ -169,7 +94,6 @@ function setupEventListeners() {
         });
     }
     
-    // Open Shadow AI from contact
     const openShadowAiBtn = document.getElementById('open-shadow-ai');
     if (openShadowAiBtn) {
         openShadowAiBtn.addEventListener('click', () => {
@@ -181,31 +105,33 @@ function setupEventListeners() {
         });
     }
     
-    // Factor info buttons
-    const factorInfoBtns = document.querySelectorAll('.factor-compact-info');
-    factorInfoBtns.forEach(btn => {
+    // Factor info buttons (Under the Hood section)
+    document.querySelectorAll('.factor-compact-info').forEach(btn => {
         btn.addEventListener('click', (e) => {
             const factor = e.target.closest('.engine-factor-compact');
-            if (factor) {
+            if (factor && factor.dataset.factor) {
                 showFactorInfo(factor.dataset.factor);
             }
         });
     });
     
     // Audience info buttons
-    const audienceInfoBtns = document.querySelectorAll('.audience-info-btn');
-    audienceInfoBtns.forEach(btn => {
+    document.querySelectorAll('.audience-info-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
             const audience = e.target.closest('.audience-info-btn').dataset.audience;
-            showAudienceInfo(audience);
+            if (audience) showAudienceInfo(audience);
         });
     });
+    
+    // Share buttons
+    setupShareButtons();
 }
 
 // ============================================
 // URL INPUT & PLATFORM DETECTION
 // ============================================
 function handleUrlInput() {
+    const powerUrlInput = document.getElementById('power-url-input');
     const url = powerUrlInput ? powerUrlInput.value.trim() : '';
     
     if (!url) {
@@ -215,22 +141,18 @@ function handleUrlInput() {
         return;
     }
     
-    // Detect platform using the global function
     const platform = window.detectPlatformFromUrl ? window.detectPlatformFromUrl(url) : null;
-    
-    console.log('🔍 URL detection:', url, '→', platform ? platform.name : 'none');
+    console.log('🔍 URL detection:', url.substring(0, 50), '→', platform ? platform.name : 'none');
     
     if (platform) {
         currentPlatform = platform;
         showPlatformDetection(platform);
         updateChecksPreview(platform);
         
-        // Show engagement test for Twitter (with proper null checking)
+        // Show engagement test for Twitter
         if (platform.id === 'twitter' && 
-            platform.supports && 
-            platform.supports.engagementTest && 
-            platform.engagementTest && 
-            platform.engagementTest.enabled) {
+            platform.supports && platform.supports.engagementTest && 
+            platform.engagementTest && platform.engagementTest.enabled) {
             showEngagementTest();
         } else {
             hideEngagementTest();
@@ -243,44 +165,43 @@ function handleUrlInput() {
 }
 
 function showPlatformDetection(platform) {
+    const platformDetected = document.getElementById('platform-detected');
     if (!platformDetected || !platform) return;
     
     platformDetected.classList.remove('hidden');
     
-    if (detectedPlatformIcon) {
-        detectedPlatformIcon.textContent = platform.icon;
-    }
-    if (detectedPlatformName) {
-        detectedPlatformName.textContent = platform.name;
-    }
+    const icon = document.getElementById('detected-platform-icon');
+    const name = document.getElementById('detected-platform-name');
+    const note = document.getElementById('platform-detected-note');
     
-    // Show platform note if applicable
-    if (platformDetectedNote) {
-        if (platform.messages && platform.messages.platformNote) {
-            platformDetectedNote.textContent = platform.messages.platformNote;
-            platformDetectedNote.classList.remove('hidden');
-        } else if (platform.id === 'reddit') {
-            platformDetectedNote.textContent = 'Reddit does not use hashtags — hashtag analysis will be skipped.';
-            platformDetectedNote.classList.remove('hidden');
+    if (icon) icon.textContent = platform.icon;
+    if (name) name.textContent = platform.name;
+    
+    if (note) {
+        if (platform.id === 'reddit') {
+            note.textContent = 'Reddit does not use hashtags — hashtag analysis will be skipped.';
+            note.classList.remove('hidden');
+        } else if (platform.messages && platform.messages.platformNote) {
+            note.textContent = platform.messages.platformNote;
+            note.classList.remove('hidden');
         } else {
-            platformDetectedNote.classList.add('hidden');
+            note.classList.add('hidden');
         }
     }
 }
 
 function hidePlatformDetection() {
-    if (platformDetected) {
-        platformDetected.classList.add('hidden');
-    }
+    const el = document.getElementById('platform-detected');
+    if (el) el.classList.add('hidden');
 }
 
 function updateChecksPreview(platform) {
+    const previewHashtag = document.getElementById('preview-hashtag');
     if (!previewHashtag || !platform) return;
     
     const statusEl = previewHashtag.querySelector('.preview-status');
     if (!statusEl) return;
     
-    // Update hashtag check visibility based on platform
     if (platform.supports && platform.supports.hashtagCheck === false) {
         previewHashtag.classList.add('check-na');
         statusEl.textContent = 'N/A';
@@ -298,34 +219,21 @@ function updateChecksPreview(platform) {
 // ENGAGEMENT TEST
 // ============================================
 function showEngagementTest() {
-    if (engagementTestSection) {
-        engagementTestSection.classList.remove('hidden');
-    }
+    const el = document.getElementById('engagement-test-section');
+    if (el) el.classList.remove('hidden');
 }
 
 function hideEngagementTest() {
-    if (engagementTestSection) {
-        engagementTestSection.classList.add('hidden');
-    }
-    // Reset checkboxes
+    const el = document.getElementById('engagement-test-section');
+    if (el) el.classList.add('hidden');
     resetEngagementSteps();
 }
 
 function resetEngagementSteps() {
-    engagementStepsCompleted = {
-        follow: false,
-        like: false,
-        retweet: false,
-        reply: false
-    };
-    
-    const checkboxes = document.querySelectorAll('.engagement-checkbox');
-    checkboxes.forEach(cb => cb.checked = false);
-    
-    if (engagementConfirmed) {
-        engagementConfirmed.checked = false;
-    }
-    
+    engagementStepsCompleted = { follow: false, like: false, retweet: false, reply: false };
+    document.querySelectorAll('.engagement-checkbox').forEach(cb => cb.checked = false);
+    const ec = document.getElementById('engagement-confirmed');
+    if (ec) ec.checked = false;
     updateEngagementProgress();
 }
 
@@ -337,115 +245,122 @@ function handleEngagementCheckboxChange(e) {
 
 function updateEngagementProgress() {
     const completed = Object.values(engagementStepsCompleted).filter(v => v).length;
-    const total = 4;
-    const percentage = (completed / total) * 100;
+    const percentage = (completed / 4) * 100;
     
-    if (engagementProgressFill) {
-        engagementProgressFill.style.width = `${percentage}%`;
-    }
+    const fill = document.getElementById('engagement-progress-fill');
+    const text = document.getElementById('engagement-progress-text');
     
-    if (engagementProgressText) {
-        engagementProgressText.textContent = `${completed} of ${total} steps completed`;
-    }
+    if (fill) fill.style.width = `${percentage}%`;
+    if (text) text.textContent = `${completed} of 4 steps completed`;
 }
 
 function handleEngagementConfirmed(e) {
-    // Could enable a different analysis mode
-    console.log('Engagement confirmed:', e.target.checked);
+    if (e.target.checked) {
+        // User confirmed they completed steps
+        console.log('Engagement confirmed');
+    }
 }
 
 function handleSkipEngagement() {
-    // Run basic analysis without engagement test
-    runPowerCheck(false);
+    hideEngagementTest();
+    runAnalysis(false);
 }
 
 // ============================================
-// POWER CHECK SUBMISSION
+// FORM SUBMISSION & ANALYSIS
 // ============================================
 function handlePowerCheckSubmit(e) {
     e.preventDefault();
     
+    const powerUrlInput = document.getElementById('power-url-input');
     const url = powerUrlInput ? powerUrlInput.value.trim() : '';
+    
     if (!url) {
-        showToast('Please enter a post URL', 'error');
+        showToast('Please enter a post URL', 'warning');
         return;
     }
     
     if (!currentPlatform) {
-        showToast('Could not detect platform from URL. Supported: Twitter/X, Reddit', 'error');
+        showToast('Could not detect platform. Please check the URL.', 'warning');
         return;
     }
     
-    // Check if coming soon platform
-    if (currentPlatform.status === 'soon') {
-        showToast(`${currentPlatform.name} coming soon!`, 'warning');
+    if (currentPlatform.status !== 'live') {
+        showToast(`${currentPlatform.name} is coming soon!`, 'info');
         return;
     }
     
-    // Check if engagement test was completed (for Twitter)
-    const withEngagement = engagementConfirmed && engagementConfirmed.checked;
+    // Check if engagement test is visible and confirmed
+    const engagementSection = document.getElementById('engagement-test-section');
+    const engagementConfirmed = document.getElementById('engagement-confirmed');
+    const withEngagement = engagementSection && 
+                          !engagementSection.classList.contains('hidden') && 
+                          engagementConfirmed && 
+                          engagementConfirmed.checked;
     
-    runPowerCheck(withEngagement);
+    runAnalysis(withEngagement);
 }
 
-function runPowerCheck(withEngagement) {
+function runAnalysis(withEngagement) {
     // Show engine animation
-    showEngineAnimation();
+    const engineAnimation = document.getElementById('engine-animation');
+    const powerCheckCard = document.getElementById('power-check-card');
     
-    // Simulate analysis (replace with real API call)
-    simulateAnalysis(withEngagement);
-}
-
-// ============================================
-// ENGINE ANIMATION
-// ============================================
-function showEngineAnimation() {
-    if (powerCheckCard) {
-        powerCheckCard.classList.add('hidden');
-    }
-    if (engineAnimation) {
-        engineAnimation.classList.remove('hidden');
-    }
+    if (powerCheckCard) powerCheckCard.classList.add('hidden');
+    if (engineAnimation) engineAnimation.classList.remove('hidden');
     
-    // Start animation
+    // Run animation
     runEngineAnimation();
+    simulateAnalysis(withEngagement);
 }
 
 function runEngineAnimation() {
     const terminalOutput = document.getElementById('terminal-output');
-    const isReddit = currentPlatform && currentPlatform.id === 'reddit';
+    if (terminalOutput) terminalOutput.innerHTML = '';
     
-    const factors = [
-        { id: 'factor-1-progress', message: '> Querying Platform API...', delay: 500, active: true },
-        { id: 'factor-2-progress', message: '> Running web analysis from U.S. servers...', delay: 1000, active: true },
-        { id: 'factor-3-progress', message: '> Checking historical patterns...', delay: 1500, active: true },
-        { id: 'factor-4-progress', message: isReddit ? '> Hashtag analysis... (skipped for Reddit)' : '> Scanning hashtag database...', delay: 2000, active: !isReddit },
-        { id: 'factor-5-progress', message: '> Analyzing your IP connection...', delay: 2500, active: true }
+    const platform = currentPlatform || { id: 'twitter', name: 'Twitter/X' };
+    const isReddit = platform.id === 'reddit';
+    
+    const lines = [
+        { text: `> Initializing 5-Factor Detection Engine...`, delay: 0 },
+        { text: `> Target platform: ${platform.name}`, delay: 400 },
+        { text: `> Connecting to platform API...`, delay: 800 },
+        { text: `> Querying account status...`, delay: 1200 },
+        { text: `> Running web visibility tests (U.S. servers)...`, delay: 1800 },
+        { text: `> Analyzing historical patterns...`, delay: 2400 },
+        { text: isReddit ? `> Hashtag check: N/A (Reddit)` : `> Scanning hashtag database...`, delay: 2800 },
+        { text: `> Analyzing IP connection...`, delay: 3200 },
+        { text: `> Calculating probability score...`, delay: 3600 },
     ];
     
-    // Clear terminal
-    if (terminalOutput) {
-        terminalOutput.innerHTML = '';
-    }
-    
-    // Animate each factor
-    factors.forEach((factor) => {
+    lines.forEach(line => {
         setTimeout(() => {
-            // Add terminal line
             if (terminalOutput) {
-                const line = document.createElement('div');
-                line.className = 'terminal-line';
-                line.textContent = factor.message;
-                terminalOutput.appendChild(line);
+                const lineEl = document.createElement('div');
+                lineEl.className = 'terminal-line';
+                lineEl.textContent = line.text;
+                terminalOutput.appendChild(lineEl);
                 terminalOutput.scrollTop = terminalOutput.scrollHeight;
             }
-            
-            // Update factor status
-            const factorEl = document.getElementById(factor.id);
-            if (factorEl) {
-                const status = factorEl.querySelector('.factor-status');
+        }, line.delay);
+    });
+    
+    // Factor progress - 5 factors for Power Check
+    const factors = [
+        { id: 'factor-1-progress', delay: 1000, status: 'complete' },
+        { id: 'factor-2-progress', delay: 2000, status: 'complete' },
+        { id: 'factor-3-progress', delay: 2600, status: 'complete' },
+        { id: 'factor-4-progress', delay: 3000, status: isReddit ? 'na' : 'complete' },
+        { id: 'factor-5-progress', delay: 3400, status: 'complete' },
+    ];
+    
+    factors.forEach(factor => {
+        setTimeout(() => {
+            const el = document.getElementById(factor.id);
+            if (el) {
+                const status = el.querySelector('.factor-status');
                 if (status) {
-                    if (factor.active) {
+                    if (factor.status === 'complete') {
                         status.textContent = '✓';
                         status.classList.remove('pending');
                         status.classList.add('complete');
@@ -466,30 +381,22 @@ function runEngineAnimation() {
         if (phase1) phase1.classList.add('hidden');
         if (phase2) phase2.classList.remove('hidden');
         
-        // AI processing messages
-        const aiMessages = [
-            'Cross-referencing signals...',
-            'Calculating probability weights...',
-            'Generating final score...'
-        ];
-        
+        const aiMessages = ['Cross-referencing signals...', 'Calculating probability weights...', 'Generating final score...'];
         const aiMessageEl = document.getElementById('ai-processing-message');
+        
         aiMessages.forEach((msg, i) => {
             setTimeout(() => {
                 if (aiMessageEl) aiMessageEl.textContent = msg;
             }, i * 800);
         });
-    }, 3500);
+    }, 3800);
 }
 
 function simulateAnalysis(withEngagement) {
-    // Simulate API delay
     setTimeout(() => {
-        // Get demo data
         const platformId = currentPlatform ? currentPlatform.id : 'twitter';
         const demoResult = window.DemoData ? window.DemoData.getResult(platformId, 'powerCheck') : null;
         
-        // Store result in session storage for results page
         if (demoResult) {
             demoResult.withEngagement = withEngagement;
             demoResult.engagementSteps = { ...engagementStepsCompleted };
@@ -498,56 +405,57 @@ function simulateAnalysis(withEngagement) {
             sessionStorage.setItem('lastAnalysisResult', JSON.stringify(demoResult));
         }
         
-        // Redirect to results page
         window.location.href = `results.html?platform=${platformId}&type=power&demo=true`;
-    }, 5000);
+    }, 5500);
 }
 
 // ============================================
-// PLATFORM GRID
+// PLATFORM GRID - Uses .platform-item CSS class
 // ============================================
 function populatePlatformGrid() {
-    if (!platformGrid || !window.platformData) return;
+    const platformGrid = document.getElementById('platform-grid');
+    if (!platformGrid || !window.platformData) {
+        console.log('⚠️ Cannot populate platform grid - missing element or data');
+        return;
+    }
     
     let html = '';
     
-    // Add all platforms
     window.platformData.forEach(platform => {
         const statusClass = platform.status === 'live' ? 'live' : 'soon';
-        const statusText = platform.status === 'live' ? 'Live' : 'Coming Soon';
+        const statusText = platform.status === 'live' ? 'Live' : 'Soon';
         
+        // Using .platform-item class to match CSS
         html += `
-            <div class="platform-card ${statusClass}" data-platform="${platform.id}">
+            <div class="platform-item" data-status="${platform.status}" data-platform="${platform.id}">
                 <span class="platform-icon">${platform.icon}</span>
                 <span class="platform-name">${platform.name}</span>
-                <span class="platform-status ${statusClass}">● ${statusText}</span>
+                <span class="platform-badge ${statusClass}">${statusText}</span>
             </div>
         `;
     });
     
-    // Add "Suggest Platform" card
+    // Suggest platform card
     html += `
-        <div class="platform-card suggest" data-action="suggest">
+        <div class="platform-item" data-action="suggest">
             <span class="platform-icon">💡</span>
-            <span class="platform-name">Suggest a Platform</span>
-            <span class="platform-status suggest">Request →</span>
+            <span class="platform-name">Suggest</span>
+            <span class="platform-badge">Request</span>
         </div>
     `;
     
     platformGrid.innerHTML = html;
+    console.log('✅ Platform grid populated with', window.platformData.length, 'platforms');
     
     // Add click handlers
-    platformGrid.querySelectorAll('.platform-card').forEach(card => {
-        card.addEventListener('click', () => {
-            const platformId = card.dataset.platform;
-            const action = card.dataset.action;
+    platformGrid.querySelectorAll('.platform-item').forEach(item => {
+        item.addEventListener('click', () => {
+            const platformId = item.dataset.platform;
+            const action = item.dataset.action;
             
             if (action === 'suggest') {
-                // Scroll to contact section
-                const contactSection = document.getElementById('contact');
-                if (contactSection) {
-                    contactSection.scrollIntoView({ behavior: 'smooth' });
-                }
+                const contact = document.getElementById('contact');
+                if (contact) contact.scrollIntoView({ behavior: 'smooth' });
                 return;
             }
             
@@ -560,42 +468,41 @@ function populatePlatformGrid() {
 }
 
 function populatePlatformIcons() {
-    if (!powerPlatformIcons || !window.platformData) return;
+    const container = document.getElementById('power-platform-icons');
+    if (!container || !window.platformData) return;
     
     let html = '';
     
     window.platformData.forEach(platform => {
         const statusClass = platform.status === 'live' ? 'live' : 'soon';
         const title = platform.status === 'soon' ? `${platform.name} (Coming Soon)` : platform.name;
-        html += `
-            <span class="platform-icon-badge ${statusClass}" title="${title}" data-platform="${platform.id}" style="cursor:pointer;">
-                ${platform.icon}
-            </span>
-        `;
+        html += `<span class="platform-chip ${statusClass}" title="${title}" data-platform="${platform.id}">${platform.icon}</span>`;
     });
     
-    powerPlatformIcons.innerHTML = html;
+    container.innerHTML = html;
+    console.log('✅ Platform icons populated');
     
-    // Add click handlers for platform modals
-    powerPlatformIcons.querySelectorAll('.platform-icon-badge').forEach(icon => {
-        icon.addEventListener('click', () => {
-            const platformId = icon.dataset.platform;
+    // Add click handlers
+    container.querySelectorAll('.platform-chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+            const platformId = chip.dataset.platform;
             const platform = window.getPlatformById ? window.getPlatformById(platformId) : null;
-            if (platform) {
-                showPlatformModal(platform);
-            }
+            if (platform) showPlatformModal(platform);
         });
     });
 }
 
+// ============================================
+// MODALS
+// ============================================
 function showPlatformModal(platform) {
     const modal = document.getElementById('platform-modal');
+    if (!modal || !platform) return;
+    
     const modalIcon = document.getElementById('modal-icon');
     const modalTitle = document.getElementById('modal-title');
     const modalStatus = document.getElementById('modal-status');
     const modalBody = document.getElementById('modal-body');
-    
-    if (!modal || !platform) return;
     
     if (modalIcon) modalIcon.textContent = platform.icon;
     if (modalTitle) modalTitle.textContent = `${platform.name} Analysis`;
@@ -607,23 +514,19 @@ function showPlatformModal(platform) {
     }
     
     // Build checks list
-    let checksHtml = '<h4>Signals We Analyze:</h4><ul class="check-list" id="modal-checks">';
+    let checksHtml = '<h4>Signals We Analyze:</h4><ul class="check-list">';
     
-    if (platform.accountChecks && platform.accountChecks.length > 0) {
-        platform.accountChecks.forEach(check => {
-            checksHtml += `<li>${check}</li>`;
-        });
-    } else {
-        checksHtml += '<li>Account visibility analysis</li>';
-        checksHtml += '<li>Search presence detection</li>';
-        checksHtml += '<li>Profile accessibility</li>';
-    }
+    const checks = platform.accountChecks && platform.accountChecks.length > 0 
+        ? platform.accountChecks 
+        : ['Account visibility analysis', 'Search presence detection', 'Profile accessibility'];
     
+    checks.forEach(check => {
+        checksHtml += `<li>${check}</li>`;
+    });
     checksHtml += '</ul>';
     
-    // Add platform note if available
     if (platform.messages && platform.messages.platformNote) {
-        checksHtml += `<p class="platform-modal-note">💡 ${platform.messages.platformNote}</p>`;
+        checksHtml += `<p style="margin-top: var(--space-md); padding: var(--space-md); background: rgba(99, 102, 241, 0.1); border-radius: var(--radius-md);">💡 ${platform.messages.platformNote}</p>`;
     }
     
     if (modalBody) modalBody.innerHTML = checksHtml;
@@ -631,105 +534,38 @@ function showPlatformModal(platform) {
     openModal('platform-modal');
 }
 
-// ============================================
-// MODALS
-// ============================================
-function openModal(modalId) {
-    const modal = document.getElementById(modalId);
-    if (modal) {
-        modal.classList.remove('hidden');
-        document.body.style.overflow = 'hidden';
-        
-        // Close on overlay click
-        const overlay = modal.querySelector('.modal-overlay');
-        if (overlay) {
-            overlay.onclick = () => closeModal(modalId);
-        }
-        
-        // Close on X button
-        const closeBtn = modal.querySelector('.modal-close');
-        if (closeBtn) {
-            closeBtn.onclick = () => closeModal(modalId);
-        }
-    }
-}
-
-window.closeModal = function(modalId) {
-    const modal = document.getElementById(modalId);
-    if (modal) {
-        modal.classList.add('hidden');
-        document.body.style.overflow = '';
-    }
-};
-
-function showFactorInfo(factorId) {
+function showFactorInfo(factorType) {
     const factorData = {
-        'platform-api': {
-            icon: '🔌',
-            title: 'Platform APIs',
-            content: 'We directly query official platform APIs where available. For Twitter/X, we use API v2 to check account status, visibility flags, and any restriction indicators. For Reddit, we query their public API for shadowban detection.'
-        },
-        'web-analysis': {
-            icon: '🔍',
-            title: 'Web Analysis',
-            content: 'Our automated browser testing runs from U.S.-based servers. We check if your profile and content appear in search results when logged in, logged out, and in private browsing mode. This helps detect restrictions invisible to the account owner.'
-        },
-        'historical': {
-            icon: '📊',
-            title: 'Historical Data',
-            content: 'For Pro users, we track accounts over time to establish engagement baselines. Sudden drops in reach, engagement anomalies, or visibility changes are flagged. Free users don\'t have historical tracking—upgrade to Pro for this feature.'
-        },
-        'hashtag-db': {
-            icon: '#️⃣',
-            title: 'Hashtag Database',
-            content: 'Our database contains 1,800+ banned and restricted hashtags across all major platforms. We cross-reference your content against this database and verify restrictions in real-time. Note: Reddit doesn\'t use hashtags.'
-        },
-        'ip-analysis': {
-            icon: '🌐',
-            title: 'IP Analysis',
-            content: 'We analyze YOUR connection to detect VPN, proxy, or datacenter usage. Platforms may treat content differently based on IP reputation. This is why you should only check your own content—checking others uses the wrong IP.'
-        }
+        'platform-api': { icon: '🔌', title: 'Platform APIs', desc: 'Direct integration with official platform APIs. We query account status, visibility flags, and restriction indicators.' },
+        'web-analysis': { icon: '🔍', title: 'Web Analysis', desc: 'Automated browser testing from U.S. servers. We check search visibility logged-in, logged-out, and in private mode.' },
+        'historical': { icon: '📊', title: 'Historical Data', desc: 'We track accounts over time to detect anomalies. Sudden engagement drops affect probability. Pro only for tracking.' },
+        'hashtag-db': { icon: '#️⃣', title: 'Hashtag Database', desc: '1,800+ banned and restricted hashtags updated daily. We verify restrictions in real-time.' },
+        'ip-analysis': { icon: '🌐', title: 'IP Analysis', desc: 'We analyze YOUR connection for VPN, proxy, or datacenter flags that platforms may treat differently.' },
     };
     
-    const data = factorData[factorId];
+    const data = factorData[factorType];
     if (!data) return;
     
     const modal = document.getElementById('factor-info-modal');
     if (!modal) return;
     
-    const iconEl = document.getElementById('factor-modal-icon');
-    const titleEl = document.getElementById('factor-modal-title');
-    const bodyEl = document.getElementById('factor-modal-body');
+    const icon = document.getElementById('factor-modal-icon');
+    const title = document.getElementById('factor-modal-title');
+    const body = document.getElementById('factor-modal-body');
     
-    if (iconEl) iconEl.textContent = data.icon;
-    if (titleEl) titleEl.textContent = data.title;
-    if (bodyEl) bodyEl.innerHTML = `<p>${data.content}</p>`;
+    if (icon) icon.textContent = data.icon;
+    if (title) title.textContent = data.title;
+    if (body) body.innerHTML = `<p>${data.desc}</p>`;
     
     openModal('factor-info-modal');
 }
 
 function showAudienceInfo(audience) {
     const audienceData = {
-        'influencer': {
-            icon: '📱',
-            title: 'Why This Matters for Influencers',
-            content: '<p>Your income depends on reach. When engagement suddenly drops, it\'s not always your content—platforms can silently limit your visibility without telling you.</p><p>Our 5-Factor Engine helps you:</p><ul><li>Detect hidden restrictions before sponsors notice</li><li>Identify which signals are affecting your reach</li><li>Take action to restore visibility</li></ul>'
-        },
-        'politician': {
-            icon: '🗳️',
-            title: 'Why This Matters for Politicians',
-            content: '<p>Your ability to communicate with constituents depends on platform visibility. Shadow bans can silently suppress your message during critical times.</p><p>Our 5-Factor Engine helps you:</p><ul><li>Verify your posts reach your audience</li><li>Document potential suppression for transparency</li><li>Maintain accountability with citable results</li></ul>'
-        },
-        'public-figure': {
-            icon: '⭐',
-            title: 'Why This Matters for Public Figures',
-            content: '<p>Actors, athletes, royalty—your public image relies on social media reach. Hidden restrictions can damage your brand without your knowledge.</p><p>Our 5-Factor Engine helps you:</p><ul><li>Monitor visibility across platforms</li><li>Get alerts when restrictions are detected</li><li>Maintain your public presence</li></ul>'
-        },
-        'agency': {
-            icon: '🏛️',
-            title: 'Why This Matters for Agencies & Brands',
-            content: '<p>Whether you\'re a government agency or a PR firm, your communications need to reach their intended audience.</p><p>Our 5-Factor Engine helps you:</p><ul><li>Monitor multiple client accounts</li><li>Get proactive alerts on restrictions</li><li>Generate reports for stakeholders</li></ul>'
-        }
+        'influencer': { icon: '📱', title: 'For Influencers & Creators', content: 'When engagement suddenly drops, you need to know if it\'s the algorithm or a shadow ban. Our probability score helps you diagnose the issue and take action.' },
+        'politician': { icon: '🗳️', title: 'For Politicians & Officials', content: 'Your constituents need to hear from you. We analyze your visibility across platforms to ensure your message isn\'t being suppressed.' },
+        'public-figure': { icon: '⭐', title: 'For Public Figures', content: 'Actors, athletes, royalty—when millions follow you, any reduction in reach matters. We help you verify your content is being seen.' },
+        'agency': { icon: '🏛️', title: 'For Agencies & Brands', content: 'Manage multiple client accounts with our Agency plan. Track visibility across all clients and get alerts when issues arise.' },
     };
     
     const data = audienceData[audience];
@@ -738,81 +574,113 @@ function showAudienceInfo(audience) {
     const modal = document.getElementById('audience-modal');
     if (!modal) return;
     
-    const iconEl = document.getElementById('audience-modal-icon');
-    const titleEl = document.getElementById('audience-modal-title');
-    const bodyEl = document.getElementById('audience-modal-body');
+    const icon = document.getElementById('audience-modal-icon');
+    const title = document.getElementById('audience-modal-title');
+    const body = document.getElementById('audience-modal-body');
     
-    if (iconEl) iconEl.textContent = data.icon;
-    if (titleEl) titleEl.textContent = data.title;
-    if (bodyEl) bodyEl.innerHTML = data.content;
+    if (icon) icon.textContent = data.icon;
+    if (title) title.textContent = data.title;
+    if (body) body.innerHTML = `<p>${data.content}</p>`;
     
     openModal('audience-modal');
 }
+
+function openModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (!modal) {
+        console.warn('Modal not found:', modalId);
+        return;
+    }
+    
+    modal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+    
+    // Close on overlay click
+    const overlay = modal.querySelector('.modal-overlay');
+    if (overlay) {
+        overlay.onclick = () => closeModal(modalId);
+    }
+    
+    // Close on X button
+    const closeBtn = modal.querySelector('.modal-close');
+    if (closeBtn) {
+        closeBtn.onclick = () => closeModal(modalId);
+    }
+}
+
+function closeModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.classList.add('hidden');
+        document.body.style.overflow = '';
+    }
+}
+
+// Make closeModal globally accessible
+window.closeModal = closeModal;
 
 // ============================================
 // IP DETECTION
 // ============================================
 function detectUserIP() {
-    const ipElement = document.getElementById('user-ip-address');
-    const ipTypeElement = document.getElementById('user-ip-type');
-    const ipFlagElement = document.getElementById('user-ip-flag');
+    const ipAddressEl = document.getElementById('user-ip-address');
+    const ipTypeEl = document.getElementById('user-ip-type');
+    const ipFlagEl = document.getElementById('user-ip-flag');
     
-    if (!ipElement) return;
-    
-    // Use demo data for now
-    const demoIp = window.DemoData ? window.DemoData.getIpData('residential') : null;
-    
-    if (demoIp) {
-        ipElement.textContent = demoIp.ip;
-        if (ipTypeElement) {
-            ipTypeElement.textContent = demoIp.type;
-            ipTypeElement.className = `ip-type ${demoIp.typeClass}`;
-        }
-        if (ipFlagElement) {
-            ipFlagElement.textContent = demoIp.countryFlag;
-        }
-    } else {
-        ipElement.textContent = '192.168.1.42';
-        if (ipTypeElement) {
-            ipTypeElement.textContent = 'Residential';
-            ipTypeElement.className = 'ip-type good';
-        }
-        if (ipFlagElement) {
-            ipFlagElement.textContent = '🇺🇸';
-        }
-    }
-}
-
-// ============================================
-// TOAST
-// ============================================
-function showToast(message, type = 'info') {
-    // Try global toast first
-    if (window.showToast && typeof window.showToast === 'function') {
-        window.showToast(message, type);
-        return;
-    }
-    
-    // Fallback to local toast
-    let toast = document.getElementById('toast');
-    if (!toast) {
-        toast = document.createElement('div');
-        toast.id = 'toast';
-        toast.className = 'toast';
-        document.body.appendChild(toast);
-    }
-    
-    toast.textContent = message;
-    toast.className = `toast ${type} show`;
-    
+    // Simulated for demo
     setTimeout(() => {
-        toast.classList.remove('show');
-    }, 3000);
+        if (ipAddressEl) ipAddressEl.textContent = '192.168.x.x';
+        if (ipTypeEl) {
+            ipTypeEl.textContent = 'Residential';
+            ipTypeEl.classList.add('good');
+        }
+        if (ipFlagEl) ipFlagEl.textContent = '🇺🇸';
+    }, 500);
 }
 
 // ============================================
-// INIT
+// SHARE BUTTONS
 // ============================================
-init();
+function setupShareButtons() {
+    const shareTwitter = document.getElementById('share-twitter');
+    const shareFacebook = document.getElementById('share-facebook');
+    const shareTelegram = document.getElementById('share-telegram');
+    const shareLinkedIn = document.getElementById('share-linkedin');
+    
+    const shareUrl = encodeURIComponent('https://shadowbancheck.io');
+    const shareText = encodeURIComponent('Calculate your shadow ban probability with this free tool!');
+    
+    if (shareTwitter) {
+        shareTwitter.addEventListener('click', () => {
+            window.open(`https://twitter.com/intent/tweet?url=${shareUrl}&text=${shareText}`, '_blank');
+        });
+    }
+    if (shareFacebook) {
+        shareFacebook.addEventListener('click', () => {
+            window.open(`https://www.facebook.com/sharer/sharer.php?u=${shareUrl}`, '_blank');
+        });
+    }
+    if (shareTelegram) {
+        shareTelegram.addEventListener('click', () => {
+            window.open(`https://t.me/share/url?url=${shareUrl}&text=${shareText}`, '_blank');
+        });
+    }
+    if (shareLinkedIn) {
+        shareLinkedIn.addEventListener('click', () => {
+            window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${shareUrl}`, '_blank');
+        });
+    }
+}
+
+// ============================================
+// TOAST HELPER
+// ============================================
+function showToast(message, type) {
+    if (typeof window.showToast === 'function') {
+        window.showToast(message, type);
+    } else {
+        console.log('Toast:', message, type);
+    }
+}
 
 })();

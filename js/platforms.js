@@ -8,6 +8,9 @@
    Last Updated: 2025
    ============================================================================= */
 
+(function() {
+'use strict';
+
 window.platformData = [
     // =========================================================================
     // LIVE PLATFORMS
@@ -380,6 +383,7 @@ window.platformData = [
  * @returns {object|undefined} Platform object or undefined
  */
 window.getPlatformById = function(id) {
+    if (!id) return undefined;
     return window.platformData.find(p => p.id === id);
 };
 
@@ -389,6 +393,7 @@ window.getPlatformById = function(id) {
  * @returns {object|undefined} Platform object or undefined
  */
 window.getPlatformByName = function(name) {
+    if (!name) return undefined;
     const normalized = name.toLowerCase().replace(/\s+/g, '').replace(/\//g, '');
     return window.platformData.find(p => 
         p.name.toLowerCase().replace(/\s+/g, '').replace(/\//g, '') === normalized ||
@@ -418,7 +423,7 @@ window.getComingSoonPlatforms = function() {
  * @returns {array} Array of platform objects that support hashtag checking
  */
 window.getHashtagPlatforms = function() {
-    return window.platformData.filter(p => p.supports && p.supports.hashtagCheck);
+    return window.platformData.filter(p => p.supports && p.supports.hashtagCheck === true);
 };
 
 /**
@@ -426,7 +431,7 @@ window.getHashtagPlatforms = function() {
  * @returns {array} Array of live platform objects that support hashtag checking
  */
 window.getLiveHashtagPlatforms = function() {
-    return window.platformData.filter(p => p.status === 'live' && p.supports && p.supports.hashtagCheck);
+    return window.platformData.filter(p => p.status === 'live' && p.supports && p.supports.hashtagCheck === true);
 };
 
 /**
@@ -478,27 +483,41 @@ window.getComingSoonPlatformCount = function() {
  * @returns {object|null} Platform object or null if not detected
  */
 window.detectPlatformFromUrl = function(url) {
-    if (!url) return null;
-    const lowerUrl = url.toLowerCase();
+    if (!url || typeof url !== 'string') return null;
     
-    if (lowerUrl.includes('twitter.com') || lowerUrl.includes('x.com')) {
+    const lowerUrl = url.toLowerCase().trim();
+    
+    // Twitter/X detection - check x.com FIRST (more specific)
+    if (lowerUrl.includes('x.com') || lowerUrl.includes('twitter.com')) {
         return window.getPlatformById('twitter');
     }
+    
+    // Reddit detection
     if (lowerUrl.includes('reddit.com') || lowerUrl.includes('redd.it')) {
         return window.getPlatformById('reddit');
     }
+    
+    // Instagram detection
     if (lowerUrl.includes('instagram.com') || lowerUrl.includes('instagr.am')) {
         return window.getPlatformById('instagram');
     }
+    
+    // TikTok detection
     if (lowerUrl.includes('tiktok.com') || lowerUrl.includes('vm.tiktok.com')) {
         return window.getPlatformById('tiktok');
     }
+    
+    // Facebook detection
     if (lowerUrl.includes('facebook.com') || lowerUrl.includes('fb.com') || lowerUrl.includes('fb.watch')) {
         return window.getPlatformById('facebook');
     }
+    
+    // YouTube detection
     if (lowerUrl.includes('youtube.com') || lowerUrl.includes('youtu.be')) {
         return window.getPlatformById('youtube');
     }
+    
+    // LinkedIn detection
     if (lowerUrl.includes('linkedin.com') || lowerUrl.includes('lnkd.in')) {
         return window.getPlatformById('linkedin');
     }
@@ -649,4 +668,9 @@ console.log('   Engagement test platforms:', window.getEngagementTestPlatforms()
 // BACKWARDS COMPATIBILITY
 // =========================================================================
 window.PLATFORMS = window.platformData;
-var PLATFORMS = window.platformData;
+
+// Signal that platforms are ready
+window.platformsReady = true;
+document.dispatchEvent(new CustomEvent('platformsReady'));
+
+})();

@@ -1,162 +1,120 @@
 /* =============================================================================
-   HASHTAG-CHECKER.JS - Hashtag Checker Page Functionality
+   HASHTAG-CHECKER.JS - Hashtag Checker Page
    ShadowBanCheck.io
    
-   Handles:
-   - Platform selection dropdown (EXCLUDES Reddit - no hashtags)
-   - Hashtag input parsing
-   - Engine animation (3 factors for hashtag checks)
-   - Form submission
+   NOTE: Reddit is EXCLUDED from this page because Reddit doesn't use hashtags
    ============================================================================= */
 
 (function() {
 'use strict';
 
-// ============================================
-// DOM ELEMENTS
-// ============================================
-let platformSelect, hashtagInput, checkHashtagsBtn, hashtagCheckForm;
-let hashtagCount;
-let engineAnimation, hashtagCheckerCard;
-let supportedPlatformIcons;
 let initialized = false;
-
-// ============================================
-// STATE
-// ============================================
 let currentPlatform = null;
-let parsedHashtags = [];
 
 // ============================================
 // INITIALIZATION
 // ============================================
 function init() {
-    // Multiple initialization strategies for reliability
-    document.addEventListener('sharedComponentsLoaded', tryInit);
-    document.addEventListener('DOMContentLoaded', tryInit);
-    document.addEventListener('platformsReady', tryInit);
-    
-    // Fallback with delays
-    setTimeout(tryInit, 100);
-    setTimeout(tryInit, 300);
-    setTimeout(tryInit, 500);
-}
-
-function tryInit() {
     if (initialized) return;
+    
     if (!window.platformData || !Array.isArray(window.platformData)) {
-        console.log('⏳ Hashtag-checker: Waiting for platformData...');
+        console.log('⏳ hashtag-checker.js waiting for platformData...');
+        setTimeout(init, 50);
         return;
     }
-    onComponentsLoaded();
-}
-
-function onComponentsLoaded() {
-    // Prevent double initialization
-    if (initialized) return;
-    initialized = true;
     
+    initialized = true;
     console.log('🚀 Hashtag-checker.js initializing...');
     
-    // Get DOM elements - try both ID formats
-    platformSelect = document.getElementById('hashtag-platform-select') || document.getElementById('platform-select');
-    hashtagInput = document.getElementById('hashtag-input');
-    checkHashtagsBtn = document.getElementById('check-hashtags-btn');
-    hashtagCheckForm = document.getElementById('hashtag-check-form');
-    
-    hashtagCount = document.getElementById('hashtag-count');
-    
-    engineAnimation = document.getElementById('engine-animation');
-    hashtagCheckerCard = document.getElementById('hashtag-checker-card') || document.getElementById('checker-card');
-    
-    supportedPlatformIcons = document.getElementById('hashtag-platform-icons');
-    
-    // Populate platform dropdown (EXCLUDES Reddit)
     populatePlatformSelect();
-    
-    // Populate platform icons (EXCLUDES Reddit)
     populatePlatformIcons();
-    
-    // Setup event listeners
     setupEventListeners();
+    hideRedditNotice(); // Start with notice hidden
     
     console.log('✅ Hashtag-checker.js initialized');
 }
 
+// Multiple init triggers
+document.addEventListener('DOMContentLoaded', init);
+document.addEventListener('platformsReady', init);
+setTimeout(init, 100);
+setTimeout(init, 300);
+
 // ============================================
-// PLATFORM DROPDOWN (Excludes Reddit - no hashtags)
+// PLATFORM DROPDOWN - EXCLUDES REDDIT
 // ============================================
 function populatePlatformSelect() {
-    if (!platformSelect) {
-        console.warn('❌ Platform select element not found');
+    const select = document.getElementById('hashtag-platform-select');
+    if (!select) {
+        console.warn('⚠️ #hashtag-platform-select not found');
         return;
     }
     
-    if (!window.platformData || !Array.isArray(window.platformData)) {
-        console.warn('❌ platformData not available');
-        return;
-    }
+    // Clear existing options except placeholder
+    select.innerHTML = '<option value="">Choose a platform...</option>';
     
-    // Only platforms that support hashtags (excludes Reddit)
-    const hashtagPlatforms = window.platformData.filter(p => 
+    // Get platforms that support hashtag checks (EXCLUDES Reddit)
+    const platforms = window.platformData.filter(p => 
         p.supports && p.supports.hashtagCheck === true
     );
     
-    console.log('📋 Populating hashtag dropdown with', hashtagPlatforms.length, 'platforms (excluding Reddit)');
+    console.log('📋 Hashtag platforms (excluding Reddit):', platforms.map(p => p.name).join(', '));
     
-    let optionsHtml = '<option value="">Select Platform</option>';
+    // Add live platforms first
+    const livePlatforms = platforms.filter(p => p.status === 'live');
+    const soonPlatforms = platforms.filter(p => p.status === 'soon');
     
-    // Live hashtag platforms first
-    const livePlatforms = hashtagPlatforms.filter(p => p.status === 'live');
     livePlatforms.forEach(platform => {
-        optionsHtml += `<option value="${platform.id}">${platform.icon} ${platform.name}</option>`;
+        const option = document.createElement('option');
+        option.value = platform.id;
+        option.textContent = `${platform.icon} ${platform.name}`;
+        select.appendChild(option);
     });
     
-    // Coming soon platforms (disabled)
-    const soonPlatforms = hashtagPlatforms.filter(p => p.status === 'soon');
-    if (soonPlatforms.length > 0) {
-        optionsHtml += '<optgroup label="Coming Soon">';
-        soonPlatforms.forEach(platform => {
-            optionsHtml += `<option value="${platform.id}" disabled>${platform.icon} ${platform.name} (Coming Soon)</option>`;
-        });
-        optionsHtml += '</optgroup>';
+    // Add separator if we have both live and coming soon
+    if (livePlatforms.length > 0 && soonPlatforms.length > 0) {
+        const separator = document.createElement('option');
+        separator.disabled = true;
+        separator.textContent = '── Coming Soon ──';
+        select.appendChild(separator);
     }
     
-    platformSelect.innerHTML = optionsHtml;
-    console.log('✅ Hashtag platform dropdown populated');
+    soonPlatforms.forEach(platform => {
+        const option = document.createElement('option');
+        option.value = platform.id;
+        option.textContent = `${platform.icon} ${platform.name} (Soon)`;
+        option.disabled = true;
+        select.appendChild(option);
+    });
+    
+    console.log('✅ Hashtag dropdown populated with', livePlatforms.length, 'live +', soonPlatforms.length, 'coming soon (NO Reddit)');
 }
 
 function populatePlatformIcons() {
-    if (!supportedPlatformIcons) return;
-    if (!window.platformData || !Array.isArray(window.platformData)) return;
-    
-    // Only show platforms that support hashtags (excludes Reddit)
-    const hashtagPlatforms = window.platformData.filter(p => 
-        p.supports && p.supports.hashtagCheck === true
-    );
+    const container = document.getElementById('hashtag-platform-icons');
+    if (!container || !window.platformData) return;
     
     let html = '';
     
-    hashtagPlatforms.forEach(platform => {
+    // Only platforms that support hashtags (excludes Reddit)
+    const platforms = window.platformData.filter(p => 
+        p.supports && p.supports.hashtagCheck === true
+    );
+    
+    platforms.forEach(platform => {
         const statusClass = platform.status === 'live' ? 'live' : 'soon';
         const title = platform.status === 'soon' ? `${platform.name} (Coming Soon)` : platform.name;
-        html += `
-            <span class="platform-icon-badge ${statusClass}" title="${title}" data-platform="${platform.id}" style="cursor:pointer;">
-                ${platform.icon}
-            </span>
-        `;
+        html += `<span class="platform-chip ${statusClass}" title="${title}" data-platform="${platform.id}">${platform.icon}</span>`;
     });
     
-    supportedPlatformIcons.innerHTML = html;
+    container.innerHTML = html;
     
-    // Add click handlers for platform modals
-    supportedPlatformIcons.querySelectorAll('.platform-icon-badge').forEach(icon => {
-        icon.addEventListener('click', () => {
-            const platformId = icon.dataset.platform;
+    // Add click handlers
+    container.querySelectorAll('.platform-chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+            const platformId = chip.dataset.platform;
             const platform = window.getPlatformById ? window.getPlatformById(platformId) : null;
-            if (platform) {
-                showPlatformModal(platform);
-            }
+            if (platform) showHashtagInfoModal(platform);
         });
     });
 }
@@ -165,200 +123,240 @@ function populatePlatformIcons() {
 // EVENT LISTENERS
 // ============================================
 function setupEventListeners() {
-    // Platform selection
+    // Platform select change
+    const platformSelect = document.getElementById('hashtag-platform-select');
     if (platformSelect) {
         platformSelect.addEventListener('change', handlePlatformChange);
     }
     
     // Hashtag input
+    const hashtagInput = document.getElementById('hashtag-input');
     if (hashtagInput) {
         hashtagInput.addEventListener('input', handleHashtagInput);
     }
     
     // Form submission
-    if (hashtagCheckForm) {
-        hashtagCheckForm.addEventListener('submit', handleFormSubmit);
-    }
-    
-    // Info button
-    const hashtagInfoBtn = document.getElementById('hashtag-info-btn');
-    if (hashtagInfoBtn) {
-        hashtagInfoBtn.addEventListener('click', () => {
-            showInfoModal();
-        });
+    const form = document.getElementById('hashtag-check-form');
+    if (form) {
+        form.addEventListener('submit', handleFormSubmit);
     }
     
     // Clear button
     const clearBtn = document.getElementById('clear-btn');
     if (clearBtn) {
-        clearBtn.addEventListener('click', () => {
-            if (hashtagInput) hashtagInput.value = '';
-            if (platformSelect) platformSelect.value = '';
-            currentPlatform = null;
-            parsedHashtags = [];
-            updateHashtagCount();
-            validateForm();
-        });
+        clearBtn.addEventListener('click', handleClear);
     }
     
     // Show Reddit note button
-    const showRedditNote = document.getElementById('show-reddit-note');
-    if (showRedditNote) {
-        showRedditNote.addEventListener('click', () => {
-            const redditNotice = document.getElementById('reddit-notice');
-            if (redditNotice) {
-                redditNotice.classList.toggle('hidden');
-            }
-        });
+    const showRedditNoteBtn = document.getElementById('show-reddit-note');
+    if (showRedditNoteBtn) {
+        showRedditNoteBtn.addEventListener('click', showRedditNotice);
+    }
+    
+    // Info buttons
+    const hashtagInfoBtn = document.getElementById('hashtag-info-btn');
+    if (hashtagInfoBtn) {
+        hashtagInfoBtn.addEventListener('click', () => openModal('hashtag-info-modal'));
+    }
+    
+    const engineInfoBtn = document.getElementById('engine-info-btn');
+    if (engineInfoBtn) {
+        engineInfoBtn.addEventListener('click', () => openModal('engine-info-modal'));
     }
 }
 
 // ============================================
-// PLATFORM CHANGE HANDLER
+// REDDIT NOTICE
 // ============================================
-function handlePlatformChange() {
-    const platformId = platformSelect ? platformSelect.value : '';
+function showRedditNotice() {
+    const notice = document.getElementById('reddit-notice');
+    if (notice) {
+        notice.classList.remove('hidden');
+        // Auto-hide after 10 seconds
+        setTimeout(hideRedditNotice, 10000);
+    }
+}
+
+function hideRedditNotice() {
+    const notice = document.getElementById('reddit-notice');
+    if (notice) notice.classList.add('hidden');
+}
+
+// ============================================
+// HANDLERS
+// ============================================
+function handlePlatformChange(e) {
+    const platformId = e.target.value;
+    currentPlatform = platformId ? window.getPlatformById(platformId) : null;
+    
+    const note = document.getElementById('platform-selector-note');
     
     if (!platformId) {
-        currentPlatform = null;
-        validateForm();
+        if (note) note.textContent = 'Different platforms have different banned hashtags';
+        updateSubmitButton();
         return;
     }
     
-    currentPlatform = window.getPlatformById ? window.getPlatformById(platformId) : null;
-    console.log('🔄 Hashtag platform selected:', currentPlatform ? currentPlatform.name : 'none');
-    validateForm();
+    if (currentPlatform) {
+        if (note) {
+            if (currentPlatform.status === 'live') {
+                note.textContent = `Ready to check hashtags for ${currentPlatform.name}`;
+            } else {
+                note.textContent = `${currentPlatform.name} hashtag checking coming soon`;
+            }
+        }
+    }
+    
+    updateSubmitButton();
 }
 
-// ============================================
-// HASHTAG INPUT HANDLER
-// ============================================
-function handleHashtagInput() {
-    const text = hashtagInput ? hashtagInput.value : '';
-    parsedHashtags = parseHashtags(text);
-    updateHashtagCount();
-    validateForm();
+function handleHashtagInput(e) {
+    const value = e.target.value;
+    const hashtags = parseHashtags(value);
+    
+    const countEl = document.getElementById('hashtag-count');
+    if (countEl) {
+        countEl.textContent = `${hashtags.length} hashtag${hashtags.length !== 1 ? 's' : ''}`;
+    }
+    
+    updateSubmitButton();
 }
 
 function parseHashtags(text) {
     if (!text) return [];
     
-    // Match #hashtag format
-    const hashtagPattern = /#(\w+)/g;
-    const matches = text.match(hashtagPattern) || [];
+    // Handle multiple formats:
+    // - #hashtag format
+    // - comma separated
+    // - space separated
+    // - newline separated
     
-    // Also support comma/space separated without #
-    const words = text.split(/[,\s\n]+/).filter(w => w.length > 0);
-    const additional = words.filter(w => !w.startsWith('#') && /^\w+$/.test(w));
+    const matches = text.match(/#[\w\u0080-\uFFFF]+/g) || [];
     
-    // Combine and dedupe
-    const all = [...matches.map(h => h.replace('#', '')), ...additional];
-    const unique = [...new Set(all.map(h => h.toLowerCase()))];
+    // If no hashtags found with #, split by common separators
+    if (matches.length === 0) {
+        const words = text.split(/[\s,\n]+/).filter(w => w.trim());
+        return words.map(w => w.startsWith('#') ? w : '#' + w).filter(w => w.length > 1);
+    }
     
-    return unique;
+    return [...new Set(matches)]; // Remove duplicates
 }
 
-function updateHashtagCount() {
-    if (hashtagCount) {
-        const count = parsedHashtags.length;
-        hashtagCount.textContent = `${count} hashtag${count !== 1 ? 's' : ''} detected`;
+function updateSubmitButton() {
+    const platformSelect = document.getElementById('hashtag-platform-select');
+    const hashtagInput = document.getElementById('hashtag-input');
+    const checkBtn = document.getElementById('check-hashtags-btn');
+    
+    const hasPlatform = platformSelect && platformSelect.value;
+    const hashtags = parseHashtags(hashtagInput ? hashtagInput.value : '');
+    const hasHashtags = hashtags.length > 0;
+    const isLive = currentPlatform && currentPlatform.status === 'live';
+    
+    if (checkBtn) {
+        checkBtn.disabled = !(hasPlatform && hasHashtags && isLive);
     }
 }
 
-// ============================================
-// FORM VALIDATION
-// ============================================
-function validateForm() {
-    const platformSelected = platformSelect && platformSelect.value;
-    const hashtagsEntered = parsedHashtags.length > 0;
-    
-    if (checkHashtagsBtn) {
-        checkHashtagsBtn.disabled = !(platformSelected && hashtagsEntered);
-    }
-}
-
-// ============================================
-// FORM SUBMISSION
-// ============================================
 function handleFormSubmit(e) {
     e.preventDefault();
     
+    const hashtagInput = document.getElementById('hashtag-input');
+    const hashtagText = hashtagInput ? hashtagInput.value.trim() : '';
+    const hashtags = parseHashtags(hashtagText);
+    
     if (!currentPlatform) {
-        showToast('Please select a platform', 'error');
+        showToast('Please select a platform', 'warning');
         return;
     }
     
-    if (parsedHashtags.length === 0) {
-        showToast('Please enter at least one hashtag', 'error');
+    if (hashtags.length === 0) {
+        showToast('Please enter at least one hashtag', 'warning');
         return;
     }
     
-    // Check if coming soon
-    if (currentPlatform.status === 'soon') {
-        showToast(`${currentPlatform.name} coming soon!`, 'warning');
+    if (currentPlatform.status !== 'live') {
+        showToast(`${currentPlatform.name} hashtag checking coming soon!`, 'info');
         return;
     }
     
-    runHashtagCheck();
+    runAnalysis(hashtags);
 }
 
-function runHashtagCheck() {
-    // Show engine animation
-    showEngineAnimation();
+function handleClear() {
+    const platformSelect = document.getElementById('hashtag-platform-select');
+    const hashtagInput = document.getElementById('hashtag-input');
+    const checkBtn = document.getElementById('check-hashtags-btn');
+    const countEl = document.getElementById('hashtag-count');
+    const note = document.getElementById('platform-selector-note');
     
-    // Simulate analysis
-    simulateAnalysis();
+    if (platformSelect) platformSelect.value = '';
+    if (hashtagInput) hashtagInput.value = '';
+    if (checkBtn) checkBtn.disabled = true;
+    if (countEl) countEl.textContent = '0 hashtags';
+    if (note) note.textContent = 'Different platforms have different banned hashtags';
+    
+    currentPlatform = null;
+    hideRedditNotice();
 }
 
 // ============================================
-// ENGINE ANIMATION (3 FACTORS for hashtag checks)
+// ANALYSIS
 // ============================================
-function showEngineAnimation() {
-    if (hashtagCheckerCard) {
-        hashtagCheckerCard.classList.add('hidden');
-    }
-    if (engineAnimation) {
-        engineAnimation.classList.remove('hidden');
-    }
+function runAnalysis(hashtags) {
+    const checkerCard = document.getElementById('checker-card');
+    const engineAnimation = document.getElementById('engine-animation');
     
-    runEngineAnimation();
+    if (checkerCard) checkerCard.classList.add('hidden');
+    if (engineAnimation) engineAnimation.classList.remove('hidden');
+    
+    runEngineAnimation(hashtags);
+    simulateAnalysis(hashtags);
 }
 
-function runEngineAnimation() {
+function runEngineAnimation(hashtags) {
     const terminalOutput = document.getElementById('terminal-output');
+    if (terminalOutput) terminalOutput.innerHTML = '';
     
-    // Hashtag check uses 3 factors (no API, no IP)
-    const factors = [
-        { id: 'factor-1-progress', message: '> Platform API... (skipped for hashtag check)', delay: 300, active: false },
-        { id: 'factor-2-progress', message: '> Running web analysis...', delay: 600, active: true },
-        { id: 'factor-3-progress', message: '> Checking historical data...', delay: 1000, active: true },
-        { id: 'factor-4-progress', message: '> Scanning hashtag database...', delay: 1400, active: true },
-        { id: 'factor-5-progress', message: '> IP analysis... (not applicable)', delay: 1600, active: false }
+    const platform = currentPlatform || { id: 'twitter', name: 'Twitter/X' };
+    
+    const lines = [
+        { text: `> Initializing 3-Factor Detection Engine...`, delay: 0 },
+        { text: `> Target platform: ${platform.name}`, delay: 400 },
+        { text: `> Hashtags to check: ${hashtags.length}`, delay: 800 },
+        { text: `> Querying hashtag database...`, delay: 1200 },
+        { text: `> Running web visibility tests...`, delay: 1800 },
+        { text: `> Checking historical patterns...`, delay: 2400 },
+        { text: `> Calculating risk probability...`, delay: 2800 },
     ];
     
-    // Clear terminal
-    if (terminalOutput) {
-        terminalOutput.innerHTML = '';
-    }
-    
-    // Animate each factor
-    factors.forEach((factor) => {
+    lines.forEach(line => {
         setTimeout(() => {
-            // Add terminal line only for active factors
-            if (terminalOutput && factor.active) {
-                const line = document.createElement('div');
-                line.className = 'terminal-line';
-                line.textContent = factor.message;
-                terminalOutput.appendChild(line);
+            if (terminalOutput) {
+                const lineEl = document.createElement('div');
+                lineEl.className = 'terminal-line';
+                lineEl.textContent = line.text;
+                terminalOutput.appendChild(lineEl);
                 terminalOutput.scrollTop = terminalOutput.scrollHeight;
             }
-            
-            // Update factor status
-            const factorEl = document.getElementById(factor.id);
-            if (factorEl) {
-                const status = factorEl.querySelector('.factor-status');
+        }, line.delay);
+    });
+    
+    // 3 factors for hashtag check (no API, no IP) - Factor 1 and 5 are N/A
+    const factors = [
+        { id: 'factor-1-progress', delay: 500, status: 'na' },   // API - N/A
+        { id: 'factor-2-progress', delay: 1500, status: 'complete' }, // Web
+        { id: 'factor-3-progress', delay: 2200, status: 'complete' }, // Historical
+        { id: 'factor-4-progress', delay: 2600, status: 'complete' }, // Hashtag DB
+        { id: 'factor-5-progress', delay: 500, status: 'na' },   // IP - N/A
+    ];
+    
+    factors.forEach(factor => {
+        setTimeout(() => {
+            const el = document.getElementById(factor.id);
+            if (el) {
+                const status = el.querySelector('.factor-status') || el.querySelector('.factor-compact-status');
                 if (status) {
-                    if (factor.active) {
+                    if (factor.status === 'complete') {
                         status.textContent = '✓';
                         status.classList.remove('pending');
                         status.classList.add('complete');
@@ -372,314 +370,127 @@ function runEngineAnimation() {
         }, factor.delay);
     });
     
-    // Phase 2 - AI Processing
+    // Phase 2: AI Analysis
     setTimeout(() => {
         const phase1 = document.getElementById('engine-phase-1');
         const phase2 = document.getElementById('engine-phase-2');
         if (phase1) phase1.classList.add('hidden');
         if (phase2) phase2.classList.remove('hidden');
         
-        // AI processing messages
-        const aiMessages = [
-            'Cross-referencing database...',
-            'Calculating risk scores...',
-            'Generating results...'
-        ];
-        
+        const aiMessages = ['Analyzing hashtag patterns...', 'Cross-referencing database...', 'Generating risk score...'];
         const aiMessageEl = document.getElementById('ai-processing-message');
         aiMessages.forEach((msg, i) => {
             setTimeout(() => {
                 if (aiMessageEl) aiMessageEl.textContent = msg;
-            }, i * 500);
+            }, i * 700);
         });
-    }, 2500);
+    }, 3200);
 }
 
-function simulateAnalysis() {
+function simulateAnalysis(hashtags) {
     setTimeout(() => {
         const platformId = currentPlatform ? currentPlatform.id : 'twitter';
         
-        // Check hashtags against banned database
-        const results = checkHashtagsAgainstDatabase(parsedHashtags, platformId);
+        // Check against banned hashtags database
+        let bannedCount = 0;
+        let restrictedCount = 0;
+        const results = [];
         
-        // Calculate overall probability
-        let probability = 0;
-        const bannedCount = results.filter(r => r.status === 'banned').length;
-        const restrictedCount = results.filter(r => r.status === 'restricted').length;
-        const warningCount = results.filter(r => r.status === 'warning').length;
+        if (window.bannedHashtags) {
+            hashtags.forEach(tag => {
+                const cleanTag = tag.replace('#', '').toLowerCase();
+                const status = checkHashtagStatus(cleanTag, platformId);
+                results.push({ hashtag: tag, status: status });
+                if (status === 'banned') bannedCount++;
+                if (status === 'restricted') restrictedCount++;
+            });
+        }
         
-        probability = (bannedCount * 30) + (restrictedCount * 15) + (warningCount * 5);
-        probability = Math.min(probability, 95); // Cap at 95%
+        // Calculate probability
+        const totalRisk = bannedCount * 30 + restrictedCount * 15;
+        const probability = Math.min(95, Math.max(5, totalRisk + Math.floor(Math.random() * 10)));
         
-        // Store results
-        const resultData = {
+        const demoResult = {
             platform: platformId,
             platformName: currentPlatform ? currentPlatform.name : 'Twitter/X',
-            platformIcon: currentPlatform ? currentPlatform.icon : '𝕏',
             checkType: 'hashtag',
-            hashtags: parsedHashtags,
+            hashtags: hashtags,
             hashtagResults: results,
+            bannedCount: bannedCount,
+            restrictedCount: restrictedCount,
             probability: probability,
-            verdict: probability > 50 ? 'High Risk' : probability > 25 ? 'Medium Risk' : 'Low Risk',
-            verdictClass: probability > 50 ? 'danger' : probability > 25 ? 'warning' : 'good',
             factorsUsed: 3,
             timestamp: new Date().toISOString(),
-            keyFindings: generateHashtagFindings(results),
-            recommendations: generateHashtagRecommendations(results)
         };
         
-        sessionStorage.setItem('lastAnalysisResult', JSON.stringify(resultData));
-        
-        // Redirect to results
+        sessionStorage.setItem('lastAnalysisResult', JSON.stringify(demoResult));
         window.location.href = `results.html?platform=${platformId}&type=hashtag&demo=true`;
-    }, 3500);
+    }, 4500);
 }
 
-function checkHashtagsAgainstDatabase(hashtags, platformId) {
-    const results = [];
-    
-    // Check against BannedHashtags database if available
-    const database = window.BannedHashtags;
-    
-    hashtags.forEach(tag => {
-        const tagLower = tag.toLowerCase();
-        let status = 'safe';
-        let reason = 'No issues detected';
-        
-        if (database) {
-            // Check banned
-            if (database.banned && database.banned.includes(tagLower)) {
-                status = 'banned';
-                reason = 'This hashtag is banned and will severely limit visibility';
-            }
-            // Check restricted
-            else if (database.restricted && database.restricted.includes(tagLower)) {
-                status = 'restricted';
-                reason = 'This hashtag is restricted and may limit reach';
-            }
-            // Check spam
-            else if (database.spam && database.spam.includes(tagLower)) {
-                status = 'warning';
-                reason = 'This hashtag is associated with spam behavior';
-            }
-        } else {
-            // Demo mode - simulate some results
-            if (['adult', 'nsfw', 'xxx'].includes(tagLower)) {
-                status = 'banned';
-                reason = 'This hashtag is banned and will severely limit visibility';
-            } else if (['crypto', 'nft', 'giveaway'].includes(tagLower)) {
-                status = 'restricted';
-                reason = 'This hashtag is restricted and may limit reach';
-            } else if (['viral', 'fyp', 'trending'].includes(tagLower)) {
-                status = 'warning';
-                reason = 'This hashtag is overused and has low discovery value';
-            }
+function checkHashtagStatus(hashtag, platformId) {
+    // Check against banned hashtags database
+    if (window.bannedHashtags) {
+        const platformBanned = window.bannedHashtags[platformId] || window.bannedHashtags.all || [];
+        if (platformBanned.includes(hashtag)) {
+            return 'banned';
         }
-        
-        results.push({
-            hashtag: tag,
-            status: status,
-            reason: reason
-        });
-    });
-    
-    return results;
-}
-
-function generateHashtagFindings(results) {
-    const findings = [];
-    
-    const bannedCount = results.filter(r => r.status === 'banned').length;
-    const restrictedCount = results.filter(r => r.status === 'restricted').length;
-    const safeCount = results.filter(r => r.status === 'safe').length;
-    
-    if (bannedCount > 0) {
-        findings.push({
-            status: 'warning',
-            text: `${bannedCount} banned hashtag${bannedCount > 1 ? 's' : ''} detected - will severely limit visibility`
-        });
     }
     
-    if (restrictedCount > 0) {
-        findings.push({
-            status: 'warning',
-            text: `${restrictedCount} restricted hashtag${restrictedCount > 1 ? 's' : ''} may reduce reach`
-        });
+    // Common restricted patterns
+    const restrictedPatterns = ['nsfw', 'adult', 'xxx', 'sex', 'naked', 'nude'];
+    if (restrictedPatterns.some(p => hashtag.includes(p))) {
+        return 'restricted';
     }
     
-    if (safeCount > 0) {
-        findings.push({
-            status: 'good',
-            text: `${safeCount} hashtag${safeCount > 1 ? 's' : ''} appear safe to use`
-        });
-    }
-    
-    if (bannedCount === 0 && restrictedCount === 0) {
-        findings.push({
-            status: 'good',
-            text: 'No problematic hashtags detected in your selection'
-        });
-    }
-    
-    return findings;
-}
-
-function generateHashtagRecommendations(results) {
-    const recommendations = [];
-    
-    const banned = results.filter(r => r.status === 'banned');
-    const restricted = results.filter(r => r.status === 'restricted');
-    
-    if (banned.length > 0) {
-        recommendations.push({
-            priority: 'high',
-            title: 'Remove Banned Hashtags',
-            description: `Remove these hashtags immediately: ${banned.map(r => '#' + r.hashtag).join(', ')}. Using banned hashtags can shadow ban your entire post.`
-        });
-    }
-    
-    if (restricted.length > 0) {
-        recommendations.push({
-            priority: 'medium',
-            title: 'Consider Replacing Restricted Hashtags',
-            description: `These hashtags may limit your reach: ${restricted.map(r => '#' + r.hashtag).join(', ')}. Consider using more specific alternatives.`
-        });
-    }
-    
-    if (banned.length === 0 && restricted.length === 0) {
-        recommendations.push({
-            priority: 'low',
-            title: 'Your Hashtags Look Good',
-            description: 'No problematic hashtags detected. Your hashtag selection should not trigger any platform restrictions.'
-        });
-    }
-    
-    return recommendations;
+    return 'safe';
 }
 
 // ============================================
-// PLATFORM MODAL
+// MODALS
 // ============================================
-function showPlatformModal(platform) {
-    if (!platform) return;
+function showHashtagInfoModal(platform) {
+    const modal = document.getElementById('hashtag-info-modal');
+    if (!modal || !platform) return;
     
-    let modal = document.getElementById('platform-modal');
-    if (!modal) {
-        const modalHtml = `
-            <div id="platform-modal" class="modal hidden">
-                <div class="modal-overlay"></div>
-                <div class="modal-content">
-                    <button class="modal-close">&times;</button>
-                    <div class="modal-header">
-                        <span class="modal-icon" id="platform-modal-icon">📱</span>
-                        <h3 class="modal-title" id="platform-modal-title">Platform Analysis</h3>
-                        <div id="platform-modal-status"></div>
-                    </div>
-                    <div class="modal-body" id="platform-modal-body"></div>
-                    <div class="modal-footer">
-                        <button class="btn btn-primary btn-lg" onclick="document.getElementById('platform-modal').classList.add('hidden');document.body.style.overflow='';">Got It!</button>
-                    </div>
-                </div>
-            </div>
-        `;
-        document.body.insertAdjacentHTML('beforeend', modalHtml);
-        modal = document.getElementById('platform-modal');
-    }
-    
-    const modalIcon = document.getElementById('platform-modal-icon');
-    const modalTitle = document.getElementById('platform-modal-title');
-    const modalStatus = document.getElementById('platform-modal-status');
-    const modalBody = document.getElementById('platform-modal-body');
-    
-    if (modalIcon) modalIcon.textContent = platform.icon;
-    if (modalTitle) modalTitle.textContent = platform.name;
-    
-    if (modalStatus) {
-        const statusClass = platform.status === 'live' ? 'status-live' : 'status-soon';
-        const statusText = platform.status === 'live' ? '● Live' : '○ Coming Soon';
-        modalStatus.innerHTML = `<span class="${statusClass}">${statusText}</span>`;
-    }
-    
-    if (modalBody) {
-        let html = '<h4>Hashtag Signals We Analyze:</h4><ul class="modal-check-list">';
-        if (platform.hashtagChecks && platform.hashtagChecks.length > 0) {
-            platform.hashtagChecks.forEach(check => {
-                html += `<li>✓ ${check}</li>`;
-            });
-        } else {
-            html += '<li>✓ Banned hashtag detection</li>';
-            html += '<li>✓ Restricted hashtag identification</li>';
-        }
-        html += '</ul>';
-        
-        if (platform.status === 'soon') {
-            html += `<p class="modal-note">🚀 ${platform.name} hashtag analysis is coming soon!</p>`;
-        }
-        
-        modalBody.innerHTML = html;
-    }
+    // Use the existing modal content
+    openModal('hashtag-info-modal');
+}
+
+function openModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (!modal) return;
     
     modal.classList.remove('hidden');
     document.body.style.overflow = 'hidden';
     
     const overlay = modal.querySelector('.modal-overlay');
-    if (overlay) {
-        overlay.onclick = () => {
-            modal.classList.add('hidden');
-            document.body.style.overflow = '';
-        };
-    }
+    if (overlay) overlay.onclick = () => closeModal(modalId);
     
     const closeBtn = modal.querySelector('.modal-close');
-    if (closeBtn) {
-        closeBtn.onclick = () => {
-            modal.classList.add('hidden');
-            document.body.style.overflow = '';
-        };
-    }
+    if (closeBtn) closeBtn.onclick = () => closeModal(modalId);
 }
 
-// ============================================
-// INFO MODAL
-// ============================================
-function showInfoModal() {
-    const modal = document.getElementById('hashtag-info-modal');
+function closeModal(modalId) {
+    const modal = document.getElementById(modalId);
     if (modal) {
-        modal.classList.remove('hidden');
-        document.body.style.overflow = 'hidden';
-        
-        const overlay = modal.querySelector('.modal-overlay');
-        if (overlay) {
-            overlay.onclick = () => {
-                modal.classList.add('hidden');
-                document.body.style.overflow = '';
-            };
-        }
-        
-        const closeBtn = modal.querySelector('.modal-close');
-        if (closeBtn) {
-            closeBtn.onclick = () => {
-                modal.classList.add('hidden');
-                document.body.style.overflow = '';
-            };
-        }
+        modal.classList.add('hidden');
+        document.body.style.overflow = '';
     }
 }
 
+window.closeModal = closeModal;
+window.closeLimitModal = function() { closeModal('limit-modal'); };
+
 // ============================================
-// TOAST
+// HELPERS
 // ============================================
-function showToast(message, type = 'info') {
-    if (window.showToast && typeof window.showToast === 'function') {
+function showToast(message, type) {
+    if (typeof window.showToast === 'function') {
         window.showToast(message, type);
     } else {
-        alert(message);
+        console.log('Toast:', message, type);
     }
 }
-
-// ============================================
-// INIT
-// ============================================
-init();
 
 })();

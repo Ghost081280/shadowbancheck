@@ -594,36 +594,31 @@ function renderHashtagAnalysis() {
 }
 
 // ============================================
-// IP ANALYSIS
+// IP ANALYSIS (Connection Type Only - Never Display Actual IP)
 // ============================================
 function renderIpAnalysis() {
     if (!resultData.factors || !resultData.factors.ip) return;
     
     const ip = resultData.factors.ip;
     
-    const ipAddress = document.getElementById('ip-address');
+    // We show connection TYPE only, never actual IP address
+    const connectionTypeDisplay = document.getElementById('connection-type-display');
     const ipTypeBadge = document.getElementById('ip-type-badge');
-    const ipFlag = document.getElementById('ip-flag');
     const ipExplanation = document.getElementById('ip-explanation');
     
     if (ip.signals) {
         const ipSignal = ip.signals.find(s => s.name === 'IP type');
         const countrySignal = ip.signals.find(s => s.name === 'Country');
         
-        if (ipAddress && ipSignal) {
-            // Get actual IP from demo data if available
-            const demoIp = window.DemoData ? window.DemoData.getIpData() : null;
-            ipAddress.textContent = demoIp ? demoIp.ip : '192.168.1.42';
+        // Display connection type (Residential, VPN, Datacenter, etc.)
+        if (connectionTypeDisplay && ipSignal) {
+            connectionTypeDisplay.textContent = ipSignal.value;
+            connectionTypeDisplay.className = `connection-type-value ${ipSignal.status}`;
         }
         
         if (ipTypeBadge && ipSignal) {
             ipTypeBadge.textContent = ipSignal.value;
             ipTypeBadge.className = `ip-type-badge ${ipSignal.status}`;
-        }
-        
-        if (ipFlag && countrySignal) {
-            const flags = { 'US': '🇺🇸', 'UK': '🇬🇧', 'DE': '🇩🇪', 'CA': '🇨🇦' };
-            ipFlag.textContent = flags[countrySignal.value] || '🌐';
         }
     }
     

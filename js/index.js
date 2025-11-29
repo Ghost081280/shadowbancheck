@@ -1,1103 +1,735 @@
 /* =============================================================================
-   INDEX.JS - HOMEPAGE FUNCTIONALITY
+   INDEX.JS - Home Page Functionality
    ShadowBanCheck.io
-   Power Check, FAQ, Modals, Platform Grid, Social Share
+   
+   Handles:
+   - Power Check form and URL input
+   - Platform detection from URL
+   - Engagement test UI for Twitter
+   - Checks preview based on platform
+   - Platform grid population
+   - Engine animation
    ============================================================================= */
 
 (function() {
 'use strict';
 
 // ============================================
-// GLOBAL STATE
+// DOM ELEMENTS
 // ============================================
-window.latestScanResults = null;
-window.lastSearchType = null;
-let userIPData = null;
+let powerForm, powerUrlInput, powerAnalyzeBtn;
+let platformDetected, detectedPlatformIcon, detectedPlatformName, platformDetectedNote;
+let previewHashtag;
+let engagementTestSection, engagementSteps, engagementProgressFill, engagementProgressText;
+let engagementConfirmed, skipEngagementBtn;
+let engineAnimation, powerCheckCard;
+let platformGrid, powerPlatformIcons;
 
 // ============================================
-// FACTOR INFO DATA - For the (i) buttons
+// STATE
 // ============================================
-const FACTOR_INFO = {
-    'platform-api': {
-        icon: '🔌',
-        title: 'Platform APIs',
-        description: 'We query official platform APIs directly where available. This gives us the most reliable data about account status, visibility flags, and any restrictions the platform has applied.',
-        details: [
-            'Twitter/X API v2 - Account status, tweet visibility, restriction flags',
-            'Reddit API - Shadowban status, karma, account standing',
-            'Direct query for account existence and accessibility'
-        ],
-        tech: 'OAuth 2.0 authentication, rate-limited queries, response validation'
-    },
-    'web-analysis': {
-        icon: '🔍',
-        title: 'Web Analysis',
-        description: 'We run automated browser tests from U.S.-based servers to check if content appears in search results. We test multiple scenarios: logged in, logged out, and private browsing mode.',
-        details: [
-            'Search visibility - Does the account/post appear in search?',
-            'Public accessibility - Can logged-out users see the content?',
-            'Private browsing - Same results with no cookies/history?'
-        ],
-        tech: 'Playwright automation, headless Chrome/Firefox, U.S. server locations'
-    },
-    'historical': {
-        icon: '📊',
-        title: 'Historical Data',
-        description: 'We compare current engagement patterns against historical baselines. Sudden drops in engagement or visibility can indicate algorithmic suppression even when other signals look normal.',
-        details: [
-            'Engagement rate trends over time',
-            'Follower growth/decline patterns',
-            'Post reach compared to account baseline'
-        ],
-        tech: 'PostgreSQL time-series data, anomaly detection algorithms'
-    },
-    'hashtag-db': {
-        icon: '#️⃣',
-        title: 'Hashtag Database',
-        description: 'Our database of banned, restricted, and low-reach hashtags is updated daily. We cross-reference any hashtags in your content against known problematic tags.',
-        details: [
-            'Banned hashtags that will hide your content',
-            'Restricted hashtags with reduced reach',
-            'Spam-flagged hashtags that trigger filters'
-        ],
-        tech: 'Daily automated scraping, community reports, real-time verification'
-    },
-    'ip-analysis': {
-        icon: '🌐',
-        title: 'IP Analysis',
-        description: 'We analyze YOUR connection to detect VPN, proxy, or datacenter IPs. Platforms may treat content differently based on the IP reputation of the poster.',
-        details: [
-            'VPN/Proxy detection - Are you hiding your location?',
-            'Datacenter IP flags - Server IPs are often restricted',
-            'IP reputation scoring - History of abuse from this IP range'
-        ],
-        tech: 'IPQualityScore API, MaxMind GeoIP, reputation databases'
-    }
-};
-
-// ============================================
-// AUDIENCE MODAL DATA
-// ============================================
-const AUDIENCE_DATA = {
-    'influencer': {
-        icon: '📱',
-        title: 'Why Influencers Need Probability Analysis',
-        content: `
-            <p class="modal-intro">As an influencer, your reach IS your business. Even a small visibility reduction can significantly impact your income.</p>
-            <h4>Common Triggers:</h4>
-            <ul class="check-list">
-                <li>Content that automated systems flag incorrectly</li>
-                <li>Using hashtags that became restricted after you posted</li>
-                <li>Engagement patterns that algorithms find "suspicious"</li>
-            </ul>
-            <div class="modal-tech-note">
-                <h4>💡 Why Probability Matters</h4>
-                <p>Platforms don't disclose their algorithms. We analyze <strong>5 independent signals</strong> to calculate the <strong>probability</strong> your reach is being limited. A 15% probability is normal; 50%+ means multiple signals indicate issues.</p>
-            </div>
-        `
-    },
-    'politician': {
-        icon: '🗳️',
-        title: 'Why Politicians Need Probability Analysis',
-        content: `
-            <p class="modal-intro">Your constituents need to hear your message. Shadow bans can silently suppress your voice during critical moments.</p>
-            <h4>Why This Happens:</h4>
-            <ul class="check-list">
-                <li>Algorithms may flag political content as "divisive"</li>
-                <li>Mass-reporting campaigns from opponents</li>
-                <li>Automated systems don't understand political context</li>
-            </ul>
-            <div class="modal-tech-note">
-                <h4>💡 Transparency Matters</h4>
-                <p>Platforms have <strong>no legal obligation</strong> to disclose visibility restrictions. Our 5-Factor Engine calculates probability with <strong>documented evidence</strong> you can use for appeals or public disclosure.</p>
-            </div>
-        `
-    },
-    'public-figure': {
-        icon: '⭐',
-        title: 'Why Public Figures Need Probability Analysis',
-        content: `
-            <p class="modal-intro">Whether you're an actor, athlete, or personality—your fans expect to see your content. Shadow bans can disconnect you from your audience.</p>
-            <h4>At-Risk Situations:</h4>
-            <ul class="check-list">
-                <li>Expressing views that algorithms flag</li>
-                <li>High visibility making you a target for reporting</li>
-                <li>Content misinterpreted by automated moderation</li>
-            </ul>
-        `
-    },
-    'agency': {
-        icon: '🏛️',
-        title: 'Why Agencies & Brands Need Probability Analysis',
-        content: `
-            <p class="modal-intro">When you invest in social communications, you need to know your messages are actually being delivered.</p>
-            <h4>At-Risk Situations:</h4>
-            <ul class="check-list">
-                <li>Public health announcements flagged as "misinformation"</li>
-                <li>Crisis communications not reaching stakeholders</li>
-                <li>Brand campaigns suppressed without explanation</li>
-            </ul>
-            <div class="modal-tech-note">
-                <h4>💡 Accountability</h4>
-                <p>Our detection system provides <strong>documented evidence</strong> your legal, compliance, and communications teams can use to demand transparency or adjust strategy.</p>
-            </div>
-        `
-    }
+let currentPlatform = null;
+let engagementStepsCompleted = {
+    follow: false,
+    like: false,
+    retweet: false,
+    reply: false
 };
 
 // ============================================
 // INITIALIZATION
 // ============================================
-document.addEventListener('DOMContentLoaded', initIndexPage);
-
-function initIndexPage() {
-    initPowerCheck();
-    initPlatformGrid();
-    initPowerPlatforms();
-    initFAQAccordion();
-    initModals();
-    initFactorInfoButtons();
-    initAudienceModals();
-    initSocialShare();
-    detectUserIP();
+function init() {
+    // Wait for shared components to load
+    document.addEventListener('sharedComponentsLoaded', onComponentsLoaded);
     
-    console.log('✅ Index page initialized');
+    // Also try immediate init in case components already loaded
+    if (document.querySelector('header')) {
+        onComponentsLoaded();
+    }
+}
+
+function onComponentsLoaded() {
+    // Get DOM elements
+    powerForm = document.getElementById('power-check-form');
+    powerUrlInput = document.getElementById('power-url-input');
+    powerAnalyzeBtn = document.getElementById('power-analyze-btn');
+    
+    platformDetected = document.getElementById('platform-detected');
+    detectedPlatformIcon = document.getElementById('detected-platform-icon');
+    detectedPlatformName = document.getElementById('detected-platform-name');
+    platformDetectedNote = document.getElementById('platform-detected-note');
+    previewHashtag = document.getElementById('preview-hashtag');
+    
+    engagementTestSection = document.getElementById('engagement-test-section');
+    engagementProgressFill = document.getElementById('engagement-progress-fill');
+    engagementProgressText = document.getElementById('engagement-progress-text');
+    engagementConfirmed = document.getElementById('engagement-confirmed');
+    skipEngagementBtn = document.getElementById('skip-engagement-btn');
+    
+    engineAnimation = document.getElementById('engine-animation');
+    powerCheckCard = document.getElementById('power-check-card');
+    
+    platformGrid = document.getElementById('platform-grid');
+    powerPlatformIcons = document.getElementById('power-platform-icons');
+    
+    // Setup event listeners
+    setupEventListeners();
+    
+    // Populate platforms
+    populatePlatformGrid();
+    populatePlatformIcons();
+    
+    // Detect IP
+    detectUserIP();
 }
 
 // ============================================
-// POWER CHECK
+// EVENT LISTENERS
 // ============================================
-function initPowerCheck() {
-    const form = document.getElementById('power-check-form');
-    const input = document.getElementById('power-url-input');
-    const infoBtn = document.getElementById('power-info-btn');
-    
-    // Info button opens modal
-    infoBtn?.addEventListener('click', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        openModal('power-info-modal');
-    });
-    
-    // URL input detection for connection step
-    input?.addEventListener('input', debounce(handleUrlInput, 300));
-    input?.addEventListener('paste', () => setTimeout(handleUrlInput, 50));
+function setupEventListeners() {
+    // URL input - detect platform as user types
+    if (powerUrlInput) {
+        powerUrlInput.addEventListener('input', handleUrlInput);
+        powerUrlInput.addEventListener('paste', (e) => {
+            // Delay to let paste complete
+            setTimeout(handleUrlInput, 100);
+        });
+    }
     
     // Form submission
-    form?.addEventListener('submit', function(e) {
-        e.preventDefault();
-        handlePowerCheckSubmit();
+    if (powerForm) {
+        powerForm.addEventListener('submit', handlePowerCheckSubmit);
+    }
+    
+    // Engagement test checkboxes
+    const engagementCheckboxes = document.querySelectorAll('.engagement-checkbox');
+    engagementCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', handleEngagementCheckboxChange);
+    });
+    
+    // Engagement confirmed checkbox
+    if (engagementConfirmed) {
+        engagementConfirmed.addEventListener('change', handleEngagementConfirmed);
+    }
+    
+    // Skip engagement button
+    if (skipEngagementBtn) {
+        skipEngagementBtn.addEventListener('click', handleSkipEngagement);
+    }
+    
+    // Power info button
+    const powerInfoBtn = document.getElementById('power-info-btn');
+    if (powerInfoBtn) {
+        powerInfoBtn.addEventListener('click', () => {
+            openModal('power-info-modal');
+        });
+    }
+    
+    // AI info button
+    const aiInfoBtn = document.getElementById('ai-info-btn');
+    if (aiInfoBtn) {
+        aiInfoBtn.addEventListener('click', () => {
+            openModal('ai-info-modal');
+        });
+    }
+    
+    // Try AI button
+    const tryAiBtn = document.getElementById('try-ai-btn');
+    if (tryAiBtn) {
+        tryAiBtn.addEventListener('click', () => {
+            // Open Shadow AI chat
+            if (typeof window.openShadowAI === 'function') {
+                window.openShadowAI();
+            } else {
+                alert('Shadow AI coming soon!');
+            }
+        });
+    }
+    
+    // Open Shadow AI from contact
+    const openShadowAiBtn = document.getElementById('open-shadow-ai');
+    if (openShadowAiBtn) {
+        openShadowAiBtn.addEventListener('click', () => {
+            if (typeof window.openShadowAI === 'function') {
+                window.openShadowAI();
+            } else {
+                alert('Shadow AI coming soon!');
+            }
+        });
+    }
+    
+    // Factor info buttons
+    const factorInfoBtns = document.querySelectorAll('.factor-compact-info');
+    factorInfoBtns.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const factor = e.target.closest('.engine-factor-compact');
+            if (factor) {
+                showFactorInfo(factor.dataset.factor);
+            }
+        });
+    });
+    
+    // Audience info buttons
+    const audienceInfoBtns = document.querySelectorAll('.audience-info-btn');
+    audienceInfoBtns.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const audience = e.target.closest('.audience-info-btn').dataset.audience;
+            showAudienceInfo(audience);
+        });
     });
 }
 
+// ============================================
+// URL INPUT & PLATFORM DETECTION
+// ============================================
 function handleUrlInput() {
-    const input = document.getElementById('power-url-input');
-    const connectionStep = document.getElementById('connection-step');
-    const url = input?.value?.trim();
-    
-    if (!url || !connectionStep) return;
-    
-    const platform = detectPlatformFromUrl(url);
-    
-    if (platform) {
-        showConnectionStep(platform);
-    } else {
-        connectionStep.classList.add('hidden');
-    }
-}
-
-function showConnectionStep(platform) {
-    const connectionStep = document.getElementById('connection-step');
-    const accountContainer = document.getElementById('connection-account');
-    
-    if (!connectionStep || !accountContainer) return;
-    
-    // Hide all platform follow options
-    accountContainer.querySelectorAll('.account-to-follow').forEach(el => {
-        el.classList.add('hidden');
-    });
-    
-    // Show the relevant platform
-    const platformFollow = document.getElementById(`follow-${platform.key}`);
-    if (platformFollow) {
-        platformFollow.classList.remove('hidden');
-    }
-    
-    // Show connection step
-    connectionStep.classList.remove('hidden');
-    
-    // Reset checkbox
-    const checkbox = document.getElementById('connection-confirmed');
-    if (checkbox) checkbox.checked = false;
-}
-
-async function handlePowerCheckSubmit() {
-    const input = document.getElementById('power-url-input');
-    const button = document.getElementById('power-analyze-btn');
-    const url = input?.value?.trim();
+    const url = powerUrlInput.value.trim();
     
     if (!url) {
-        showToast('Please enter a post URL');
-        input?.focus();
-        return;
-    }
-    
-    // Validate URL
-    try {
-        new URL(url);
-    } catch {
-        showToast('Please enter a valid URL');
+        hidePlatformDetection();
+        hideEngagementTest();
+        currentPlatform = null;
         return;
     }
     
     // Detect platform
-    const platform = detectPlatformFromUrl(url);
-    if (!platform) {
-        showToast('Please enter a URL from a supported platform (Twitter/X, Reddit, etc.)');
+    const platform = window.detectPlatformFromUrl(url);
+    
+    if (platform) {
+        currentPlatform = platform;
+        showPlatformDetection(platform);
+        updateChecksPreview(platform);
+        
+        // Show engagement test for Twitter
+        if (platform.id === 'twitter' && platform.supports.engagementTest) {
+            showEngagementTest();
+        } else {
+            hideEngagementTest();
+        }
+    } else {
+        hidePlatformDetection();
+        hideEngagementTest();
+        currentPlatform = null;
+    }
+}
+
+function showPlatformDetection(platform) {
+    if (!platformDetected) return;
+    
+    platformDetected.classList.remove('hidden');
+    detectedPlatformIcon.textContent = platform.icon;
+    detectedPlatformName.textContent = platform.name;
+    
+    // Show platform note if applicable
+    if (platform.messages && platform.messages.platformNote) {
+        platformDetectedNote.textContent = platform.messages.platformNote;
+        platformDetectedNote.classList.remove('hidden');
+    } else {
+        platformDetectedNote.classList.add('hidden');
+    }
+    
+    // Handle platform-specific UI
+    if (platform.id === 'reddit') {
+        platformDetectedNote.textContent = 'Reddit does not use hashtags — hashtag analysis will be skipped.';
+        platformDetectedNote.classList.remove('hidden');
+    }
+}
+
+function hidePlatformDetection() {
+    if (platformDetected) {
+        platformDetected.classList.add('hidden');
+    }
+}
+
+function updateChecksPreview(platform) {
+    if (!previewHashtag) return;
+    
+    // Update hashtag check visibility based on platform
+    if (platform.supports.hashtagCheck === false) {
+        previewHashtag.classList.add('check-na');
+        previewHashtag.querySelector('.preview-status').textContent = 'N/A';
+        previewHashtag.querySelector('.preview-status').classList.remove('active');
+        previewHashtag.querySelector('.preview-status').classList.add('na');
+    } else {
+        previewHashtag.classList.remove('check-na');
+        previewHashtag.querySelector('.preview-status').textContent = '✓';
+        previewHashtag.querySelector('.preview-status').classList.add('active');
+        previewHashtag.querySelector('.preview-status').classList.remove('na');
+    }
+}
+
+// ============================================
+// ENGAGEMENT TEST
+// ============================================
+function showEngagementTest() {
+    if (engagementTestSection) {
+        engagementTestSection.classList.remove('hidden');
+    }
+}
+
+function hideEngagementTest() {
+    if (engagementTestSection) {
+        engagementTestSection.classList.add('hidden');
+    }
+    // Reset checkboxes
+    resetEngagementSteps();
+}
+
+function resetEngagementSteps() {
+    engagementStepsCompleted = {
+        follow: false,
+        like: false,
+        retweet: false,
+        reply: false
+    };
+    
+    const checkboxes = document.querySelectorAll('.engagement-checkbox');
+    checkboxes.forEach(cb => cb.checked = false);
+    
+    if (engagementConfirmed) {
+        engagementConfirmed.checked = false;
+    }
+    
+    updateEngagementProgress();
+}
+
+function handleEngagementCheckboxChange(e) {
+    const step = e.target.id.replace('step-', '');
+    engagementStepsCompleted[step] = e.target.checked;
+    updateEngagementProgress();
+}
+
+function updateEngagementProgress() {
+    const completed = Object.values(engagementStepsCompleted).filter(v => v).length;
+    const total = 4;
+    const percentage = (completed / total) * 100;
+    
+    if (engagementProgressFill) {
+        engagementProgressFill.style.width = `${percentage}%`;
+    }
+    
+    if (engagementProgressText) {
+        engagementProgressText.textContent = `${completed} of ${total} steps completed`;
+    }
+}
+
+function handleEngagementConfirmed(e) {
+    // Could enable a different analysis mode
+    console.log('Engagement confirmed:', e.target.checked);
+}
+
+function handleSkipEngagement() {
+    // Run basic analysis without engagement test
+    runPowerCheck(false);
+}
+
+// ============================================
+// POWER CHECK SUBMISSION
+// ============================================
+function handlePowerCheckSubmit(e) {
+    e.preventDefault();
+    
+    const url = powerUrlInput.value.trim();
+    if (!url) {
+        showToast('Please enter a post URL', 'error');
         return;
     }
     
-    // Check if platform is live
-    if (typeof PLATFORMS !== 'undefined') {
-        const platformData = PLATFORMS.find(p => p.id === platform.key);
-        if (!platformData || platformData.status !== 'live') {
-            showToast(`${platform.name} support coming soon! Currently we support Twitter/X and Reddit.`);
-            return;
-        }
+    if (!currentPlatform) {
+        showToast('Could not detect platform from URL', 'error');
+        return;
     }
     
-    // Set loading state
-    button?.classList.add('loading');
-    button?.setAttribute('disabled', 'true');
+    // Check if coming soon platform
+    if (currentPlatform.status === 'soon') {
+        showToast(`${currentPlatform.name} coming soon!`, 'warning');
+        return;
+    }
     
-    // Get connection status
-    const connectionConfirmed = document.getElementById('connection-confirmed')?.checked || false;
+    // Check if engagement test was completed (for Twitter)
+    const withEngagement = engagementConfirmed && engagementConfirmed.checked;
     
+    runPowerCheck(withEngagement);
+}
+
+function runPowerCheck(withEngagement) {
     // Show engine animation
-    await runEngineAnimation(platform, url, connectionConfirmed);
+    showEngineAnimation();
+    
+    // Simulate analysis (replace with real API call)
+    simulateAnalysis(withEngagement);
 }
 
-async function runEngineAnimation(platform, url, connectionConfirmed) {
-    const powerCard = document.getElementById('power-check-card');
-    const engineAnimation = document.getElementById('engine-animation');
-    const phase1 = document.getElementById('engine-phase-1');
-    const phase2 = document.getElementById('engine-phase-2');
+// ============================================
+// ENGINE ANIMATION
+// ============================================
+function showEngineAnimation() {
+    if (powerCheckCard) {
+        powerCheckCard.classList.add('hidden');
+    }
+    if (engineAnimation) {
+        engineAnimation.classList.remove('hidden');
+    }
+    
+    // Start animation
+    runEngineAnimation();
+}
+
+function runEngineAnimation() {
     const terminalOutput = document.getElementById('terminal-output');
-    
-    // Hide power card, show animation
-    if (powerCard) powerCard.style.display = 'none';
-    if (engineAnimation) engineAnimation.classList.remove('hidden');
-    
-    // Scroll to animation
-    engineAnimation?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    
-    // Phase 1: Engine startup
-    if (phase1) phase1.classList.remove('hidden');
-    if (phase2) phase2.classList.add('hidden');
-    if (terminalOutput) terminalOutput.innerHTML = '';
-    
-    // Run terminal animation
-    await runTerminalAnimation(terminalOutput, platform);
-    
-    // Animate factor progress
-    await animateFactorProgress();
-    
-    // Phase 2: AI Analysis
-    if (phase1) phase1.classList.add('hidden');
-    if (phase2) phase2.classList.remove('hidden');
-    
-    // AI processing messages
-    await runAIAnalysis();
-    
-    // Generate results and redirect
-    const results = generatePowerCheckResults(platform, url, connectionConfirmed);
-    redirectToResults(results);
-}
-
-async function runTerminalAnimation(container, platform) {
-    if (!container) return;
-    
-    const lines = [
-        { type: 'command', text: '$ shadowban-engine --init' },
-        { type: 'response', text: '→ Loading 5-Factor Detection Engine v1.0...' },
-        { type: 'response', text: `→ Target platform: ${platform.name}` },
-        { type: 'command', text: `$ GET /api/${platform.key}/v2/status` },
-        { type: 'data', text: '{ "status": "active", "checking": true }' },
-        { type: 'success', text: '✓ Platform API connected' },
-        { type: 'command', text: '$ playwright launch --headless --us-server' },
-        { type: 'response', text: '→ Spawning browser instances from U.S. servers...' },
-        { type: 'success', text: '✓ Web analysis ready' },
-        { type: 'command', text: '$ query historical_data' },
-        { type: 'success', text: '✓ Historical baseline loaded' },
-        { type: 'command', text: '$ SELECT * FROM hashtag_db' },
-        { type: 'success', text: '✓ Hashtag database ready' },
-        { type: 'command', text: '$ analyze_ip --check-vpn' },
-        { type: 'success', text: '✓ IP analysis complete' },
-        { type: 'success', text: '═══ ALL 5 FACTORS READY ═══' },
-        { type: 'response', text: '→ Calculating probability score...' }
+    const factors = [
+        { id: 'factor-1-progress', message: '> Querying Platform API...', delay: 500 },
+        { id: 'factor-2-progress', message: '> Running web analysis from U.S. servers...', delay: 1000 },
+        { id: 'factor-3-progress', message: '> Checking historical patterns...', delay: 1500 },
+        { id: 'factor-4-progress', message: '> Scanning hashtag database...', delay: 2000 },
+        { id: 'factor-5-progress', message: '> Analyzing your IP connection...', delay: 2500 }
     ];
     
-    for (const line of lines) {
-        const lineEl = document.createElement('div');
-        lineEl.className = 'terminal-line';
-        
-        if (line.type === 'command') {
-            lineEl.innerHTML = `<span class="prompt">$</span> <span class="command">${line.text.replace('$ ', '')}</span>`;
-        } else if (line.type === 'response') {
-            lineEl.innerHTML = `<span class="response">${line.text}</span>`;
-        } else if (line.type === 'success') {
-            lineEl.innerHTML = `<span class="success">${line.text}</span>`;
-        } else if (line.type === 'data') {
-            lineEl.innerHTML = `<span class="data">${line.text}</span>`;
-        }
-        
-        container.appendChild(lineEl);
-        container.scrollTop = container.scrollHeight;
-        
-        await sleep(150);
-    }
-}
-
-async function animateFactorProgress() {
-    const factors = ['factor-1-progress', 'factor-2-progress', 'factor-3-progress', 'factor-4-progress', 'factor-5-progress'];
-    
-    for (const factorId of factors) {
-        const factorEl = document.getElementById(factorId);
-        const statusEl = factorEl?.querySelector('.factor-status');
-        
-        if (factorEl && statusEl) {
-            factorEl.classList.add('active');
-            statusEl.textContent = '◉';
-            statusEl.classList.remove('pending');
-            statusEl.classList.add('running');
-            
-            await sleep(300);
-            
-            factorEl.classList.remove('active');
-            factorEl.classList.add('complete');
-            statusEl.textContent = '✓';
-            statusEl.classList.remove('running');
-            statusEl.classList.add('complete');
-        }
-    }
-}
-
-async function runAIAnalysis() {
-    const messageEl = document.getElementById('ai-processing-message');
-    const messages = [
-        'Cross-referencing signals...',
-        'Analyzing visibility patterns...',
-        'Checking historical anomalies...',
-        'Calculating probability score...',
-        'Generating recommendations...'
-    ];
-    
-    for (const message of messages) {
-        if (messageEl) messageEl.textContent = message;
-        await sleep(500);
-    }
-}
-
-function generatePowerCheckResults(platform, url, connectionConfirmed) {
-    const username = extractUsernameFromUrl(url, platform);
-    const postId = extractPostIdFromUrl(url, platform);
-    
-    // Generate probability score (demo - will be real API later)
-    const baseScore = Math.floor(Math.random() * 35) + 10;
-    const vpnPenalty = userIPData?.isVPN ? 10 : 0;
-    const datacenterPenalty = userIPData?.isDatacenter ? 15 : 0;
-    const connectionBonus = connectionConfirmed ? -5 : 5;
-    
-    let probability = Math.min(Math.max(baseScore + vpnPenalty + datacenterPenalty + connectionBonus, 5), 95);
-    
-    // Determine verdict
-    let verdict = 'likely-visible';
-    let verdictText = 'Likely Visible';
-    if (probability >= 60) {
-        verdict = 'likely-restricted';
-        verdictText = 'Likely Restricted';
-    } else if (probability >= 30) {
-        verdict = 'possibly-limited';
-        verdictText = 'Possibly Limited';
+    // Clear terminal
+    if (terminalOutput) {
+        terminalOutput.innerHTML = '';
     }
     
-    // Generate findings based on probability
-    const findings = generateFindings(platform, probability, userIPData);
-    
-    // Generate factor results
-    const factors = {
-        api: { 
-            active: true, 
-            status: probability < 40 ? 'good' : 'warning',
-            finding: probability < 40 ? 'Account active and accessible via API' : 'Some API flags detected'
-        },
-        web: { 
-            active: true, 
-            status: probability < 50 ? 'good' : 'warning',
-            finding: probability < 50 ? 'Search visibility confirmed from U.S. servers' : 'Reduced search visibility detected'
-        },
-        historical: { 
-            active: true, 
-            status: probability < 30 ? 'good' : 'warning',
-            finding: probability < 30 ? 'Engagement within normal baseline' : 'Engagement below baseline'
-        },
-        hashtag: { 
-            active: true, 
-            status: 'good',
-            finding: 'No banned or restricted hashtags detected'
-        },
-        ip: { 
-            active: true, 
-            status: userIPData?.isVPN || userIPData?.isDatacenter ? 'warning' : 'good',
-            finding: userIPData?.isVPN ? 'VPN detected (+10% probability)' : 
-                     userIPData?.isDatacenter ? 'Datacenter IP detected (+15% probability)' : 
-                     'Residential IP verified'
-        }
-    };
-    
-    // Build results object
-    const results = {
-        type: 'power',
-        platform: platform,
-        url: url,
-        username: username,
-        postId: postId,
-        timestamp: Date.now(),
-        probability: probability,
-        verdict: verdict,
-        verdictText: verdictText,
-        findings: findings,
-        factors: factors,
-        ipData: userIPData,
-        connectionConfirmed: connectionConfirmed
-    };
-    
-    // Store for Shadow AI
-    window.latestScanResults = results;
-    window.lastSearchType = 'power';
-    
-    return results;
-}
-
-function generateFindings(platform, probability, ipData) {
-    const findings = [];
-    
-    if (probability < 30) {
-        findings.push({ type: 'good', text: 'Account appears in search results' });
-        findings.push({ type: 'good', text: 'Profile accessible to public' });
-        findings.push({ type: 'good', text: 'Engagement patterns look normal' });
-    } else if (probability < 60) {
-        findings.push({ type: 'good', text: 'Account exists and is accessible' });
-        findings.push({ type: 'warning', text: 'Some visibility signals below normal' });
-        if (ipData?.isVPN) {
-            findings.push({ type: 'warning', text: 'VPN detected - may affect platform trust' });
-        }
-    } else {
-        findings.push({ type: 'warning', text: 'Multiple visibility concerns detected' });
-        findings.push({ type: 'bad', text: 'Search visibility significantly reduced' });
-        findings.push({ type: 'warning', text: 'Engagement below historical baseline' });
-    }
-    
-    return findings;
-}
-
-function redirectToResults(results) {
-    // Store results in sessionStorage for results.html to read
-    sessionStorage.setItem('shadowban_results', JSON.stringify(results));
-    
-    const platform = results.platform.key;
-    const identifier = results.username.replace('@', '').replace('u/', '');
-    
-    const params = new URLSearchParams({
-        platform: platform,
-        q: identifier,
-        type: 'power',
-        t: results.timestamp
-    });
-    
-    window.location.href = `results.html?${params.toString()}`;
-}
-
-// ============================================
-// PLATFORM DETECTION
-// ============================================
-function detectPlatformFromUrl(url) {
-    const urlLower = url.toLowerCase();
-    
-    if (urlLower.includes('twitter.com') || urlLower.includes('x.com')) {
-        return { name: 'Twitter/X', icon: '𝕏', key: 'twitter', id: 'twitter' };
-    } else if (urlLower.includes('reddit.com')) {
-        return { name: 'Reddit', icon: '🤖', key: 'reddit', id: 'reddit' };
-    } else if (urlLower.includes('instagram.com')) {
-        return { name: 'Instagram', icon: '📸', key: 'instagram', id: 'instagram' };
-    } else if (urlLower.includes('tiktok.com')) {
-        return { name: 'TikTok', icon: '🎵', key: 'tiktok', id: 'tiktok' };
-    } else if (urlLower.includes('linkedin.com')) {
-        return { name: 'LinkedIn', icon: '💼', key: 'linkedin', id: 'linkedin' };
-    }
-    
-    return null;
-}
-
-function extractUsernameFromUrl(url, platform) {
-    try {
-        const urlObj = new URL(url);
-        const pathname = urlObj.pathname;
-        
-        if (platform.key === 'twitter') {
-            const match = pathname.match(/^\/?@?([a-zA-Z0-9_]+)/);
-            if (match && match[1] !== 'status') return '@' + match[1];
-        }
-        
-        if (platform.key === 'reddit') {
-            const userMatch = pathname.match(/\/u(?:ser)?\/([a-zA-Z0-9_-]+)/);
-            if (userMatch) return 'u/' + userMatch[1];
-        }
-        
-    } catch (e) {
-        console.warn('Error parsing URL:', e);
-    }
-    
-    return '@user' + Math.floor(Math.random() * 1000);
-}
-
-function extractPostIdFromUrl(url, platform) {
-    try {
-        const urlObj = new URL(url);
-        const pathname = urlObj.pathname;
-        
-        if (platform.key === 'twitter') {
-            const match = pathname.match(/\/status\/(\d+)/);
-            if (match) return match[1];
-        }
-        
-        if (platform.key === 'reddit') {
-            const match = pathname.match(/\/comments\/([a-zA-Z0-9]+)/);
-            if (match) return match[1];
-        }
-        
-    } catch (e) {
-        console.warn('Error extracting post ID:', e);
-    }
-    
-    return Date.now().toString();
-}
-
-// ============================================
-// IP DETECTION
-// ============================================
-async function detectUserIP() {
-    try {
-        const response = await fetch('https://ipapi.co/json/');
-        const data = await response.json();
-        
-        if (data && data.ip) {
-            let ipType = 'residential';
-            let typeLabel = 'Residential';
-            
-            const orgLower = (data.org || '').toLowerCase();
-            
-            const vpnKeywords = ['vpn', 'proxy', 'tunnel', 'anonymous', 'private'];
-            const datacenterKeywords = ['hosting', 'cloud', 'server', 'data center', 'datacenter', 'amazon', 'google', 'microsoft', 'digitalocean', 'linode', 'vultr', 'ovh', 'hetzner'];
-            
-            const isLikelyVPN = vpnKeywords.some(kw => orgLower.includes(kw));
-            const isLikelyDatacenter = datacenterKeywords.some(kw => orgLower.includes(kw));
-            
-            if (isLikelyVPN) {
-                ipType = 'vpn';
-                typeLabel = 'VPN/Proxy';
-            } else if (isLikelyDatacenter) {
-                ipType = 'datacenter';
-                typeLabel = 'Datacenter';
+    // Animate each factor
+    factors.forEach((factor, index) => {
+        setTimeout(() => {
+            // Add terminal line
+            if (terminalOutput) {
+                const line = document.createElement('div');
+                line.className = 'terminal-line';
+                line.textContent = factor.message;
+                terminalOutput.appendChild(line);
+                terminalOutput.scrollTop = terminalOutput.scrollHeight;
             }
             
-            userIPData = {
-                ip: data.ip,
-                country: data.country_name,
-                countryCode: data.country_code,
-                city: data.city,
-                isp: data.org,
-                type: ipType,
-                typeLabel: typeLabel,
-                isVPN: isLikelyVPN,
-                isDatacenter: isLikelyDatacenter
-            };
-            
-            updateIPDisplay();
-            return userIPData;
-        }
-    } catch (error) {
-        console.log('IP detection failed:', error);
-        userIPData = { ip: 'Unable to detect', type: 'unknown', typeLabel: '' };
-        updateIPDisplay();
-    }
-    return userIPData;
-}
-
-function updateIPDisplay() {
-    const ipValueEl = document.getElementById('user-ip-address');
-    const ipTypeEl = document.getElementById('user-ip-type');
-    const ipFlagEl = document.getElementById('user-ip-flag');
+            // Update factor status
+            const factorEl = document.getElementById(factor.id);
+            if (factorEl) {
+                const status = factorEl.querySelector('.factor-status');
+                if (status) {
+                    status.textContent = '✓';
+                    status.classList.remove('pending');
+                    status.classList.add('complete');
+                }
+            }
+        }, factor.delay);
+    });
     
-    if (ipValueEl && userIPData) {
-        ipValueEl.textContent = userIPData.ip;
+    // Phase 2: AI Analysis
+    setTimeout(() => {
+        const phase1 = document.getElementById('engine-phase-1');
+        const phase2 = document.getElementById('engine-phase-2');
+        if (phase1) phase1.classList.add('hidden');
+        if (phase2) phase2.classList.remove('hidden');
         
-        if (ipTypeEl && userIPData.typeLabel) {
-            ipTypeEl.textContent = userIPData.typeLabel;
-            ipTypeEl.className = 'ip-type ' + userIPData.type;
-        }
+        // AI processing messages
+        const aiMessages = [
+            'Cross-referencing signals...',
+            'Calculating probability weights...',
+            'Generating final score...'
+        ];
         
-        if (ipFlagEl && userIPData.countryCode) {
-            ipFlagEl.textContent = countryCodeToFlag(userIPData.countryCode);
-            ipFlagEl.title = userIPData.country || userIPData.countryCode;
-        }
-    }
+        const aiMessageEl = document.getElementById('ai-processing-message');
+        aiMessages.forEach((msg, i) => {
+            setTimeout(() => {
+                if (aiMessageEl) aiMessageEl.textContent = msg;
+            }, i * 800);
+        });
+    }, 3500);
 }
 
-function countryCodeToFlag(countryCode) {
-    if (!countryCode) return '';
-    const codePoints = countryCode
-        .toUpperCase()
-        .split('')
-        .map(char => 127397 + char.charCodeAt(0));
-    return String.fromCodePoint(...codePoints);
+function simulateAnalysis(withEngagement) {
+    // Simulate API delay
+    setTimeout(() => {
+        // Get demo data
+        const platformId = currentPlatform ? currentPlatform.id : 'twitter';
+        const demoResult = window.DemoData ? window.DemoData.getResult(platformId, 'powerCheck') : null;
+        
+        // Store result in session storage for results page
+        if (demoResult) {
+            demoResult.withEngagement = withEngagement;
+            demoResult.engagementSteps = { ...engagementStepsCompleted };
+            sessionStorage.setItem('lastAnalysisResult', JSON.stringify(demoResult));
+        }
+        
+        // Redirect to results page
+        window.location.href = `results.html?platform=${platformId}&demo=true`;
+    }, 5000);
 }
 
 // ============================================
 // PLATFORM GRID
 // ============================================
-function initPlatformGrid() {
-    const platformGrid = document.getElementById('platform-grid');
-    if (!platformGrid || typeof PLATFORMS === 'undefined') return;
+function populatePlatformGrid() {
+    if (!platformGrid || !window.platformData) return;
     
-    platformGrid.innerHTML = '';
+    let html = '';
     
-    const sortedPlatforms = [...PLATFORMS].sort((a, b) => {
-        if (a.status === 'live' && b.status !== 'live') return -1;
-        if (a.status !== 'live' && b.status === 'live') return 1;
-        return a.name.localeCompare(b.name);
-    });
-    
-    sortedPlatforms.forEach(platform => {
-        const item = document.createElement('div');
-        item.className = 'platform-item';
-        item.dataset.platform = platform.id;
-        item.dataset.status = platform.status;
+    // Add all platforms
+    window.platformData.forEach(platform => {
+        const statusClass = platform.status === 'live' ? 'live' : 'soon';
+        const statusText = platform.status === 'live' ? 'Live' : 'Coming Soon';
         
-        const statusBadge = platform.status === 'live' 
-            ? '<span class="platform-badge live">Live</span>'
-            : '<span class="platform-badge soon">Soon</span>';
-        
-        item.innerHTML = `
-            <span class="platform-icon">${platform.icon}</span>
-            <span class="platform-name">${platform.name}</span>
-            ${statusBadge}
-        `;
-        
-        item.addEventListener('click', () => openPlatformModal(platform));
-        platformGrid.appendChild(item);
-    });
-    
-    // Add "Suggest a Platform" card
-    const suggestItem = document.createElement('div');
-    suggestItem.className = 'platform-item suggest-platform';
-    suggestItem.innerHTML = `
-        <span class="platform-icon">💡</span>
-        <span class="platform-name">Suggest a Platform</span>
-        <span class="platform-badge suggest">Request</span>
-    `;
-    suggestItem.addEventListener('click', openSuggestPlatformModal);
-    platformGrid.appendChild(suggestItem);
-}
-
-function initPowerPlatforms() {
-    const container = document.getElementById('power-platform-icons');
-    if (!container || typeof PLATFORMS === 'undefined') return;
-    
-    const allPlatforms = [...PLATFORMS].sort((a, b) => {
-        if (a.status === 'live' && b.status !== 'live') return -1;
-        if (a.status !== 'live' && b.status === 'live') return 1;
-        return 0;
-    });
-    
-    const html = allPlatforms.map(p => `
-        <span class="platform-chip ${p.status === 'soon' ? 'coming' : ''}" data-platform="${p.id}" title="${p.name}${p.status === 'soon' ? ' (Coming Soon)' : ''}">${p.icon}</span>
-    `).join('');
-    
-    container.innerHTML = html;
-    
-    container.querySelectorAll('.platform-chip[data-platform]').forEach(chip => {
-        chip.addEventListener('click', () => {
-            const platform = PLATFORMS.find(p => p.id === chip.dataset.platform);
-            if (platform) openPlatformModal(platform);
-        });
-    });
-}
-
-function openPlatformModal(platform) {
-    const modal = document.getElementById('platform-modal');
-    if (!modal) return;
-    
-    document.getElementById('modal-icon').textContent = platform.icon;
-    document.getElementById('modal-title').textContent = `${platform.name} Analysis`;
-    
-    const statusEl = document.getElementById('modal-status');
-    if (statusEl) {
-        statusEl.innerHTML = platform.status === 'live' 
-            ? '<span class="status-badge live">● Live</span>'
-            : '<span class="status-badge soon">◷ Coming Soon</span>';
-    }
-    
-    const bodyEl = document.getElementById('modal-body');
-    if (bodyEl) {
-        if (platform.status === 'live' && platform.checks) {
-            let checksHtml = platform.checks.slice(0, 8).map(check => `<li>✓ ${check}</li>`).join('');
-            
-            if (platform.id === 'twitter') {
-                checksHtml += `<li>✓ <strong>Verification badge detection</strong> (Blue ✓, Gold ✓, Grey ✓)</li>`;
-            }
-            
-            bodyEl.innerHTML = `
-                <p class="modal-intro">For ${platform.name}, we analyze these signals to calculate probability:</p>
-                <ul class="platform-checks-list">${checksHtml}</ul>
-                <p style="margin-top: var(--space-md); color: var(--text-muted); font-size: 0.875rem;">
-                    Results include shadow ban probability, detailed breakdown, and recommendations.
-                </p>
-            `;
-        } else {
-            bodyEl.innerHTML = `
-                <p class="modal-intro">${platform.name} analysis is coming soon!</p>
-                <p style="color: var(--text-muted);">We're working on adding ${platform.name} to our 5-Factor Detection Engine.</p>
-            `;
-        }
-    }
-    
-    // Update footer to single button (not three check options)
-    const footerEl = document.getElementById('modal-footer');
-    if (footerEl) {
-        footerEl.innerHTML = `
-            <button class="btn btn-primary btn-lg" onclick="closeModal('platform-modal')">Got It!</button>
-        `;
-    }
-    
-    openModal('platform-modal');
-}
-
-function openSuggestPlatformModal() {
-    let modal = document.getElementById('suggest-platform-modal');
-    if (!modal) {
-        modal = document.createElement('div');
-        modal.id = 'suggest-platform-modal';
-        modal.className = 'modal hidden';
-        modal.innerHTML = `
-            <div class="modal-overlay"></div>
-            <div class="modal-content">
-                <button class="modal-close">&times;</button>
-                <div class="modal-icon">💡</div>
-                <h3 class="modal-title">Suggest a Platform</h3>
-                <div class="modal-body">
-                    <p class="modal-intro">Want us to add shadow ban detection for another platform? Let us know!</p>
-                    
-                    <form id="suggest-platform-form" class="suggest-form">
-                        <div class="form-group">
-                            <label for="suggest-platform-name">Platform Name *</label>
-                            <input type="text" id="suggest-platform-name" placeholder="e.g. YouTube, Snapchat, Threads..." required>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="suggest-email">Your Email (optional)</label>
-                            <input type="email" id="suggest-email" placeholder="Get notified when it launches">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="suggest-reason">Why do you need this? (optional)</label>
-                            <textarea id="suggest-reason" rows="3" placeholder="Tell us about your use case..."></textarea>
-                        </div>
-                        
-                        <button type="submit" class="btn btn-primary btn-lg" style="width: 100%;">Submit Suggestion</button>
-                    </form>
-                    
-                    <p style="margin-top: var(--space-md); font-size: 0.75rem; color: var(--text-muted); text-align: center;">
-                        We review all suggestions and prioritize based on demand.
-                    </p>
-                </div>
+        html += `
+            <div class="platform-card ${statusClass}" data-platform="${platform.id}">
+                <span class="platform-icon">${platform.icon}</span>
+                <span class="platform-name">${platform.name}</span>
+                <span class="platform-status ${statusClass}">● ${statusText}</span>
             </div>
         `;
-        document.body.appendChild(modal);
-        
-        // Form submit
-        modal.querySelector('#suggest-platform-form')?.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const platformName = document.getElementById('suggest-platform-name').value.trim();
-            const email = document.getElementById('suggest-email').value.trim();
-            const reason = document.getElementById('suggest-reason').value.trim();
-            
-            const subject = encodeURIComponent(`Platform Suggestion: ${platformName}`);
-            const body = encodeURIComponent(
-                `Platform: ${platformName}\n` +
-                `Email: ${email || 'Not provided'}\n` +
-                `Reason: ${reason || 'Not provided'}\n\n` +
-                `Submitted from: ${window.location.href}`
-            );
-            
-            window.location.href = `mailto:contact@shadowbancheck.io?subject=${subject}&body=${body}`;
-            
-            setTimeout(() => {
-                closeModal('suggest-platform-modal');
-                showToast('Thanks for your suggestion! Check your email app to send.');
-                document.getElementById('suggest-platform-form').reset();
-            }, 500);
-        });
-    }
+    });
     
-    openModal('suggest-platform-modal');
-}
-
-// ============================================
-// FAQ ACCORDION
-// ============================================
-function initFAQAccordion() {
-    document.querySelectorAll('.faq-item').forEach(item => {
-        const question = item.querySelector('.faq-question');
-        
-        question?.addEventListener('click', function(e) {
-            e.preventDefault();
+    // Add "Suggest Platform" card
+    html += `
+        <div class="platform-card suggest" data-action="suggest">
+            <span class="platform-icon">💡</span>
+            <span class="platform-name">Suggest a Platform</span>
+            <span class="platform-status suggest">Request →</span>
+        </div>
+    `;
+    
+    platformGrid.innerHTML = html;
+    
+    // Add click handlers
+    platformGrid.querySelectorAll('.platform-card').forEach(card => {
+        card.addEventListener('click', () => {
+            const platformId = card.dataset.platform;
+            const action = card.dataset.action;
             
-            const wasActive = item.classList.contains('active');
+            if (action === 'suggest') {
+                // Scroll to contact section
+                const contactSection = document.getElementById('contact');
+                if (contactSection) {
+                    contactSection.scrollIntoView({ behavior: 'smooth' });
+                }
+                return;
+            }
             
-            // Close all other items
-            document.querySelectorAll('.faq-item').forEach(i => {
-                i.classList.remove('active');
-            });
-            
-            // Toggle current item
-            if (!wasActive) {
-                item.classList.add('active');
+            const platform = window.getPlatformById(platformId);
+            if (platform) {
+                showPlatformModal(platform);
             }
         });
     });
+}
+
+function populatePlatformIcons() {
+    if (!powerPlatformIcons || !window.platformData) return;
+    
+    let html = '';
+    
+    window.platformData.forEach(platform => {
+        const statusClass = platform.status === 'live' ? 'live' : 'soon';
+        html += `
+            <span class="platform-icon-badge ${statusClass}" title="${platform.name}">
+                ${platform.icon}
+            </span>
+        `;
+    });
+    
+    powerPlatformIcons.innerHTML = html;
+}
+
+function showPlatformModal(platform) {
+    const modal = document.getElementById('platform-modal');
+    const modalIcon = document.getElementById('modal-icon');
+    const modalTitle = document.getElementById('modal-title');
+    const modalStatus = document.getElementById('modal-status');
+    const modalBody = document.getElementById('modal-body');
+    
+    if (!modal) return;
+    
+    modalIcon.textContent = platform.icon;
+    modalTitle.textContent = `${platform.name} Analysis`;
+    
+    const statusClass = platform.status === 'live' ? 'live' : 'soon';
+    const statusText = platform.status === 'live' ? 'Live' : 'Coming Soon';
+    modalStatus.innerHTML = `<span class="status-badge ${statusClass}">● ${statusText}</span>`;
+    
+    // Build checks list
+    let checksHtml = '<h4>Signals We Analyze:</h4><ul class="check-list" id="modal-checks">';
+    
+    if (platform.accountChecks) {
+        platform.accountChecks.forEach(check => {
+            checksHtml += `<li>${check}</li>`;
+        });
+    }
+    
+    checksHtml += '</ul>';
+    
+    // Add platform note if available
+    if (platform.messages && platform.messages.platformNote) {
+        checksHtml += `<p class="platform-modal-note">💡 ${platform.messages.platformNote}</p>`;
+    }
+    
+    modalBody.innerHTML = checksHtml;
+    
+    openModal('platform-modal');
 }
 
 // ============================================
 // MODALS
 // ============================================
-function initModals() {
-    // Power info button
-    document.getElementById('power-info-btn')?.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        openModal('power-info-modal');
-    });
-    
-    // AI info button
-    document.getElementById('ai-info-btn')?.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        openModal('ai-info-modal');
-    });
-    
-    // Try AI button - opens Shadow AI chat
-    document.getElementById('try-ai-btn')?.addEventListener('click', () => {
-        if (typeof window.toggleShadowAI === 'function') {
-            window.toggleShadowAI();
-        }
-    });
-    
-    // Open Shadow AI button in contact section
-    document.getElementById('open-shadow-ai')?.addEventListener('click', () => {
-        if (typeof window.toggleShadowAI === 'function') {
-            window.toggleShadowAI();
-        }
-    });
-    
-    // Global modal close handlers
-    document.addEventListener('click', function(e) {
-        if (e.target.classList.contains('modal-overlay')) {
-            const modal = e.target.closest('.modal');
-            if (modal) {
-                modal.classList.add('hidden');
-                document.body.style.overflow = '';
-            }
-        }
-        
-        if (e.target.classList.contains('modal-close')) {
-            const modal = e.target.closest('.modal');
-            if (modal) {
-                modal.classList.add('hidden');
-                document.body.style.overflow = '';
-            }
-        }
-    });
-    
-    // Escape key to close
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') {
-            document.querySelectorAll('.modal:not(.hidden)').forEach(modal => {
-                modal.classList.add('hidden');
-            });
-            document.body.style.overflow = '';
-        }
-    });
-}
-
 function openModal(modalId) {
     const modal = document.getElementById(modalId);
-    if (!modal) return;
-    
-    modal.classList.remove('hidden');
-    document.body.style.overflow = 'hidden';
+    if (modal) {
+        modal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+        
+        // Close on overlay click
+        const overlay = modal.querySelector('.modal-overlay');
+        if (overlay) {
+            overlay.onclick = () => closeModal(modalId);
+        }
+        
+        // Close on X button
+        const closeBtn = modal.querySelector('.modal-close');
+        if (closeBtn) {
+            closeBtn.onclick = () => closeModal(modalId);
+        }
+    }
 }
 
-function closeModal(modalId) {
+window.closeModal = function(modalId) {
     const modal = document.getElementById(modalId);
-    if (!modal) return;
+    if (modal) {
+        modal.classList.add('hidden');
+        document.body.style.overflow = '';
+    }
+};
+
+function showFactorInfo(factorId) {
+    const factorData = {
+        'platform-api': {
+            icon: '🔌',
+            title: 'Platform APIs',
+            content: 'We directly query official platform APIs where available. For Twitter/X, we use API v2 to check account status, visibility flags, and any restriction indicators. For Reddit, we query their public API for shadowban detection.'
+        },
+        'web-analysis': {
+            icon: '🔍',
+            title: 'Web Analysis',
+            content: 'Our automated browser testing runs from U.S.-based servers. We check if your profile and content appear in search results when logged in, logged out, and in private browsing mode. This helps detect restrictions invisible to the account owner.'
+        },
+        'historical': {
+            icon: '📊',
+            title: 'Historical Data',
+            content: 'For Pro users, we track accounts over time to establish engagement baselines. Sudden drops in reach, engagement anomalies, or visibility changes are flagged. Free users don\'t have historical tracking—upgrade to Pro for this feature.'
+        },
+        'hashtag-db': {
+            icon: '#️⃣',
+            title: 'Hashtag Database',
+            content: 'Our database contains 1,800+ banned and restricted hashtags across all major platforms. We cross-reference your content against this database and verify restrictions in real-time. Note: Reddit doesn\'t use hashtags.'
+        },
+        'ip-analysis': {
+            icon: '🌐',
+            title: 'IP Analysis',
+            content: 'We analyze YOUR connection to detect VPN, proxy, or datacenter usage. Platforms may treat content differently based on IP reputation. This is why you should only check your own content—checking others uses the wrong IP.'
+        }
+    };
     
-    modal.classList.add('hidden');
-    document.body.style.overflow = '';
-}
-
-// Make closeModal global
-window.closeModal = closeModal;
-
-// ============================================
-// FACTOR INFO BUTTONS
-// ============================================
-function initFactorInfoButtons() {
-    document.querySelectorAll('.factor-compact-info').forEach(btn => {
-        btn.addEventListener('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            
-            const factorKey = this.closest('[data-factor]')?.dataset.factor;
-            if (factorKey && FACTOR_INFO[factorKey]) {
-                openFactorInfoModal(factorKey);
-            }
-        });
-    });
-}
-
-function openFactorInfoModal(factorKey) {
-    const info = FACTOR_INFO[factorKey];
-    if (!info) return;
+    const data = factorData[factorId];
+    if (!data) return;
     
     const modal = document.getElementById('factor-info-modal');
-    const iconEl = document.getElementById('factor-modal-icon');
-    const titleEl = document.getElementById('factor-modal-title');
-    const bodyEl = document.getElementById('factor-modal-body');
+    if (!modal) return;
     
-    if (!modal || !bodyEl) return;
-    
-    if (iconEl) iconEl.textContent = info.icon;
-    if (titleEl) titleEl.textContent = info.title;
-    
-    bodyEl.innerHTML = `
-        <p style="margin-bottom: var(--space-lg);">${info.description}</p>
-        
-        <div class="factor-detail-section">
-            <h4>What We Check:</h4>
-            <ul class="factor-detail-list">
-                ${info.details.map(d => `<li><span>✓</span> ${d}</li>`).join('')}
-            </ul>
-        </div>
-        
-        <div class="factor-tech-details">
-            <h5>Technical Implementation:</h5>
-            <p><code>${info.tech}</code></p>
-        </div>
-    `;
+    document.getElementById('factor-modal-icon').textContent = data.icon;
+    document.getElementById('factor-modal-title').textContent = data.title;
+    document.getElementById('factor-modal-body').innerHTML = `<p>${data.content}</p>`;
     
     openModal('factor-info-modal');
 }
 
-// ============================================
-// AUDIENCE MODALS
-// ============================================
-function initAudienceModals() {
-    document.querySelectorAll('.audience-info-btn').forEach(btn => {
-        btn.addEventListener('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            
-            const type = this.dataset.audience;
-            const data = AUDIENCE_DATA[type];
-            if (!data) return;
-            
-            document.getElementById('audience-modal-icon').textContent = data.icon;
-            document.getElementById('audience-modal-title').textContent = data.title;
-            document.getElementById('audience-modal-body').innerHTML = data.content;
-            
-            openModal('audience-modal');
-        });
-    });
-}
-
-// ============================================
-// SOCIAL SHARE
-// ============================================
-function initSocialShare() {
-    const shareUrl = encodeURIComponent(window.location.origin);
-    const shareText = encodeURIComponent('Calculate your shadow ban probability with the 5-Factor Detection Engine! 🔍');
-    
-    document.getElementById('share-twitter')?.addEventListener('click', () => {
-        window.open(`https://twitter.com/intent/tweet?text=${shareText}&url=${shareUrl}`, '_blank');
-    });
-    
-    document.getElementById('share-facebook')?.addEventListener('click', () => {
-        window.open(`https://www.facebook.com/sharer/sharer.php?u=${shareUrl}`, '_blank');
-    });
-    
-    document.getElementById('share-telegram')?.addEventListener('click', () => {
-        window.open(`https://t.me/share/url?url=${shareUrl}&text=${shareText}`, '_blank');
-    });
-    
-    document.getElementById('share-linkedin')?.addEventListener('click', () => {
-        window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${shareUrl}`, '_blank');
-    });
-}
-
-// ============================================
-// UTILITIES
-// ============================================
-function sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-}
-
-function debounce(func, wait) {
-    let timeout;
-    return function(...args) {
-        clearTimeout(timeout);
-        timeout = setTimeout(() => func(...args), wait);
+function showAudienceInfo(audience) {
+    const audienceData = {
+        'influencer': {
+            icon: '📱',
+            title: 'Why This Matters for Influencers',
+            content: '<p>Your income depends on reach. When engagement suddenly drops, it\'s not always your content—platforms can silently limit your visibility without telling you.</p><p>Our 5-Factor Engine helps you:</p><ul><li>Detect hidden restrictions before sponsors notice</li><li>Identify which signals are affecting your reach</li><li>Take action to restore visibility</li></ul>'
+        },
+        'politician': {
+            icon: '🗳️',
+            title: 'Why This Matters for Politicians',
+            content: '<p>Your ability to communicate with constituents depends on platform visibility. Shadow bans can silently suppress your message during critical times.</p><p>Our 5-Factor Engine helps you:</p><ul><li>Verify your posts reach your audience</li><li>Document potential suppression for transparency</li><li>Maintain accountability with citable results</li></ul>'
+        },
+        'public-figure': {
+            icon: '⭐',
+            title: 'Why This Matters for Public Figures',
+            content: '<p>Actors, athletes, royalty—your public image relies on social media reach. Hidden restrictions can damage your brand without your knowledge.</p><p>Our 5-Factor Engine helps you:</p><ul><li>Monitor visibility across platforms</li><li>Get alerts when restrictions are detected</li><li>Maintain your public presence</li></ul>'
+        },
+        'agency': {
+            icon: '🏛️',
+            title: 'Why This Matters for Agencies & Brands',
+            content: '<p>Whether you\'re a government agency or a PR firm, your communications need to reach their intended audience.</p><p>Our 5-Factor Engine helps you:</p><ul><li>Monitor multiple client accounts</li><li>Get proactive alerts on restrictions</li><li>Generate reports for stakeholders</li></ul>'
+        }
     };
+    
+    const data = audienceData[audience];
+    if (!data) return;
+    
+    const modal = document.getElementById('audience-modal');
+    if (!modal) return;
+    
+    document.getElementById('audience-modal-icon').textContent = data.icon;
+    document.getElementById('audience-modal-title').textContent = data.title;
+    document.getElementById('audience-modal-body').innerHTML = data.content;
+    
+    openModal('audience-modal');
 }
 
-function showToast(message) {
-    let toast = document.getElementById('toast');
-    if (!toast) {
-        toast = document.createElement('div');
-        toast.id = 'toast';
-        toast.className = 'toast';
-        document.body.appendChild(toast);
+// ============================================
+// IP DETECTION
+// ============================================
+function detectUserIP() {
+    const ipElement = document.getElementById('user-ip-address');
+    const ipTypeElement = document.getElementById('user-ip-type');
+    const ipFlagElement = document.getElementById('user-ip-flag');
+    
+    if (!ipElement) return;
+    
+    // Use demo data for now
+    const demoIp = window.DemoData ? window.DemoData.getIpData('residential') : null;
+    
+    if (demoIp) {
+        ipElement.textContent = demoIp.ip;
+        if (ipTypeElement) {
+            ipTypeElement.textContent = demoIp.type;
+            ipTypeElement.className = `ip-type ${demoIp.typeClass}`;
+        }
+        if (ipFlagElement) {
+            ipFlagElement.textContent = demoIp.countryFlag;
+        }
+    } else {
+        ipElement.textContent = '192.168.1.42';
+        if (ipTypeElement) {
+            ipTypeElement.textContent = 'Residential';
+            ipTypeElement.className = 'ip-type good';
+        }
+        if (ipFlagElement) {
+            ipFlagElement.textContent = '🇺🇸';
+        }
     }
+}
+
+// ============================================
+// TOAST
+// ============================================
+function showToast(message, type = 'info') {
+    const toast = document.getElementById('toast');
+    if (!toast) return;
     
     toast.textContent = message;
-    toast.classList.add('visible');
+    toast.className = `toast ${type} show`;
     
-    setTimeout(() => toast.classList.remove('visible'), 3000);
+    setTimeout(() => {
+        toast.classList.remove('show');
+    }, 3000);
 }
 
 // ============================================
-// EXPORTS
+// INIT
 // ============================================
-window.ShadowBan = {
-    showToast,
-    openModal,
-    closeModal,
-    detectUserIP,
-    getIPData: () => userIPData,
-    getLatestResults: () => window.latestScanResults
-};
-
-window.closeLimitModal = () => closeModal('limit-modal');
+init();
 
 })();

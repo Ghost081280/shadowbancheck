@@ -450,11 +450,43 @@ function checkHashtagStatus(hashtag, platformId) {
 // MODALS
 // ============================================
 function showHashtagInfoModal(platform) {
-    const modal = document.getElementById('hashtag-info-modal');
+    const modal = document.getElementById('platform-modal') || document.getElementById('hashtag-info-modal');
     if (!modal || !platform) return;
     
-    // Use the existing modal content
-    openModal('hashtag-info-modal');
+    // Populate modal with platform-specific content
+    const modalIcon = modal.querySelector('.modal-icon') || document.getElementById('modal-icon');
+    const modalTitle = modal.querySelector('.modal-title') || document.getElementById('modal-title');
+    const modalBody = modal.querySelector('.modal-body') || document.getElementById('modal-body');
+    const modalStatus = modal.querySelector('.modal-status') || document.getElementById('modal-status');
+    
+    if (modalIcon) modalIcon.textContent = platform.icon;
+    if (modalTitle) modalTitle.textContent = `${platform.name} Hashtag Analysis`;
+    
+    if (modalStatus) {
+        const statusClass = platform.status === 'live' ? 'live' : 'soon';
+        const statusText = platform.status === 'live' ? 'Live' : 'Coming Soon';
+        modalStatus.innerHTML = `<span class="status-badge ${statusClass}">● ${statusText}</span>`;
+    }
+    
+    // Build hashtag checks list
+    let checksHtml = '<h4>Hashtag Signals We Check:</h4><ul class="check-list">';
+    
+    const checks = platform.hashtagChecks && platform.hashtagChecks.length > 0 
+        ? platform.hashtagChecks 
+        : ['Banned hashtag detection', 'Restricted hashtag identification', 'Platform-specific limitations'];
+    
+    checks.forEach(check => {
+        checksHtml += `<li>${check}</li>`;
+    });
+    checksHtml += '</ul>';
+    
+    if (platform.messages && platform.messages.platformNote) {
+        checksHtml += `<p style="margin-top: var(--space-md); padding: var(--space-md); background: rgba(99, 102, 241, 0.1); border-radius: var(--radius-md);">💡 ${platform.messages.platformNote}</p>`;
+    }
+    
+    if (modalBody) modalBody.innerHTML = checksHtml;
+    
+    openModal(modal.id);
 }
 
 function openModal(modalId) {

@@ -40,24 +40,32 @@ let engagementStepsCompleted = {
 // INITIALIZATION
 // ============================================
 function init() {
-    document.addEventListener('sharedComponentsLoaded', onComponentsLoaded);
-    document.addEventListener('DOMContentLoaded', onComponentsLoaded);
+    // Multiple initialization strategies for reliability
+    document.addEventListener('sharedComponentsLoaded', tryInit);
+    document.addEventListener('DOMContentLoaded', tryInit);
+    document.addEventListener('platformsReady', tryInit);
     
-    // Also try immediate init with delay
-    setTimeout(onComponentsLoaded, 200);
+    // Fallback with delays
+    setTimeout(tryInit, 100);
+    setTimeout(tryInit, 300);
+    setTimeout(tryInit, 500);
+}
+
+function tryInit() {
+    if (initialized) return;
+    if (!window.platformData || !Array.isArray(window.platformData)) {
+        console.log('⏳ Checker: Waiting for platformData...');
+        return;
+    }
+    onComponentsLoaded();
 }
 
 function onComponentsLoaded() {
     // Prevent double initialization
     if (initialized) return;
-    
-    // Wait for platformData
-    if (!window.platformData) {
-        setTimeout(onComponentsLoaded, 100);
-        return;
-    }
-    
     initialized = true;
+    
+    console.log('🚀 Checker.js initializing...');
     
     // Get DOM elements
     platformSelect = document.getElementById('platform-select');
@@ -95,9 +103,16 @@ function onComponentsLoaded() {
 // ============================================
 function populatePlatformSelect() {
     if (!platformSelect) {
-        console.warn('Platform select element not found');
+        console.warn('❌ Platform select element not found');
         return;
     }
+    
+    if (!window.platformData || !Array.isArray(window.platformData)) {
+        console.warn('❌ platformData not available');
+        return;
+    }
+    
+    console.log('📋 Populating platform dropdown with', window.platformData.length, 'platforms');
     
     let optionsHtml = '<option value="">Select Platform</option>';
     
@@ -118,10 +133,12 @@ function populatePlatformSelect() {
     }
     
     platformSelect.innerHTML = optionsHtml;
+    console.log('✅ Platform dropdown populated');
 }
 
 function populatePlatformIcons() {
     if (!supportedPlatformIcons) return;
+    if (!window.platformData || !Array.isArray(window.platformData)) return;
     
     let html = '';
     
@@ -141,7 +158,7 @@ function populatePlatformIcons() {
     supportedPlatformIcons.querySelectorAll('.platform-icon-badge').forEach(icon => {
         icon.addEventListener('click', () => {
             const platformId = icon.dataset.platform;
-            const platform = window.platformData.find(p => p.id === platformId);
+            const platform = window.getPlatformById ? window.getPlatformById(platformId) : null;
             if (platform) {
                 showPlatformModal(platform);
             }
@@ -191,13 +208,26 @@ function setupEventListeners() {
             showInfoModal();
         });
     }
+    
+    // Clear button
+    const clearBtn = document.getElementById('clear-btn');
+    if (clearBtn) {
+        clearBtn.addEventListener('click', () => {
+            if (usernameInput) usernameInput.value = '';
+            if (platformSelect) platformSelect.value = '';
+            currentPlatform = null;
+            hidePlatformNote();
+            hideEngagementTest();
+            validateForm();
+        });
+    }
 }
 
 // ============================================
 // PLATFORM CHANGE HANDLER
 // ============================================
 function handlePlatformChange() {
-    const platformId = platformSelect.value;
+    const platformId = platformSelect ? platformSelect.value : '';
     
     if (!platformId) {
         currentPlatform = null;
@@ -207,13 +237,16 @@ function handlePlatformChange() {
         return;
     }
     
-    currentPlatform = window.platformData.find(p => p.id === platformId);
+    currentPlatform = window.getPlatformById ? window.getPlatformById(platformId) : null;
     
     if (!currentPlatform) {
         hidePlatformNote();
         hideEngagementTest();
+        validateForm();
         return;
     }
+    
+    console.log('🔄 Platform selected:', currentPlatform.name);
     
     // Show platform-specific note
     if (currentPlatform.id === 'reddit') {
@@ -225,7 +258,9 @@ function handlePlatformChange() {
     }
     
     // Show/hide engagement test (optional but recommended for Twitter)
-    if (currentPlatform.id === 'twitter' && currentPlatform.supports && currentPlatform.supports.engagementTest) {
+    if (currentPlatform.id === 'twitter' && 
+        currentPlatform.supports && 
+        currentPlatform.supports.engagementTest) {
         showEngagementTest();
     } else {
         hideEngagementTest();
@@ -236,7 +271,12 @@ function handlePlatformChange() {
 
 function showPlatformNote(text) {
     if (platformNote) {
-        platformNote.innerHTML = `<p>${text}</p>`;
+        const noteText = platformNote.querySelector('.platform-note-text') || platformNote.querySelector('#platform-note-text');
+        if (noteText) {
+            noteText.textContent = text;
+        } else {
+            platformNote.innerHTML = `<span class="platform-note-icon">💡</span><span class="platform-note-text">${text}</span>`;
+        }
         platformNote.classList.remove('hidden');
     }
 }
@@ -332,7 +372,7 @@ function handleFormSubmit(e) {
         return;
     }
     
-    const username = usernameInput.value.trim().replace(/^@/, '');
+    const username = usernameInput ? usernameInput.value.trim().replace(/^@/, '') : '';
     if (!username) {
         showToast('Please enter a username', 'error');
         return;
@@ -381,7 +421,7 @@ function runEngineAnimation() {
         { id: 'factor-1', message: '> Querying Platform API...', delay: 500, active: true },
         { id: 'factor-2', message: '> Running web analysis...', delay: 1000, active: true },
         { id: 'factor-3', message: '> Checking historical data...', delay: 1500, active: true },
-        { id: 'factor-4', message: '> Scanning hashtag database...', delay: 2000, active: !isReddit }
+        { id: 'factor-4', message: isReddit ? '> Hashtag analysis... (N/A for Reddit)' : '> Scanning hashtag database...', delay: 2000, active: !isReddit }
         // NO factor 5 (IP) for account checks
     ];
     
@@ -394,7 +434,7 @@ function runEngineAnimation() {
     factors.forEach((factor) => {
         setTimeout(() => {
             // Add terminal line
-            if (terminalOutput && factor.active) {
+            if (terminalOutput) {
                 const line = document.createElement('div');
                 line.className = 'terminal-line';
                 line.textContent = factor.message;
@@ -402,7 +442,7 @@ function runEngineAnimation() {
                 terminalOutput.scrollTop = terminalOutput.scrollHeight;
             }
             
-            // Update factor status
+            // Update factor status - try both class selectors
             const factorEl = document.getElementById(factor.id);
             if (factorEl) {
                 const status = factorEl.querySelector('.factor-compact-status') || factorEl.querySelector('.factor-status');
@@ -427,6 +467,20 @@ function runEngineAnimation() {
         const phase2 = document.getElementById('engine-phase-2');
         if (phase1) phase1.classList.add('hidden');
         if (phase2) phase2.classList.remove('hidden');
+        
+        // AI processing messages
+        const aiMessages = [
+            'Cross-referencing signals...',
+            'Calculating probability weights...',
+            'Generating final score...'
+        ];
+        
+        const aiMessageEl = document.getElementById('ai-processing-message');
+        aiMessages.forEach((msg, i) => {
+            setTimeout(() => {
+                if (aiMessageEl) aiMessageEl.textContent = msg;
+            }, i * 600);
+        });
     }, 3000);
 }
 
@@ -456,6 +510,8 @@ function simulateAnalysis(withEngagement) {
 // PLATFORM MODAL
 // ============================================
 function showPlatformModal(platform) {
+    if (!platform) return;
+    
     // Create modal if it doesn't exist
     let modal = document.getElementById('platform-modal');
     if (!modal) {
@@ -463,13 +519,16 @@ function showPlatformModal(platform) {
             <div id="platform-modal" class="modal hidden">
                 <div class="modal-overlay"></div>
                 <div class="modal-content">
-                    <button class="modal-close" onclick="document.getElementById('platform-modal').classList.add('hidden');document.body.style.overflow='';">×</button>
+                    <button class="modal-close">&times;</button>
                     <div class="modal-header">
                         <span class="modal-icon" id="platform-modal-icon">📱</span>
-                        <h2 id="platform-modal-title">Platform Analysis</h2>
+                        <h3 class="modal-title" id="platform-modal-title">Platform Analysis</h3>
                         <div id="platform-modal-status"></div>
                     </div>
                     <div class="modal-body" id="platform-modal-body"></div>
+                    <div class="modal-footer">
+                        <button class="btn btn-primary btn-lg" onclick="document.getElementById('platform-modal').classList.add('hidden');document.body.style.overflow='';">Got It!</button>
+                    </div>
                 </div>
             </div>
         `;
@@ -493,10 +552,13 @@ function showPlatformModal(platform) {
     
     if (modalBody) {
         let html = '<h4>Account Signals We Analyze:</h4><ul class="modal-check-list">';
-        if (platform.accountChecks) {
+        if (platform.accountChecks && platform.accountChecks.length > 0) {
             platform.accountChecks.slice(0, 6).forEach(check => {
                 html += `<li>✓ ${check}</li>`;
             });
+        } else {
+            html += '<li>✓ Account visibility analysis</li>';
+            html += '<li>✓ Search presence detection</li>';
         }
         html += '</ul>';
         
@@ -511,58 +573,56 @@ function showPlatformModal(platform) {
     document.body.style.overflow = 'hidden';
     
     // Close on overlay click
-    modal.querySelector('.modal-overlay').onclick = () => {
-        modal.classList.add('hidden');
-        document.body.style.overflow = '';
-    };
+    const overlay = modal.querySelector('.modal-overlay');
+    if (overlay) {
+        overlay.onclick = () => {
+            modal.classList.add('hidden');
+            document.body.style.overflow = '';
+        };
+    }
+    
+    // Close on X button
+    const closeBtn = modal.querySelector('.modal-close');
+    if (closeBtn) {
+        closeBtn.onclick = () => {
+            modal.classList.add('hidden');
+            document.body.style.overflow = '';
+        };
+    }
 }
 
 // ============================================
 // INFO MODAL
 // ============================================
 function showInfoModal() {
-    let modal = document.getElementById('checker-info-modal');
-    if (!modal) {
-        const modalHtml = `
-            <div id="checker-info-modal" class="modal hidden">
-                <div class="modal-overlay"></div>
-                <div class="modal-content">
-                    <button class="modal-close" onclick="document.getElementById('checker-info-modal').classList.add('hidden');document.body.style.overflow='';">×</button>
-                    <div class="modal-header">
-                        <span class="modal-icon">👤</span>
-                        <h2>Account Checker</h2>
-                    </div>
-                    <div class="modal-body">
-                        <p>The Account Checker analyzes your social media account for signs of shadowbanning using <strong>4 independent factors</strong>:</p>
-                        <ul class="modal-check-list">
-                            <li>📡 <strong>Platform API</strong> - Direct query of platform data</li>
-                            <li>🌐 <strong>Web Analysis</strong> - Profile visibility from logged-out view</li>
-                            <li>📊 <strong>Historical Data</strong> - Comparison with baseline patterns</li>
-                            <li>#️⃣ <strong>Hashtag Database</strong> - Check for restricted tag usage</li>
-                        </ul>
-                        <p class="modal-note">💡 <strong>For Twitter/X:</strong> Complete the optional engagement test for enhanced accuracy. This lets us verify your actions are visible to other accounts.</p>
-                    </div>
-                </div>
-            </div>
-        `;
-        document.body.insertAdjacentHTML('beforeend', modalHtml);
-        modal = document.getElementById('checker-info-modal');
+    const modal = document.getElementById('checker-info-modal');
+    if (modal) {
+        modal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+        
+        const overlay = modal.querySelector('.modal-overlay');
+        if (overlay) {
+            overlay.onclick = () => {
+                modal.classList.add('hidden');
+                document.body.style.overflow = '';
+            };
+        }
+        
+        const closeBtn = modal.querySelector('.modal-close');
+        if (closeBtn) {
+            closeBtn.onclick = () => {
+                modal.classList.add('hidden');
+                document.body.style.overflow = '';
+            };
+        }
     }
-    
-    modal.classList.remove('hidden');
-    document.body.style.overflow = 'hidden';
-    
-    modal.querySelector('.modal-overlay').onclick = () => {
-        modal.classList.add('hidden');
-        document.body.style.overflow = '';
-    };
 }
 
 // ============================================
 // TOAST
 // ============================================
 function showToast(message, type = 'info') {
-    if (window.showToast) {
+    if (window.showToast && typeof window.showToast === 'function') {
         window.showToast(message, type);
     } else {
         alert(message);

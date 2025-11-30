@@ -1,504 +1,785 @@
 /* =============================================================================
-   DEMO-DATA.JS - CENTRALIZED MOCK DATA
+   DEMO-DATA.JS - Demo Result Data for Testing
    ShadowBanCheck.io
    
-   All demo/mock data for testing UI flows before API integration.
-   When ready to go live, swap this file's exports with real API calls.
-   
-   Last Updated: 2025
+   Provides realistic demo data for testing the results page
    ============================================================================= */
 
-window.DemoData = {
-    
-    // =========================================================================
-    // TWITTER/X DEMO RESULTS
-    // =========================================================================
+(function() {
+'use strict';
+
+// ============================================
+// DEMO RESULTS DATABASE
+// ============================================
+const demoResults = {
+    // Twitter/X Demo Results
     twitter: {
-        // Account check demo
-        accountCheck: {
+        powerCheck: {
             platform: 'twitter',
-            username: 'demo_user',
-            displayName: 'Demo User',
-            profileUrl: 'https://twitter.com/demo_user',
-            timestamp: new Date().toISOString(),
-            probability: 42,
-            verdict: 'Likely Limited',
-            verdictClass: 'warning',
-            
-            // 5 Factor Results
-            factors: {
-                api: {
-                    status: 'warning',
-                    score: 35,
-                    finding: 'API indicates account exists but has limited visibility flags',
-                    signals: [
-                        { name: 'Account exists', status: 'good', value: true },
-                        { name: 'Account suspended', status: 'good', value: false },
-                        { name: 'Account protected', status: 'good', value: false },
-                        { name: 'Has visibility warnings', status: 'warning', value: true },
-                    ]
-                },
-                web: {
-                    status: 'warning',
-                    score: 45,
-                    finding: 'Profile appears in some searches but not others',
-                    signals: [
-                        { name: 'Profile accessible logged out', status: 'good', value: true },
-                        { name: 'Appears in search (logged out)', status: 'warning', value: 'partial' },
-                        { name: 'Appears in search (logged in)', status: 'good', value: true },
-                        { name: 'Appears in search (incognito)', status: 'warning', value: 'partial' },
-                    ]
-                },
-                historical: {
-                    status: 'neutral',
-                    score: 20,
-                    finding: 'No historical data available for free checks',
-                    signals: [
-                        { name: 'Historical tracking', status: 'neutral', value: 'Not available (Free tier)' },
-                    ],
-                    upgradeNote: 'Upgrade to Pro for historical tracking and trend analysis'
-                },
-                hashtag: {
-                    status: 'warning',
-                    score: 55,
-                    finding: '1 restricted hashtag detected in recent posts',
-                    signals: [
-                        { name: 'Banned hashtags found', status: 'good', value: 0 },
-                        { name: 'Restricted hashtags found', status: 'warning', value: 1 },
-                        { name: 'Low-reach hashtags found', status: 'neutral', value: 3 },
-                    ],
-                    flaggedHashtags: [
-                        { tag: '#crypto', risk: 'restricted', reason: 'High spam association' },
-                    ]
-                },
-                ip: {
-                    status: 'good',
+            platformName: 'Twitter/X',
+            platformIcon: '𝕏',
+            probability: 28,
+            checkType: 'power',
+            factorsUsed: 5,
+            factors: [
+                { 
+                    name: 'Platform APIs', 
+                    icon: '🔌',
+                    status: 'complete', 
                     score: 15,
-                    finding: 'Residential IP detected, no VPN/proxy flags',
-                    signals: [
-                        { name: 'IP type', status: 'good', value: 'Residential' },
-                        { name: 'VPN detected', status: 'good', value: false },
-                        { name: 'Proxy detected', status: 'good', value: false },
-                        { name: 'Datacenter IP', status: 'good', value: false },
-                        { name: 'Country', status: 'neutral', value: 'US' },
-                    ]
+                    finding: 'Account active, no API flags detected',
+                    details: 'Direct API query returned normal account status'
+                },
+                { 
+                    name: 'Web Analysis', 
+                    icon: '🔍',
+                    status: 'complete', 
+                    score: 20,
+                    finding: 'Mixed search visibility results',
+                    details: 'Profile visible logged-in, reduced visibility logged-out'
+                },
+                { 
+                    name: 'Historical Data', 
+                    icon: '📊',
+                    status: 'complete', 
+                    score: 0,
+                    finding: 'No historical data available (Free tier)',
+                    details: 'Upgrade to Pro to track changes over time'
+                },
+                { 
+                    name: 'Hashtag Database', 
+                    icon: '#️⃣',
+                    status: 'complete', 
+                    score: 5,
+                    finding: 'Post contains 1 restricted hashtag',
+                    details: '#followback is commonly restricted'
+                },
+                { 
+                    name: 'Content & Links', 
+                    icon: '📝',
+                    status: 'complete', 
+                    score: 8,
+                    finding: 'Bio contains shortened link',
+                    details: 'Link shorteners (bit.ly) may reduce reach'
                 }
-            },
-            
-            // Engagement test results (if completed)
-            engagementTest: {
-                completed: true,
-                stepsCompleted: 3,
-                totalSteps: 4,
-                results: {
-                    follow: { completed: true, visible: true },
-                    like: { completed: true, visible: true },
-                    retweet: { completed: true, visible: false, note: 'Retweet not appearing on timeline' },
-                    reply: { completed: false, visible: null },
-                },
-                finding: 'Retweets may be suppressed - not visible on our timeline'
-            },
-            
-            // Platform-specific checks
-            platformChecks: {
-                searchSuggestionBan: { status: 'good', value: false, label: 'Search suggestion ban' },
-                searchBan: { status: 'warning', value: 'partial', label: 'Search ban' },
-                ghostBan: { status: 'good', value: false, label: 'Ghost ban' },
-                replyDeboosting: { status: 'warning', value: true, label: 'Reply deboosting (QFD)' },
-                sensitiveMedia: { status: 'good', value: false, label: 'Sensitive media flag' },
-                verification: { status: 'neutral', value: 'none', label: 'Verification status' },
-            },
-            
-            // Content scan
-            contentScan: {
-                flaggedTermsFound: 2,
-                terms: [
-                    { term: 'crypto', risk: 'medium', context: 'Financial topic - may reduce reach' },
-                    { term: 'BREAKING', risk: 'low', context: 'Engagement bait pattern detected' },
-                ]
-            },
-            
-            // Key findings for summary
-            keyFindings: [
-                { status: 'good', text: 'Account accessible and not suspended' },
-                { status: 'warning', text: 'Partial visibility in logged-out search' },
-                { status: 'warning', text: 'Reply deboosting (QFD) detected' },
-                { status: 'warning', text: 'Retweets may not be visible to all users' },
-                { status: 'neutral', text: 'No verification badge (may affect reach)' },
             ],
-            
-            // Recommendations
+            findings: [
+                { type: 'good', text: 'Account appears in search when logged in' },
+                { type: 'good', text: 'Profile is public and accessible' },
+                { type: 'warning', text: 'Reduced visibility in logged-out search' },
+                { type: 'warning', text: 'Post contains restricted hashtag #followback' },
+                { type: 'info', text: 'Bio link uses shortener (bit.ly)' }
+            ],
+            contentAnalysis: {
+                bioFlags: ['Link shortener detected: bit.ly'],
+                postFlags: ['Restricted hashtag: #followback'],
+                linkFlags: [],
+                taggedUserFlags: []
+            },
             recommendations: [
-                {
-                    priority: 'high',
-                    title: 'Address Reply Deboosting',
-                    description: 'Your replies may be hidden behind "Show more replies". Avoid aggressive engagement patterns and reduce reply frequency for a few days.',
-                },
-                {
-                    priority: 'medium',
-                    title: 'Review Hashtag Usage',
-                    description: 'The hashtag #crypto is restricted. Consider using alternatives like #blockchain or #web3.',
-                },
-                {
-                    priority: 'low',
-                    title: 'Consider Verification',
-                    description: 'Verified accounts typically receive better visibility in search and recommendations.',
-                },
+                'Remove or replace restricted hashtags with alternatives',
+                'Consider using full URLs instead of link shorteners in bio',
+                'Continue engaging authentically with your audience',
+                'Post consistently to maintain algorithmic favor',
+                'Consider verification for improved visibility'
             ]
         },
-        
-        // Power check demo (includes post analysis)
-        powerCheck: {
-            // Inherits from accountCheck, adds:
-            postUrl: 'https://twitter.com/demo_user/status/1234567890',
-            postId: '1234567890',
-            postContent: 'Just launched my new crypto project! 🚀 Check it out! #crypto #web3 #BREAKING',
-            postTimestamp: new Date(Date.now() - 86400000).toISOString(), // 1 day ago
-            
-            postAnalysis: {
-                visible: true,
-                visibleInSearch: 'partial',
-                engagementRate: 2.3,
-                expectedEngagementRate: 4.1,
-                engagementAnomaly: true,
-                
-                contentFlags: [
-                    { type: 'hashtag', value: '#crypto', risk: 'medium' },
-                    { type: 'pattern', value: 'ALL CAPS word', risk: 'low' },
-                    { type: 'emoji', value: 'Rocket emoji', risk: 'low', note: 'Often associated with promotional content' },
-                ],
-                
-                linkAnalysis: null, // No links in this post
-            }
+        accountCheck: {
+            platform: 'twitter',
+            platformName: 'Twitter/X',
+            platformIcon: '𝕏',
+            probability: 22,
+            checkType: 'account',
+            factorsUsed: 5,
+            factors: [
+                { 
+                    name: 'Platform APIs', 
+                    icon: '🔌',
+                    status: 'complete', 
+                    score: 10,
+                    finding: 'Account exists and is active',
+                    details: 'API returned normal account status'
+                },
+                { 
+                    name: 'Web Analysis', 
+                    icon: '🔍',
+                    status: 'complete', 
+                    score: 15,
+                    finding: 'Profile visible in all search contexts',
+                    details: 'Passed logged-in, logged-out, and incognito tests'
+                },
+                { 
+                    name: 'Historical Data', 
+                    icon: '📊',
+                    status: 'complete', 
+                    score: 0,
+                    finding: 'No historical baseline (Free tier)',
+                    details: 'First analysis - no comparison data available'
+                },
+                { 
+                    name: 'Hashtag Database', 
+                    icon: '#️⃣',
+                    status: 'complete', 
+                    score: 5,
+                    finding: 'Recent posts use safe hashtags',
+                    details: 'Scanned pinned tweet and recent activity'
+                },
+                { 
+                    name: 'Content & Links', 
+                    icon: '📝',
+                    status: 'complete', 
+                    score: 5,
+                    finding: 'Bio content clean, no flagged patterns',
+                    details: 'No flagged words, links appear legitimate'
+                }
+            ],
+            findings: [
+                { type: 'good', text: 'Account appears in all search contexts' },
+                { type: 'good', text: 'Profile is public and fully accessible' },
+                { type: 'good', text: 'No flagged content in bio or pinned tweet' },
+                { type: 'good', text: 'Links in profile pass reputation checks' },
+                { type: 'info', text: 'Account not verified - may affect reach' }
+            ],
+            contentAnalysis: {
+                bioFlags: [],
+                postFlags: [],
+                linkFlags: [],
+                taggedUserFlags: []
+            },
+            recommendations: [
+                'Your account appears healthy - keep up the good work',
+                'Continue posting quality content regularly',
+                'Consider verification for improved discoverability',
+                'Upgrade to Pro to track visibility changes over time'
+            ]
+        },
+        hashtagCheck: {
+            platform: 'twitter',
+            platformName: 'Twitter/X',
+            platformIcon: '𝕏',
+            probability: 45,
+            checkType: 'hashtag',
+            factorsUsed: 3,
+            factors: [
+                { 
+                    name: 'Platform APIs', 
+                    icon: '🔌',
+                    status: 'na', 
+                    score: 0,
+                    finding: 'Not applicable for hashtag checks',
+                    details: 'API queries not used for hashtag analysis'
+                },
+                { 
+                    name: 'Web Analysis', 
+                    icon: '🔍',
+                    status: 'complete', 
+                    score: 20,
+                    finding: 'Hashtag visibility varies by context',
+                    details: 'Some hashtags hidden from non-logged-in users'
+                },
+                { 
+                    name: 'Historical Data', 
+                    icon: '📊',
+                    status: 'complete', 
+                    score: 10,
+                    finding: 'Known restriction patterns detected',
+                    details: 'Based on historical ban wave data'
+                },
+                { 
+                    name: 'Hashtag Database', 
+                    icon: '#️⃣',
+                    status: 'complete', 
+                    score: 25,
+                    finding: '2 of 5 hashtags are restricted',
+                    details: '#followforfollow and #f4f commonly suppressed'
+                },
+                { 
+                    name: 'Content & Links', 
+                    icon: '📝',
+                    status: 'na', 
+                    score: 0,
+                    finding: 'Not applicable for hashtag checks',
+                    details: 'Content analysis not used for hashtag-only checks'
+                }
+            ],
+            findings: [
+                { type: 'danger', text: '#followforfollow - RESTRICTED' },
+                { type: 'danger', text: '#f4f - RESTRICTED' },
+                { type: 'good', text: '#photography - SAFE' },
+                { type: 'good', text: '#sunset - SAFE' },
+                { type: 'good', text: '#nature - SAFE' }
+            ],
+            recommendations: [
+                'Remove #followforfollow and #f4f from your posts',
+                'Use community-focused hashtags instead',
+                'Mix popular and niche hashtags for best reach',
+                'Avoid engagement-bait hashtags'
+            ]
         }
     },
     
-    // =========================================================================
-    // REDDIT DEMO RESULTS
-    // =========================================================================
+    // Instagram Demo Results
+    instagram: {
+        powerCheck: {
+            platform: 'instagram',
+            platformName: 'Instagram',
+            platformIcon: '📸',
+            probability: 35,
+            checkType: 'power',
+            factorsUsed: 5,
+            factors: [
+                { 
+                    name: 'Platform APIs', 
+                    icon: '🔌',
+                    status: 'complete', 
+                    score: 10,
+                    finding: 'Account active, no action blocks',
+                    details: 'No temporary restrictions detected'
+                },
+                { 
+                    name: 'Web Analysis', 
+                    icon: '🔍',
+                    status: 'complete', 
+                    score: 25,
+                    finding: 'Post not appearing in hashtag feeds',
+                    details: 'Content may be shadowbanned from hashtag discovery'
+                },
+                { 
+                    name: 'Historical Data', 
+                    icon: '📊',
+                    status: 'complete', 
+                    score: 0,
+                    finding: 'No tracking history (Free tier)',
+                    details: 'Upgrade to Pro for engagement tracking'
+                },
+                { 
+                    name: 'Hashtag Database', 
+                    icon: '#️⃣',
+                    status: 'complete', 
+                    score: 15,
+                    finding: '1 banned hashtag detected',
+                    details: '#adulting is currently banned on Instagram'
+                },
+                { 
+                    name: 'Content & Links', 
+                    icon: '📝',
+                    status: 'complete', 
+                    score: 10,
+                    finding: 'Bio link flagged as affiliate',
+                    details: 'Linktree detected - may affect organic reach'
+                }
+            ],
+            findings: [
+                { type: 'danger', text: 'Post using banned hashtag #adulting' },
+                { type: 'warning', text: 'Post not appearing in hashtag feeds' },
+                { type: 'warning', text: 'Bio contains link aggregator (Linktree)' },
+                { type: 'good', text: 'Account is public and searchable' },
+                { type: 'good', text: 'Profile accessible to all users' }
+            ],
+            contentAnalysis: {
+                bioFlags: ['Link aggregator detected: linktree'],
+                postFlags: ['Banned hashtag: #adulting'],
+                linkFlags: [],
+                taggedUserFlags: []
+            },
+            recommendations: [
+                'Remove #adulting immediately - it\'s currently banned',
+                'Wait 24-48 hours before posting new content',
+                'Consider using direct link instead of Linktree',
+                'Use Instagram\'s built-in link features',
+                'Check our hashtag database before posting'
+            ]
+        },
+        accountCheck: {
+            platform: 'instagram',
+            platformName: 'Instagram',
+            platformIcon: '📸',
+            probability: 18,
+            checkType: 'account',
+            factorsUsed: 5,
+            factors: [
+                { 
+                    name: 'Platform APIs', 
+                    icon: '🔌',
+                    status: 'complete', 
+                    score: 5,
+                    finding: 'Account in good standing',
+                    details: 'No restrictions or warnings on account'
+                },
+                { 
+                    name: 'Web Analysis', 
+                    icon: '🔍',
+                    status: 'complete', 
+                    score: 10,
+                    finding: 'Profile visible in search',
+                    details: 'Appears in username and hashtag search'
+                },
+                { 
+                    name: 'Historical Data', 
+                    icon: '📊',
+                    status: 'complete', 
+                    score: 0,
+                    finding: 'No baseline data (Free tier)',
+                    details: 'First analysis for this account'
+                },
+                { 
+                    name: 'Hashtag Database', 
+                    icon: '#️⃣',
+                    status: 'complete', 
+                    score: 0,
+                    finding: 'Recent posts use safe hashtags',
+                    details: 'No banned or restricted hashtags detected'
+                },
+                { 
+                    name: 'Content & Links', 
+                    icon: '📝',
+                    status: 'complete', 
+                    score: 3,
+                    finding: 'Bio clean, links legitimate',
+                    details: 'No flagged content patterns detected'
+                }
+            ],
+            findings: [
+                { type: 'good', text: 'Account appears in search results' },
+                { type: 'good', text: 'Profile fully accessible' },
+                { type: 'good', text: 'No banned hashtags in recent posts' },
+                { type: 'good', text: 'Bio content passes all checks' },
+                { type: 'info', text: 'Consider verification for more reach' }
+            ],
+            contentAnalysis: {
+                bioFlags: [],
+                postFlags: [],
+                linkFlags: [],
+                taggedUserFlags: []
+            },
+            recommendations: [
+                'Your account looks healthy!',
+                'Continue using diverse, relevant hashtags',
+                'Maintain consistent posting schedule',
+                'Engage authentically with your community'
+            ]
+        }
+    },
+    
+    // Reddit Demo Results
     reddit: {
+        powerCheck: {
+            platform: 'reddit',
+            platformName: 'Reddit',
+            platformIcon: '🤖',
+            probability: 42,
+            checkType: 'power',
+            factorsUsed: 4, // No hashtag check for Reddit
+            factors: [
+                { 
+                    name: 'Platform APIs', 
+                    icon: '🔌',
+                    status: 'complete', 
+                    score: 15,
+                    finding: 'Account active, karma positive',
+                    details: 'API shows normal account status'
+                },
+                { 
+                    name: 'Web Analysis', 
+                    icon: '🔍',
+                    status: 'complete', 
+                    score: 25,
+                    finding: 'Post visibility limited in some subreddits',
+                    details: 'Content visible but not appearing in r/all'
+                },
+                { 
+                    name: 'Historical Data', 
+                    icon: '📊',
+                    status: 'complete', 
+                    score: 5,
+                    finding: 'Previous bans detected',
+                    details: 'Account has 1 prior subreddit ban'
+                },
+                { 
+                    name: 'Hashtag Database', 
+                    icon: '#️⃣',
+                    status: 'na', 
+                    score: 0,
+                    finding: 'Not applicable for Reddit',
+                    details: 'Reddit does not use hashtags'
+                },
+                { 
+                    name: 'Content & Links', 
+                    icon: '📝',
+                    status: 'complete', 
+                    score: 12,
+                    finding: 'Self-promotion ratio high',
+                    details: 'Most posts link to same domain - may trigger spam filters'
+                }
+            ],
+            findings: [
+                { type: 'warning', text: 'Post not appearing in r/all' },
+                { type: 'warning', text: 'High self-promotion ratio detected' },
+                { type: 'warning', text: 'Previously banned from r/technology' },
+                { type: 'good', text: 'Karma score is positive (1,234)' },
+                { type: 'good', text: 'Account age > 1 year' }
+            ],
+            contentAnalysis: {
+                bioFlags: [],
+                postFlags: ['High self-promotion ratio: 80% posts link to same domain'],
+                linkFlags: ['Repeated domain: myblog.com (flagged as potential spam)'],
+                taggedUserFlags: []
+            },
+            subredditBans: [
+                { subreddit: 'r/technology', reason: 'Self-promotion', date: '2024-08-15' }
+            ],
+            karma: {
+                total: 1234,
+                post: 456,
+                comment: 778,
+                age: '2 years'
+            },
+            recommendations: [
+                'Diversify your content sources - Reddit\'s 10% rule',
+                'Engage more in comments before posting links',
+                'Build karma in new subreddits before posting',
+                'Appeal your r/technology ban if possible',
+                'Post more text-based content to balance ratio'
+            ]
+        },
         accountCheck: {
             platform: 'reddit',
-            username: 'demo_redditor',
-            displayName: 'demo_redditor',
-            profileUrl: 'https://reddit.com/user/demo_redditor',
-            timestamp: new Date().toISOString(),
-            probability: 28,
-            verdict: 'Likely Visible',
-            verdictClass: 'good',
-            
-            factors: {
-                api: {
-                    status: 'good',
+            platformName: 'Reddit',
+            platformIcon: '🤖',
+            probability: 25,
+            checkType: 'account',
+            factorsUsed: 4,
+            factors: [
+                { 
+                    name: 'Platform APIs', 
+                    icon: '🔌',
+                    status: 'complete', 
                     score: 10,
-                    finding: 'Account exists and is not shadowbanned via API check',
-                    signals: [
-                        { name: 'Account exists', status: 'good', value: true },
-                        { name: 'Account suspended', status: 'good', value: false },
-                        { name: 'Shadowban status', status: 'good', value: false },
-                    ]
+                    finding: 'Account in good standing',
+                    details: 'No site-wide restrictions'
                 },
-                web: {
-                    status: 'good',
+                { 
+                    name: 'Web Analysis', 
+                    icon: '🔍',
+                    status: 'complete', 
                     score: 15,
-                    finding: 'Profile and posts visible when logged out',
-                    signals: [
-                        { name: 'Profile visible logged out', status: 'good', value: true },
-                        { name: 'Recent posts visible', status: 'good', value: true },
-                        { name: 'Comments visible in threads', status: 'good', value: true },
-                    ]
+                    finding: 'Profile visible in search',
+                    details: 'Username searchable, posts indexed'
                 },
-                historical: {
-                    status: 'neutral',
-                    score: 20,
-                    finding: 'No historical data available for free checks',
-                    signals: [
-                        { name: 'Historical tracking', status: 'neutral', value: 'Not available (Free tier)' },
-                    ],
-                    upgradeNote: 'Upgrade to Pro for karma trend tracking'
+                { 
+                    name: 'Historical Data', 
+                    icon: '📊',
+                    status: 'complete', 
+                    score: 0,
+                    finding: 'No prior issues detected',
+                    details: 'Clean account history'
                 },
-                hashtag: null, // Reddit doesn't use hashtags
-                ip: {
-                    status: 'warning',
-                    score: 35,
-                    finding: 'VPN detected - some subreddits block VPN users',
-                    signals: [
-                        { name: 'IP type', status: 'warning', value: 'VPN' },
-                        { name: 'VPN detected', status: 'warning', value: true },
-                        { name: 'Known VPN provider', status: 'warning', value: 'NordVPN' },
-                        { name: 'Country', status: 'neutral', value: 'US' },
-                    ]
+                { 
+                    name: 'Hashtag Database', 
+                    icon: '#️⃣',
+                    status: 'na', 
+                    score: 0,
+                    finding: 'N/A for Reddit',
+                    details: 'Reddit does not use hashtags'
+                },
+                { 
+                    name: 'Content & Links', 
+                    icon: '📝',
+                    status: 'complete', 
+                    score: 5,
+                    finding: 'Content patterns normal',
+                    details: 'No spam indicators in recent activity'
                 }
-            },
-            
-            // Reddit-specific: NO engagement test
-            engagementTest: null,
-            
-            // Reddit-specific checks
-            platformChecks: {
-                shadowbanned: { status: 'good', value: false, label: 'Shadowbanned' },
-                profileVisible: { status: 'good', value: true, label: 'Profile visible' },
-                canPost: { status: 'good', value: true, label: 'Can post' },
-                canComment: { status: 'good', value: true, label: 'Can comment' },
-            },
-            
-            // Reddit-specific: Subreddit bans
-            subredditBans: {
-                found: 1,
-                bans: [
-                    { 
-                        subreddit: 'r/cryptocurrency', 
-                        reason: 'Low karma threshold', 
-                        type: 'karma_restriction',
-                        canAppeal: true 
-                    },
-                ]
-            },
-            
-            // Reddit-specific: Karma analysis
-            karmaAnalysis: {
-                postKarma: 1250,
-                commentKarma: 3420,
-                totalKarma: 4670,
-                accountAge: '2 years',
-                karmaLevel: 'medium',
-                restrictions: [
-                    'Some subreddits require 5000+ karma to post',
-                    'New posts may be auto-filtered in high-karma subreddits',
-                ]
-            },
-            
-            // NO content scan or hashtag section for Reddit account checks
-            contentScan: null,
-            
-            keyFindings: [
-                { status: 'good', text: 'Account is not shadowbanned' },
-                { status: 'good', text: 'Profile and posts visible to others' },
-                { status: 'warning', text: 'VPN detected - may affect some subreddits' },
-                { status: 'warning', text: 'Banned from r/cryptocurrency (karma threshold)' },
-                { status: 'neutral', text: 'Karma level: Medium (4,670)' },
             ],
-            
+            findings: [
+                { type: 'good', text: 'Account is active and visible' },
+                { type: 'good', text: 'Positive karma score' },
+                { type: 'good', text: 'No subreddit bans detected' },
+                { type: 'good', text: 'Content patterns appear normal' },
+                { type: 'info', text: 'Account age helps credibility' }
+            ],
+            contentAnalysis: {
+                bioFlags: [],
+                postFlags: [],
+                linkFlags: [],
+                taggedUserFlags: []
+            },
+            karma: {
+                total: 2500,
+                post: 1200,
+                comment: 1300,
+                age: '3 years'
+            },
             recommendations: [
-                {
-                    priority: 'medium',
-                    title: 'VPN May Cause Issues',
-                    description: 'Some subreddits block VPN users or require additional verification. Consider disabling VPN when posting to sensitive subreddits.',
-                },
-                {
-                    priority: 'low',
-                    title: 'Build Karma for Restricted Subreddits',
-                    description: 'You\'re banned from r/cryptocurrency due to karma threshold. Participate in other subreddits to build karma.',
-                },
+                'Your Reddit account looks healthy',
+                'Continue diverse participation across subreddits',
+                'Maintain the 10% self-promotion rule',
+                'Keep engaging authentically in comments'
             ]
-        },
-        
+        }
+    },
+    
+    // TikTok Demo Results
+    tiktok: {
         powerCheck: {
-            // Inherits from accountCheck, adds post analysis
-            postUrl: 'https://reddit.com/r/technology/comments/abc123/my_post_title',
-            postId: 'abc123',
-            subreddit: 'r/technology',
-            postTitle: 'Interesting tech discussion',
-            postTimestamp: new Date(Date.now() - 7200000).toISOString(), // 2 hours ago
-            
-            postAnalysis: {
-                visible: true,
-                visibleInSubreddit: true,
-                removedByAutomod: false,
-                removedByMod: false,
-                
-                subredditRules: {
-                    checked: true,
-                    violations: [],
-                },
-                
-                contentFlags: [], // No issues found
-            }
-        }
-    },
-    
-    // =========================================================================
-    // HASHTAG CHECK DEMO RESULTS
-    // =========================================================================
-    hashtagCheck: {
-        twitter: {
-            platform: 'twitter',
-            timestamp: new Date().toISOString(),
-            hashtagsChecked: 5,
-            overallRisk: 'medium',
-            probability: 38,
-            
-            results: [
+            platform: 'tiktok',
+            platformName: 'TikTok',
+            platformIcon: '🎵',
+            probability: 52,
+            checkType: 'power',
+            factorsUsed: 5,
+            factors: [
                 { 
-                    hashtag: '#crypto', 
-                    status: 'restricted',
-                    risk: 'medium',
-                    reason: 'High spam association, may reduce reach',
-                    alternative: '#blockchain',
+                    name: 'Platform APIs', 
+                    icon: '🔌',
+                    status: 'complete', 
+                    score: 20,
+                    finding: 'Video marked for limited distribution',
+                    details: 'Content review flag detected'
                 },
                 { 
-                    hashtag: '#viral', 
-                    status: 'caution',
-                    risk: 'low',
-                    reason: 'Overused hashtag, low discovery value',
-                    alternative: null,
+                    name: 'Web Analysis', 
+                    icon: '🔍',
+                    status: 'complete', 
+                    score: 25,
+                    finding: 'Video not appearing on For You page',
+                    details: 'Limited to followers only currently'
                 },
                 { 
-                    hashtag: '#technology', 
-                    status: 'safe',
-                    risk: 'none',
-                    reason: null,
-                    alternative: null,
+                    name: 'Historical Data', 
+                    icon: '📊',
+                    status: 'complete', 
+                    score: 0,
+                    finding: 'No baseline (Free tier)',
+                    details: 'Upgrade to track view patterns'
                 },
                 { 
-                    hashtag: '#innovation', 
-                    status: 'safe',
-                    risk: 'none',
-                    reason: null,
-                    alternative: null,
+                    name: 'Hashtag Database', 
+                    icon: '#️⃣',
+                    status: 'complete', 
+                    score: 10,
+                    finding: 'Using borderline hashtag',
+                    details: '#viral sometimes triggers review'
                 },
                 { 
-                    hashtag: '#adult', 
-                    status: 'banned',
-                    risk: 'high',
-                    reason: 'Banned hashtag - will severely limit post visibility',
-                    alternative: null,
-                },
+                    name: 'Content & Links', 
+                    icon: '📝',
+                    status: 'complete', 
+                    score: 15,
+                    finding: 'Bio contains external link',
+                    details: 'External links may limit distribution'
+                }
             ],
-            
-            summary: {
-                safe: 2,
-                caution: 1,
-                restricted: 1,
-                banned: 1,
+            findings: [
+                { type: 'danger', text: 'Video flagged for limited distribution' },
+                { type: 'warning', text: 'Not appearing on For You page' },
+                { type: 'warning', text: '#viral hashtag under review' },
+                { type: 'warning', text: 'External link in bio may limit reach' },
+                { type: 'good', text: 'Account is public' }
+            ],
+            contentAnalysis: {
+                bioFlags: ['External link detected - may limit distribution'],
+                postFlags: ['Borderline hashtag: #viral'],
+                linkFlags: [],
+                taggedUserFlags: []
             },
-            
             recommendations: [
-                'Remove #adult - this hashtag is banned and will severely limit your post',
-                'Consider replacing #crypto with #blockchain for better reach',
-                '#viral is overused - consider more specific hashtags for your niche',
+                'Remove #viral and use niche-specific hashtags',
+                'Wait 24 hours and repost if views are unusually low',
+                'Consider removing external link from bio temporarily',
+                'Use TikTok\'s native features for links',
+                'Check video for any borderline content'
             ]
-        }
-    },
-    
-    // =========================================================================
-    // IP DETECTION DEMO DATA
-    // =========================================================================
-    ipData: {
-        residential: {
-            ip: '192.168.1.42',
-            type: 'Residential',
-            typeClass: 'good',
-            vpn: false,
-            proxy: false,
-            datacenter: false,
-            country: 'US',
-            countryFlag: '🇺🇸',
-            city: 'New York',
-            isp: 'Verizon Fios',
-            risk: 'low',
         },
-        vpn: {
-            ip: '45.76.123.45',
-            type: 'VPN',
-            typeClass: 'warning',
-            vpn: true,
-            proxy: false,
-            datacenter: true,
-            country: 'US',
-            countryFlag: '🇺🇸',
-            city: 'Los Angeles',
-            isp: 'NordVPN',
-            risk: 'medium',
-            warning: 'VPN detected - some platforms may limit visibility',
-        },
-        datacenter: {
-            ip: '104.21.56.78',
-            type: 'Datacenter',
-            typeClass: 'danger',
-            vpn: false,
-            proxy: true,
-            datacenter: true,
-            country: 'DE',
-            countryFlag: '🇩🇪',
-            city: 'Frankfurt',
-            isp: 'AWS',
-            risk: 'high',
-            warning: 'Datacenter IP detected - platforms may flag this as suspicious',
-        }
-    },
-    
-    // =========================================================================
-    // HELPER FUNCTIONS
-    // =========================================================================
-    
-    /**
-     * Get demo result for a platform and check type
-     * @param {string} platform - Platform ID
-     * @param {string} checkType - 'accountCheck', 'powerCheck', 'hashtagCheck'
-     * @returns {object} Demo data object
-     */
-    getResult: function(platform, checkType) {
-        if (platform === 'twitter' || platform === 'reddit') {
-            const platformData = this[platform];
-            if (platformData && platformData[checkType]) {
-                // Return a copy to avoid mutations
-                return JSON.parse(JSON.stringify(platformData[checkType]));
-            }
-        }
-        if (checkType === 'hashtagCheck' && this.hashtagCheck[platform]) {
-            return JSON.parse(JSON.stringify(this.hashtagCheck[platform]));
-        }
-        return null;
-    },
-    
-    /**
-     * Get demo IP data
-     * @param {string} type - 'residential', 'vpn', 'datacenter'
-     * @returns {object} IP data object
-     */
-    getIpData: function(type = 'residential') {
-        return JSON.parse(JSON.stringify(this.ipData[type] || this.ipData.residential));
-    },
-    
-    /**
-     * Simulate API delay
-     * @param {number} ms - Milliseconds to delay
-     * @returns {Promise} Promise that resolves after delay
-     */
-    simulateDelay: function(ms = 1500) {
-        return new Promise(resolve => setTimeout(resolve, ms));
-    },
-    
-    /**
-     * Get random probability for testing variations
-     * @param {number} min - Minimum value
-     * @param {number} max - Maximum value
-     * @returns {number} Random probability
-     */
-    getRandomProbability: function(min = 10, max = 80) {
-        return Math.floor(Math.random() * (max - min + 1)) + min;
-    },
-    
-    /**
-     * Get verdict based on probability
-     * @param {number} probability - Probability score 0-100
-     * @returns {object} Verdict object with text and class
-     */
-    getVerdict: function(probability) {
-        if (probability <= 20) {
-            return { text: 'Likely Visible', class: 'good' };
-        } else if (probability <= 40) {
-            return { text: 'Mostly Visible', class: 'good' };
-        } else if (probability <= 60) {
-            return { text: 'Likely Limited', class: 'warning' };
-        } else if (probability <= 80) {
-            return { text: 'Probably Restricted', class: 'danger' };
-        } else {
-            return { text: 'High Restriction Risk', class: 'danger' };
+        accountCheck: {
+            platform: 'tiktok',
+            platformName: 'TikTok',
+            platformIcon: '🎵',
+            probability: 20,
+            checkType: 'account',
+            factorsUsed: 5,
+            factors: [
+                { 
+                    name: 'Platform APIs', 
+                    icon: '🔌',
+                    status: 'complete', 
+                    score: 5,
+                    finding: 'Account in good standing',
+                    details: 'No violations on record'
+                },
+                { 
+                    name: 'Web Analysis', 
+                    icon: '🔍',
+                    status: 'complete', 
+                    score: 10,
+                    finding: 'Profile discoverable',
+                    details: 'Appears in search results'
+                },
+                { 
+                    name: 'Historical Data', 
+                    icon: '📊',
+                    status: 'complete', 
+                    score: 0,
+                    finding: 'No baseline data',
+                    details: 'First analysis for this account'
+                },
+                { 
+                    name: 'Hashtag Database', 
+                    icon: '#️⃣',
+                    status: 'complete', 
+                    score: 5,
+                    finding: 'Recent videos use safe hashtags',
+                    details: 'No restricted hashtags detected'
+                },
+                { 
+                    name: 'Content & Links', 
+                    icon: '📝',
+                    status: 'complete', 
+                    score: 0,
+                    finding: 'Bio clean, no red flags',
+                    details: 'Content patterns appear normal'
+                }
+            ],
+            findings: [
+                { type: 'good', text: 'Account is active and visible' },
+                { type: 'good', text: 'No community guidelines strikes' },
+                { type: 'good', text: 'Recent content using safe hashtags' },
+                { type: 'good', text: 'Bio passes content checks' },
+                { type: 'info', text: 'Pro accounts get more analytics' }
+            ],
+            contentAnalysis: {
+                bioFlags: [],
+                postFlags: [],
+                linkFlags: [],
+                taggedUserFlags: []
+            },
+            recommendations: [
+                'Your TikTok account appears healthy',
+                'Continue creating original content',
+                'Engage with your niche community',
+                'Use trending sounds but avoid overused ones'
+            ]
         }
     }
 };
 
-// Log demo data loaded
-console.log('✅ Demo data loaded - ready for testing');
+// ============================================
+// PUBLIC API
+// ============================================
+window.DemoData = {
+    /**
+     * Get demo result for a platform and check type
+     * @param {string} platformId - Platform identifier (twitter, instagram, etc.)
+     * @param {string} checkType - Check type (powerCheck, accountCheck, hashtagCheck)
+     * @returns {Object} Demo result data
+     */
+    getResult: function(platformId, checkType) {
+        const platform = demoResults[platformId];
+        if (!platform) {
+            console.warn(`No demo data for platform: ${platformId}`);
+            return this.getDefaultResult(platformId, checkType);
+        }
+        
+        const result = platform[checkType];
+        if (!result) {
+            console.warn(`No demo data for ${platformId} ${checkType}`);
+            return this.getDefaultResult(platformId, checkType);
+        }
+        
+        // Add timestamp
+        return {
+            ...result,
+            timestamp: new Date().toISOString()
+        };
+    },
+    
+    /**
+     * Get default result when no specific demo exists
+     */
+    getDefaultResult: function(platformId, checkType) {
+        const platform = window.getPlatformById ? window.getPlatformById(platformId) : null;
+        const isReddit = platformId === 'reddit';
+        const isHashtag = checkType === 'hashtagCheck' || checkType === 'hashtag';
+        
+        return {
+            platform: platformId,
+            platformName: platform ? platform.name : 'Platform',
+            platformIcon: platform ? platform.icon : '🔍',
+            probability: Math.floor(Math.random() * 30) + 15,
+            checkType: checkType,
+            factorsUsed: isHashtag ? 3 : (isReddit ? 4 : 5),
+            factors: [
+                { 
+                    name: 'Platform APIs', 
+                    icon: '🔌',
+                    status: isHashtag ? 'na' : 'complete', 
+                    score: 10,
+                    finding: isHashtag ? 'N/A for hashtag checks' : 'Account queried successfully'
+                },
+                { 
+                    name: 'Web Analysis', 
+                    icon: '🔍',
+                    status: 'complete', 
+                    score: 15,
+                    finding: 'Web visibility tests completed'
+                },
+                { 
+                    name: 'Historical Data', 
+                    icon: '📊',
+                    status: 'complete', 
+                    score: 0,
+                    finding: 'No baseline data (Free tier)'
+                },
+                { 
+                    name: 'Hashtag Database', 
+                    icon: '#️⃣',
+                    status: isReddit ? 'na' : 'complete', 
+                    score: 5,
+                    finding: isReddit ? 'N/A for Reddit' : 'Hashtags checked'
+                },
+                { 
+                    name: 'Content & Links', 
+                    icon: '📝',
+                    status: isHashtag ? 'na' : 'complete', 
+                    score: 5,
+                    finding: isHashtag ? 'N/A for hashtag checks' : 'Bio and content analyzed'
+                }
+            ],
+            findings: [
+                { type: 'good', text: 'Analysis completed successfully' },
+                { type: 'good', text: 'No major issues detected' },
+                { type: 'info', text: 'Upgrade to Pro for detailed tracking' }
+            ],
+            contentAnalysis: {
+                bioFlags: [],
+                postFlags: [],
+                linkFlags: [],
+                taggedUserFlags: []
+            },
+            recommendations: [
+                'Continue monitoring your account regularly',
+                'Check our hashtag database before posting',
+                'Consider upgrading to Pro for historical tracking'
+            ],
+            timestamp: new Date().toISOString()
+        };
+    },
+    
+    /**
+     * Get all available platforms with demo data
+     */
+    getAvailablePlatforms: function() {
+        return Object.keys(demoResults);
+    },
+    
+    /**
+     * Check if demo data exists for a platform
+     */
+    hasDemo: function(platformId) {
+        return !!demoResults[platformId];
+    }
+};
+
+console.log('✅ DemoData loaded with platforms:', Object.keys(demoResults).join(', '));
+
+})();

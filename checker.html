@@ -205,7 +205,7 @@
                 </div>
                 
                 <div class="checker-features">
-                    <span>✓ 4-Factor Detection Engine</span>
+                    <span>✓ 5-Factor Detection Engine</span>
                     <span>✓ Probability score in 60 seconds</span>
                     <span>✓ Permanent results page</span>
                 </div>
@@ -236,7 +236,7 @@
                         <div class="engine-header">
                             <span class="engine-icon-animated">⚙️</span>
                             <div>
-                                <h3>4-Factor Detection Engine</h3>
+                                <h3>5-Factor Detection Engine</h3>
                                 <p class="engine-status">Analyzing account signals...</p>
                             </div>
                         </div>
@@ -272,7 +272,11 @@
                                 <span class="factor-name">Hashtags</span>
                                 <span class="factor-compact-status pending">○</span>
                             </div>
-                            <!-- No IP factor for account checks - doesn't make sense for username lookup -->
+                            <div class="factor-progress" id="factor-5">
+                                <span class="factor-icon">📝</span>
+                                <span class="factor-name">Content</span>
+                                <span class="factor-compact-status pending">○</span>
+                            </div>
                         </div>
                     </div>
                     
@@ -298,7 +302,7 @@
                         
                         <div class="ai-data-flow">
                             <div class="data-stream">
-                                <span class="data-label">4 Factors</span>
+                                <span class="data-label">5 Factors</span>
                                 <div class="data-dots"><span></span><span></span><span></span></div>
                                 <span class="data-label">AI Engine</span>
                                 <div class="data-dots"><span></span><span></span><span></span></div>
@@ -387,14 +391,14 @@
                     </div>
                     
                     <div class="method-card">
-                        <span class="method-icon">🌐</span>
-                        <h4>IP Analysis (Your Connection)</h4>
-                        <p>We analyze YOUR IP for VPN/proxy usage, datacenter flags, and location factors that platforms may flag.</p>
+                        <span class="method-icon">📝</span>
+                        <h4>Content & Links Analysis</h4>
+                        <p>We scan your bio text, pinned posts, and profile links for flagged words, suspicious domains, and patterns that trigger filters.</p>
                     </div>
                 </div>
                 
                 <div class="methodology-note">
-                    <p><strong>Note:</strong> Account checks analyze 4 of our 5 factors, each with multiple signals (account age, follower ratio, posting frequency, etc.). Hashtag Database is primarily used for post/content analysis.</p>
+                    <p><strong>Note:</strong> Account checks analyze all 5 factors: API status, web visibility, historical data, hashtag scanning (recent posts), and content/links analysis (bio + pinned tweet).</p>
                 </div>
             </div>
         </div>
@@ -453,7 +457,7 @@
             <div class="modal-icon">🧠</div>
             <h3 class="modal-title">5-Factor Detection Engine</h3>
             <div class="modal-body">
-                <p class="modal-intro">The Account Checker uses <strong>4 of our 5 detection factors</strong> to calculate probability:</p>
+                <p class="modal-intro">The Account Checker uses <strong>all 5 detection factors</strong> to calculate probability:</p>
                 
                 <ul class="engine-factors">
                     <li class="factor-active">
@@ -480,20 +484,20 @@
                             <span class="factor-desc">Baseline comparisons (Pro only for tracking)</span>
                         </div>
                     </li>
-                    <li class="factor-inactive">
-                        <span class="factor-check">○</span>
+                    <li class="factor-active">
+                        <span class="factor-check">✓</span>
                         <span class="factor-icon">#️⃣</span>
                         <div class="factor-content">
                             <span class="factor-name">Hashtag Database</span>
-                            <span class="factor-desc">Not applicable for account-only checks</span>
+                            <span class="factor-desc">Scans recent posts for banned/restricted hashtags</span>
                         </div>
                     </li>
                     <li class="factor-active">
                         <span class="factor-check">✓</span>
-                        <span class="factor-icon">🌐</span>
+                        <span class="factor-icon">📝</span>
                         <div class="factor-content">
-                            <span class="factor-name">IP Analysis</span>
-                            <span class="factor-desc">Analyzes YOUR connection for VPN/datacenter flags</span>
+                            <span class="factor-name">Content & Links</span>
+                            <span class="factor-desc">Bio text, pinned posts, profile links, flagged patterns</span>
                         </div>
                     </li>
                 </ul>
@@ -525,7 +529,8 @@
                     <li>Reply visibility and QFD (Quality Filter Deboost) status</li>
                     <li>Ghost ban indicators (invisible posts)</li>
                     <li>Account trust signals and history</li>
-                    <li>Your IP connection type (VPN/proxy/datacenter)</li>
+                    <li>Bio content for flagged words and suspicious links</li>
+                    <li>Pinned post analysis for problematic patterns</li>
                 </ul>
                 
                 <div class="modal-tech-note">

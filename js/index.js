@@ -29,7 +29,7 @@ function init() {
     setupEventListeners();
     populatePlatformGrid();
     populatePlatformIcons();
-    detectUserIP();
+    updateContentAnalysisDisplay();
     
     console.log('✅ Index.js initialized');
 }
@@ -128,6 +128,16 @@ function setupEventListeners() {
 }
 
 // ============================================
+// CONTENT ANALYSIS DISPLAY (Replaces IP Display)
+// ============================================
+function updateContentAnalysisDisplay() {
+    const statusEl = document.getElementById('content-analysis-status');
+    if (statusEl) {
+        statusEl.textContent = 'Ready to scan post content & links';
+    }
+}
+
+// ============================================
 // URL INPUT & PLATFORM DETECTION
 // ============================================
 function handleUrlInput() {
@@ -138,6 +148,7 @@ function handleUrlInput() {
         hidePlatformDetection();
         hideEngagementTest();
         currentPlatform = null;
+        updateContentAnalysisDisplay();
         return;
     }
     
@@ -148,6 +159,12 @@ function handleUrlInput() {
         currentPlatform = platform;
         showPlatformDetection(platform);
         updateChecksPreview(platform);
+        
+        // Update content analysis status
+        const statusEl = document.getElementById('content-analysis-status');
+        if (statusEl) {
+            statusEl.textContent = `Will analyze ${platform.name} post content, links & bio`;
+        }
         
         // Show engagement test for Twitter
         if (platform.id === 'twitter' && 
@@ -161,6 +178,7 @@ function handleUrlInput() {
         hidePlatformDetection();
         hideEngagementTest();
         currentPlatform = null;
+        updateContentAnalysisDisplay();
     }
 }
 
@@ -321,6 +339,7 @@ function runEngineAnimation() {
     const platform = currentPlatform || { id: 'twitter', name: 'Twitter/X' };
     const isReddit = platform.id === 'reddit';
     
+    // Updated terminal lines - Content & Links instead of IP
     const lines = [
         { text: `> Initializing 5-Factor Detection Engine...`, delay: 0 },
         { text: `> Target platform: ${platform.name}`, delay: 400 },
@@ -329,8 +348,10 @@ function runEngineAnimation() {
         { text: `> Running web visibility tests (U.S. servers)...`, delay: 1800 },
         { text: `> Analyzing historical patterns...`, delay: 2400 },
         { text: isReddit ? `> Hashtag check: N/A (Reddit)` : `> Scanning hashtag database...`, delay: 2800 },
-        { text: `> Analyzing IP connection...`, delay: 3200 },
-        { text: `> Calculating probability score...`, delay: 3600 },
+        { text: `> Analyzing content & links...`, delay: 3200 },
+        { text: `> Scanning bio for flagged words...`, delay: 3400 },
+        { text: `> Checking link/domain reputation...`, delay: 3600 },
+        { text: `> Calculating probability score...`, delay: 4000 },
     ];
     
     lines.forEach(line => {
@@ -345,13 +366,13 @@ function runEngineAnimation() {
         }, line.delay);
     });
     
-    // Factor progress - 5 factors for Power Check
+    // Factor progress - 5 factors for Power Check (Content & Links replaces IP)
     const factors = [
         { id: 'factor-1-progress', delay: 1000, status: 'complete' },
         { id: 'factor-2-progress', delay: 2000, status: 'complete' },
         { id: 'factor-3-progress', delay: 2600, status: 'complete' },
         { id: 'factor-4-progress', delay: 3000, status: isReddit ? 'na' : 'complete' },
-        { id: 'factor-5-progress', delay: 3400, status: 'complete' },
+        { id: 'factor-5-progress', delay: 3800, status: 'complete' }, // Content & Links
     ];
     
     factors.forEach(factor => {
@@ -381,15 +402,15 @@ function runEngineAnimation() {
         if (phase1) phase1.classList.add('hidden');
         if (phase2) phase2.classList.remove('hidden');
         
-        const aiMessages = ['Cross-referencing signals...', 'Calculating probability weights...', 'Generating final score...'];
+        const aiMessages = ['Cross-referencing signals...', 'Analyzing content patterns...', 'Calculating probability weights...', 'Generating final score...'];
         const aiMessageEl = document.getElementById('ai-processing-message');
         
         aiMessages.forEach((msg, i) => {
             setTimeout(() => {
                 if (aiMessageEl) aiMessageEl.textContent = msg;
-            }, i * 800);
+            }, i * 600);
         });
-    }, 3800);
+    }, 4200);
 }
 
 function simulateAnalysis(withEngagement) {
@@ -406,7 +427,7 @@ function simulateAnalysis(withEngagement) {
         }
         
         window.location.href = `results.html?platform=${platformId}&type=power&demo=true`;
-    }, 5500);
+    }, 6000);
 }
 
 // ============================================
@@ -535,12 +556,13 @@ function showPlatformModal(platform) {
 }
 
 function showFactorInfo(factorType) {
+    // Updated factor data - Content & Links replaces IP
     const factorData = {
         'platform-api': { icon: '🔌', title: 'Platform APIs', desc: 'Direct integration with official platform APIs. We query account status, visibility flags, and restriction indicators.' },
         'web-analysis': { icon: '🔍', title: 'Web Analysis', desc: 'Automated browser testing from U.S. servers. We check search visibility logged-in, logged-out, and in private mode.' },
         'historical': { icon: '📊', title: 'Historical Data', desc: 'We track accounts over time to detect anomalies. Sudden engagement drops affect probability. Pro only for tracking.' },
         'hashtag-db': { icon: '#️⃣', title: 'Hashtag Database', desc: '1,800+ banned and restricted hashtags updated daily. We verify restrictions in real-time.' },
-        'ip-analysis': { icon: '🌐', title: 'IP Analysis', desc: 'We analyze YOUR connection for VPN, proxy, or datacenter flags that platforms may treat differently.' },
+        'content-links': { icon: '📝', title: 'Content & Links', desc: 'We scan post text, bio content, and links for flagged words, suspicious domains, and patterns that trigger platform filters.' },
     };
     
     const data = factorData[factorType];
@@ -618,25 +640,6 @@ function closeModal(modalId) {
 
 // Make closeModal globally accessible
 window.closeModal = closeModal;
-
-// ============================================
-// IP DETECTION
-// ============================================
-function detectUserIP() {
-    const ipAddressEl = document.getElementById('user-ip-address');
-    const ipTypeEl = document.getElementById('user-ip-type');
-    const ipFlagEl = document.getElementById('user-ip-flag');
-    
-    // Simulated for demo
-    setTimeout(() => {
-        if (ipAddressEl) ipAddressEl.textContent = '192.168.x.x';
-        if (ipTypeEl) {
-            ipTypeEl.textContent = 'Residential';
-            ipTypeEl.classList.add('good');
-        }
-        if (ipFlagEl) ipFlagEl.textContent = '🇺🇸';
-    }, 500);
-}
 
 // ============================================
 // SHARE BUTTONS

@@ -207,7 +207,7 @@ function renderResults() {
         hideRedditSections();
     }
     
-    // Show/hide hashtag section based on platform
+    // Show/hide hashtag section based on platform and render results
     const hashtagFactor = document.getElementById('factor-hashtag');
     const methodHashtag = document.getElementById('method-hashtag');
     const hashtagAnalysis = document.getElementById('hashtag-analysis');
@@ -216,6 +216,9 @@ function renderResults() {
         if (hashtagFactor) hashtagFactor.classList.add('factor-na');
         if (methodHashtag) methodHashtag.style.opacity = '0.5';
         if (hashtagAnalysis) hashtagAnalysis.classList.add('hidden');
+    } else {
+        // Render hashtag analysis for non-Reddit platforms
+        renderHashtagAnalysis();
     }
     
     // Show verification section for Twitter
@@ -385,6 +388,119 @@ function renderContentAnalysis() {
         if (contentExplanation) contentExplanation.textContent = 'We scanned bio text, pinned posts, and profile links for flagged words, suspicious domains, and patterns that platforms commonly filter. No problematic content was detected.';
         if (flaggedItems) flaggedItems.classList.add('hidden');
     }
+}
+
+function renderHashtagAnalysis() {
+    const hashtagSection = document.getElementById('hashtag-analysis');
+    const hashtagResults = document.getElementById('hashtag-results');
+    const factorHashtagFinding = document.getElementById('factor-hashtag-finding');
+    
+    if (!hashtagSection || !hashtagResults) return;
+    
+    // Check if this was a hashtag check or if hashtags were included
+    const hashtags = resultData.hashtags || [];
+    const hashtagResultsData = resultData.hashtagResults || [];
+    
+    if (hashtags.length === 0 && hashtagResultsData.length === 0) {
+        hashtagSection.classList.add('hidden');
+        return;
+    }
+    
+    // Show the section
+    hashtagSection.classList.remove('hidden');
+    
+    // Count banned/restricted
+    let bannedCount = resultData.bannedCount || 0;
+    let restrictedCount = resultData.restrictedCount || 0;
+    let safeCount = resultData.safeCount || 0;
+    
+    // Update factor finding
+    if (factorHashtagFinding) {
+        if (bannedCount > 0) {
+            factorHashtagFinding.textContent = `${bannedCount} banned hashtag${bannedCount > 1 ? 's' : ''} detected`;
+            const factorRow = document.getElementById('factor-hashtag');
+            if (factorRow) {
+                const status = factorRow.querySelector('.factor-status');
+                if (status) {
+                    status.className = 'factor-status warning';
+                    status.innerHTML = '<span>⚠</span>';
+                }
+            }
+        } else if (restrictedCount > 0) {
+            factorHashtagFinding.textContent = `${restrictedCount} restricted hashtag${restrictedCount > 1 ? 's' : ''} detected`;
+        } else {
+            factorHashtagFinding.textContent = `${safeCount || hashtags.length} hashtag${safeCount !== 1 ? 's' : ''} verified safe`;
+        }
+    }
+    
+    // Render hashtag cards
+    let html = '<div class="hashtag-cards">';
+    
+    if (hashtagResultsData.length > 0) {
+        // Use detailed results from API
+        hashtagResultsData.forEach(h => {
+            const statusClass = h.status === 'banned' ? 'danger' : (h.status === 'restricted' ? 'warning' : 'success');
+            const statusLabel = h.status === 'banned' ? 'Banned' : (h.status === 'restricted' ? 'Restricted' : 'Safe');
+            const confidence = h.confidence || 85;
+            const lastVerified = h.lastVerified ? formatTimeAgo(new Date(h.lastVerified)) : 'Just now';
+            const source = h.source === 'api' ? 'Real-Time API' : (h.source === 'cache' ? 'Cached' : 'Local DB');
+            
+            html += `
+                <div class="hashtag-card ${statusClass}">
+                    <div class="hashtag-card-header">
+                        <span class="hashtag-tag">${h.hashtag}</span>
+                        <span class="hashtag-status ${statusClass}">${statusLabel}</span>
+                    </div>
+                    <div class="hashtag-card-meta">
+                        <span class="hashtag-confidence">Confidence: ${confidence}%</span>
+                        <span class="hashtag-verified">Verified: ${lastVerified}</span>
+                    </div>
+                    <div class="hashtag-card-source">
+                        <small>Source: ${source}</small>
+                    </div>
+                </div>
+            `;
+        });
+    } else {
+        // Fallback: Just show hashtag names
+        hashtags.forEach(tag => {
+            html += `
+                <div class="hashtag-card success">
+                    <div class="hashtag-card-header">
+                        <span class="hashtag-tag">${tag}</span>
+                        <span class="hashtag-status success">Verified</span>
+                    </div>
+                </div>
+            `;
+        });
+    }
+    
+    html += '</div>';
+    
+    // Add summary
+    if (bannedCount > 0 || restrictedCount > 0) {
+        html += `
+            <div class="hashtag-summary warning">
+                <p><strong>⚠️ Impact on probability:</strong> ${bannedCount > 0 ? `${bannedCount} banned` : ''} ${restrictedCount > 0 ? `${restrictedCount} restricted` : ''} hashtag${(bannedCount + restrictedCount) > 1 ? 's' : ''} detected. This increases your shadow ban probability.</p>
+            </div>
+        `;
+    } else {
+        html += `
+            <div class="hashtag-summary success">
+                <p><strong>✓ All clear:</strong> No flagged or restricted hashtags were detected in your content.</p>
+            </div>
+        `;
+    }
+    
+    hashtagResults.innerHTML = html;
+}
+
+function formatTimeAgo(date) {
+    const diff = Date.now() - date.getTime();
+    const hours = Math.floor(diff / 3600000);
+    if (hours < 1) return 'Just now';
+    if (hours < 24) return `${hours}h ago`;
+    return `${Math.floor(hours / 24)}d ago`;
 }
 
 function renderRecommendations() {

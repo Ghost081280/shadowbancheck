@@ -1,7 +1,7 @@
 /* =============================================================================
-   LOGIN.JS v3.1
+   LOGIN.JS v3.2
    ShadowBanCheck.io - Authentication System with Clean URL Routing
-   Routes to: /pro (user), /agency (agency), /admin (admin)
+   Routes to: /pro (user), /agency (agency), /admin (admin), /research (research)
    ============================================================================= */
 
 // =============================================================================
@@ -22,6 +22,14 @@ const DEMO_ACCOUNTS = {
         name: 'Agency Demo',
         redirect: 'agency.html'  // /agency
     },
+    // Research account
+    'research@test.com': {
+        password: 'research123',
+        role: 'research',
+        name: 'Dr. Jane Researcher',
+        isResearcher: true,
+        redirect: 'research.html'  // /research
+    },
     // Admin account
     'admin@shadowbancheck.io': {
         password: 'admin',
@@ -35,9 +43,10 @@ const DEMO_ACCOUNTS = {
 // URL CONFIGURATION
 // =============================================================================
 const REDIRECTS = {
-    user: 'pro.html',      // /pro
-    agency: 'agency.html', // /agency
-    admin: 'admin.html'    // /admin
+    user: 'pro.html',        // /pro
+    agency: 'agency.html',   // /agency
+    research: 'research.html', // /research
+    admin: 'admin.html'      // /admin
 };
 
 // =============================================================================
@@ -49,7 +58,7 @@ const STORAGE_KEY = 'shadowban_session';
 // INITIALIZATION
 // =============================================================================
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('🔐 Login System v3.1 Initializing...');
+    console.log('🔐 Login System v3.2 Initializing...');
     
     // Check if already logged in
     checkExistingSession();
@@ -87,6 +96,9 @@ function redirectByRole(role) {
         case 'agency':
             window.location.href = REDIRECTS.agency;
             break;
+        case 'research':
+            window.location.href = REDIRECTS.research;
+            break;
         default:
             window.location.href = REDIRECTS.user;
     }
@@ -107,7 +119,7 @@ function handleLogin(e) {
         const account = DEMO_ACCOUNTS[email];
         if (account.password === password) {
             // Success - create session
-            createSession(email, account.role, account.name, remember);
+            createSession(email, account.role, account.name, remember, account.isResearcher);
             showToast('✅', `Welcome back, ${account.name}!`);
             setTimeout(() => {
                 window.location.href = account.redirect;
@@ -122,7 +134,7 @@ function handleLogin(e) {
     
     if (user && user.password === password) {
         // Success - create session
-        createSession(email, user.role || 'user', user.name || 'User', remember);
+        createSession(email, user.role || 'user', user.name || 'User', remember, user.isResearcher);
         showToast('✅', `Welcome back!`);
         setTimeout(() => {
             redirectByRole(user.role || 'user');
@@ -135,7 +147,7 @@ function handleLogin(e) {
     return false;
 }
 
-function createSession(email, role, name, remember) {
+function createSession(email, role, name, remember, isResearcher = false) {
     const sessionData = {
         loggedIn: true,
         email: email,
@@ -143,6 +155,7 @@ function createSession(email, role, name, remember) {
         name: name,
         isAdmin: role === 'admin',
         isAgency: role === 'agency',
+        isResearcher: role === 'research' || isResearcher,
         createdAt: Date.now()
     };
     
@@ -321,6 +334,12 @@ function autofillAgency() {
     document.getElementById('email').value = 'agency@test.com';
     document.getElementById('password').value = 'agency123';
     showToast('🏢', 'Agency credentials filled!');
+}
+
+function autofillResearch() {
+    document.getElementById('email').value = 'research@test.com';
+    document.getElementById('password').value = 'research123';
+    showToast('🔬', 'Research credentials filled!');
 }
 
 function autofillAdmin() {

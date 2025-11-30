@@ -33,7 +33,6 @@ function init() {
     populatePlatformSelect();
     populatePlatformIcons();
     setupEventListeners();
-    hideRedditNotice();
     checkAPIHealth();
     updateDatabaseStats();
     
@@ -197,11 +196,6 @@ function setupEventListeners() {
         clearBtn.addEventListener('click', handleClear);
     }
     
-    const showRedditNoteBtn = document.getElementById('show-reddit-note');
-    if (showRedditNoteBtn) {
-        showRedditNoteBtn.addEventListener('click', showRedditNotice);
-    }
-    
     const hashtagInfoBtn = document.getElementById('hashtag-info-btn');
     if (hashtagInfoBtn) {
         hashtagInfoBtn.addEventListener('click', () => openModal('hashtag-info-modal'));
@@ -212,27 +206,11 @@ function setupEventListeners() {
         engineInfoBtn.addEventListener('click', () => openModal('engine-info-modal'));
     }
     
-    // Report hashtag button (new)
+    // Report hashtag button
     const reportBtn = document.getElementById('report-hashtag-btn');
     if (reportBtn) {
         reportBtn.addEventListener('click', () => openModal('report-hashtag-modal'));
     }
-}
-
-// ============================================
-// REDDIT NOTICE
-// ============================================
-function showRedditNotice() {
-    const notice = document.getElementById('reddit-notice');
-    if (notice) {
-        notice.classList.remove('hidden');
-        setTimeout(hideRedditNotice, 10000);
-    }
-}
-
-function hideRedditNotice() {
-    const notice = document.getElementById('reddit-notice');
-    if (notice) notice.classList.add('hidden');
 }
 
 // ============================================
@@ -339,10 +317,9 @@ function handleClear() {
     if (hashtagInput) hashtagInput.value = '';
     if (checkBtn) checkBtn.disabled = true;
     if (countEl) countEl.textContent = '0 hashtags';
-    if (note) note.textContent = 'Different platforms have different banned hashtags';
+    if (note) note.textContent = 'Each platform has different hashtag restrictions';
     
     currentPlatform = null;
-    hideRedditNotice();
 }
 
 // ============================================

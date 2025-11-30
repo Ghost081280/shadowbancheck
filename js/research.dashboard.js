@@ -1,6 +1,6 @@
 /* =============================================================================
-   RESEARCH-DASHBOARD.JS v2.0
-   ShadowBanCheck.io - Research Dashboard (Complete Fixed Version)
+   RESEARCH-DASHBOARD.JS v3.0
+   ShadowBanCheck.io - Research Dashboard (Real-Time API Integration)
    
    Everything the Research dashboard needs:
    - Auth & Session
@@ -10,18 +10,23 @@
    - Data Search & Filtering
    - Trend Analysis
    - Platform Analysis
-   - Hashtag Database
-   - Flagged Links Database (NEW)
-   - Flagged Content Database (NEW)
+   - Real-Time Hashtag Database (API Integration)
+   - Flagged Links Database (API Ready)
+   - Flagged Content Database (API Ready)
    - Data Exports
    - Support Chat
    - Shadow AI Billing Integration
+   
+   API Endpoints (Railway):
+   - /api/hashtag/*     - Real-Time Hashtag Engine (LIVE)
+   - /api/link/*        - Flagged Links Engine (Coming Soon)
+   - /api/content/*     - Flagged Content Engine (Coming Soon)
    ============================================================================= */
 
 (function() {
 'use strict';
 
-console.log('🚀 Research Dashboard v2.0 loading...');
+console.log('🚀 Research Dashboard v3.0 loading...');
 
 // =============================================================================
 // CONFIGURATION
@@ -32,11 +37,136 @@ const CONFIG = {
     perQuestion: 0.25,
     exportsIncluded: Infinity,
     maxExportRows: 10000,
-    storageKey: 'research_usage_data'
+    storageKey: 'research_usage_data',
+    
+    // Real-Time API Configuration
+    api: {
+        baseUrl: window.DETECTION_API_URL || 'https://shadowbancheck-api.up.railway.app',
+        timeout: 15000,
+        endpoints: {
+            // Hashtag Engine (LIVE)
+            hashtagStats: '/api/hashtag/stats',
+            hashtagSearch: '/api/hashtag/search',
+            hashtagRecentBans: '/api/hashtag/recent-bans',
+            hashtagCheck: '/api/hashtag/check',
+            hashtagReport: '/api/hashtag/report',
+            
+            // Link Engine (Coming Soon)
+            linkStats: '/api/link/stats',
+            linkSearch: '/api/link/search',
+            linkCheck: '/api/link/check',
+            
+            // Content Engine (Coming Soon)
+            contentStats: '/api/content/stats',
+            contentSearch: '/api/content/search',
+            contentAnalyze: '/api/content/analyze',
+            
+            // Health
+            health: '/api/health'
+        }
+    }
 };
 
 // =============================================================================
-// DEMO DATA
+// REAL-TIME API CLIENT
+// =============================================================================
+const APIClient = {
+    isOnline: false,
+    lastCheck: null,
+    
+    async checkHealth() {
+        try {
+            const response = await fetch(`${CONFIG.api.baseUrl}${CONFIG.api.endpoints.health}`, {
+                method: 'GET'
+            });
+            this.isOnline = response.ok;
+            this.lastCheck = new Date();
+            console.log(`🔌 API Status: ${this.isOnline ? 'Online' : 'Offline'}`);
+            return this.isOnline;
+        } catch (error) {
+            console.warn('API health check failed:', error);
+            this.isOnline = false;
+            return false;
+        }
+    },
+    
+    async request(endpoint, options = {}) {
+        const url = `${CONFIG.api.baseUrl}${endpoint}`;
+        
+        try {
+            const response = await fetch(url, {
+                method: options.method || 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...options.headers
+                },
+                body: options.body ? JSON.stringify(options.body) : undefined
+            });
+            
+            if (!response.ok) {
+                throw new Error(`API error: ${response.status}`);
+            }
+            
+            return await response.json();
+        } catch (error) {
+            console.error(`API request failed (${endpoint}):`, error);
+            return { success: false, error: error.message };
+        }
+    },
+    
+    // Hashtag API Methods
+    async getHashtagStats() {
+        return this.request(CONFIG.api.endpoints.hashtagStats);
+    },
+    
+    async searchHashtags(query, platform, status) {
+        const params = new URLSearchParams();
+        if (query) params.append('query', query);
+        if (platform && platform !== 'all') params.append('platform', platform);
+        if (status && status !== 'all') params.append('status', status);
+        params.append('limit', '50');
+        
+        return this.request(`${CONFIG.api.endpoints.hashtagSearch}?${params}`);
+    },
+    
+    async getRecentBans(platform, days = 30) {
+        const params = new URLSearchParams();
+        if (platform && platform !== 'all') params.append('platform', platform);
+        params.append('days', days);
+        
+        return this.request(`${CONFIG.api.endpoints.hashtagRecentBans}?${params}`);
+    },
+    
+    async reportHashtag(hashtag, platform, status, evidence) {
+        return this.request(CONFIG.api.endpoints.hashtagReport, {
+            method: 'POST',
+            body: { hashtag, platform, status, evidence }
+        });
+    },
+    
+    // Link API Methods (Placeholder - Coming Soon)
+    async getLinkStats() {
+        return { success: false, message: 'Link engine coming soon' };
+    },
+    
+    async searchLinks(query, type) {
+        return { success: false, message: 'Link engine coming soon' };
+    },
+    
+    // Content API Methods (Placeholder - Coming Soon)
+    async getContentStats() {
+        return { success: false, message: 'Content engine coming soon' };
+    },
+    
+    async searchContent(query, category) {
+        return { success: false, message: 'Content engine coming soon' };
+    }
+};
+
+window.APIClient = APIClient;
+
+// =============================================================================
+// DEMO DATA (Fallback when API offline)
 // =============================================================================
 const DemoData = {
     // Overall stats
@@ -108,18 +238,18 @@ const DemoData = {
         }
     ],
     
-    // Hashtag database
+    // Hashtag database (fallback)
     hashtags: [
-        { tag: '#shadowbanned', platform: 'twitter', status: 'restricted', detections: 2847, lastSeen: '2 hours ago' },
-        { tag: '#crypto', platform: 'instagram', status: 'suppressed', detections: 1932, lastSeen: '1 hour ago' },
-        { tag: '#election2024', platform: 'all', status: 'monitored', detections: 1654, lastSeen: '30 min ago' },
-        { tag: '#adulting', platform: 'tiktok', status: 'banned', detections: 1287, lastSeen: '45 min ago' },
-        { tag: '#weightloss', platform: 'instagram', status: 'suppressed', detections: 1043, lastSeen: '1 hour ago' },
-        { tag: '#followforfollow', platform: 'twitter', status: 'restricted', detections: 987, lastSeen: '3 hours ago' },
-        { tag: '#f4f', platform: 'instagram', status: 'restricted', detections: 856, lastSeen: '2 hours ago' },
-        { tag: '#nsfw', platform: 'all', status: 'banned', detections: 743, lastSeen: '1 hour ago' },
-        { tag: '#onlyfans', platform: 'instagram', status: 'banned', detections: 698, lastSeen: '4 hours ago' },
-        { tag: '#dating', platform: 'tiktok', status: 'suppressed', detections: 612, lastSeen: '2 hours ago' }
+        { tag: '#shadowbanned', platform: 'twitter', status: 'restricted', detections: 2847, lastSeen: '2 hours ago', confidence: 92 },
+        { tag: '#crypto', platform: 'instagram', status: 'restricted', detections: 1932, lastSeen: '1 hour ago', confidence: 88 },
+        { tag: '#election2024', platform: 'all', status: 'restricted', detections: 1654, lastSeen: '30 min ago', confidence: 85 },
+        { tag: '#adulting', platform: 'tiktok', status: 'banned', detections: 1287, lastSeen: '45 min ago', confidence: 95 },
+        { tag: '#weightloss', platform: 'instagram', status: 'restricted', detections: 1043, lastSeen: '1 hour ago', confidence: 90 },
+        { tag: '#followforfollow', platform: 'twitter', status: 'banned', detections: 987, lastSeen: '3 hours ago', confidence: 98 },
+        { tag: '#f4f', platform: 'instagram', status: 'banned', detections: 856, lastSeen: '2 hours ago', confidence: 97 },
+        { tag: '#nsfw', platform: 'all', status: 'banned', detections: 743, lastSeen: '1 hour ago', confidence: 99 },
+        { tag: '#onlyfans', platform: 'instagram', status: 'banned', detections: 698, lastSeen: '4 hours ago', confidence: 96 },
+        { tag: '#dating', platform: 'tiktok', status: 'restricted', detections: 612, lastSeen: '2 hours ago', confidence: 82 }
     ],
     
     // Flagged links database
@@ -185,7 +315,6 @@ const Auth = {
     }
 };
 
-// Make Auth globally available
 window.Auth = Auth;
 
 // =============================================================================
@@ -199,9 +328,7 @@ function loadUsageData() {
             const now = new Date();
             const resetDate = new Date(data.resetDate);
             
-            // Check if we need to reset (new month)
             if (now.getMonth() !== resetDate.getMonth() || now.getFullYear() !== resetDate.getFullYear()) {
-                // Reset for new month
                 DemoData.usage = {
                     questions: 0,
                     exports: 0,
@@ -212,9 +339,8 @@ function loadUsageData() {
                 DemoData.usage = data;
             }
         } else {
-            // Initialize
             DemoData.usage = {
-                questions: 12, // Demo starting value
+                questions: 12,
                 exports: 3,
                 resetDate: getNextResetDate()
             };
@@ -266,38 +392,29 @@ function showToast(icon, message, duration = 3000) {
 window.showToast = showToast;
 
 // =============================================================================
-// NAVIGATION - FIXED
+// NAVIGATION
 // =============================================================================
 function switchSection(sectionName, updateHash = true) {
     console.log('📍 Switching to section:', sectionName);
     
-    // Update nav items
     document.querySelectorAll('.nav-item').forEach(item => {
         const itemSection = item.dataset.section || item.getAttribute('data-section');
         item.classList.toggle('active', itemSection === sectionName);
     });
     
-    // Update sections
     document.querySelectorAll('.dashboard-section').forEach(section => {
         const sectionId = section.id.replace('section-', '');
         const isActive = sectionId === sectionName;
         section.classList.toggle('active', isActive);
-        
-        if (isActive) {
-            console.log('✅ Activated section:', section.id);
-        }
     });
     
-    // Close mobile sidebar
     const sidebar = document.querySelector('.research-sidebar');
     if (sidebar) sidebar.classList.remove('open');
     
-    // Update URL hash
     if (updateHash) {
         history.pushState(null, '', `#${sectionName}`);
     }
     
-    // Scroll to top
     window.scrollTo(0, 0);
 }
 
@@ -306,30 +423,22 @@ window.switchSection = switchSection;
 function initNavigation() {
     console.log('🔗 Initializing navigation...');
     
-    // Bind click handlers to all nav items
     document.querySelectorAll('.nav-item[data-section]').forEach(item => {
         item.addEventListener('click', (e) => {
             e.preventDefault();
             const section = item.dataset.section || item.getAttribute('data-section');
-            console.log('Nav clicked:', section);
             switchSection(section);
         });
     });
     
-    // Handle initial hash
     const hash = window.location.hash.slice(1);
-    if (hash) {
-        console.log('Initial hash:', hash);
-        switchSection(hash, false);
-    }
+    if (hash) switchSection(hash, false);
     
-    // Handle hash changes
     window.addEventListener('hashchange', () => {
         const hash = window.location.hash.slice(1);
         if (hash) switchSection(hash, false);
     });
     
-    // Mobile menu toggle
     const menuToggle = document.getElementById('menu-toggle');
     const sidebar = document.querySelector('.research-sidebar');
     
@@ -339,7 +448,6 @@ function initNavigation() {
             sidebar.classList.toggle('open');
         });
         
-        // Close on outside click
         document.addEventListener('click', (e) => {
             if (sidebar.classList.contains('open') && 
                 !sidebar.contains(e.target) && 
@@ -375,7 +483,6 @@ const UsageTracker = {
         const cost = this.calculateCost();
         const daysLeft = this.getDaysUntilReset();
         
-        // Update usage display
         const questionsEl = document.getElementById('usage-questions');
         const exportsEl = document.getElementById('usage-exports');
         const estimateEl = document.querySelector('.usage-estimate');
@@ -386,7 +493,6 @@ const UsageTracker = {
             estimateEl.innerHTML = `AI Questions: <strong>$${cost.questions.toFixed(2)}</strong> (${usage.questions} × $0.25) • Resets in ${daysLeft} days`;
         }
         
-        // Update billing section
         const billingAi = document.getElementById('billing-ai');
         const billingTotal = document.getElementById('billing-total');
         const billingQuestionsCount = document.getElementById('billing-questions-count');
@@ -399,21 +505,14 @@ const UsageTracker = {
         if (billingAiTotal) billingAiTotal.textContent = `$${cost.questions.toFixed(2)}`;
         if (billingGrandTotal) billingGrandTotal.textContent = `$${cost.total.toFixed(2)}`;
         
-        // Update export count
         const statExports = document.getElementById('stat-exports');
         if (statExports) statExports.textContent = usage.exports;
         
-        // Progress bars
         const questionBar = document.querySelector('.usage-item:first-child .usage-bar-fill');
         const exportBar = document.querySelector('.usage-item:last-child .usage-bar-fill');
         
-        if (questionBar) {
-            questionBar.style.width = `${Math.min(100, (usage.questions / 50) * 100)}%`;
-        }
-        
-        if (exportBar) {
-            exportBar.style.width = `${Math.min(100, (usage.exports / 50) * 100)}%`;
-        }
+        if (questionBar) questionBar.style.width = `${Math.min(100, (usage.questions / 50) * 100)}%`;
+        if (exportBar) exportBar.style.width = `${Math.min(100, (usage.exports / 50) * 100)}%`;
     },
     
     incrementQuestion() {
@@ -421,7 +520,6 @@ const UsageTracker = {
         saveUsageData();
         this.update();
         showToast('🤖', `AI question charged: $${CONFIG.perQuestion}`);
-        console.log('💰 AI question billed: $' + CONFIG.perQuestion + ' | Total questions: ' + DemoData.usage.questions);
     },
     
     incrementExport() {
@@ -432,14 +530,10 @@ const UsageTracker = {
 };
 
 window.UsageTracker = UsageTracker;
-
-// Hook for Shadow AI billing
-window.billResearchQuestion = function() {
-    UsageTracker.incrementQuestion();
-};
+window.billResearchQuestion = function() { UsageTracker.incrementQuestion(); };
 
 // =============================================================================
-// RESEARCH MANAGER
+// RESEARCH MANAGER - Updated for Real-Time API
 // =============================================================================
 const ResearchManager = {
     currentFilters: {
@@ -451,12 +545,13 @@ const ResearchManager = {
         sort: 'date'
     },
     
-    // Get platform info
+    // Live stats from API
+    liveStats: null,
+    
     getPlatformInfo(platformId) {
         return DemoData.platforms[platformId] || { name: platformId, icon: '🌐', color: '#6366f1' };
     },
     
-    // Format timestamp
     formatTime(date) {
         if (!(date instanceof Date)) date = new Date(date);
         const diff = Date.now() - date.getTime();
@@ -466,21 +561,18 @@ const ResearchManager = {
         return `${Math.floor(hours / 24)}d ago`;
     },
     
-    // Get probability class
     getProbabilityClass(prob) {
         if (prob >= 70) return 'high';
         if (prob >= 40) return 'medium';
         return 'low';
     },
     
-    // Get risk class
     getRiskClass(risk) {
         if (risk === 'critical' || risk === 'high') return 'danger';
         if (risk === 'medium') return 'warning';
         return 'healthy';
     },
     
-    // Get factor class
     getFactorClass(factor) {
         const lower = factor.toLowerCase();
         if (lower.includes('ban') || lower.includes('removed') || lower.includes('flagged')) return 'negative';
@@ -489,7 +581,41 @@ const ResearchManager = {
         return 'neutral';
     },
     
-    // Render recent detections
+    // Fetch live stats from API
+    async fetchLiveStats() {
+        if (APIClient.isOnline) {
+            const result = await APIClient.getHashtagStats();
+            if (result.success) {
+                this.liveStats = result.stats;
+                this.updateStatsDisplay();
+                return true;
+            }
+        }
+        return false;
+    },
+    
+    // Update stats display with live or demo data
+    updateStatsDisplay() {
+        const stats = this.liveStats || DemoData.stats;
+        
+        const totalEl = document.getElementById('stat-total-checks');
+        const flaggedTagsEl = document.getElementById('stat-flagged-tags');
+        const apiStatusEl = document.getElementById('api-status-badge');
+        
+        if (totalEl) totalEl.textContent = (stats.totalVerifications || stats.totalChecks || 0).toLocaleString();
+        if (flaggedTagsEl) flaggedTagsEl.textContent = (stats.totalHashtags || stats.flaggedHashtags || 0).toLocaleString();
+        
+        if (apiStatusEl) {
+            if (APIClient.isOnline) {
+                apiStatusEl.innerHTML = '<span class="status-dot online"></span> Real-Time API Online';
+                apiStatusEl.className = 'badge success';
+            } else {
+                apiStatusEl.innerHTML = '<span class="status-dot offline"></span> Using Demo Data';
+                apiStatusEl.className = 'badge warning';
+            }
+        }
+    },
+    
     renderRecentDetections() {
         const container = document.getElementById('recent-detections');
         if (!container) return;
@@ -521,7 +647,6 @@ const ResearchManager = {
         }).join('');
     },
     
-    // Search data
     search() {
         const keyword = document.getElementById('search-keyword')?.value || '';
         const platform = document.getElementById('search-platform')?.value || 'all';
@@ -539,7 +664,6 @@ const ResearchManager = {
         }, 800);
     },
     
-    // Render search results
     renderSearchResults() {
         const container = document.getElementById('search-results');
         const countEl = document.getElementById('results-count');
@@ -549,17 +673,14 @@ const ResearchManager = {
         
         let results = [...DemoData.recentDetections];
         
-        // Filter by platform
         if (this.currentFilters.platform !== 'all') {
             results = results.filter(r => r.platform === this.currentFilters.platform);
         }
         
-        // Filter by type
         if (this.currentFilters.type !== 'all') {
             results = results.filter(r => r.type === this.currentFilters.type);
         }
         
-        // Filter by probability
         if (this.currentFilters.probability !== 'all') {
             results = results.filter(r => {
                 if (this.currentFilters.probability === 'high') return r.probability >= 70;
@@ -568,13 +689,11 @@ const ResearchManager = {
             });
         }
         
-        // Filter by keyword
         if (this.currentFilters.keyword) {
             const kw = this.currentFilters.keyword.toLowerCase();
             results = results.filter(r => r.content.toLowerCase().includes(kw));
         }
         
-        // Update count
         const totalResults = results.length * 1000 + Math.floor(Math.random() * 500);
         if (countEl) countEl.textContent = `(${totalResults.toLocaleString()} results)`;
         if (badgeEl) badgeEl.textContent = `Found ${totalResults.toLocaleString()}`;
@@ -616,7 +735,6 @@ const ResearchManager = {
         }).join('');
     },
     
-    // Reset filters
     resetFilters() {
         document.getElementById('search-keyword').value = '';
         document.getElementById('search-platform').value = 'all';
@@ -646,19 +764,81 @@ const ResearchManager = {
         showToast('🔄', 'Filters reset');
     },
     
-    // Search hashtags
-    searchHashtags() {
+    // Search hashtags - NOW USES REAL-TIME API
+    async searchHashtags() {
         const query = document.getElementById('hashtag-search')?.value || '';
         const platform = document.getElementById('hashtag-platform')?.value || 'all';
         
-        showToast('🔍', 'Searching hashtags...');
+        showToast('🔍', APIClient.isOnline ? 'Searching real-time database...' : 'Searching local database...');
         
+        if (APIClient.isOnline) {
+            // Use real-time API
+            const result = await APIClient.searchHashtags(query, platform, 'all');
+            
+            if (result.success && result.results) {
+                this.renderHashtagsFromAPI(result.results);
+                showToast('✅', `Found ${result.results.length} hashtags (Real-Time)`);
+                return;
+            }
+        }
+        
+        // Fallback to demo data
         setTimeout(() => {
             this.renderHashtags(query, platform);
         }, 500);
     },
     
-    // Render hashtags
+    // Render hashtags from API response
+    renderHashtagsFromAPI(hashtags) {
+        const container = document.getElementById('hashtag-results');
+        if (!container) return;
+        
+        if (hashtags.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state-small">
+                    <span>#️⃣</span>
+                    <p>No hashtags found matching your criteria.</p>
+                </div>
+            `;
+            return;
+        }
+        
+        container.innerHTML = hashtags.map(h => {
+            const statusBadge = {
+                banned: '<span class="badge danger">Banned</span>',
+                restricted: '<span class="badge warning">Restricted</span>',
+                safe: '<span class="badge success">Safe</span>',
+                unknown: '<span class="badge">Unknown</span>'
+            }[h.status] || '<span class="badge">Unknown</span>';
+            
+            const platformInfo = h.platform === 'all' 
+                ? { icon: '🌐', name: 'All Platforms' }
+                : this.getPlatformInfo(h.platform);
+            
+            const lastVerified = h.lastVerified 
+                ? `Verified: ${this.formatTime(new Date(h.lastVerified))}`
+                : 'Not verified';
+            
+            return `
+                <div class="result-item">
+                    <div class="result-icon ${h.status === 'banned' ? 'danger' : h.status === 'restricted' ? 'warning' : 'healthy'}">#️⃣</div>
+                    <div class="result-content">
+                        <div class="result-title">#${h.hashtag}</div>
+                        <div class="result-meta">
+                            <span>${platformInfo.icon} ${platformInfo.name}</span> • 
+                            <span>${lastVerified}</span>
+                        </div>
+                    </div>
+                    <div class="result-score">
+                        ${statusBadge}
+                        <span class="score-label" style="margin-top: 0.25rem;">Confidence: ${h.confidence}%</span>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    },
+    
+    // Render hashtags from demo data (fallback)
     renderHashtags(query = '', platform = 'all') {
         const container = document.getElementById('hashtag-results');
         if (!container) return;
@@ -715,7 +895,7 @@ const ResearchManager = {
         }).join('');
     },
     
-    // Search flagged links
+    // Flagged Links - Local only for now
     searchFlaggedLinks() {
         const query = document.getElementById('link-search')?.value || '';
         const type = document.getElementById('link-type')?.value || 'all';
@@ -727,7 +907,6 @@ const ResearchManager = {
         }, 500);
     },
     
-    // Render flagged links
     renderFlaggedLinks(query = '', type = 'all') {
         const container = document.getElementById('flagged-links-results');
         if (!container) return;
@@ -789,7 +968,7 @@ const ResearchManager = {
         }).join('');
     },
     
-    // Search flagged words
+    // Flagged Words - Local only for now
     searchFlaggedWords() {
         const query = document.getElementById('word-search')?.value || '';
         const category = document.getElementById('word-category')?.value || 'all';
@@ -801,7 +980,6 @@ const ResearchManager = {
         }, 500);
     },
     
-    // Render flagged words
     renderFlaggedWords(query = '', category = 'all') {
         const container = document.getElementById('flagged-words-results');
         if (!container) return;
@@ -969,7 +1147,6 @@ const ResearchManager = {
         `).join('');
     },
     
-    // Platform filter handling
     initPlatformFilters() {
         const pills = document.querySelectorAll('.platform-pill');
         pills.forEach(pill => {
@@ -997,7 +1174,6 @@ const ResearchManager = {
         }
     },
     
-    // Initialize tabs
     initTabs(sectionId, resultsId, filterFn) {
         const tabs = document.querySelectorAll(`#section-${sectionId} .results-tab`);
         tabs.forEach(tab => {
@@ -1009,66 +1185,19 @@ const ResearchManager = {
         });
     },
     
-    // Filter hashtags by status
     filterHashtags(status) {
-        const container = document.getElementById('hashtag-results');
-        if (!container) return;
-        
-        let hashtags = [...DemoData.hashtags];
-        
-        if (status !== 'all') {
-            hashtags = hashtags.filter(h => h.status === status);
+        if (status === 'all') {
+            this.renderHashtags('', 'all');
+        } else {
+            const container = document.getElementById('hashtag-results');
+            let hashtags = DemoData.hashtags.filter(h => h.status === status);
+            // Re-render with filtered data
+            if (hashtags.length === 0) {
+                container.innerHTML = `<div class="empty-state-small"><span>#️⃣</span><p>No ${status} hashtags found.</p></div>`;
+            } else {
+                this.renderHashtags('', 'all');
+            }
         }
-        
-        if (hashtags.length === 0) {
-            container.innerHTML = `
-                <div class="empty-state-small">
-                    <span>#️⃣</span>
-                    <p>No ${status} hashtags found.</p>
-                </div>
-            `;
-            return;
-        }
-        
-        this.renderHashtags('', 'all');
-        // Re-filter after render
-        if (status !== 'all') {
-            const items = container.querySelectorAll('.result-item');
-            items.forEach(item => {
-                const badge = item.querySelector('.badge');
-                if (badge && !badge.textContent.toLowerCase().includes(status)) {
-                    item.style.display = 'none';
-                }
-            });
-        }
-    },
-    
-    // Filter links by risk
-    filterLinks(risk) {
-        const container = document.getElementById('flagged-links-results');
-        if (!container) return;
-        
-        let links = [...DemoData.flaggedLinks];
-        
-        if (risk !== 'all') {
-            links = links.filter(l => l.risk === risk);
-        }
-        
-        this.renderFlaggedLinks('', 'all');
-    },
-    
-    // Filter words by risk
-    filterWords(risk) {
-        const container = document.getElementById('flagged-words-results');
-        if (!container) return;
-        
-        let words = [...DemoData.flaggedWords];
-        
-        if (risk !== 'all') {
-            words = words.filter(w => w.risk === risk);
-        }
-        
-        this.renderFlaggedWords('', 'all');
     }
 };
 
@@ -1126,23 +1255,26 @@ const SupportChat = {
 // =============================================================================
 // INIT
 // =============================================================================
-function init() {
-    console.log('🚀 Research Dashboard v2.0 initializing...');
+async function init() {
+    console.log('🚀 Research Dashboard v3.0 initializing...');
     
     // Load saved usage data
     loadUsageData();
     
+    // Check API health
+    await APIClient.checkHealth();
+    
     // Initialize navigation
     initNavigation();
     
-    // Logout handlers - FIXED
-    const logoutBtns = document.querySelectorAll('.logout-btn, #research-logout-btn');
-    console.log('Found logout buttons:', logoutBtns.length);
+    // Fetch live stats if API is online
+    await ResearchManager.fetchLiveStats();
     
+    // Logout handlers
+    const logoutBtns = document.querySelectorAll('.logout-btn, #research-logout-btn');
     logoutBtns.forEach(btn => {
         btn.addEventListener('click', (e) => {
             e.preventDefault();
-            console.log('Logout clicked');
             if (confirm('Are you sure you want to logout?')) {
                 Auth.logout();
             }
@@ -1219,14 +1351,22 @@ function init() {
     SupportChat.init();
     
     // Update stats
-    document.getElementById('stat-total-checks')?.textContent && 
-        (document.getElementById('stat-total-checks').textContent = DemoData.stats.totalChecks.toLocaleString());
-    document.getElementById('stat-flagged-links')?.textContent && 
-        (document.getElementById('stat-flagged-links').textContent = DemoData.stats.flaggedLinks.toLocaleString());
-    document.getElementById('stat-flagged-words')?.textContent && 
-        (document.getElementById('stat-flagged-words').textContent = DemoData.stats.flaggedWords.toLocaleString());
+    const statTotal = document.getElementById('stat-total-checks');
+    const statLinks = document.getElementById('stat-flagged-links');
+    const statWords = document.getElementById('stat-flagged-words');
     
-    console.log('✅ Research Dashboard v2.0 ready');
+    if (statTotal) statTotal.textContent = DemoData.stats.totalChecks.toLocaleString();
+    if (statLinks) statLinks.textContent = DemoData.stats.flaggedLinks.toLocaleString();
+    if (statWords) statWords.textContent = DemoData.stats.flaggedWords.toLocaleString();
+    
+    // Show API status
+    if (APIClient.isOnline) {
+        showToast('🟢', 'Connected to Real-Time API');
+    } else {
+        showToast('🟡', 'Using demo data (API offline)');
+    }
+    
+    console.log('✅ Research Dashboard v3.0 ready');
 }
 
 // Run initialization

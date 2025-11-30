@@ -57,6 +57,29 @@
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/results.css">
     <link rel="stylesheet" href="css/shadow-ai.css">
+    
+    <!-- Hashtag Results Styles -->
+    <style>
+        .hashtag-analysis-intro { color: var(--text-muted); margin-bottom: 1rem; }
+        .hashtag-analysis-note { margin-top: 1rem; color: var(--text-muted); }
+        .hashtag-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; }
+        .hashtag-card { background: var(--bg-tertiary); border-radius: var(--radius-md); padding: 1rem; border-left: 3px solid var(--border); }
+        .hashtag-card.success { border-left-color: var(--success); }
+        .hashtag-card.warning { border-left-color: var(--warning); }
+        .hashtag-card.danger { border-left-color: var(--danger); }
+        .hashtag-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
+        .hashtag-tag { font-weight: 600; font-size: 0.9375rem; }
+        .hashtag-status { font-size: 0.75rem; padding: 0.125rem 0.5rem; border-radius: var(--radius-full); font-weight: 500; }
+        .hashtag-status.success { background: rgba(34, 197, 94, 0.15); color: var(--success); }
+        .hashtag-status.warning { background: rgba(245, 158, 11, 0.15); color: var(--warning); }
+        .hashtag-status.danger { background: rgba(239, 68, 68, 0.15); color: var(--danger); }
+        .hashtag-card-meta { display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.25rem; }
+        .hashtag-card-source { font-size: 0.6875rem; color: var(--text-muted); opacity: 0.7; }
+        .hashtag-summary { margin-top: 1.5rem; padding: 1rem; border-radius: var(--radius-md); }
+        .hashtag-summary.success { background: rgba(34, 197, 94, 0.1); border: 1px solid rgba(34, 197, 94, 0.2); }
+        .hashtag-summary.warning { background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.2); }
+        .hashtag-summary p { margin: 0; font-size: 0.875rem; }
+    </style>
 </head>
 <body>
     <!-- ===================================
@@ -216,14 +239,14 @@
                                 </div>
                             </div>
                             
-                            <!-- Factor 4: Hashtag Database (Hidden for Reddit) -->
+                            <!-- Factor 4: Real-Time Hashtag Verification -->
                             <div class="factor-row" id="factor-hashtag">
                                 <div class="factor-indicator active">
                                     <span class="factor-icon">#️⃣</span>
                                 </div>
                                 <div class="factor-details">
-                                    <h4>Hashtag Database</h4>
-                                    <p class="factor-finding" id="factor-hashtag-finding">No banned or restricted hashtags detected</p>
+                                    <h4>Real-Time Hashtag Verification</h4>
+                                    <p class="factor-finding" id="factor-hashtag-finding">No flagged or restricted hashtags detected</p>
                                 </div>
                                 <div class="factor-status good">
                                     <span>✓</span>
@@ -361,12 +384,16 @@
                     </div>
                 </div>
                 
-                <!-- Hashtag Analysis (if applicable - hidden for Reddit) -->
+                <!-- Hashtag Analysis (shows verified hashtags) -->
                 <div class="hashtag-analysis hidden" id="hashtag-analysis">
-                    <h3>Hashtag Analysis</h3>
+                    <h3>#️⃣ Real-Time Hashtag Verification</h3>
+                    <p class="hashtag-analysis-intro">These hashtags were verified through our Real-Time API:</p>
                     <div class="hashtag-results" id="hashtag-results">
-                        <!-- Populated by JS -->
+                        <!-- Populated by JS with status, confidence, lastVerified -->
                     </div>
+                    <p class="hashtag-analysis-note">
+                        <small>💡 Confidence scores and "last verified" timestamps indicate how certain we are of each hashtag's status.</small>
+                    </p>
                 </div>
                 
                 <!-- Content & Links Analysis (NEW - replaces IP Analysis) -->

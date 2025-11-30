@@ -341,13 +341,13 @@ function runEngineAnimation(hashtags) {
         }, line.delay);
     });
     
-    // 3 factors for hashtag check (no API, no IP) - Factor 1 and 5 are N/A
+    // 3 factors for hashtag check (API, Content & Links are N/A)
     const factors = [
         { id: 'factor-1-progress', delay: 500, status: 'na' },   // API - N/A
         { id: 'factor-2-progress', delay: 1500, status: 'complete' }, // Web
         { id: 'factor-3-progress', delay: 2200, status: 'complete' }, // Historical
         { id: 'factor-4-progress', delay: 2600, status: 'complete' }, // Hashtag DB
-        { id: 'factor-5-progress', delay: 500, status: 'na' },   // IP - N/A
+        { id: 'factor-5-progress', delay: 500, status: 'na' },   // Content & Links - N/A
     ];
     
     factors.forEach(factor => {

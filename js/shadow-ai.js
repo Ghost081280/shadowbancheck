@@ -1,12 +1,13 @@
 /**
  * =============================================================================
- * SHADOW AI - UNIFIED CHATBOT v4.0 (RESTORED)
+ * SHADOW AI - UNIFIED CHATBOT v4.1 (WITH RESEARCH SUPPORT)
  * ShadowBanCheck.io - Works on ALL pages
  * 
  * Same style everywhere. Only permissions change:
  * - Website (index.html): 3 lookups/day, "Shadow AI"
  * - User Dashboard: 25/month, "Shadow AI Pro"
  * - Agency Dashboard: Unlimited, "Shadow AI Agency"
+ * - Research Dashboard: Per-question billing, "Shadow AI Research"
  * - Admin Dashboard: Unlimited + commands, "Shadow AI Admin"
  * 
  * Uses @ghost081280 for Twitter/X examples
@@ -23,10 +24,11 @@
     
     function detectPageType() {
         const path = window.location.pathname.toLowerCase();
-        // Clean URLs: /admin, /agency, /pro
-        if (path.includes('/admin')) return 'admin';
-        if (path.includes('/agency')) return 'agency';
-        if (path.includes('/pro')) return 'dashboard';
+        // Clean URLs: /admin, /agency, /pro, /research
+        if (path.includes('/admin') || path.includes('admin.html')) return 'admin';
+        if (path.includes('/agency') || path.includes('agency.html')) return 'agency';
+        if (path.includes('/research') || path.includes('research.html')) return 'research';
+        if (path.includes('/pro') || path.includes('pro.html')) return 'dashboard';
         return 'website';
     }
     
@@ -55,6 +57,15 @@
             messageLimit: Infinity,
             welcomeMessage: "👋 Welcome to Shadow AI Agency! I can help you manage client accounts, run bulk checks, and generate dispute letters. Ask me anything or type **help** for commands."
         },
+        research: {
+            title: 'Shadow AI Research',
+            tooltip: 'Research AI Assistant',
+            usageText: (used) => `${used} questions ($${(used * 0.25).toFixed(2)})`,
+            lookupLimit: Infinity,  // Unlimited but billed per question
+            messageLimit: Infinity,
+            perQuestion: 0.25,
+            welcomeMessage: "👋 Welcome to Shadow AI Research! I can help you analyze suppression patterns, query our dataset, and provide insights on platform behaviors.\n\n**Pricing:** $0.25 per question (billed monthly)\n\nWhat would you like to research?"
+        },
         admin: {
             title: 'Shadow AI Admin',
             tooltip: 'Admin AI Command Center',
@@ -73,7 +84,8 @@
         lookups: `shadowAI_lookups_${PAGE_TYPE}`,
         messages: `shadowAI_messages_${PAGE_TYPE}`,
         powerCheck: `shadowAI_powerCheck_${PAGE_TYPE}`,
-        monthly: `shadowAI_monthly_${PAGE_TYPE}`
+        monthly: `shadowAI_monthly_${PAGE_TYPE}`,
+        researchQuestions: 'shadowAI_research_questions'
     };
     
     // State
@@ -82,6 +94,7 @@
     let lookupsUsed = 0;
     let messagesUsed = 0;
     let usedPowerCheck = false;
+    let researchQuestionsUsed = 0;
     
     // ==========================================================================
     // STORAGE HELPERS
@@ -128,14 +141,19 @@
     
     // Determine reset period based on page type
     function getResetPeriod() {
-        return PAGE_TYPE === 'dashboard' ? 'monthly' : 'daily';
+        return (PAGE_TYPE === 'dashboard' || PAGE_TYPE === 'research') ? 'monthly' : 'daily';
     }
     
     function updateUsageCounter() {
         const usage = document.getElementById('shadow-ai-usage');
         if (!usage) return;
         
-        if (CURRENT_CONFIG.lookupLimit === Infinity) {
+        if (PAGE_TYPE === 'research') {
+            // Research: show questions used and cost
+            const data = getStorageData(STORAGE_KEYS.researchQuestions, 'monthly');
+            researchQuestionsUsed = data.count;
+            usage.textContent = CURRENT_CONFIG.usageText(researchQuestionsUsed);
+        } else if (CURRENT_CONFIG.lookupLimit === Infinity) {
             usage.textContent = CURRENT_CONFIG.usageText();
         } else {
             const data = getStorageData(STORAGE_KEYS.lookups, getResetPeriod());
@@ -172,6 +190,15 @@
         saveStorageData(STORAGE_KEYS.messages, data.count);
     }
     
+    function incrementResearchQuestion() {
+        if (PAGE_TYPE !== 'research') return;
+        const data = getStorageData(STORAGE_KEYS.researchQuestions, 'monthly');
+        data.count++;
+        saveStorageData(STORAGE_KEYS.researchQuestions, data.count);
+        researchQuestionsUsed = data.count;
+        updateUsageCounter();
+    }
+    
     // ==========================================================================
     // DETECT REQUEST TYPES
     // ==========================================================================
@@ -204,11 +231,31 @@
                lower === 'help';
     }
     
+    function isResearchQuery(message) {
+        if (PAGE_TYPE !== 'research') return false;
+        const lower = message.toLowerCase();
+        const researchPatterns = [
+            /trend/i,
+            /pattern/i,
+            /analyze/i,
+            /data/i,
+            /statistics/i,
+            /platform\s+(comparison|analysis)/i,
+            /suppression\s+rate/i,
+            /hashtag\s+(data|stats|analysis)/i,
+            /how\s+many/i,
+            /what\s+percentage/i,
+            /compare/i,
+            /correlation/i
+        ];
+        return researchPatterns.some(pattern => pattern.test(lower));
+    }
+    
     // ==========================================================================
     // INITIALIZE
     // ==========================================================================
     function init() {
-        console.log(`🤖 Shadow AI v4.0 (${PAGE_TYPE}) Initializing...`);
+        console.log(`🤖 Shadow AI v4.1 (${PAGE_TYPE}) Initializing...`);
         
         // Add dashboard-page class for CSS if on any dashboard
         if (PAGE_TYPE !== 'website') {
@@ -236,9 +283,14 @@
         widget.className = 'shadow-ai-container';
         widget.id = 'shadow-ai-container';
         
-        const usageText = CURRENT_CONFIG.lookupLimit === Infinity 
-            ? CURRENT_CONFIG.usageText() 
-            : CURRENT_CONFIG.usageText(CURRENT_CONFIG.lookupLimit, CURRENT_CONFIG.lookupLimit);
+        let usageText;
+        if (PAGE_TYPE === 'research') {
+            usageText = CURRENT_CONFIG.usageText(0);
+        } else if (CURRENT_CONFIG.lookupLimit === Infinity) {
+            usageText = CURRENT_CONFIG.usageText();
+        } else {
+            usageText = CURRENT_CONFIG.usageText(CURRENT_CONFIG.lookupLimit, CURRENT_CONFIG.lookupLimit);
+        }
         
         widget.innerHTML = `
             <!-- Glow Effect -->
@@ -281,7 +333,7 @@
                 <div class="copilot-input-area">
                     <input type="text" 
                            id="shadow-ai-input" 
-                           placeholder="${PAGE_TYPE === 'admin' ? 'Enter command or ask a question...' : 'Ask about shadow bans...'}" 
+                           placeholder="${getPlaceholder()}" 
                            autocomplete="off"
                            enterkeyhint="send">
                     <button class="copilot-send" id="shadow-ai-send">Send</button>
@@ -299,6 +351,15 @@
         bindEvents();
         updateUsageCounter();
         initKeyboardHandler();
+    }
+    
+    function getPlaceholder() {
+        switch (PAGE_TYPE) {
+            case 'admin': return 'Enter command or ask a question...';
+            case 'research': return 'Ask about suppression data...';
+            case 'agency': return 'Ask about clients or shadow bans...';
+            default: return 'Ask about shadow bans...';
+        }
     }
     
     // ==========================================================================
@@ -424,16 +485,19 @@
         
         const isLookup = isLookupRequest(message);
         const isCommand = isAdminCommand(message);
+        const isResearch = isResearchQuery(message);
         
-        // Check limits
-        if (isLookup && !canDoLookup()) {
-            showLimitMessage(`You've used all ${CURRENT_CONFIG.lookupLimit} lookups. Upgrade to Pro for more!`);
-            return;
-        }
-        
-        if (!isLookup && !isCommand && !canSendMessage()) {
-            showLimitMessage(`You've reached the daily chat limit. Upgrade to Pro for unlimited!`);
-            return;
+        // Check limits (except for research which is pay-per-question)
+        if (PAGE_TYPE !== 'research') {
+            if (isLookup && !canDoLookup()) {
+                showLimitMessage(`You've used all ${CURRENT_CONFIG.lookupLimit} lookups. Upgrade to Pro for more!`);
+                return;
+            }
+            
+            if (!isLookup && !isCommand && !canSendMessage()) {
+                showLimitMessage(`You've reached the daily chat limit. Upgrade to Pro for unlimited!`);
+                return;
+            }
         }
         
         // Add user message
@@ -441,7 +505,10 @@
         input.value = '';
         
         // Increment counters
-        if (isLookup) {
+        if (PAGE_TYPE === 'research') {
+            // Research: bill per question
+            incrementResearchQuestion();
+        } else if (isLookup) {
             incrementLookupCount();
         } else if (!isCommand) {
             incrementMessageCount();
@@ -457,10 +524,10 @@
         document.getElementById('shadow-ai-send').disabled = true;
         
         // Generate response
-        const delay = isLookup || isCommand ? 1500 : 800;
+        const delay = isLookup || isCommand || isResearch ? 1500 : 800;
         setTimeout(() => {
             hideTypingIndicator();
-            const response = generateResponse(message, isLookup, isCommand);
+            const response = generateResponse(message, isLookup, isCommand, isResearch);
             addMessage(response, 'assistant');
             conversationHistory.push({ role: 'assistant', content: response });
             
@@ -568,12 +635,17 @@
     // ==========================================================================
     // RESPONSE GENERATION
     // ==========================================================================
-    function generateResponse(message, isLookup = false, isCommand = false) {
+    function generateResponse(message, isLookup = false, isCommand = false, isResearch = false) {
         const lower = message.toLowerCase().trim();
         
         // Admin commands
         if (PAGE_TYPE === 'admin' && isCommand) {
             return generateAdminResponse(message);
+        }
+        
+        // Research queries
+        if (PAGE_TYPE === 'research' && isResearch) {
+            return generateResearchResponse(message);
         }
         
         // Agency-specific responses
@@ -631,7 +703,7 @@
         // stats
         if (lower === 'stats') {
             return `**📊 Dashboard Statistics**\n\n` +
-                   `**Users:** 156 total (42 Pro, 8 Agency)\n` +
+                   `**Users:** 156 total (42 Pro, 8 Agency, 3 Research)\n` +
                    `**Today:** 1,234 scans, 89 AI questions\n` +
                    `**Revenue:** $1,247/mo\n` +
                    `**Support:** 5 unread messages`;
@@ -648,6 +720,75 @@
         }
         
         return generateGeneralResponse(message);
+    }
+    
+    function generateResearchResponse(message) {
+        const lower = message.toLowerCase();
+        
+        // Trend queries
+        if (lower.includes('trend')) {
+            return `**📈 Suppression Trends (Last 30 Days)**\n\n` +
+                   `**Overall Volume:** Up 12.4% week-over-week\n\n` +
+                   `**By Platform:**\n` +
+                   `• Twitter/X: 42,156 detections (+8%)\n` +
+                   `• Instagram: 33,421 detections (+15%)\n` +
+                   `• TikTok: 24,287 detections (+22%)\n` +
+                   `• Reddit: 15,104 detections (-3%)\n\n` +
+                   `**Emerging Pattern:** Political content suppression up 47% across platforms.\n\n` +
+                   `Would you like me to drill into any specific platform?`;
+        }
+        
+        // Hashtag analysis
+        if (lower.includes('hashtag')) {
+            return `**#️⃣ Hashtag Analysis**\n\n` +
+                   `**Currently Flagged:** 1,847 unique hashtags\n\n` +
+                   `**Top Flagged This Week:**\n` +
+                   `1. #shadowbanned (Twitter) - 2,847 detections\n` +
+                   `2. #crypto (Instagram) - 1,932 detections\n` +
+                   `3. #election2024 (All) - 1,654 detections\n` +
+                   `4. #adulting (TikTok) - 1,287 detections\n` +
+                   `5. #weightloss (Instagram) - 1,043 detections\n\n` +
+                   `Use the Hashtag Database section to search specific tags.`;
+        }
+        
+        // Platform comparison
+        if (lower.includes('compare') || lower.includes('platform')) {
+            return `**🌐 Platform Comparison**\n\n` +
+                   `| Platform | Avg Prob | Top Issue |\n` +
+                   `|----------|----------|----------|\n` +
+                   `| Instagram | 38.2% | Hashtag bans |\n` +
+                   `| TikTok | 35.8% | FYP exclusion |\n` +
+                   `| Facebook | 33.1% | Reduced distribution |\n` +
+                   `| Twitter/X | 31.5% | Reply deboosting |\n` +
+                   `| Reddit | 29.4% | AutoMod removal |\n` +
+                   `| LinkedIn | 22.6% | Spam filters |\n\n` +
+                   `Instagram shows highest average suppression probability.`;
+        }
+        
+        // Statistics
+        if (lower.includes('statistic') || lower.includes('how many') || lower.includes('percentage')) {
+            return `**📊 Quick Statistics**\n\n` +
+                   `**Total Checks Analyzed:** 127,453\n` +
+                   `**Average Probability:** 34.2%\n` +
+                   `**High Probability (70%+):** 18,423 (14.5%)\n` +
+                   `**Recovery Rate:** ~68% within 72 hours\n\n` +
+                   `**Detection Types:**\n` +
+                   `• Reply Deboosting: 45%\n` +
+                   `• Search Ban: 28%\n` +
+                   `• Ghost Ban: 15%\n` +
+                   `• Full Shadow Ban: 12%\n\n` +
+                   `Use the Search section for custom queries.`;
+        }
+        
+        // Default research response
+        return `I can help analyze our suppression data.\n\n` +
+               `**Try asking about:**\n` +
+               `• "What are the current trends?"\n` +
+               `• "Compare platforms"\n` +
+               `• "Hashtag analysis"\n` +
+               `• "Show me statistics"\n\n` +
+               `Or use the Search section for custom queries.\n\n` +
+               `_Note: $0.25 per question_`;
     }
     
     function generateAgencyResponse(message) {
@@ -729,7 +870,8 @@
             return "**Plans:**\n\n" +
                    "• **Free:** 3 lookups/day\n" +
                    "• **Pro ($9/mo):** 25 lookups/month + AI Pro\n" +
-                   "• **Agency ($29/mo):** Unlimited + client management\n\n" +
+                   "• **Agency ($29/mo):** Unlimited + client management\n" +
+                   "• **Research ($49/mo):** Data access + AI ($0.25/q)\n\n" +
                    "[View Pricing](#pricing)";
         }
         

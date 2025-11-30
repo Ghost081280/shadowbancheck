@@ -66,7 +66,7 @@
         <div class="container">
             <div class="hero-badge">⚡ 5-Factor Detection Engine</div>
             <h1 class="hero-title"><span class="text-gradient">Calculate Your Shadow Ban Probability</span></h1>
-            <p class="hero-subtitle">Paste any post URL. Our 5-Factor Engine analyzes multiple signals per factor to calculate the probability your content is being suppressed.</p>
+            <p class="hero-subtitle">Paste any post URL. Our 5-Factor Engine analyzes multiple signals per factor—including <strong>real-time hashtag verification</strong>—to calculate the probability your content is being suppressed.</p>
             
             <!-- Power Check - Primary Feature -->
             <div class="power-check">
@@ -114,7 +114,7 @@
                             <span class="preview-icon">#️⃣</span>
                             <div class="preview-text">
                                 <span class="preview-label">Hashtag Health</span>
-                                <span class="preview-desc">Banned tag detection</span>
+                                <span class="preview-desc">Real-time verification</span>
                             </div>
                             <span class="preview-status active">✓</span>
                         </div>
@@ -377,7 +377,7 @@
                     <span class="option-icon">#️⃣</span>
                     <div class="option-content">
                         <h3>Hashtag Checker</h3>
-                        <p>Verify hashtags before posting to avoid penalties</p>
+                        <p>Real-time verification against our live database before you post</p>
                     </div>
                     <div class="option-meta">
                         <span class="option-tag free">Free • 1/day</span>
@@ -855,9 +855,9 @@
                 <div class="engine-factor-compact" data-factor="hashtag-db">
                     <div class="factor-compact-icon">#️⃣</div>
                     <div class="factor-compact-content">
-                        <h4>Hashtag Database</h4>
-                        <p>Our database of banned, restricted, and low-reach hashtags is updated daily. We verify restrictions in real-time.</p>
-                        <span class="factor-compact-tech">Daily updates • Multi-platform</span>
+                        <h4>Real-Time Hashtag Engine</h4>
+                        <p>Our live API verifies hashtag status in real-time. We track banned, restricted, and low-reach hashtags across platforms with confidence scores and "last verified" timestamps.</p>
+                        <span class="factor-compact-tech">Live API • Real-time verification • Confidence scoring</span>
                     </div>
                     <button class="factor-compact-info" aria-label="More info">ⓘ</button>
                 </div>
@@ -942,6 +942,16 @@
                             <p>Our Content & Links factor scans the actual text of your posts and bio for flagged words, suspicious patterns, and problematic links. We check domain reputation, identify affiliate patterns, and detect terms that platforms commonly filter. For Power Checks, we analyze the specific post. For Account Checks, we analyze bio content and pinned posts. This helps identify WHY your content may be suppressed.</p>
                         </div>
                     </div>
+                    
+                    <div class="faq-item">
+                        <button class="faq-question" type="button">
+                            #️⃣ How does Real-Time Hashtag Verification work?
+                            <span class="faq-toggle">+</span>
+                        </button>
+                        <div class="faq-answer">
+                            <p>Unlike static databases, our <strong>Real-Time Hashtag Engine</strong> verifies hashtag status through a live API. Each hashtag check returns: (1) Status (banned/restricted/safe), (2) Confidence score (how certain we are), (3) "Last verified" timestamp, and (4) Platform-specific context. We track hashtag status changes over time, so if Instagram suddenly bans a hashtag, we detect it within hours—not days. Users can also report hashtags, which we verify and add to our database.</p>
+                        </div>
+                    </div>
                 </div>
                 
                 <div class="faq-column">
@@ -951,7 +961,7 @@
                             <span class="faq-toggle">+</span>
                         </button>
                         <div class="faq-answer">
-                            <p>Our 5-Factor Engine analyzes shadow ban probability from multiple angles, with multiple signals per factor: (1) <strong>Platform APIs</strong> for direct data plus account age and follower ratio signals, (2) <strong>Web Analysis</strong> from U.S. servers for search visibility, (3) <strong>Historical Data</strong> for baseline comparisons (Pro only), (4) <strong>Hashtag Database</strong> with 1,800+ banned/restricted tags, and (5) <strong>Content & Links</strong> to scan text, bios, and link reputation.</p>
+                            <p>Our 5-Factor Engine analyzes shadow ban probability from multiple angles, with multiple signals per factor: (1) <strong>Platform APIs</strong> for direct data plus account age and follower ratio signals, (2) <strong>Web Analysis</strong> from U.S. servers for search visibility, (3) <strong>Historical Data</strong> for baseline comparisons (Pro only), (4) <strong>Real-Time Hashtag Engine</strong> with live API verification, confidence scores, and "last verified" timestamps, and (5) <strong>Content & Links</strong> to scan text, bios, and link reputation.</p>
                         </div>
                     </div>
                     
@@ -1135,8 +1145,8 @@
                                 <span class="factor-check">✓</span>
                                 <span class="factor-icon">#️⃣</span>
                                 <div class="factor-content">
-                                    <span class="factor-name">Hashtag Database</span>
-                                    <span class="factor-desc">Banned/restricted tags (not applicable for Reddit)</span>
+                                    <span class="factor-name">Real-Time Hashtag Engine</span>
+                                    <span class="factor-desc">Live API verification with confidence scores (N/A for Reddit)</span>
                                 </div>
                             </li>
                             <li class="factor-active">
@@ -1290,6 +1300,7 @@
     <script src="js/demo-data.js"></script>
     <script src="js/flagged-words.js"></script>
     <script src="js/banned-hashtags.js"></script>
+    <script src="js/hashtag-api.js"></script>
     <script src="js/shared-components.js"></script>
     <script src="js/main.js"></script>
     <script src="js/index.js"></script>

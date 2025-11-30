@@ -103,22 +103,12 @@
                         <div class="platform-select-wrapper">
                             <select id="hashtag-platform-select" class="platform-select" required>
                                 <option value="">Choose a platform...</option>
-                                <!-- Only platforms that support hashtags - populated by JS -->
-                                <!-- Reddit is EXCLUDED because it doesn't use hashtags -->
+                                <!-- Platforms that support hashtags - populated by JS -->
                             </select>
                         </div>
                         <p class="platform-selector-note" id="platform-selector-note">
-                            Different platforms have different banned hashtags
+                            Each platform has different hashtag restrictions
                         </p>
-                    </div>
-                    
-                    <!-- Reddit Notice (Hidden by default, shows if someone wonders why) -->
-                    <div class="reddit-notice" id="reddit-notice">
-                        <span class="reddit-notice-icon">🤖</span>
-                        <div class="reddit-notice-content">
-                            <strong>Looking for Reddit?</strong>
-                            <p>Reddit does not use hashtags for discovery. Use our <a href="checker.html">Account Checker</a> or <a href="index.html">Power Check</a> for Reddit analysis.</p>
-                        </div>
                     </div>
                     
                     <div class="input-group">
@@ -130,7 +120,7 @@
                     </div>
                     
                     <button type="submit" id="check-hashtags-btn" class="btn-check-hashtags" disabled>
-                        <span class="btn-text">Calculate Risk Probability</span>
+                        <span class="btn-text">Verify Hashtags</span>
                         <span class="btn-icon">🔍</span>
                     </button>
                 </form>
@@ -147,7 +137,6 @@
                 
                 <div class="quick-actions">
                     <button type="button" id="clear-btn" class="btn-text-link">Clear</button>
-                    <button type="button" id="show-reddit-note" class="btn-text-link">Why no Reddit?</button>
                     <button type="button" id="report-hashtag-btn" class="btn-text-link">Report a Hashtag</button>
                 </div>
             </div>
@@ -372,18 +361,13 @@
                     <li><strong>Live verification</strong> — not a static database</li>
                     <li><strong>Confidence scores</strong> — how certain we are of each status</li>
                     <li><strong>"Last verified" timestamps</strong> — see exactly when we checked</li>
-                    <li><strong>Platform-specific rules</strong> — different platforms ban different tags</li>
+                    <li><strong>Platform-specific rules</strong> — different platforms restrict different tags</li>
                     <li><strong>User reports</strong> — community-submitted hashtags we verify</li>
                 </ul>
                 
                 <div class="modal-tech-note">
                     <h4>💡 Why Real-Time?</h4>
                     <p>Instagram alone changes hashtag restrictions weekly. Static databases become outdated within days. Our live API detects changes within hours.</p>
-                </div>
-                
-                <div class="modal-tech-note">
-                    <h4>🤖 Why No Reddit?</h4>
-                    <p>Reddit does not use hashtags for content discovery. This tool is designed for platforms where hashtags affect visibility (Twitter/X, Instagram, TikTok, etc.).</p>
                 </div>
                 
                 <div class="modal-privacy-note">
@@ -541,7 +525,7 @@
     <!-- Scripts -->
     <script src="js/platforms.js"></script>
     <script src="js/demo-data.js"></script>
-    <script src="js/banned-hashtags.js"></script>
+    <script src="js/flagged-hashtags.js"></script>
     <script src="js/hashtag-api.js"></script>
     <script src="js/shared-components.js"></script>
     <script src="js/main.js"></script>

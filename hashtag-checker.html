@@ -61,9 +61,16 @@
     <!-- Hero - Compact -->
     <section class="hero">
         <div class="container">
-            <div class="hero-badge">#️⃣ Hashtag Probability Checker</div>
-            <h1 class="hero-title">Calculate Your Hashtag Risk Probability</h1>
-            <p class="hero-subtitle">Check hashtags <strong>before</strong> you post. Our database of 1,800+ banned/restricted hashtags helps you avoid shadow bans and maximize reach.</p>
+            <div class="hero-badge">#️⃣ Real-Time Hashtag Verification</div>
+            <h1 class="hero-title">Verify Hashtags Before You Post</h1>
+            <p class="hero-subtitle">Our <strong>Real-Time Hashtag Engine</strong> verifies hashtag status through a live API—not a static database. Get confidence scores, "last verified" timestamps, and platform-specific warnings.</p>
+            
+            <!-- API Status Indicator -->
+            <div class="api-status-bar">
+                <span id="api-status-indicator" class="status-dot checking"></span>
+                <span id="api-status-text">Checking API connection...</span>
+                <span id="hashtag-db-stats" class="db-stats"></span>
+            </div>
         </div>
     </section>
 
@@ -83,8 +90,8 @@
                     <div class="checker-header-content">
                         <span class="checker-icon">#️⃣</span>
                         <div>
-                            <h3>Check Your Hashtags</h3>
-                            <p>Select a platform and enter hashtags to check their risk level</p>
+                            <h3>Real-Time Hashtag Verification</h3>
+                            <p>Select a platform and enter hashtags for live status verification</p>
                         </div>
                     </div>
                 </div>
@@ -129,18 +136,19 @@
                 </form>
                 
                 <div class="checker-features">
-                    <span>✓ 1,800+ hashtag database</span>
-                    <span>✓ Results in seconds</span>
-                    <span>✓ Permanent results page</span>
+                    <span>✓ Real-time API verification</span>
+                    <span>✓ Confidence scoring</span>
+                    <span>✓ "Last verified" timestamps</span>
                 </div>
                 
                 <div class="checker-note">
-                    <p>💡 <strong>Why probability?</strong> Hashtag restrictions change constantly and vary by platform. We analyze your hashtags against our database and return a <em>risk probability</em> — the likelihood they'll trigger reach limitations.</p>
+                    <p>💡 <strong>Why real-time?</strong> Hashtag restrictions change constantly. Static databases become outdated within days. Our live API verifies each hashtag's current status and returns a <em>confidence score</em> — so you know exactly how certain we are.</p>
                 </div>
                 
                 <div class="quick-actions">
                     <button type="button" id="clear-btn" class="btn-text-link">Clear</button>
                     <button type="button" id="show-reddit-note" class="btn-text-link">Why no Reddit?</button>
+                    <button type="button" id="report-hashtag-btn" class="btn-text-link">Report a Hashtag</button>
                 </div>
             </div>
             
@@ -356,21 +364,21 @@
         <div class="modal-content">
             <button class="modal-close">&times;</button>
             <div class="modal-icon">#️⃣</div>
-            <h3 class="modal-title">Hashtag Probability Check</h3>
+            <h3 class="modal-title">Real-Time Hashtag Verification</h3>
             <div class="modal-body">
-                <p class="modal-intro">Our Hashtag Checker calculates risk probability by analyzing:</p>
+                <p class="modal-intro">Our Real-Time Hashtag Engine verifies hashtag status through a live API:</p>
                 
                 <ul class="check-list">
-                    <li>1,800+ banned/restricted hashtags across platforms</li>
-                    <li>Real-time visibility tests</li>
-                    <li>Historical restriction patterns</li>
-                    <li>Platform-specific rules</li>
-                    <li>Community reports (updated daily)</li>
+                    <li><strong>Live verification</strong> — not a static database</li>
+                    <li><strong>Confidence scores</strong> — how certain we are of each status</li>
+                    <li><strong>"Last verified" timestamps</strong> — see exactly when we checked</li>
+                    <li><strong>Platform-specific rules</strong> — different platforms ban different tags</li>
+                    <li><strong>User reports</strong> — community-submitted hashtags we verify</li>
                 </ul>
                 
                 <div class="modal-tech-note">
-                    <h4>💡 Why Check Before Posting?</h4>
-                    <p>Using even ONE banned hashtag can shadow ban your entire post. Check your hashtags before you post to maximize reach.</p>
+                    <h4>💡 Why Real-Time?</h4>
+                    <p>Instagram alone changes hashtag restrictions weekly. Static databases become outdated within days. Our live API detects changes within hours.</p>
                 </div>
                 
                 <div class="modal-tech-note">
@@ -397,15 +405,15 @@
             <div class="modal-icon">🧠</div>
             <h3 class="modal-title">5-Factor Detection Engine</h3>
             <div class="modal-body">
-                <p class="modal-intro">The Hashtag Checker uses <strong>3 of our 5 detection factors</strong> to calculate probability:</p>
+                <p class="modal-intro">The Hashtag Checker uses <strong>4 of our 5 detection factors</strong> when API is online:</p>
                 
                 <ul class="engine-factors">
-                    <li class="factor-inactive">
-                        <span class="factor-check">○</span>
+                    <li class="factor-active">
+                        <span class="factor-check">✓</span>
                         <span class="factor-icon">🔌</span>
                         <div class="factor-content">
-                            <span class="factor-name">Platform APIs</span>
-                            <span class="factor-desc">Not needed for hashtag lookups</span>
+                            <span class="factor-name">Real-Time API</span>
+                            <span class="factor-desc">Live verification through our hashtag engine API</span>
                         </div>
                     </li>
                     <li class="factor-active">
@@ -413,7 +421,7 @@
                         <span class="factor-icon">🔍</span>
                         <div class="factor-content">
                             <span class="factor-name">Web Analysis</span>
-                            <span class="factor-desc">Real-time visibility tests across platforms</span>
+                            <span class="factor-desc">Search visibility tests across platforms</span>
                         </div>
                     </li>
                     <li class="factor-active">
@@ -421,7 +429,7 @@
                         <span class="factor-icon">📊</span>
                         <div class="factor-content">
                             <span class="factor-name">Historical Data</span>
-                            <span class="factor-desc">Pattern tracking & restriction history</span>
+                            <span class="factor-desc">Restriction history & status change tracking</span>
                         </div>
                     </li>
                     <li class="factor-active">
@@ -429,7 +437,7 @@
                         <span class="factor-icon">#️⃣</span>
                         <div class="factor-content">
                             <span class="factor-name">Hashtag Database</span>
-                            <span class="factor-desc">1,800+ banned/restricted tags across platforms</span>
+                            <span class="factor-desc">Live database with confidence scores & timestamps</span>
                         </div>
                     </li>
                     <li class="factor-inactive">
@@ -443,8 +451,8 @@
                 </ul>
                 
                 <div class="modal-tech-note">
-                    <h4>💡 Why Probability?</h4>
-                    <p>Hashtag restrictions vary by platform, region, and time. Our probability score reflects the <strong>likelihood</strong> of restrictions based on current data — the most honest approach possible.</p>
+                    <h4>💡 Real-Time vs Static</h4>
+                    <p>When API is online, we verify hashtags in real-time. If offline, we fall back to our local database. You'll see the status indicator at the top of the page.</p>
                 </div>
             </div>
             <div class="modal-footer">
@@ -479,6 +487,49 @@
         </div>
     </div>
 
+    <!-- Report Hashtag Modal -->
+    <div id="report-hashtag-modal" class="modal hidden">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <button class="modal-close">&times;</button>
+            <div class="modal-icon">📝</div>
+            <h3 class="modal-title">Report a Hashtag</h3>
+            <div class="modal-body">
+                <p class="modal-intro">Found a banned or restricted hashtag we don't have? Report it and we'll verify.</p>
+                
+                <div class="report-form">
+                    <div class="form-group">
+                        <label class="form-label" for="report-hashtag-input">Hashtag</label>
+                        <input type="text" id="report-hashtag-input" class="form-input" placeholder="#example" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="report-status-select">Status</label>
+                        <select id="report-status-select" class="form-input" required>
+                            <option value="">What did you observe?</option>
+                            <option value="banned">Banned (completely hidden)</option>
+                            <option value="restricted">Restricted (reduced reach)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="report-evidence-input">Evidence (optional)</label>
+                        <textarea id="report-evidence-input" class="form-textarea" placeholder="How did you discover this? Any screenshots or links?" rows="3"></textarea>
+                    </div>
+                </div>
+                
+                <div class="modal-tech-note">
+                    <h4>🔍 What happens next?</h4>
+                    <p>We'll verify your report through our real-time API and add it to our database if confirmed. Multiple reports increase verification priority.</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary btn-lg" onclick="submitHashtagReport()">Submit Report</button>
+                <button class="btn btn-ghost" onclick="closeModal('report-hashtag-modal')">Cancel</button>
+            </div>
+        </div>
+    </div>
+
     <!-- ===================================
          SHARED COMPONENTS (Loaded by shared-components.js):
          - Footer
@@ -491,6 +542,7 @@
     <script src="js/platforms.js"></script>
     <script src="js/demo-data.js"></script>
     <script src="js/banned-hashtags.js"></script>
+    <script src="js/hashtag-api.js"></script>
     <script src="js/shared-components.js"></script>
     <script src="js/main.js"></script>
     <script src="js/hashtag-checker.js"></script>

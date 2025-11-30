@@ -1,22 +1,27 @@
 /* =============================================================================
-   RESEARCH-DASHBOARD.JS v1.0
-   ShadowBanCheck.io - Research Dashboard (All-in-One)
+   RESEARCH-DASHBOARD.JS v2.0
+   ShadowBanCheck.io - Research Dashboard (Complete Fixed Version)
    
-   Everything the Research dashboard needs in one file:
+   Everything the Research dashboard needs:
    - Auth & Session
-   - Navigation
+   - Navigation (FIXED)
    - Toast & Modals
    - Usage Tracking (pay-per-question)
    - Data Search & Filtering
    - Trend Analysis
    - Platform Analysis
    - Hashtag Database
+   - Flagged Links Database (NEW)
+   - Flagged Content Database (NEW)
    - Data Exports
    - Support Chat
+   - Shadow AI Billing Integration
    ============================================================================= */
 
 (function() {
 'use strict';
+
+console.log('🚀 Research Dashboard v2.0 loading...');
 
 // =============================================================================
 // CONFIGURATION
@@ -24,9 +29,10 @@
 const CONFIG = {
     plan: 'Research',
     baseFee: 49,
-    perQuestion: 0.25,  // Higher than agency since deep analysis of aggregated data
-    exportsIncluded: Infinity,  // Unlimited exports
-    maxExportRows: 10000
+    perQuestion: 0.25,
+    exportsIncluded: Infinity,
+    maxExportRows: 10000,
+    storageKey: 'research_usage_data'
 };
 
 // =============================================================================
@@ -38,6 +44,8 @@ const DemoData = {
         totalChecks: 127453,
         avgProbability: 34.2,
         flaggedHashtags: 1847,
+        flaggedLinks: 892,
+        flaggedWords: 2341,
         platformsTracked: 6
     },
     
@@ -114,6 +122,34 @@ const DemoData = {
         { tag: '#dating', platform: 'tiktok', status: 'suppressed', detections: 612, lastSeen: '2 hours ago' }
     ],
     
+    // Flagged links database
+    flaggedLinks: [
+        { domain: 'bit.ly', type: 'shortener', risk: 'medium', detections: 4521, platforms: 'all', note: 'Link shortener - reduces trust' },
+        { domain: 'linktr.ee', type: 'aggregator', risk: 'medium', detections: 3847, platforms: 'instagram', note: 'May reduce organic reach' },
+        { domain: 'tinyurl.com', type: 'shortener', risk: 'medium', detections: 2156, platforms: 'all', note: 'Link shortener - spam indicator' },
+        { domain: 'onlyfans.com', type: 'adult', risk: 'high', detections: 1892, platforms: 'instagram,tiktok', note: 'Adult content - often banned' },
+        { domain: 'beacons.ai', type: 'aggregator', risk: 'low', detections: 1654, platforms: 'instagram', note: 'Link aggregator' },
+        { domain: 'amzn.to', type: 'affiliate', risk: 'low', detections: 1432, platforms: 'all', note: 'Amazon affiliate link' },
+        { domain: 'free-followers.net', type: 'spam', risk: 'critical', detections: 987, platforms: 'all', note: 'Known spam domain' },
+        { domain: 'rebrand.ly', type: 'shortener', risk: 'low', detections: 876, platforms: 'all', note: 'Branded shortener' },
+        { domain: 'shareasale.com', type: 'affiliate', risk: 'medium', detections: 743, platforms: 'all', note: 'Affiliate network' },
+        { domain: 'clickbank.net', type: 'affiliate', risk: 'high', detections: 654, platforms: 'all', note: 'Often flagged as spam' }
+    ],
+    
+    // Flagged words/phrases database
+    flaggedWords: [
+        { phrase: 'free money', category: 'spam', risk: 'high', detections: 3241, platforms: 'all' },
+        { phrase: 'guaranteed returns', category: 'cryptoScams', risk: 'high', detections: 2876, platforms: 'all' },
+        { phrase: 'dm for collab', category: 'promotional', risk: 'medium', detections: 2543, platforms: 'instagram' },
+        { phrase: 'follow for follow', category: 'engagementBait', risk: 'medium', detections: 2198, platforms: 'all' },
+        { phrase: 'link in bio', category: 'promotional', risk: 'low', detections: 1987, platforms: 'instagram,tiktok' },
+        { phrase: 'vaccine injury', category: 'healthMisinfo', risk: 'high', detections: 1654, platforms: 'all' },
+        { phrase: 'election fraud', category: 'political', risk: 'high', detections: 1432, platforms: 'all' },
+        { phrase: '100x gains', category: 'cryptoScams', risk: 'high', detections: 1287, platforms: 'all' },
+        { phrase: 'passive income', category: 'promotional', risk: 'medium', detections: 1098, platforms: 'all' },
+        { phrase: 'smash that like', category: 'engagementBait', risk: 'low', detections: 987, platforms: 'youtube' }
+    ],
+    
     // Export history
     exportHistory: [
         { id: 1, name: 'All Detections - Nov 2025', format: 'CSV', rows: 8543, date: '2025-11-28', size: '2.4 MB' },
@@ -121,11 +157,11 @@ const DemoData = {
         { id: 3, name: 'Hashtag Database Snapshot', format: 'JSON', rows: 1847, date: '2025-11-20', size: '892 KB' }
     ],
     
-    // Usage tracking
+    // Usage tracking - persisted to localStorage
     usage: {
-        questions: 12,
-        exports: 3,
-        resetDate: new Date(Date.now() + 8 * 24 * 60 * 60 * 1000)
+        questions: 0,
+        exports: 0,
+        resetDate: null
     }
 };
 
@@ -142,11 +178,65 @@ const Auth = {
     },
     
     logout() {
+        console.log('🚪 Logging out...');
         localStorage.removeItem(this.STORAGE_KEY);
         sessionStorage.removeItem(this.STORAGE_KEY);
         window.location.href = 'login.html';
     }
 };
+
+// Make Auth globally available
+window.Auth = Auth;
+
+// =============================================================================
+// USAGE STORAGE
+// =============================================================================
+function loadUsageData() {
+    try {
+        const stored = localStorage.getItem(CONFIG.storageKey);
+        if (stored) {
+            const data = JSON.parse(stored);
+            const now = new Date();
+            const resetDate = new Date(data.resetDate);
+            
+            // Check if we need to reset (new month)
+            if (now.getMonth() !== resetDate.getMonth() || now.getFullYear() !== resetDate.getFullYear()) {
+                // Reset for new month
+                DemoData.usage = {
+                    questions: 0,
+                    exports: 0,
+                    resetDate: getNextResetDate()
+                };
+                saveUsageData();
+            } else {
+                DemoData.usage = data;
+            }
+        } else {
+            // Initialize
+            DemoData.usage = {
+                questions: 12, // Demo starting value
+                exports: 3,
+                resetDate: getNextResetDate()
+            };
+            saveUsageData();
+        }
+    } catch (e) {
+        console.warn('Error loading usage data:', e);
+    }
+}
+
+function saveUsageData() {
+    try {
+        localStorage.setItem(CONFIG.storageKey, JSON.stringify(DemoData.usage));
+    } catch (e) {
+        console.warn('Error saving usage data:', e);
+    }
+}
+
+function getNextResetDate() {
+    const now = new Date();
+    return new Date(now.getFullYear(), now.getMonth() + 1, 1).toISOString();
+}
 
 // =============================================================================
 // TOAST
@@ -156,7 +246,10 @@ function showToast(icon, message, duration = 3000) {
     const toastIcon = document.getElementById('toast-icon');
     const toastMessage = document.getElementById('toast-message');
     
-    if (!toast) return;
+    if (!toast) {
+        console.log('Toast:', icon, message);
+        return;
+    }
     
     if (toastIcon) toastIcon.textContent = icon;
     if (toastMessage) toastMessage.textContent = message;
@@ -173,54 +266,90 @@ function showToast(icon, message, duration = 3000) {
 window.showToast = showToast;
 
 // =============================================================================
-// NAVIGATION
+// NAVIGATION - FIXED
 // =============================================================================
 function switchSection(sectionName, updateHash = true) {
+    console.log('📍 Switching to section:', sectionName);
+    
+    // Update nav items
     document.querySelectorAll('.nav-item').forEach(item => {
-        item.classList.toggle('active', item.dataset.section === sectionName);
+        const itemSection = item.dataset.section || item.getAttribute('data-section');
+        item.classList.toggle('active', itemSection === sectionName);
     });
     
+    // Update sections
     document.querySelectorAll('.dashboard-section').forEach(section => {
         const sectionId = section.id.replace('section-', '');
-        section.classList.toggle('active', sectionId === sectionName);
+        const isActive = sectionId === sectionName;
+        section.classList.toggle('active', isActive);
+        
+        if (isActive) {
+            console.log('✅ Activated section:', section.id);
+        }
     });
     
-    document.querySelector('.research-sidebar')?.classList.remove('open');
+    // Close mobile sidebar
+    const sidebar = document.querySelector('.research-sidebar');
+    if (sidebar) sidebar.classList.remove('open');
     
-    if (updateHash) history.pushState(null, '', `#${sectionName}`);
+    // Update URL hash
+    if (updateHash) {
+        history.pushState(null, '', `#${sectionName}`);
+    }
+    
+    // Scroll to top
+    window.scrollTo(0, 0);
 }
 
 window.switchSection = switchSection;
 
 function initNavigation() {
+    console.log('🔗 Initializing navigation...');
+    
+    // Bind click handlers to all nav items
     document.querySelectorAll('.nav-item[data-section]').forEach(item => {
         item.addEventListener('click', (e) => {
             e.preventDefault();
-            switchSection(item.dataset.section);
+            const section = item.dataset.section || item.getAttribute('data-section');
+            console.log('Nav clicked:', section);
+            switchSection(section);
         });
     });
     
+    // Handle initial hash
     const hash = window.location.hash.slice(1);
-    if (hash) switchSection(hash, false);
+    if (hash) {
+        console.log('Initial hash:', hash);
+        switchSection(hash, false);
+    }
     
+    // Handle hash changes
     window.addEventListener('hashchange', () => {
         const hash = window.location.hash.slice(1);
         if (hash) switchSection(hash, false);
     });
     
-    // Mobile menu
+    // Mobile menu toggle
     const menuToggle = document.getElementById('menu-toggle');
     const sidebar = document.querySelector('.research-sidebar');
     
     if (menuToggle && sidebar) {
-        menuToggle.addEventListener('click', () => sidebar.classList.toggle('open'));
+        menuToggle.addEventListener('click', (e) => {
+            e.stopPropagation();
+            sidebar.classList.toggle('open');
+        });
         
+        // Close on outside click
         document.addEventListener('click', (e) => {
-            if (sidebar.classList.contains('open') && !sidebar.contains(e.target) && !menuToggle.contains(e.target)) {
+            if (sidebar.classList.contains('open') && 
+                !sidebar.contains(e.target) && 
+                !menuToggle.contains(e.target)) {
                 sidebar.classList.remove('open');
             }
         });
     }
+    
+    console.log('✅ Navigation initialized');
 }
 
 // =============================================================================
@@ -228,8 +357,9 @@ function initNavigation() {
 // =============================================================================
 const UsageTracker = {
     getDaysUntilReset() {
-        const diff = DemoData.usage.resetDate - new Date();
-        return Math.ceil(diff / (1000 * 60 * 60 * 24));
+        if (!DemoData.usage.resetDate) return 30;
+        const diff = new Date(DemoData.usage.resetDate) - new Date();
+        return Math.max(1, Math.ceil(diff / (1000 * 60 * 60 * 24)));
     },
     
     calculateCost() {
@@ -273,31 +403,39 @@ const UsageTracker = {
         const statExports = document.getElementById('stat-exports');
         if (statExports) statExports.textContent = usage.exports;
         
-        // Progress bars (visual)
+        // Progress bars
         const questionBar = document.querySelector('.usage-item:first-child .usage-bar-fill');
         const exportBar = document.querySelector('.usage-item:last-child .usage-bar-fill');
         
         if (questionBar) {
-            // Arbitrary scale for visualization - 50 questions = 100%
             questionBar.style.width = `${Math.min(100, (usage.questions / 50) * 100)}%`;
         }
         
         if (exportBar) {
-            // Arbitrary scale - 50 exports = 100%
             exportBar.style.width = `${Math.min(100, (usage.exports / 50) * 100)}%`;
         }
     },
     
     incrementQuestion() {
         DemoData.usage.questions++;
+        saveUsageData();
         this.update();
         showToast('🤖', `AI question charged: $${CONFIG.perQuestion}`);
+        console.log('💰 AI question billed: $' + CONFIG.perQuestion + ' | Total questions: ' + DemoData.usage.questions);
     },
     
     incrementExport() {
         DemoData.usage.exports++;
+        saveUsageData();
         this.update();
     }
+};
+
+window.UsageTracker = UsageTracker;
+
+// Hook for Shadow AI billing
+window.billResearchQuestion = function() {
+    UsageTracker.incrementQuestion();
 };
 
 // =============================================================================
@@ -320,6 +458,7 @@ const ResearchManager = {
     
     // Format timestamp
     formatTime(date) {
+        if (!(date instanceof Date)) date = new Date(date);
         const diff = Date.now() - date.getTime();
         const hours = Math.floor(diff / 3600000);
         if (hours < 1) return 'Just now';
@@ -332,6 +471,13 @@ const ResearchManager = {
         if (prob >= 70) return 'high';
         if (prob >= 40) return 'medium';
         return 'low';
+    },
+    
+    // Get risk class
+    getRiskClass(risk) {
+        if (risk === 'critical' || risk === 'high') return 'danger';
+        if (risk === 'medium') return 'warning';
+        return 'healthy';
     },
     
     // Get factor class
@@ -388,7 +534,6 @@ const ResearchManager = {
         
         showToast('🔍', 'Searching data...');
         
-        // Simulate search
         setTimeout(() => {
             this.renderSearchResults();
         }, 800);
@@ -402,7 +547,6 @@ const ResearchManager = {
         
         if (!container) return;
         
-        // Generate fake filtered results based on filters
         let results = [...DemoData.recentDetections];
         
         // Filter by platform
@@ -431,7 +575,7 @@ const ResearchManager = {
         }
         
         // Update count
-        const totalResults = results.length * 1000 + Math.floor(Math.random() * 500); // Fake larger number
+        const totalResults = results.length * 1000 + Math.floor(Math.random() * 500);
         if (countEl) countEl.textContent = `(${totalResults.toLocaleString()} results)`;
         if (badgeEl) badgeEl.textContent = `Found ${totalResults.toLocaleString()}`;
         
@@ -521,13 +665,11 @@ const ResearchManager = {
         
         let hashtags = [...DemoData.hashtags];
         
-        // Filter by query
         if (query) {
             const q = query.toLowerCase().replace('#', '');
             hashtags = hashtags.filter(h => h.tag.toLowerCase().includes(q));
         }
         
-        // Filter by platform
         if (platform !== 'all') {
             hashtags = hashtags.filter(h => h.platform === platform || h.platform === 'all');
         }
@@ -573,6 +715,153 @@ const ResearchManager = {
         }).join('');
     },
     
+    // Search flagged links
+    searchFlaggedLinks() {
+        const query = document.getElementById('link-search')?.value || '';
+        const type = document.getElementById('link-type')?.value || 'all';
+        
+        showToast('🔍', 'Searching flagged links...');
+        
+        setTimeout(() => {
+            this.renderFlaggedLinks(query, type);
+        }, 500);
+    },
+    
+    // Render flagged links
+    renderFlaggedLinks(query = '', type = 'all') {
+        const container = document.getElementById('flagged-links-results');
+        if (!container) return;
+        
+        let links = [...DemoData.flaggedLinks];
+        
+        if (query) {
+            const q = query.toLowerCase();
+            links = links.filter(l => l.domain.toLowerCase().includes(q));
+        }
+        
+        if (type !== 'all') {
+            links = links.filter(l => l.type === type);
+        }
+        
+        if (links.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state-small">
+                    <span>🔗</span>
+                    <p>No flagged links found matching your criteria.</p>
+                </div>
+            `;
+            return;
+        }
+        
+        container.innerHTML = links.map(l => {
+            const riskBadge = {
+                critical: '<span class="badge danger">Critical</span>',
+                high: '<span class="badge danger">High Risk</span>',
+                medium: '<span class="badge warning">Medium</span>',
+                low: '<span class="badge info">Low</span>'
+            }[l.risk] || '<span class="badge">Unknown</span>';
+            
+            const typeIcon = {
+                shortener: '🔗',
+                aggregator: '📎',
+                affiliate: '💰',
+                spam: '🚫',
+                adult: '🔞'
+            }[l.type] || '🔗';
+            
+            return `
+                <div class="result-item">
+                    <div class="result-icon ${this.getRiskClass(l.risk)}">${typeIcon}</div>
+                    <div class="result-content">
+                        <div class="result-title">${l.domain}</div>
+                        <div class="result-meta">
+                            <span>Type: ${l.type}</span> • 
+                            <span>Platforms: ${l.platforms}</span>
+                        </div>
+                        <div class="result-meta" style="margin-top: 0.25rem; font-style: italic;">${l.note}</div>
+                    </div>
+                    <div class="result-score">
+                        ${riskBadge}
+                        <span class="score-label" style="margin-top: 0.25rem;">${l.detections.toLocaleString()} detections</span>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    },
+    
+    // Search flagged words
+    searchFlaggedWords() {
+        const query = document.getElementById('word-search')?.value || '';
+        const category = document.getElementById('word-category')?.value || 'all';
+        
+        showToast('🔍', 'Searching flagged content...');
+        
+        setTimeout(() => {
+            this.renderFlaggedWords(query, category);
+        }, 500);
+    },
+    
+    // Render flagged words
+    renderFlaggedWords(query = '', category = 'all') {
+        const container = document.getElementById('flagged-words-results');
+        if (!container) return;
+        
+        let words = [...DemoData.flaggedWords];
+        
+        if (query) {
+            const q = query.toLowerCase();
+            words = words.filter(w => w.phrase.toLowerCase().includes(q));
+        }
+        
+        if (category !== 'all') {
+            words = words.filter(w => w.category === category);
+        }
+        
+        if (words.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state-small">
+                    <span>📝</span>
+                    <p>No flagged content found matching your criteria.</p>
+                </div>
+            `;
+            return;
+        }
+        
+        container.innerHTML = words.map(w => {
+            const riskBadge = {
+                high: '<span class="badge danger">High Risk</span>',
+                medium: '<span class="badge warning">Medium</span>',
+                low: '<span class="badge info">Low</span>'
+            }[w.risk] || '<span class="badge">Unknown</span>';
+            
+            const catIcon = {
+                spam: '🚫',
+                cryptoScams: '💰',
+                promotional: '📢',
+                engagementBait: '🎣',
+                healthMisinfo: '💊',
+                political: '🏛️'
+            }[w.category] || '📝';
+            
+            return `
+                <div class="result-item">
+                    <div class="result-icon ${this.getRiskClass(w.risk)}">${catIcon}</div>
+                    <div class="result-content">
+                        <div class="result-title">"${w.phrase}"</div>
+                        <div class="result-meta">
+                            <span>Category: ${w.category}</span> • 
+                            <span>Platforms: ${w.platforms}</span>
+                        </div>
+                    </div>
+                    <div class="result-score">
+                        ${riskBadge}
+                        <span class="score-label" style="margin-top: 0.25rem;">${w.detections.toLocaleString()} detections</span>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    },
+    
     // Export functions
     exportResults() {
         showToast('📥', 'Preparing export...');
@@ -601,12 +890,32 @@ const ResearchManager = {
         }, 1000);
     },
     
+    exportFlaggedLinks() {
+        showToast('📥', 'Exporting flagged links...');
+        setTimeout(() => {
+            UsageTracker.incrementExport();
+            this.addExportToHistory('Flagged Links Database', 'CSV', DemoData.flaggedLinks.length);
+            showToast('✅', 'Flagged links export complete!');
+        }, 1000);
+    },
+    
+    exportFlaggedWords() {
+        showToast('📥', 'Exporting flagged content...');
+        setTimeout(() => {
+            UsageTracker.incrementExport();
+            this.addExportToHistory('Flagged Content Database', 'CSV', DemoData.flaggedWords.length);
+            showToast('✅', 'Flagged content export complete!');
+        }, 1000);
+    },
+    
     exportQuick(type) {
         const exports = {
             'all-detections': { name: 'All Detections (Last 30 days)', format: 'CSV', rows: 8500 },
             'hashtags': { name: 'Flagged Hashtags Database', format: 'CSV', rows: 1847 },
             'high-prob': { name: 'High Probability Detections', format: 'CSV', rows: 2100 },
-            'trends': { name: 'Trend Analysis Report', format: 'JSON', rows: 52 }
+            'trends': { name: 'Trend Analysis Report', format: 'JSON', rows: 52 },
+            'flagged-links': { name: 'Flagged Links Database', format: 'CSV', rows: 892 },
+            'flagged-words': { name: 'Flagged Content Database', format: 'CSV', rows: 2341 }
         };
         
         const exp = exports[type];
@@ -688,20 +997,19 @@ const ResearchManager = {
         }
     },
     
-    // Initialize hashtag tabs
-    initHashtagTabs() {
-        const tabs = document.querySelectorAll('#section-hashtags .results-tab');
+    // Initialize tabs
+    initTabs(sectionId, resultsId, filterFn) {
+        const tabs = document.querySelectorAll(`#section-${sectionId} .results-tab`);
         tabs.forEach(tab => {
             tab.addEventListener('click', () => {
                 tabs.forEach(t => t.classList.remove('active'));
                 tab.classList.add('active');
-                
-                const filter = tab.dataset.filter;
-                this.filterHashtags(filter);
+                filterFn(tab.dataset.filter);
             });
         });
     },
     
+    // Filter hashtags by status
     filterHashtags(status) {
         const container = document.getElementById('hashtag-results');
         if (!container) return;
@@ -712,7 +1020,6 @@ const ResearchManager = {
             hashtags = hashtags.filter(h => h.status === status);
         }
         
-        // Re-render with filtered data
         if (hashtags.length === 0) {
             container.innerHTML = `
                 <div class="empty-state-small">
@@ -723,35 +1030,45 @@ const ResearchManager = {
             return;
         }
         
-        container.innerHTML = hashtags.map(h => {
-            const statusBadge = {
-                banned: '<span class="badge danger">Banned</span>',
-                suppressed: '<span class="badge warning">Suppressed</span>',
-                restricted: '<span class="badge info">Restricted</span>',
-                monitored: '<span class="badge">Monitored</span>'
-            }[h.status] || '<span class="badge">Unknown</span>';
-            
-            const platformInfo = h.platform === 'all' 
-                ? { icon: '🌐', name: 'All Platforms' }
-                : this.getPlatformInfo(h.platform);
-            
-            return `
-                <div class="result-item">
-                    <div class="result-icon ${h.status === 'banned' ? 'danger' : h.status === 'suppressed' ? 'warning' : 'healthy'}">#️⃣</div>
-                    <div class="result-content">
-                        <div class="result-title">${h.tag}</div>
-                        <div class="result-meta">
-                            <span>${platformInfo.icon} ${platformInfo.name}</span> • 
-                            <span>Last seen: ${h.lastSeen}</span>
-                        </div>
-                    </div>
-                    <div class="result-score">
-                        ${statusBadge}
-                        <span class="score-label" style="margin-top: 0.25rem;">${h.detections.toLocaleString()} detections</span>
-                    </div>
-                </div>
-            `;
-        }).join('');
+        this.renderHashtags('', 'all');
+        // Re-filter after render
+        if (status !== 'all') {
+            const items = container.querySelectorAll('.result-item');
+            items.forEach(item => {
+                const badge = item.querySelector('.badge');
+                if (badge && !badge.textContent.toLowerCase().includes(status)) {
+                    item.style.display = 'none';
+                }
+            });
+        }
+    },
+    
+    // Filter links by risk
+    filterLinks(risk) {
+        const container = document.getElementById('flagged-links-results');
+        if (!container) return;
+        
+        let links = [...DemoData.flaggedLinks];
+        
+        if (risk !== 'all') {
+            links = links.filter(l => l.risk === risk);
+        }
+        
+        this.renderFlaggedLinks('', 'all');
+    },
+    
+    // Filter words by risk
+    filterWords(risk) {
+        const container = document.getElementById('flagged-words-results');
+        if (!container) return;
+        
+        let words = [...DemoData.flaggedWords];
+        
+        if (risk !== 'all') {
+            words = words.filter(w => w.risk === risk);
+        }
+        
+        this.renderFlaggedWords('', 'all');
     }
 };
 
@@ -810,51 +1127,109 @@ const SupportChat = {
 // INIT
 // =============================================================================
 function init() {
-    console.log('🚀 Research Dashboard v1.0 initializing...');
+    console.log('🚀 Research Dashboard v2.0 initializing...');
     
+    // Load saved usage data
+    loadUsageData();
+    
+    // Initialize navigation
     initNavigation();
     
-    // Logout
-    document.querySelectorAll('.logout-btn, #research-logout-btn').forEach(btn => {
-        btn.addEventListener('click', () => { if (confirm('Logout?')) Auth.logout(); });
+    // Logout handlers - FIXED
+    const logoutBtns = document.querySelectorAll('.logout-btn, #research-logout-btn');
+    console.log('Found logout buttons:', logoutBtns.length);
+    
+    logoutBtns.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            console.log('Logout clicked');
+            if (confirm('Are you sure you want to logout?')) {
+                Auth.logout();
+            }
+        });
     });
     
     // Support form
-    document.getElementById('support-form')?.addEventListener('submit', (e) => {
-        e.preventDefault();
-        showToast('✅', 'Message sent!');
-        e.target.reset();
-    });
-    
-    // Search form
-    document.getElementById('search-keyword')?.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
+    const supportForm = document.getElementById('support-form');
+    if (supportForm) {
+        supportForm.addEventListener('submit', (e) => {
             e.preventDefault();
-            ResearchManager.search();
-        }
-    });
+            showToast('✅', 'Message sent!');
+            e.target.reset();
+        });
+    }
     
-    // Hashtag search
-    document.getElementById('hashtag-search')?.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            ResearchManager.searchHashtags();
-        }
-    });
+    // Search form enter key
+    const searchKeyword = document.getElementById('search-keyword');
+    if (searchKeyword) {
+        searchKeyword.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                ResearchManager.search();
+            }
+        });
+    }
+    
+    // Hashtag search enter key
+    const hashtagSearch = document.getElementById('hashtag-search');
+    if (hashtagSearch) {
+        hashtagSearch.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                ResearchManager.searchHashtags();
+            }
+        });
+    }
+    
+    // Link search enter key
+    const linkSearch = document.getElementById('link-search');
+    if (linkSearch) {
+        linkSearch.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                ResearchManager.searchFlaggedLinks();
+            }
+        });
+    }
+    
+    // Word search enter key
+    const wordSearch = document.getElementById('word-search');
+    if (wordSearch) {
+        wordSearch.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                ResearchManager.searchFlaggedWords();
+            }
+        });
+    }
     
     // Initial renders
     UsageTracker.update();
     ResearchManager.renderRecentDetections();
     ResearchManager.renderHashtags();
+    ResearchManager.renderFlaggedLinks();
+    ResearchManager.renderFlaggedWords();
     ResearchManager.renderExportHistory();
     ResearchManager.initPlatformFilters();
-    ResearchManager.initHashtagTabs();
+    
+    // Initialize tabs
+    ResearchManager.initTabs('hashtags', 'hashtag-results', ResearchManager.filterHashtags.bind(ResearchManager));
+    
+    // Initialize support chat
     SupportChat.init();
     
-    console.log('✅ Research Dashboard ready');
+    // Update stats
+    document.getElementById('stat-total-checks')?.textContent && 
+        (document.getElementById('stat-total-checks').textContent = DemoData.stats.totalChecks.toLocaleString());
+    document.getElementById('stat-flagged-links')?.textContent && 
+        (document.getElementById('stat-flagged-links').textContent = DemoData.stats.flaggedLinks.toLocaleString());
+    document.getElementById('stat-flagged-words')?.textContent && 
+        (document.getElementById('stat-flagged-words').textContent = DemoData.stats.flaggedWords.toLocaleString());
+    
+    console.log('✅ Research Dashboard v2.0 ready');
 }
 
-// Run
+// Run initialization
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
 } else {

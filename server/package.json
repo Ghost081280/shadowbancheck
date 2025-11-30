@@ -1,0 +1,32 @@
+{
+  "name": "shadowbancheck-api",
+  "version": "1.0.0",
+  "description": "ShadowBanCheck.io API - Real-time hashtag verification and shadow ban detection",
+  "main": "server/hashtag-engine.js",
+  "scripts": {
+    "start": "node server/hashtag-engine.js",
+    "dev": "nodemon server/hashtag-engine.js",
+    "test": "jest"
+  },
+  "keywords": [
+    "shadowban",
+    "hashtag",
+    "social-media",
+    "twitter",
+    "instagram",
+    "tiktok"
+  ],
+  "author": "ShadowBanCheck.io",
+  "license": "MIT",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "express-rate-limit": "^7.1.5"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

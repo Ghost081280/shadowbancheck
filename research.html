@@ -333,6 +333,76 @@
             color: var(--text-muted);
         }
         
+        /* Result item styling */
+        .result-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            padding: 1rem;
+            background: var(--bg-tertiary);
+            border-radius: var(--radius-md);
+            margin-bottom: 0.75rem;
+            border: 1px solid transparent;
+            transition: all var(--transition-fast);
+        }
+        
+        .result-item:hover {
+            border-color: var(--border-light);
+        }
+        
+        .result-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .result-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            flex-shrink: 0;
+        }
+        
+        .result-icon.healthy { background: var(--success-bg); }
+        .result-icon.warning { background: var(--warning-bg); }
+        .result-icon.danger { background: var(--danger-bg); }
+        
+        .result-content {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .result-title {
+            font-weight: 600;
+            font-size: 0.9375rem;
+            margin-bottom: 0.25rem;
+        }
+        
+        .result-meta {
+            font-size: 0.8125rem;
+            color: var(--text-muted);
+        }
+        
+        .result-score {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            text-align: right;
+        }
+        
+        .score-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+        
+        /* System chat bubble */
+        .system-bubble {
+            background: rgba(6, 182, 212, 0.1) !important;
+            border: 1px solid rgba(6, 182, 212, 0.2);
+        }
+        
         /* Responsive */
         @media (max-width: 1024px) {
             .search-form-grid {
@@ -413,6 +483,14 @@
                     <span class="nav-icon">#️⃣</span>
                     <span>Hashtag Data</span>
                 </a>
+                <a href="#flagged-links" class="nav-item" data-section="flagged-links">
+                    <span class="nav-icon">🔗</span>
+                    <span>Flagged Links</span>
+                </a>
+                <a href="#flagged-content" class="nav-item" data-section="flagged-content">
+                    <span class="nav-icon">📝</span>
+                    <span>Flagged Content</span>
+                </a>
                 <a href="#exports" class="nav-item" data-section="exports">
                     <span class="nav-icon">📥</span>
                     <span>Exports</span>
@@ -452,7 +530,9 @@
                 <button class="notif-btn">🔔</button>
             </header>
             
-            <!-- DASHBOARD SECTION -->
+            <!-- ================================================================
+                 DASHBOARD SECTION
+                 ================================================================ -->
             <section class="dashboard-section active" id="section-dashboard">
                 <div class="section-header">
                     <div>
@@ -520,6 +600,12 @@
                     </button>
                     <button class="quick-btn" onclick="switchSection('trends')">
                         <span>📈</span> View Trends
+                    </button>
+                    <button class="quick-btn" onclick="switchSection('flagged-links')">
+                        <span>🔗</span> Flagged Links
+                    </button>
+                    <button class="quick-btn" onclick="switchSection('flagged-content')">
+                        <span>📝</span> Flagged Content
                     </button>
                     <button class="quick-btn" onclick="window.ShadowAI && window.ShadowAI.open()">
                         <span>🤖</span> Ask Shadow AI
@@ -647,7 +733,9 @@
                 </div>
             </section>
             
-            <!-- SEARCH DATA SECTION -->
+            <!-- ================================================================
+                 SEARCH DATA SECTION
+                 ================================================================ -->
             <section class="dashboard-section" id="section-search">
                 <div class="section-header">
                     <div>
@@ -745,7 +833,9 @@
                 </div>
             </section>
             
-            <!-- TRENDS SECTION -->
+            <!-- ================================================================
+                 TRENDS SECTION
+                 ================================================================ -->
             <section class="dashboard-section" id="section-trends">
                 <div class="section-header">
                     <div>
@@ -849,7 +939,9 @@
                 </div>
             </section>
             
-            <!-- PLATFORMS SECTION -->
+            <!-- ================================================================
+                 PLATFORMS SECTION
+                 ================================================================ -->
             <section class="dashboard-section" id="section-platforms">
                 <div class="section-header">
                     <div>
@@ -958,7 +1050,9 @@
                 </div>
             </section>
             
-            <!-- HASHTAGS SECTION -->
+            <!-- ================================================================
+                 HASHTAGS SECTION
+                 ================================================================ -->
             <section class="dashboard-section" id="section-hashtags">
                 <div class="section-header">
                     <div>
@@ -1025,7 +1119,276 @@
                 </div>
             </section>
             
-            <!-- EXPORTS SECTION -->
+            <!-- ================================================================
+                 FLAGGED LINKS SECTION (NEW)
+                 ================================================================ -->
+            <section class="dashboard-section" id="section-flagged-links">
+                <div class="section-header">
+                    <div>
+                        <h1>🔗 Flagged Links Database</h1>
+                        <span class="section-subtitle">Browse domains and URLs that trigger platform filters</span>
+                    </div>
+                    <button class="export-btn" onclick="ResearchManager.exportFlaggedLinks()">📥 Export Links</button>
+                </div>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h3 id="stat-flagged-links">892</h3>
+                        <p>Total Flagged Domains</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>156</h3>
+                        <p>Link Shorteners</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>243</h3>
+                        <p>Affiliate Links</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>89</h3>
+                        <p>Blocked Domains</p>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h2>🔍 Search Flagged Links</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="tool-input-row">
+                            <div class="config-field" style="flex: 1;">
+                                <input type="text" id="link-search" class="input" placeholder="Search domains (e.g., bit.ly, linktree)...">
+                            </div>
+                            <div class="config-field" style="flex: 0 0 180px;">
+                                <select id="link-type" class="input">
+                                    <option value="all">All Types</option>
+                                    <option value="shortener">🔗 Shorteners</option>
+                                    <option value="aggregator">📎 Aggregators</option>
+                                    <option value="affiliate">💰 Affiliate</option>
+                                    <option value="spam">🚫 Spam</option>
+                                    <option value="adult">🔞 Adult</option>
+                                </select>
+                            </div>
+                            <button class="primary-btn" onclick="ResearchManager.searchFlaggedLinks()">🔍 Search</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="two-column" style="margin-top: 1.5rem;">
+                    <div class="card">
+                        <div class="card-header">
+                            <h2>📊 Link Types Distribution</h2>
+                        </div>
+                        <div class="card-body">
+                            <div style="display: flex; align-items: center; gap: 1rem; padding: 0.75rem 0; border-bottom: 1px solid var(--border);">
+                                <span style="width: 120px;">🔗 Shorteners</span>
+                                <div style="flex: 1; height: 8px; background: var(--bg); border-radius: 4px;"><div style="width: 35%; height: 100%; background: var(--info); border-radius: 4px;"></div></div>
+                                <span style="width: 60px; text-align: right; color: var(--text-muted);">35%</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 1rem; padding: 0.75rem 0; border-bottom: 1px solid var(--border);">
+                                <span style="width: 120px;">💰 Affiliate</span>
+                                <div style="flex: 1; height: 8px; background: var(--bg); border-radius: 4px;"><div style="width: 28%; height: 100%; background: var(--warning); border-radius: 4px;"></div></div>
+                                <span style="width: 60px; text-align: right; color: var(--text-muted);">28%</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 1rem; padding: 0.75rem 0; border-bottom: 1px solid var(--border);">
+                                <span style="width: 120px;">📎 Aggregators</span>
+                                <div style="flex: 1; height: 8px; background: var(--bg); border-radius: 4px;"><div style="width: 20%; height: 100%; background: var(--primary); border-radius: 4px;"></div></div>
+                                <span style="width: 60px; text-align: right; color: var(--text-muted);">20%</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 1rem; padding: 0.75rem 0;">
+                                <span style="width: 120px;">🚫 Spam/Adult</span>
+                                <div style="flex: 1; height: 8px; background: var(--bg); border-radius: 4px;"><div style="width: 17%; height: 100%; background: var(--danger); border-radius: 4px;"></div></div>
+                                <span style="width: 60px; text-align: right; color: var(--text-muted);">17%</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h2>🔥 Most Detected This Week</h2>
+                        </div>
+                        <div class="card-body">
+                            <div class="trend-item">
+                                <span class="trend-rank">1</span>
+                                <div class="trend-info">
+                                    <div class="trend-name">bit.ly</div>
+                                    <div class="trend-meta">Shortener • Medium Risk</div>
+                                </div>
+                                <span class="trend-count">4,521</span>
+                            </div>
+                            <div class="trend-item">
+                                <span class="trend-rank">2</span>
+                                <div class="trend-info">
+                                    <div class="trend-name">linktr.ee</div>
+                                    <div class="trend-meta">Aggregator • Medium Risk</div>
+                                </div>
+                                <span class="trend-count">3,847</span>
+                            </div>
+                            <div class="trend-item">
+                                <span class="trend-rank">3</span>
+                                <div class="trend-info">
+                                    <div class="trend-name">tinyurl.com</div>
+                                    <div class="trend-meta">Shortener • Medium Risk</div>
+                                </div>
+                                <span class="trend-count">2,156</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card" style="margin-top: 1.5rem;">
+                    <div class="card-header">
+                        <h2>📋 Flagged Links Database</h2>
+                        <div class="results-tabs">
+                            <button class="results-tab active" data-filter="all">All</button>
+                            <button class="results-tab" data-filter="critical">Critical</button>
+                            <button class="results-tab" data-filter="high">High</button>
+                            <button class="results-tab" data-filter="medium">Medium</button>
+                        </div>
+                    </div>
+                    <div class="card-body" id="flagged-links-results">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+            </section>
+            
+            <!-- ================================================================
+                 FLAGGED CONTENT SECTION (NEW)
+                 ================================================================ -->
+            <section class="dashboard-section" id="section-flagged-content">
+                <div class="section-header">
+                    <div>
+                        <h1>📝 Flagged Content Database</h1>
+                        <span class="section-subtitle">Words and phrases that trigger platform content filters</span>
+                    </div>
+                    <button class="export-btn" onclick="ResearchManager.exportFlaggedWords()">📥 Export Content</button>
+                </div>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h3 id="stat-flagged-words">2,341</h3>
+                        <p>Total Flagged Phrases</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>487</h3>
+                        <p>High Risk Terms</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>1,123</h3>
+                        <p>Medium Risk</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>731</h3>
+                        <p>Low Risk</p>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h2>🔍 Search Flagged Content</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="tool-input-row">
+                            <div class="config-field" style="flex: 1;">
+                                <input type="text" id="word-search" class="input" placeholder="Search words/phrases (e.g., free money, follow for follow)...">
+                            </div>
+                            <div class="config-field" style="flex: 0 0 180px;">
+                                <select id="word-category" class="input">
+                                    <option value="all">All Categories</option>
+                                    <option value="spam">🚫 Spam</option>
+                                    <option value="cryptoScams">💰 Crypto Scams</option>
+                                    <option value="promotional">📢 Promotional</option>
+                                    <option value="engagementBait">🎣 Engagement Bait</option>
+                                    <option value="healthMisinfo">💊 Health Misinfo</option>
+                                    <option value="political">🏛️ Political</option>
+                                </select>
+                            </div>
+                            <button class="primary-btn" onclick="ResearchManager.searchFlaggedWords()">🔍 Search</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="two-column" style="margin-top: 1.5rem;">
+                    <div class="card">
+                        <div class="card-header">
+                            <h2>📊 Content Categories</h2>
+                        </div>
+                        <div class="card-body">
+                            <div style="display: flex; align-items: center; gap: 1rem; padding: 0.75rem 0; border-bottom: 1px solid var(--border);">
+                                <span style="width: 140px;">🎣 Engagement Bait</span>
+                                <div style="flex: 1; height: 8px; background: var(--bg); border-radius: 4px;"><div style="width: 32%; height: 100%; background: var(--warning); border-radius: 4px;"></div></div>
+                                <span style="width: 60px; text-align: right; color: var(--text-muted);">32%</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 1rem; padding: 0.75rem 0; border-bottom: 1px solid var(--border);">
+                                <span style="width: 140px;">💰 Crypto/Finance</span>
+                                <div style="flex: 1; height: 8px; background: var(--bg); border-radius: 4px;"><div style="width: 25%; height: 100%; background: var(--danger); border-radius: 4px;"></div></div>
+                                <span style="width: 60px; text-align: right; color: var(--text-muted);">25%</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 1rem; padding: 0.75rem 0; border-bottom: 1px solid var(--border);">
+                                <span style="width: 140px;">📢 Promotional</span>
+                                <div style="flex: 1; height: 8px; background: var(--bg); border-radius: 4px;"><div style="width: 20%; height: 100%; background: var(--info); border-radius: 4px;"></div></div>
+                                <span style="width: 60px; text-align: right; color: var(--text-muted);">20%</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 1rem; padding: 0.75rem 0;">
+                                <span style="width: 140px;">🏛️ Political/Health</span>
+                                <div style="flex: 1; height: 8px; background: var(--bg); border-radius: 4px;"><div style="width: 23%; height: 100%; background: var(--primary); border-radius: 4px;"></div></div>
+                                <span style="width: 60px; text-align: right; color: var(--text-muted);">23%</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h2>🔥 Most Detected This Week</h2>
+                        </div>
+                        <div class="card-body">
+                            <div class="trend-item">
+                                <span class="trend-rank">1</span>
+                                <div class="trend-info">
+                                    <div class="trend-name">"free money"</div>
+                                    <div class="trend-meta">Spam • High Risk</div>
+                                </div>
+                                <span class="trend-count">3,241</span>
+                            </div>
+                            <div class="trend-item">
+                                <span class="trend-rank">2</span>
+                                <div class="trend-info">
+                                    <div class="trend-name">"guaranteed returns"</div>
+                                    <div class="trend-meta">Crypto Scam • High Risk</div>
+                                </div>
+                                <span class="trend-count">2,876</span>
+                            </div>
+                            <div class="trend-item">
+                                <span class="trend-rank">3</span>
+                                <div class="trend-info">
+                                    <div class="trend-name">"dm for collab"</div>
+                                    <div class="trend-meta">Promotional • Medium Risk</div>
+                                </div>
+                                <span class="trend-count">2,543</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card" style="margin-top: 1.5rem;">
+                    <div class="card-header">
+                        <h2>📋 Flagged Content Database</h2>
+                        <div class="results-tabs">
+                            <button class="results-tab active" data-filter="all">All</button>
+                            <button class="results-tab" data-filter="high">High Risk</button>
+                            <button class="results-tab" data-filter="medium">Medium</button>
+                            <button class="results-tab" data-filter="low">Low</button>
+                        </div>
+                    </div>
+                    <div class="card-body" id="flagged-words-results">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+            </section>
+            
+            <!-- ================================================================
+                 EXPORTS SECTION
+                 ================================================================ -->
             <section class="dashboard-section" id="section-exports">
                 <div class="section-header">
                     <div>
@@ -1059,7 +1422,7 @@
                             <h2>📊 Quick Exports</h2>
                         </div>
                         <div class="card-body">
-                            <div class="client-list-item" onclick="ResearchManager.exportQuick('all-detections')">
+                            <div class="client-list-item" onclick="ResearchManager.exportQuick('all-detections')" style="cursor: pointer;">
                                 <div class="client-avatar" style="background: linear-gradient(135deg, #06b6d4 0%, #22d3ee 100%);">📋</div>
                                 <div class="client-info">
                                     <div class="client-name">All Detections (Last 30 days)</div>
@@ -1067,7 +1430,7 @@
                                 </div>
                                 <span class="badge info">Export</span>
                             </div>
-                            <div class="client-list-item" onclick="ResearchManager.exportQuick('hashtags')">
+                            <div class="client-list-item" onclick="ResearchManager.exportQuick('hashtags')" style="cursor: pointer;">
                                 <div class="client-avatar" style="background: linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%);">#️⃣</div>
                                 <div class="client-info">
                                     <div class="client-name">Flagged Hashtags Database</div>
@@ -1075,15 +1438,31 @@
                                 </div>
                                 <span class="badge info">Export</span>
                             </div>
-                            <div class="client-list-item" onclick="ResearchManager.exportQuick('high-prob')">
-                                <div class="client-avatar" style="background: linear-gradient(135deg, #ef4444 0%, #f97316 100%);">🔴</div>
+                            <div class="client-list-item" onclick="ResearchManager.exportQuick('flagged-links')" style="cursor: pointer;">
+                                <div class="client-avatar" style="background: linear-gradient(135deg, #f59e0b 0%, #eab308 100%);">🔗</div>
+                                <div class="client-info">
+                                    <div class="client-name">Flagged Links Database</div>
+                                    <div class="client-meta">892 domains • CSV</div>
+                                </div>
+                                <span class="badge info">Export</span>
+                            </div>
+                            <div class="client-list-item" onclick="ResearchManager.exportQuick('flagged-words')" style="cursor: pointer;">
+                                <div class="client-avatar" style="background: linear-gradient(135deg, #ef4444 0%, #f97316 100%);">📝</div>
+                                <div class="client-info">
+                                    <div class="client-name">Flagged Content Database</div>
+                                    <div class="client-meta">2,341 phrases • CSV</div>
+                                </div>
+                                <span class="badge info">Export</span>
+                            </div>
+                            <div class="client-list-item" onclick="ResearchManager.exportQuick('high-prob')" style="cursor: pointer;">
+                                <div class="client-avatar" style="background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);">🔴</div>
                                 <div class="client-info">
                                     <div class="client-name">High Probability (70%+)</div>
                                     <div class="client-meta">~2,100 records • CSV</div>
                                 </div>
                                 <span class="badge info">Export</span>
                             </div>
-                            <div class="client-list-item" onclick="ResearchManager.exportQuick('trends')">
+                            <div class="client-list-item" onclick="ResearchManager.exportQuick('trends')" style="cursor: pointer;">
                                 <div class="client-avatar" style="background: linear-gradient(135deg, #22c55e 0%, #10b981 100%);">📈</div>
                                 <div class="client-info">
                                     <div class="client-name">Trend Analysis Report</div>
@@ -1105,7 +1484,9 @@
                 </div>
             </section>
             
-            <!-- SUPPORT SECTION -->
+            <!-- ================================================================
+                 SUPPORT SECTION
+                 ================================================================ -->
             <section class="dashboard-section" id="section-support">
                 <div class="section-header">
                     <div>
@@ -1169,7 +1550,9 @@
                 </div>
             </section>
             
-            <!-- BILLING SECTION -->
+            <!-- ================================================================
+                 BILLING SECTION
+                 ================================================================ -->
             <section class="dashboard-section" id="section-billing">
                 <div class="section-header">
                     <div>
@@ -1240,7 +1623,9 @@
                 </div>
             </section>
             
-            <!-- SETTINGS SECTION -->
+            <!-- ================================================================
+                 SETTINGS SECTION
+                 ================================================================ -->
             <section class="dashboard-section" id="section-settings">
                 <div class="section-header">
                     <div>

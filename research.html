@@ -1,0 +1,1328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Research Dashboard | ShadowBanCheck.io</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔬</text></svg>">
+    
+    <!-- Unified Dashboard Styles -->
+    <link rel="stylesheet" href="css/dashboard-shared.css">
+    <link rel="stylesheet" href="css/shadow-ai.css">
+    
+    <!-- Research-specific overrides -->
+    <style>
+        /* Research accent color (teal/cyan) */
+        .research-layout .stat-card h3 {
+            background: linear-gradient(135deg, #06b6d4 0%, #22d3ee 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .research-sidebar .logo-text {
+            background: linear-gradient(135deg, #06b6d4 0%, #22d3ee 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .research-sidebar .nav-item.active {
+            background: linear-gradient(135deg, rgba(6, 182, 212, 0.2) 0%, rgba(34, 211, 238, 0.1) 100%);
+            color: #22d3ee;
+            border-right-color: #06b6d4;
+        }
+        
+        .research-layout .primary-btn {
+            background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+        }
+        
+        .research-layout .primary-btn:hover {
+            box-shadow: 0 4px 20px rgba(6, 182, 212, 0.3);
+        }
+        
+        .research-layout .quick-btn:hover {
+            border-color: #06b6d4;
+            color: #22d3ee;
+        }
+        
+        .research-layout .usage-item-value {
+            color: #22d3ee;
+        }
+        
+        .research-layout .usage-bar-fill {
+            background: linear-gradient(90deg, #06b6d4 0%, #22d3ee 100%);
+        }
+        
+        .research-layout .tool-card-wide.featured {
+            border-color: #06b6d4;
+            box-shadow: 0 0 30px rgba(6, 182, 212, 0.15);
+        }
+        
+        .research-layout .tool-card-wide.featured .tool-card-header {
+            background: linear-gradient(135deg, rgba(6, 182, 212, 0.1) 0%, rgba(34, 211, 238, 0.05) 100%);
+        }
+        
+        /* Data visualization cards */
+        .data-viz-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+        }
+        
+        .data-viz-header {
+            padding: 1rem 1.25rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .data-viz-header h3 {
+            font-size: 1rem;
+            font-weight: 600;
+        }
+        
+        .data-viz-body {
+            padding: 1.25rem;
+        }
+        
+        /* Platform filter pills */
+        .platform-filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .platform-pill {
+            padding: 0.5rem 1rem;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-full);
+            font-size: 0.8125rem;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+        
+        .platform-pill:hover {
+            border-color: #06b6d4;
+            color: #22d3ee;
+        }
+        
+        .platform-pill.active {
+            background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+            border-color: #06b6d4;
+            color: white;
+        }
+        
+        /* Trend item */
+        .trend-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.75rem;
+            background: var(--bg-tertiary);
+            border-radius: var(--radius-md);
+            margin-bottom: 0.5rem;
+        }
+        
+        .trend-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .trend-rank {
+            width: 28px;
+            height: 28px;
+            background: linear-gradient(135deg, #06b6d4 0%, #22d3ee 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.75rem;
+            color: white;
+        }
+        
+        .trend-info {
+            flex: 1;
+        }
+        
+        .trend-name {
+            font-weight: 600;
+            font-size: 0.9375rem;
+        }
+        
+        .trend-meta {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+        
+        .trend-count {
+            font-weight: 700;
+            color: #22d3ee;
+        }
+        
+        /* Data export button */
+        .export-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            color: var(--text-muted);
+            font-size: 0.8125rem;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+        
+        .export-btn:hover {
+            border-color: #06b6d4;
+            color: #22d3ee;
+        }
+        
+        /* Search form */
+        .search-form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 1rem;
+        }
+        
+        .search-form-grid .config-field.full-width {
+            grid-column: 1 / -1;
+        }
+        
+        .search-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        /* Simple bar chart visualization */
+        .chart-bars {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+        
+        .chart-bar-row {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .chart-bar-label {
+            width: 100px;
+            font-size: 0.8125rem;
+            color: var(--text-secondary);
+        }
+        
+        .chart-bar-track {
+            flex: 1;
+            height: 24px;
+            background: var(--bg-tertiary);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+        }
+        
+        .chart-bar-fill {
+            height: 100%;
+            border-radius: var(--radius-md);
+            transition: width 0.5s ease;
+        }
+        
+        .chart-bar-fill.twitter { background: linear-gradient(90deg, #1DA1F2 0%, #0d8de0 100%); }
+        .chart-bar-fill.instagram { background: linear-gradient(90deg, #E4405F 0%, #d92452 100%); }
+        .chart-bar-fill.tiktok { background: linear-gradient(90deg, #00f2ea 0%, #ff0050 100%); }
+        .chart-bar-fill.reddit { background: linear-gradient(90deg, #FF5700 0%, #e04d00 100%); }
+        .chart-bar-fill.facebook { background: linear-gradient(90deg, #1877F2 0%, #0d6ae0 100%); }
+        .chart-bar-fill.linkedin { background: linear-gradient(90deg, #0A66C2 0%, #0855a5 100%); }
+        
+        .chart-bar-value {
+            width: 80px;
+            text-align: right;
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+        
+        /* Data point preview card */
+        .data-preview-card {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+        }
+        
+        .data-preview-card:last-child {
+            margin-bottom: 0;
+        }
+        
+        .data-preview-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.75rem;
+        }
+        
+        .data-preview-platform {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .data-preview-platform span {
+            font-size: 1.25rem;
+        }
+        
+        .data-preview-platform strong {
+            font-size: 0.9375rem;
+        }
+        
+        .data-preview-score {
+            padding: 0.25rem 0.75rem;
+            border-radius: var(--radius-full);
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        .data-preview-score.high { background: rgba(239, 68, 68, 0.15); color: var(--danger); }
+        .data-preview-score.medium { background: rgba(245, 158, 11, 0.15); color: var(--warning); }
+        .data-preview-score.low { background: rgba(34, 197, 94, 0.15); color: var(--success); }
+        
+        .data-preview-content {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.75rem;
+            line-height: 1.5;
+        }
+        
+        .data-preview-factors {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-bottom: 0.75rem;
+        }
+        
+        .factor-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.25rem 0.5rem;
+            background: var(--bg);
+            border-radius: var(--radius-sm);
+            font-size: 0.6875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.025em;
+        }
+        
+        .factor-chip.positive { color: var(--success); }
+        .factor-chip.warning { color: var(--warning); }
+        .factor-chip.negative { color: var(--danger); }
+        .factor-chip.neutral { color: var(--text-muted); }
+        
+        .data-preview-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+        
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .search-form-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .search-form-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .chart-bar-label {
+                width: 70px;
+                font-size: 0.75rem;
+            }
+        }
+    </style>
+</head>
+<body class="dashboard-page">
+    <!-- Auth Check -->
+    <script>
+        (function() {
+            const session = localStorage.getItem('shadowban_session') || sessionStorage.getItem('shadowban_session');
+            if (!session) {
+                window.location.href = 'login.html';
+                return;
+            }
+            try {
+                const data = JSON.parse(session);
+                if (!data.loggedIn) {
+                    window.location.href = 'login.html';
+                    return;
+                }
+                // Allow research role or admin
+                if (data.role !== 'research' && !data.isResearcher && data.role !== 'admin' && !data.isAdmin) {
+                    if (data.isAgency || data.role === 'agency') {
+                        window.location.href = 'agency.html';
+                    } else {
+                        window.location.href = 'pro.html';
+                    }
+                    return;
+                }
+            } catch (e) {
+                localStorage.removeItem('shadowban_session');
+                sessionStorage.removeItem('shadowban_session');
+                window.location.href = 'login.html';
+            }
+        })();
+    </script>
+
+    <div class="research-layout dashboard-layout">
+        <!-- SIDEBAR -->
+        <aside class="research-sidebar dashboard-sidebar">
+            <div class="sidebar-logo">
+                <span class="logo-icon">🔬</span>
+                <span class="logo-text">Research Portal</span>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <a href="#dashboard" class="nav-item active" data-section="dashboard">
+                    <span class="nav-icon">📊</span>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#search" class="nav-item" data-section="search">
+                    <span class="nav-icon">🔍</span>
+                    <span>Search Data</span>
+                </a>
+                <a href="#trends" class="nav-item" data-section="trends">
+                    <span class="nav-icon">📈</span>
+                    <span>Trends</span>
+                </a>
+                <a href="#platforms" class="nav-item" data-section="platforms">
+                    <span class="nav-icon">🌐</span>
+                    <span>Platforms</span>
+                </a>
+                <a href="#hashtags" class="nav-item" data-section="hashtags">
+                    <span class="nav-icon">#️⃣</span>
+                    <span>Hashtag Data</span>
+                </a>
+                <a href="#exports" class="nav-item" data-section="exports">
+                    <span class="nav-icon">📥</span>
+                    <span>Exports</span>
+                </a>
+                
+                <div class="nav-section-title">Account</div>
+                <a href="#support" class="nav-item" data-section="support">
+                    <span class="nav-icon">💬</span>
+                    <span>Support</span>
+                </a>
+                <a href="#billing" class="nav-item" data-section="billing">
+                    <span class="nav-icon">💳</span>
+                    <span>Billing</span>
+                </a>
+                <a href="#settings" class="nav-item" data-section="settings">
+                    <span class="nav-icon">⚙️</span>
+                    <span>Settings</span>
+                </a>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <a href="index.html" class="sidebar-link">
+                    <span>🏠</span> <span>Back to Site</span>
+                </a>
+                <button class="sidebar-link logout-btn" id="research-logout-btn">
+                    <span>🚪</span> <span>Logout</span>
+                </button>
+            </div>
+        </aside>
+        
+        <!-- MAIN CONTENT -->
+        <main class="research-main dashboard-main">
+            <!-- Mobile Header -->
+            <header class="mobile-header">
+                <button class="menu-toggle" id="menu-toggle">☰</button>
+                <span>Research Dashboard</span>
+                <button class="notif-btn">🔔</button>
+            </header>
+            
+            <!-- DASHBOARD SECTION -->
+            <section class="dashboard-section active" id="section-dashboard">
+                <div class="section-header">
+                    <div>
+                        <h1>🔬 Research Dashboard</h1>
+                        <span class="section-subtitle">Explore suppression patterns across platforms</span>
+                    </div>
+                    <button class="primary-btn" onclick="switchSection('search')">
+                        🔍 Search Data
+                    </button>
+                </div>
+                
+                <!-- Usage Tracker -->
+                <div class="usage-tracker">
+                    <div class="usage-header">
+                        <h3>📊 This Month's Usage</h3>
+                        <span class="badge info">Research Access - $49/mo</span>
+                    </div>
+                    <div class="usage-bars">
+                        <div class="usage-item">
+                            <div class="usage-item-header">
+                                <span class="usage-item-label">AI Analysis Questions</span>
+                                <span class="usage-item-value" id="usage-questions">12 questions</span>
+                            </div>
+                            <div class="usage-bar">
+                                <div class="usage-bar-fill" style="width: 24%"></div>
+                            </div>
+                        </div>
+                        <div class="usage-item">
+                            <div class="usage-item-header">
+                                <span class="usage-item-label">Data Exports</span>
+                                <span class="usage-item-value" id="usage-exports">3 exports</span>
+                            </div>
+                            <div class="usage-bar">
+                                <div class="usage-bar-fill" style="width: 6%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="usage-estimate">
+                        AI Questions: <strong>$3.00</strong> (12 × $0.25) • Resets in 8 days
+                    </div>
+                </div>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h3 id="stat-total-checks">127,453</h3>
+                        <p>Total Checks Analyzed</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3 id="stat-avg-prob">34.2%</h3>
+                        <p>Avg Probability</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3 id="stat-flagged-tags">1,847</h3>
+                        <p>Flagged Hashtags</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3 id="stat-platforms">6</h3>
+                        <p>Platforms Tracked</p>
+                    </div>
+                </div>
+                
+                <div class="quick-actions">
+                    <button class="quick-btn" onclick="switchSection('search')">
+                        <span>🔍</span> Search Data
+                    </button>
+                    <button class="quick-btn" onclick="switchSection('trends')">
+                        <span>📈</span> View Trends
+                    </button>
+                    <button class="quick-btn" onclick="window.ShadowAI && window.ShadowAI.open()">
+                        <span>🤖</span> Ask Shadow AI
+                    </button>
+                    <button class="quick-btn" onclick="switchSection('exports')">
+                        <span>📥</span> Export Data
+                    </button>
+                </div>
+                
+                <div class="two-column">
+                    <!-- Suppression by Platform -->
+                    <div class="data-viz-card">
+                        <div class="data-viz-header">
+                            <h3>📊 Suppression by Platform</h3>
+                            <span class="badge">Last 30 days</span>
+                        </div>
+                        <div class="data-viz-body">
+                            <div class="chart-bars" id="platform-chart">
+                                <div class="chart-bar-row">
+                                    <span class="chart-bar-label">🐦 Twitter/X</span>
+                                    <div class="chart-bar-track">
+                                        <div class="chart-bar-fill twitter" style="width: 78%"></div>
+                                    </div>
+                                    <span class="chart-bar-value">42,156</span>
+                                </div>
+                                <div class="chart-bar-row">
+                                    <span class="chart-bar-label">📸 Instagram</span>
+                                    <div class="chart-bar-track">
+                                        <div class="chart-bar-fill instagram" style="width: 62%"></div>
+                                    </div>
+                                    <span class="chart-bar-value">33,421</span>
+                                </div>
+                                <div class="chart-bar-row">
+                                    <span class="chart-bar-label">🎵 TikTok</span>
+                                    <div class="chart-bar-track">
+                                        <div class="chart-bar-fill tiktok" style="width: 45%"></div>
+                                    </div>
+                                    <span class="chart-bar-value">24,287</span>
+                                </div>
+                                <div class="chart-bar-row">
+                                    <span class="chart-bar-label">🤖 Reddit</span>
+                                    <div class="chart-bar-track">
+                                        <div class="chart-bar-fill reddit" style="width: 28%"></div>
+                                    </div>
+                                    <span class="chart-bar-value">15,104</span>
+                                </div>
+                                <div class="chart-bar-row">
+                                    <span class="chart-bar-label">📘 Facebook</span>
+                                    <div class="chart-bar-track">
+                                        <div class="chart-bar-fill facebook" style="width: 18%"></div>
+                                    </div>
+                                    <span class="chart-bar-value">9,721</span>
+                                </div>
+                                <div class="chart-bar-row">
+                                    <span class="chart-bar-label">💼 LinkedIn</span>
+                                    <div class="chart-bar-track">
+                                        <div class="chart-bar-fill linkedin" style="width: 5%"></div>
+                                    </div>
+                                    <span class="chart-bar-value">2,764</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Trending Flagged -->
+                    <div class="data-viz-card">
+                        <div class="data-viz-header">
+                            <h3>🔥 Trending Flagged This Week</h3>
+                            <button class="link-btn" onclick="switchSection('hashtags')">View All →</button>
+                        </div>
+                        <div class="data-viz-body">
+                            <div class="trend-item">
+                                <span class="trend-rank">1</span>
+                                <div class="trend-info">
+                                    <div class="trend-name">#shadowbanned</div>
+                                    <div class="trend-meta">Twitter/X • Restricted</div>
+                                </div>
+                                <span class="trend-count">2,847</span>
+                            </div>
+                            <div class="trend-item">
+                                <span class="trend-rank">2</span>
+                                <div class="trend-info">
+                                    <div class="trend-name">#crypto</div>
+                                    <div class="trend-meta">Instagram • Suppressed</div>
+                                </div>
+                                <span class="trend-count">1,932</span>
+                            </div>
+                            <div class="trend-item">
+                                <span class="trend-rank">3</span>
+                                <div class="trend-info">
+                                    <div class="trend-name">#election2024</div>
+                                    <div class="trend-meta">All Platforms • Monitored</div>
+                                </div>
+                                <span class="trend-count">1,654</span>
+                            </div>
+                            <div class="trend-item">
+                                <span class="trend-rank">4</span>
+                                <div class="trend-info">
+                                    <div class="trend-name">#adulting</div>
+                                    <div class="trend-meta">TikTok • Age-gated</div>
+                                </div>
+                                <span class="trend-count">1,287</span>
+                            </div>
+                            <div class="trend-item">
+                                <span class="trend-rank">5</span>
+                                <div class="trend-info">
+                                    <div class="trend-name">#weightloss</div>
+                                    <div class="trend-meta">Instagram • Suppressed</div>
+                                </div>
+                                <span class="trend-count">1,043</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Recent Data Points -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2>📋 Recent High-Probability Detections</h2>
+                        <button class="link-btn" onclick="switchSection('search')">View All →</button>
+                    </div>
+                    <div class="card-body" id="recent-detections">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+            </section>
+            
+            <!-- SEARCH DATA SECTION -->
+            <section class="dashboard-section" id="section-search">
+                <div class="section-header">
+                    <div>
+                        <h1>🔍 Search Suppression Data</h1>
+                        <span class="section-subtitle">Query aggregated data from all platforms</span>
+                    </div>
+                </div>
+                
+                <!-- Search Form -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2>🔎 Search Filters</h2>
+                        <button class="secondary-btn btn-sm" onclick="ResearchManager.resetFilters()">Reset Filters</button>
+                    </div>
+                    <div class="card-body">
+                        <div class="search-form-grid">
+                            <div class="config-field full-width">
+                                <label>Keyword / Phrase</label>
+                                <input type="text" id="search-keyword" class="input" placeholder="Search content, hashtags, usernames...">
+                            </div>
+                            
+                            <div class="config-field">
+                                <label>Platform</label>
+                                <select id="search-platform" class="input">
+                                    <option value="all">All Platforms</option>
+                                    <option value="twitter">🐦 Twitter/X</option>
+                                    <option value="instagram">📸 Instagram</option>
+                                    <option value="tiktok">🎵 TikTok</option>
+                                    <option value="reddit">🤖 Reddit</option>
+                                    <option value="facebook">📘 Facebook</option>
+                                    <option value="linkedin">💼 LinkedIn</option>
+                                </select>
+                            </div>
+                            
+                            <div class="config-field">
+                                <label>Content Type</label>
+                                <select id="search-type" class="input">
+                                    <option value="all">All Types</option>
+                                    <option value="account">👤 Accounts</option>
+                                    <option value="post">📝 Posts</option>
+                                    <option value="hashtag">#️⃣ Hashtags</option>
+                                </select>
+                            </div>
+                            
+                            <div class="config-field">
+                                <label>Probability Range</label>
+                                <select id="search-probability" class="input">
+                                    <option value="all">All Probabilities</option>
+                                    <option value="high">High (70-100%)</option>
+                                    <option value="medium">Medium (40-69%)</option>
+                                    <option value="low">Low (0-39%)</option>
+                                </select>
+                            </div>
+                            
+                            <div class="config-field">
+                                <label>Date Range</label>
+                                <select id="search-date" class="input">
+                                    <option value="7">Last 7 days</option>
+                                    <option value="30" selected>Last 30 days</option>
+                                    <option value="90">Last 90 days</option>
+                                    <option value="365">Last year</option>
+                                    <option value="all">All time</option>
+                                </select>
+                            </div>
+                            
+                            <div class="config-field">
+                                <label>Sort By</label>
+                                <select id="search-sort" class="input">
+                                    <option value="date">Most Recent</option>
+                                    <option value="probability">Highest Probability</option>
+                                    <option value="platform">Platform</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="search-actions">
+                            <button class="primary-btn" onclick="ResearchManager.search()">🔍 Search Data</button>
+                            <button class="export-btn" onclick="ResearchManager.exportResults()">📥 Export Results</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Search Results -->
+                <div class="card" style="margin-top: 1.5rem;">
+                    <div class="card-header">
+                        <h2>📋 Results <span id="results-count" style="color: var(--text-muted); font-weight: 400;"></span></h2>
+                        <span class="badge info" id="results-badge">Ready to search</span>
+                    </div>
+                    <div class="card-body" id="search-results">
+                        <div class="empty-state-small">
+                            <span>🔍</span>
+                            <p>Enter search criteria above to query suppression data.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- TRENDS SECTION -->
+            <section class="dashboard-section" id="section-trends">
+                <div class="section-header">
+                    <div>
+                        <h1>📈 Suppression Trends</h1>
+                        <span class="section-subtitle">Analyze patterns over time</span>
+                    </div>
+                    <button class="export-btn" onclick="ResearchManager.exportTrends()">📥 Export Trends</button>
+                </div>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h3>+12.4%</h3>
+                        <p>This Week vs Last</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Twitter</h3>
+                        <p>Most Active Platform</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>#crypto</h3>
+                        <p>Most Flagged Tag</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>68%</h3>
+                        <p>Avg Recovery Rate</p>
+                    </div>
+                </div>
+                
+                <div class="two-column">
+                    <div class="data-viz-card">
+                        <div class="data-viz-header">
+                            <h3>📊 Weekly Detection Volume</h3>
+                            <select class="input" style="width: auto; padding: 0.25rem 0.5rem; font-size: 0.8125rem;">
+                                <option>Last 4 weeks</option>
+                                <option>Last 12 weeks</option>
+                                <option>Last 6 months</option>
+                            </select>
+                        </div>
+                        <div class="data-viz-body">
+                            <div class="chart-bars">
+                                <div class="chart-bar-row">
+                                    <span class="chart-bar-label">Week 1</span>
+                                    <div class="chart-bar-track">
+                                        <div class="chart-bar-fill twitter" style="width: 65%"></div>
+                                    </div>
+                                    <span class="chart-bar-value">28,432</span>
+                                </div>
+                                <div class="chart-bar-row">
+                                    <span class="chart-bar-label">Week 2</span>
+                                    <div class="chart-bar-track">
+                                        <div class="chart-bar-fill twitter" style="width: 72%"></div>
+                                    </div>
+                                    <span class="chart-bar-value">31,847</span>
+                                </div>
+                                <div class="chart-bar-row">
+                                    <span class="chart-bar-label">Week 3</span>
+                                    <div class="chart-bar-track">
+                                        <div class="chart-bar-fill twitter" style="width: 68%"></div>
+                                    </div>
+                                    <span class="chart-bar-value">29,654</span>
+                                </div>
+                                <div class="chart-bar-row">
+                                    <span class="chart-bar-label">Week 4</span>
+                                    <div class="chart-bar-track">
+                                        <div class="chart-bar-fill twitter" style="width: 85%"></div>
+                                    </div>
+                                    <span class="chart-bar-value">37,520</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="data-viz-card">
+                        <div class="data-viz-header">
+                            <h3>🔥 Emerging Patterns</h3>
+                        </div>
+                        <div class="data-viz-body">
+                            <div class="trend-item">
+                                <span class="trend-rank" style="background: linear-gradient(135deg, #ef4444 0%, #f97316 100%);">📈</span>
+                                <div class="trend-info">
+                                    <div class="trend-name">Political content suppression</div>
+                                    <div class="trend-meta">+47% increase across platforms</div>
+                                </div>
+                            </div>
+                            <div class="trend-item">
+                                <span class="trend-rank" style="background: linear-gradient(135deg, #f59e0b 0%, #eab308 100%);">📊</span>
+                                <div class="trend-info">
+                                    <div class="trend-name">Health/wellness hashtag restrictions</div>
+                                    <div class="trend-meta">Instagram leading at 34%</div>
+                                </div>
+                            </div>
+                            <div class="trend-item">
+                                <span class="trend-rank" style="background: linear-gradient(135deg, #22c55e 0%, #10b981 100%);">📉</span>
+                                <div class="trend-info">
+                                    <div class="trend-name">Crypto-related bans decreasing</div>
+                                    <div class="trend-meta">-12% from last month</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- PLATFORMS SECTION -->
+            <section class="dashboard-section" id="section-platforms">
+                <div class="section-header">
+                    <div>
+                        <h1>🌐 Platform Analysis</h1>
+                        <span class="section-subtitle">Deep dive into platform-specific suppression</span>
+                    </div>
+                </div>
+                
+                <div class="platform-filters" id="platform-filters">
+                    <button class="platform-pill active" data-platform="all">All Platforms</button>
+                    <button class="platform-pill" data-platform="twitter">🐦 Twitter/X</button>
+                    <button class="platform-pill" data-platform="instagram">📸 Instagram</button>
+                    <button class="platform-pill" data-platform="tiktok">🎵 TikTok</button>
+                    <button class="platform-pill" data-platform="reddit">🤖 Reddit</button>
+                    <button class="platform-pill" data-platform="facebook">📘 Facebook</button>
+                    <button class="platform-pill" data-platform="linkedin">💼 LinkedIn</button>
+                </div>
+                
+                <div class="stats-grid" id="platform-stats">
+                    <div class="stat-card">
+                        <h3 id="platform-total">127,453</h3>
+                        <p>Total Detections</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3 id="platform-avg">34.2%</h3>
+                        <p>Avg Probability</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3 id="platform-type">Reply Deboosting</h3>
+                        <p>Most Common Type</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3 id="platform-recovery">72 hrs</h3>
+                        <p>Avg Recovery Time</p>
+                    </div>
+                </div>
+                
+                <div class="two-column">
+                    <div class="card">
+                        <div class="card-header">
+                            <h2>🚫 Suppression Types</h2>
+                        </div>
+                        <div class="card-body" id="suppression-types">
+                            <div style="display: flex; align-items: center; gap: 1rem; padding: 0.75rem 0; border-bottom: 1px solid var(--border);">
+                                <span style="width: 140px;">Reply Deboosting</span>
+                                <div style="flex: 1; height: 8px; background: var(--bg); border-radius: 4px;"><div style="width: 45%; height: 100%; background: var(--danger); border-radius: 4px;"></div></div>
+                                <span style="width: 60px; text-align: right; color: var(--text-muted);">45%</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 1rem; padding: 0.75rem 0; border-bottom: 1px solid var(--border);">
+                                <span style="width: 140px;">Search Ban</span>
+                                <div style="flex: 1; height: 8px; background: var(--bg); border-radius: 4px;"><div style="width: 28%; height: 100%; background: var(--warning); border-radius: 4px;"></div></div>
+                                <span style="width: 60px; text-align: right; color: var(--text-muted);">28%</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 1rem; padding: 0.75rem 0; border-bottom: 1px solid var(--border);">
+                                <span style="width: 140px;">Ghost Ban</span>
+                                <div style="flex: 1; height: 8px; background: var(--bg); border-radius: 4px;"><div style="width: 15%; height: 100%; background: var(--primary); border-radius: 4px;"></div></div>
+                                <span style="width: 60px; text-align: right; color: var(--text-muted);">15%</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 1rem; padding: 0.75rem 0;">
+                                <span style="width: 140px;">Full Shadow Ban</span>
+                                <div style="flex: 1; height: 8px; background: var(--bg); border-radius: 4px;"><div style="width: 12%; height: 100%; background: var(--success); border-radius: 4px;"></div></div>
+                                <span style="width: 60px; text-align: right; color: var(--text-muted);">12%</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h2>⚠️ Common Triggers</h2>
+                        </div>
+                        <div class="card-body" id="common-triggers">
+                            <div class="trend-item">
+                                <span class="trend-rank">1</span>
+                                <div class="trend-info">
+                                    <div class="trend-name">Restricted hashtags</div>
+                                    <div class="trend-meta">Using banned or limited hashtags</div>
+                                </div>
+                                <span class="trend-count">34%</span>
+                            </div>
+                            <div class="trend-item">
+                                <span class="trend-rank">2</span>
+                                <div class="trend-info">
+                                    <div class="trend-name">Rapid engagement</div>
+                                    <div class="trend-meta">Too many actions too fast</div>
+                                </div>
+                                <span class="trend-count">27%</span>
+                            </div>
+                            <div class="trend-item">
+                                <span class="trend-rank">3</span>
+                                <div class="trend-info">
+                                    <div class="trend-name">Flagged content</div>
+                                    <div class="trend-meta">Sensitive words/phrases</div>
+                                </div>
+                                <span class="trend-count">21%</span>
+                            </div>
+                            <div class="trend-item">
+                                <span class="trend-rank">4</span>
+                                <div class="trend-info">
+                                    <div class="trend-name">Link reputation</div>
+                                    <div class="trend-meta">Suspicious or spammy links</div>
+                                </div>
+                                <span class="trend-count">18%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- HASHTAGS SECTION -->
+            <section class="dashboard-section" id="section-hashtags">
+                <div class="section-header">
+                    <div>
+                        <h1>#️⃣ Hashtag Database</h1>
+                        <span class="section-subtitle">Browse flagged and restricted hashtags</span>
+                    </div>
+                    <button class="export-btn" onclick="ResearchManager.exportHashtags()">📥 Export Hashtags</button>
+                </div>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h3>1,847</h3>
+                        <p>Total Flagged</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>423</h3>
+                        <p>Fully Banned</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>892</h3>
+                        <p>Suppressed</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>532</h3>
+                        <p>Age-Restricted</p>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h2>🔍 Search Hashtags</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="tool-input-row">
+                            <div class="config-field" style="flex: 1;">
+                                <input type="text" id="hashtag-search" class="input" placeholder="Search hashtags (e.g., #crypto, #fitness)...">
+                            </div>
+                            <div class="config-field" style="flex: 0 0 180px;">
+                                <select id="hashtag-platform" class="input">
+                                    <option value="all">All Platforms</option>
+                                    <option value="twitter">Twitter/X</option>
+                                    <option value="instagram">Instagram</option>
+                                    <option value="tiktok">TikTok</option>
+                                </select>
+                            </div>
+                            <button class="primary-btn" onclick="ResearchManager.searchHashtags()">🔍 Search</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card" style="margin-top: 1.5rem;">
+                    <div class="card-header">
+                        <h2>📋 Flagged Hashtags</h2>
+                        <div class="results-tabs">
+                            <button class="results-tab active" data-filter="all">All</button>
+                            <button class="results-tab" data-filter="banned">Banned</button>
+                            <button class="results-tab" data-filter="suppressed">Suppressed</button>
+                            <button class="results-tab" data-filter="restricted">Restricted</button>
+                        </div>
+                    </div>
+                    <div class="card-body" id="hashtag-results">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+            </section>
+            
+            <!-- EXPORTS SECTION -->
+            <section class="dashboard-section" id="section-exports">
+                <div class="section-header">
+                    <div>
+                        <h1>📥 Data Exports</h1>
+                        <span class="section-subtitle">Download data for your own analysis</span>
+                    </div>
+                </div>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h3 id="stat-exports">3</h3>
+                        <p>Exports This Month</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>∞</h3>
+                        <p>Unlimited Exports</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>CSV, JSON</h3>
+                        <p>Available Formats</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>10K</h3>
+                        <p>Max Rows/Export</p>
+                    </div>
+                </div>
+                
+                <div class="two-column">
+                    <div class="card">
+                        <div class="card-header">
+                            <h2>📊 Quick Exports</h2>
+                        </div>
+                        <div class="card-body">
+                            <div class="client-list-item" onclick="ResearchManager.exportQuick('all-detections')">
+                                <div class="client-avatar" style="background: linear-gradient(135deg, #06b6d4 0%, #22d3ee 100%);">📋</div>
+                                <div class="client-info">
+                                    <div class="client-name">All Detections (Last 30 days)</div>
+                                    <div class="client-meta">~8,500 records • CSV</div>
+                                </div>
+                                <span class="badge info">Export</span>
+                            </div>
+                            <div class="client-list-item" onclick="ResearchManager.exportQuick('hashtags')">
+                                <div class="client-avatar" style="background: linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%);">#️⃣</div>
+                                <div class="client-info">
+                                    <div class="client-name">Flagged Hashtags Database</div>
+                                    <div class="client-meta">1,847 hashtags • CSV</div>
+                                </div>
+                                <span class="badge info">Export</span>
+                            </div>
+                            <div class="client-list-item" onclick="ResearchManager.exportQuick('high-prob')">
+                                <div class="client-avatar" style="background: linear-gradient(135deg, #ef4444 0%, #f97316 100%);">🔴</div>
+                                <div class="client-info">
+                                    <div class="client-name">High Probability (70%+)</div>
+                                    <div class="client-meta">~2,100 records • CSV</div>
+                                </div>
+                                <span class="badge info">Export</span>
+                            </div>
+                            <div class="client-list-item" onclick="ResearchManager.exportQuick('trends')">
+                                <div class="client-avatar" style="background: linear-gradient(135deg, #22c55e 0%, #10b981 100%);">📈</div>
+                                <div class="client-info">
+                                    <div class="client-name">Trend Analysis Report</div>
+                                    <div class="client-meta">Weekly summary • JSON</div>
+                                </div>
+                                <span class="badge info">Export</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h2>📜 Export History</h2>
+                        </div>
+                        <div class="card-body" id="export-history">
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- SUPPORT SECTION -->
+            <section class="dashboard-section" id="section-support">
+                <div class="section-header">
+                    <div>
+                        <h1>💬 Support</h1>
+                        <span class="section-subtitle">Get help with research data and analysis</span>
+                    </div>
+                </div>
+                
+                <div class="support-grid">
+                    <div class="chat-widget">
+                        <div class="chat-widget-header">
+                            <h3>💬 Live Chat</h3>
+                            <div class="chat-status">
+                                <span class="chat-status-dot"></span>
+                                <span>Support Online</span>
+                            </div>
+                        </div>
+                        <div class="chat-widget-body">
+                            <!-- Messages populated by JS -->
+                        </div>
+                        <div class="chat-widget-footer">
+                            <input type="text" placeholder="Type your message...">
+                            <button class="send-btn">Send</button>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h2>🤖 Shadow AI Research</h2>
+                        </div>
+                        <div class="card-body">
+                            <p style="color: var(--text-muted); margin-bottom: 1rem;">Get AI-powered analysis of suppression data, trend insights, and research assistance.</p>
+                            <button class="primary-btn full-width" onclick="window.ShadowAI && window.ShadowAI.open()">🤖 Open Shadow AI</button>
+                            <p style="font-size: 0.8125rem; color: var(--text-muted); margin-top: 0.75rem;">AI questions: $0.25 each (billed monthly)</p>
+                        </div>
+                        
+                        <div class="card-header" style="margin-top: 1rem;">
+                            <h2>📝 Send Message</h2>
+                        </div>
+                        <div class="card-body">
+                            <form id="support-form">
+                                <div class="config-field">
+                                    <label>Topic</label>
+                                    <select id="support-topic" class="input">
+                                        <option value="">Select topic...</option>
+                                        <option value="data">📊 Data Question</option>
+                                        <option value="api">🔌 API Access</option>
+                                        <option value="export">📥 Export Issue</option>
+                                        <option value="billing">💳 Billing</option>
+                                        <option value="other">📝 Other</option>
+                                    </select>
+                                </div>
+                                <div class="config-field">
+                                    <label>Message</label>
+                                    <textarea id="support-message" class="input" placeholder="How can we help?" rows="3"></textarea>
+                                </div>
+                                <button type="submit" class="secondary-btn full-width">📤 Send Message</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- BILLING SECTION -->
+            <section class="dashboard-section" id="section-billing">
+                <div class="section-header">
+                    <div>
+                        <h1>💳 Billing</h1>
+                        <span class="section-subtitle">Research access and usage charges</span>
+                    </div>
+                </div>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h3>$49</h3>
+                        <p>Monthly Access</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3 id="billing-ai">$3.00</h3>
+                        <p>AI Questions</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>$0.00</h3>
+                        <p>Export Fees</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3 id="billing-total">$52.00</h3>
+                        <p>Estimated Total</p>
+                    </div>
+                </div>
+                
+                <div class="two-column">
+                    <div class="card">
+                        <div class="card-header">
+                            <h2>📊 Usage Breakdown</h2>
+                        </div>
+                        <div class="card-body">
+                            <div style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid var(--border);">
+                                <span>Research Access (Monthly)</span>
+                                <strong>$49.00</strong>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid var(--border);">
+                                <span>AI Analysis Questions (<span id="billing-questions-count">12</span> × $0.25)</span>
+                                <strong id="billing-ai-total">$3.00</strong>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid var(--border);">
+                                <span>Data Exports (Unlimited)</span>
+                                <strong>$0.00</strong>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; padding: 1rem 0; font-size: 1.125rem;">
+                                <strong>Total</strong>
+                                <strong style="color: #22d3ee;" id="billing-grand-total">$52.00</strong>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h2>💳 Payment Method</h2>
+                        </div>
+                        <div class="card-body">
+                            <div style="display: flex; align-items: center; gap: 1rem; padding: 1rem; background: var(--bg-tertiary); border-radius: var(--radius-md);">
+                                <span style="font-size: 1.5rem;">💳</span>
+                                <div>
+                                    <div style="font-weight: 600;">•••• •••• •••• 4242</div>
+                                    <div style="font-size: 0.8125rem; color: var(--text-muted);">Expires 12/26</div>
+                                </div>
+                                <button class="secondary-btn btn-sm" style="margin-left: auto;" onclick="showToast('💡', 'Stripe portal coming soon!')">Update</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- SETTINGS SECTION -->
+            <section class="dashboard-section" id="section-settings">
+                <div class="section-header">
+                    <div>
+                        <h1>⚙️ Settings</h1>
+                        <span class="section-subtitle">Research account configuration</span>
+                    </div>
+                </div>
+                
+                <div class="two-column">
+                    <div class="card">
+                        <div class="card-header">
+                            <h2>👤 Profile</h2>
+                        </div>
+                        <div class="card-body">
+                            <div class="config-field">
+                                <label>Name</label>
+                                <input type="text" class="input" id="settings-name" value="Dr. Jane Researcher">
+                            </div>
+                            <div class="config-field">
+                                <label>Email</label>
+                                <input type="email" class="input" id="settings-email" value="researcher@university.edu">
+                            </div>
+                            <div class="config-field">
+                                <label>Organization</label>
+                                <input type="text" class="input" id="settings-org" value="University Research Lab">
+                            </div>
+                            <button class="primary-btn" onclick="showToast('✅', 'Profile saved!')">Save Changes</button>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h2>🔔 Notifications</h2>
+                        </div>
+                        <div class="card-body">
+                            <div class="toggle-row">
+                                <span>📊 Weekly trend reports</span>
+                                <label class="toggle"><input type="checkbox" checked><span class="slider"></span></label>
+                            </div>
+                            <div class="toggle-row">
+                                <span>🔥 New trending patterns</span>
+                                <label class="toggle"><input type="checkbox" checked><span class="slider"></span></label>
+                            </div>
+                            <div class="toggle-row">
+                                <span>📥 Export ready alerts</span>
+                                <label class="toggle"><input type="checkbox"><span class="slider"></span></label>
+                            </div>
+                            <div class="toggle-row">
+                                <span>💳 Billing notifications</span>
+                                <label class="toggle"><input type="checkbox" checked><span class="slider"></span></label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- FOOTER -->
+            <footer class="dashboard-footer">
+                <div class="footer-content">
+                    <span class="footer-copyright">© 2025 ShadowBanCheck.io</span>
+                    <nav class="footer-links">
+                        <a href="index.html">Home</a>
+                        <a href="index.html#faq">FAQ</a>
+                        <a href="terms.html">Terms of Service</a>
+                        <a href="privacy.html">Privacy Policy</a>
+                        <a href="mailto:support@shadowbancheck.io">Support</a>
+                    </nav>
+                </div>
+            </footer>
+        </main>
+    </div>
+    
+    <!-- Toast -->
+    <div class="toast hidden" id="toast">
+        <span id="toast-icon">✅</span>
+        <span id="toast-message">Success</span>
+    </div>
+    
+    <!-- Dashboard JS -->
+    <script src="js/research-dashboard.js"></script>
+    
+    <!-- Shadow AI Chatbot -->
+    <script src="js/shadow-ai.js"></script>
+</body>
+</html>

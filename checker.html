@@ -63,7 +63,7 @@
         <div class="container">
             <div class="hero-badge">👤 Account Probability Checker</div>
             <h1 class="hero-title">Calculate Your Shadow Ban Probability</h1>
-            <p class="hero-subtitle">Enter your username to calculate your account's shadow ban probability. Our 5-Factor Detection Engine analyzes multiple signals to give you an accurate score.</p>
+                        <p class="hero-subtitle">Enter your username to calculate your account's shadow ban probability. Our 5-Factor Engine analyzes bio content, pinned posts, and scans hashtags in real-time through our live API.</p>
         </div>
     </section>
 
@@ -398,7 +398,7 @@
                 </div>
                 
                 <div class="methodology-note">
-                    <p><strong>Note:</strong> Account checks analyze all 5 factors: API status, web visibility, historical data, hashtag scanning (recent posts), and content/links analysis (bio + pinned tweet).</p>
+                    <p><strong>Note:</strong> Account checks analyze all 5 factors: API status, web visibility, historical data, real-time hashtag verification (recent posts via live API), and content/links analysis (bio + pinned tweet).</p>
                 </div>
             </div>
         </div>
@@ -425,7 +425,7 @@
                     <span class="cross-promote-icon">#️⃣</span>
                     <div class="cross-promote-content">
                         <h3>Hashtag Checker</h3>
-                        <p>Verify hashtags before posting to avoid reach penalties</p>
+                        <p>Real-time verification through our live API before you post</p>
                     </div>
                     <span class="cross-promote-arrow">→</span>
                 </a>
@@ -488,8 +488,8 @@
                         <span class="factor-check">✓</span>
                         <span class="factor-icon">#️⃣</span>
                         <div class="factor-content">
-                            <span class="factor-name">Hashtag Database</span>
-                            <span class="factor-desc">Scans recent posts for banned/restricted hashtags</span>
+                            <span class="factor-name">Real-Time Hashtag Engine</span>
+                            <span class="factor-desc">Live API verification of hashtags in recent posts</span>
                         </div>
                     </li>
                     <li class="factor-active">
@@ -559,6 +559,8 @@
     <!-- Scripts -->
     <script src="js/platforms.js"></script>
     <script src="js/demo-data.js"></script>
+    <script src="js/banned-hashtags.js"></script>
+    <script src="js/hashtag-api.js"></script>
     <script src="js/shared-components.js"></script>
     <script src="js/main.js"></script>
     <script src="js/checker.js"></script>

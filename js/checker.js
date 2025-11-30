@@ -359,15 +359,19 @@ function runEngineAnimation() {
     const platform = currentPlatform || { id: 'twitter', name: 'Twitter/X' };
     const isReddit = platform.id === 'reddit';
     
+    // Updated terminal lines - 5 factors including Content & Links
     const lines = [
-        { text: `> Initializing 4-Factor Detection Engine...`, delay: 0 },
+        { text: `> Initializing 5-Factor Detection Engine...`, delay: 0 },
         { text: `> Target platform: ${platform.name}`, delay: 400 },
         { text: `> Connecting to platform API...`, delay: 800 },
         { text: `> Querying account status...`, delay: 1200 },
         { text: `> Running web visibility tests...`, delay: 1800 },
         { text: `> Analyzing historical patterns...`, delay: 2400 },
-        { text: isReddit ? `> Hashtag check: N/A (Reddit)` : `> Scanning hashtag database...`, delay: 2800 },
-        { text: `> Calculating probability score...`, delay: 3200 },
+        { text: isReddit ? `> Hashtag check: Scanning recent posts...` : `> Scanning hashtag database...`, delay: 2800 },
+        { text: `> Analyzing bio content & links...`, delay: 3200 },
+        { text: `> Scanning for flagged words...`, delay: 3400 },
+        { text: `> Checking link/domain reputation...`, delay: 3600 },
+        { text: `> Calculating probability score...`, delay: 4000 },
     ];
     
     lines.forEach(line => {
@@ -382,12 +386,13 @@ function runEngineAnimation() {
         }, line.delay);
     });
     
-    // 4 factors for account check (no IP)
+    // 5 factors for account check (Content & Links replaces IP, analyzes bio + pinned)
     const factors = [
         { id: 'factor-1', delay: 1000, status: 'complete' },
         { id: 'factor-2', delay: 1800, status: 'complete' },
         { id: 'factor-3', delay: 2400, status: 'complete' },
         { id: 'factor-4', delay: 2800, status: isReddit ? 'na' : 'complete' },
+        { id: 'factor-5', delay: 3800, status: 'complete' }, // Content & Links
     ];
     
     factors.forEach(factor => {
@@ -418,14 +423,14 @@ function runEngineAnimation() {
         if (phase1) phase1.classList.add('hidden');
         if (phase2) phase2.classList.remove('hidden');
         
-        const aiMessages = ['Cross-referencing signals...', 'Calculating probability weights...', 'Generating score...'];
+        const aiMessages = ['Cross-referencing signals...', 'Analyzing content patterns...', 'Calculating probability weights...', 'Generating score...'];
         const aiMessageEl = document.getElementById('ai-processing-message');
         aiMessages.forEach((msg, i) => {
             setTimeout(() => {
                 if (aiMessageEl) aiMessageEl.textContent = msg;
-            }, i * 700);
+            }, i * 600);
         });
-    }, 3500);
+    }, 4200);
 }
 
 function simulateAnalysis(username, withEngagement) {
@@ -438,12 +443,12 @@ function simulateAnalysis(username, withEngagement) {
             demoResult.withEngagement = withEngagement;
             demoResult.engagementSteps = { ...engagementStepsCompleted };
             demoResult.checkType = 'account';
-            demoResult.factorsUsed = 4;
+            demoResult.factorsUsed = 5; // Now 5 factors for account check
             sessionStorage.setItem('lastAnalysisResult', JSON.stringify(demoResult));
         }
         
         window.location.href = `results.html?platform=${platformId}&type=account&username=${encodeURIComponent(username)}&demo=true`;
-    }, 5000);
+    }, 5500);
 }
 
 // ============================================

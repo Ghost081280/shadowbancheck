@@ -70,7 +70,7 @@ function loadResultData() {
         username: username,
         probability: Math.floor(Math.random() * 40) + 15, // 15-55%
         timestamp: new Date().toISOString(),
-        factorsUsed: checkType === 'power' ? 5 : (checkType === 'hashtag' ? 3 : 4),
+        factorsUsed: checkType === 'power' ? 5 : (checkType === 'hashtag' ? 3 : 5),
         factors: generateDemoFactors(platformId, checkType),
         findings: generateDemoFindings(platformId),
         recommendations: generateDemoRecommendations(),
@@ -83,6 +83,7 @@ function generateDemoFactors(platformId, checkType) {
     const isReddit = platformId === 'reddit';
     const isHashtag = checkType === 'hashtag';
     
+    // Updated factors - Content & Links replaces IP
     return [
         { 
             name: 'Platform APIs', 
@@ -109,10 +110,10 @@ function generateDemoFactors(platformId, checkType) {
             icon: '#️⃣'
         },
         { 
-            name: 'IP Analysis', 
+            name: 'Content & Links', 
             status: isHashtag ? 'na' : 'complete', 
-            finding: isHashtag ? 'Not needed for hashtag checks' : 'Residential IP detected',
-            icon: '🌐'
+            finding: isHashtag ? 'Not needed for hashtag checks' : 'Bio and content scanned, no flagged patterns',
+            icon: '📝'
         },
     ];
 }
@@ -121,6 +122,7 @@ function generateDemoFindings(platformId) {
     const findings = [
         { type: 'good', text: 'Account appears in search results' },
         { type: 'good', text: 'Profile accessible to public' },
+        { type: 'good', text: 'No flagged content in bio or pinned post' },
     ];
     
     // Add some warnings randomly
@@ -139,6 +141,7 @@ function generateDemoRecommendations() {
         'Continue posting high-quality content regularly',
         'Engage authentically with your audience',
         'Avoid using known restricted hashtags',
+        'Keep your bio free of flagged words and suspicious links',
         'Consider getting verified to improve visibility',
     ];
 }
@@ -230,6 +233,9 @@ function renderResults() {
         const url = `https://shadowbancheck.io/results/${resultData.platform}/${encodeURIComponent(resultData.username || 'analysis')}`;
         permanentUrl.value = url;
     }
+    
+    // Render content analysis section
+    renderContentAnalysis();
 }
 
 function renderProbability() {
@@ -308,13 +314,13 @@ function renderFindings() {
 function renderFactors() {
     const factors = resultData.factors || generateDemoFactors(resultData.platform, resultData.checkType);
     
-    // Map factor data to DOM elements
+    // Map factor data to DOM elements - Updated for Content & Links
     const factorMap = [
         { id: 'factor-api', findingId: 'factor-api-finding' },
         { id: 'factor-web', findingId: 'factor-web-finding' },
         { id: 'factor-historical', findingId: 'factor-historical-finding' },
         { id: 'factor-hashtag', findingId: 'factor-hashtag-finding' },
-        { id: 'factor-ip', findingId: 'factor-ip-finding' },
+        { id: 'factor-content', findingId: 'factor-content-finding' }, // Content & Links
     ];
     
     factors.forEach((factor, i) => {
@@ -349,6 +355,35 @@ function renderFactors() {
     const factorsUsed = document.getElementById('engine-factors-used');
     if (factorsUsed) {
         factorsUsed.textContent = `${resultData.factorsUsed || 5}/5 factors analyzed`;
+    }
+}
+
+function renderContentAnalysis() {
+    const contentCard = document.getElementById('content-card');
+    const contentSummary = document.getElementById('content-summary');
+    const contentExplanation = document.getElementById('content-explanation');
+    const flaggedItems = document.getElementById('flagged-items');
+    const flaggedList = document.getElementById('flagged-list');
+    
+    if (!contentCard) return;
+    
+    // Demo content analysis result
+    const hasFlags = Math.random() > 0.7; // 30% chance of having flags
+    
+    if (hasFlags) {
+        if (contentSummary) contentSummary.textContent = '1 potential flag detected';
+        if (contentExplanation) contentExplanation.textContent = 'We found content that may affect your visibility. Review the flagged items below.';
+        
+        if (flaggedItems && flaggedList) {
+            flaggedItems.classList.remove('hidden');
+            flaggedList.innerHTML = `
+                <li><strong>Bio link:</strong> Contains link shortener (bit.ly) - some platforms reduce reach for shortened links</li>
+            `;
+        }
+    } else {
+        if (contentSummary) contentSummary.textContent = 'No flagged content detected';
+        if (contentExplanation) contentExplanation.textContent = 'We scanned bio text, pinned posts, and profile links for flagged words, suspicious domains, and patterns that platforms commonly filter. No problematic content was detected.';
+        if (flaggedItems) flaggedItems.classList.add('hidden');
     }
 }
 

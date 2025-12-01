@@ -2,8 +2,8 @@
    PLATFORMS.JS - SINGLE SOURCE OF TRUTH
    ShadowBanCheck.io
    
-   This file MUST be loaded FIRST on all pages.
-   7 platforms (2 live, 5 coming soon)
+   Platform definitions for the 3-Point Intelligence Model
+   Powered by 5 Specialized Detection Agents
    ============================================================================= */
 
 (function() {
@@ -27,55 +27,51 @@ window.platformData = [
             postCheck: true,
             hashtagCheck: true,
             powerCheck: true,
-            engagementTest: true,
-        },
-        
-        engagementTest: {
-            enabled: true,
-            testAccount: 'ghost081280',
-            testAccountUrl: 'https://twitter.com/ghost081280',
-            steps: [
-                { id: 'follow', label: 'Follow @ghost081280', icon: '👤', url: 'https://twitter.com/intent/follow?screen_name=ghost081280' },
-                { id: 'like', label: 'Like our pinned tweet', icon: '❤️', url: 'https://twitter.com/ghost081280' },
-                { id: 'retweet', label: 'Retweet our pinned tweet', icon: '🔁', url: 'https://twitter.com/ghost081280' },
-                { id: 'reply', label: 'Reply with "check @yourusername"', icon: '💬', url: 'https://twitter.com/ghost081280' },
-            ],
         },
         
         accountChecks: [
-            'Search suggestion ban (hidden from search)',
-            'Reply deboosting (replies hidden behind "Show more")',
-            'Ghost ban (tweets invisible to others)',
-            'Search ban (tweets not in search results)',
+            'Search suggestion ban detection',
+            'Reply deboosting analysis',
+            'Ghost ban verification',
+            'Search ban identification',
             'Quality Filter Detection (QFD) status',
-            'Verification status (blue/gold/grey/none)',
-            'Account age and trust signals',
+            'Verification status analysis',
+            'Account trust signal evaluation',
             'Follower/following ratio analysis',
-            'Sensitive media flags',
-            'Profile accessibility (logged out)',
+            'Sensitive media flag detection',
+            'Profile accessibility verification',
         ],
         
         hashtagChecks: [
-            'Banned hashtag detection',
+            'Banned hashtag detection (real-time)',
             'Restricted hashtag identification', 
-            'Trending eligibility check',
-            'Shadowban trigger hashtags',
-            'Overused hashtag warnings',
+            'Trending eligibility analysis',
+            'Suppression trigger detection',
+            'Cashtag verification',
         ],
         
         powerChecks: [
-            'Tweet visibility in search',
+            'Post visibility analysis',
             'Reply thread visibility',
-            'Engagement rate vs expected',
-            'Content scan for flagged terms',
-            'Link analysis',
-            'Hashtag analysis',
+            'Engagement pattern analysis',
+            'Content scan (21 signal modules)',
+            'Link reputation verification',
+            'Hashtag & cashtag analysis',
         ],
         
+        detectionModules: {
+            hashtags: true,
+            cashtags: true,
+            links: true,
+            content: true,
+            mentions: true,
+            emojis: true
+        },
+        
         messages: {
-            accountCheck: 'Check if your Twitter/X account is shadowbanned.',
-            hashtagCheck: 'Verify hashtags are safe before tweeting.',
-            powerCheck: 'Full analysis of your tweet with engagement testing.',
+            accountCheck: 'Analyze your Twitter/X account for suppression indicators.',
+            hashtagCheck: 'Verify hashtag and cashtag safety before posting.',
+            powerCheck: 'Full post analysis with 5 Specialized Detection Agents.',
             platformNote: null,
         },
     },
@@ -89,23 +85,20 @@ window.platformData = [
         supports: {
             accountCheck: true,
             postCheck: true,
-            hashtagCheck: false,  // Reddit doesn't use hashtags!
+            hashtagCheck: false,  // Reddit doesn't use hashtags
             powerCheck: true,
-            engagementTest: false,
         },
         
-        engagementTest: { enabled: false },
-        
         accountChecks: [
-            'Shadowban status (posts invisible to others)',
-            'Profile visibility (logged out test)',
-            'Subreddit-specific bans',
-            'Karma threshold restrictions',
-            'Account age restrictions',
-            'Spam filter triggering patterns',
+            'Shadowban status verification',
+            'Profile visibility analysis',
+            'Subreddit-specific ban detection',
+            'Karma threshold restriction analysis',
+            'Account age restriction detection',
+            'Spam filter trigger analysis',
             'AutoModerator removal detection',
-            'Comment visibility in threads',
-            'Cross-posting restrictions',
+            'Comment visibility verification',
+            'Cross-posting restriction analysis',
         ],
         
         hashtagChecks: null,
@@ -120,16 +113,25 @@ window.platformData = [
         powerChecks: [
             'Post visibility in subreddit',
             'Comment shadow removal detection',
-            'Content scan for filtered terms',
-            'Subreddit rule violation signals',
-            'Link/domain restrictions',
+            'Content filter analysis',
+            'Subreddit rule violation detection',
+            'Link/domain restriction analysis',
         ],
         
+        detectionModules: {
+            hashtags: false,
+            cashtags: false,
+            links: true,
+            content: true,
+            mentions: true,
+            emojis: false
+        },
+        
         messages: {
-            accountCheck: 'Check if your Reddit account is shadowbanned.',
+            accountCheck: 'Analyze your Reddit account for shadowban indicators.',
             hashtagCheck: null,
             powerCheck: 'Full analysis including subreddit-specific restrictions.',
-            platformNote: 'Reddit does not use hashtags. We focus on account visibility, subreddit bans, and content analysis.',
+            platformNote: 'Reddit does not use hashtags. Analysis focuses on account visibility, subreddit bans, and content patterns.',
         },
     },
     
@@ -141,21 +143,29 @@ window.platformData = [
         name: 'Instagram', 
         icon: '📸', 
         status: 'soon',
-        supports: { accountCheck: true, postCheck: true, hashtagCheck: true, powerCheck: true, engagementTest: false },
+        supports: { accountCheck: true, postCheck: true, hashtagCheck: true, powerCheck: true },
         accountChecks: [
-            'Explore page eligibility',
+            'Explore page eligibility analysis',
             'Hashtag search visibility',
-            'Story visibility to non-followers',
+            'Story visibility verification',
             'Reels recommendation status',
-            'Account reach restrictions',
-            'Profile discoverability',
+            'Account reach restriction detection',
+            'Profile discoverability analysis',
         ],
         hashtagChecks: [
             'Banned hashtag detection',
             'Restricted hashtag identification',
-            'Explore eligibility per hashtag',
+            'Explore eligibility verification',
         ],
-        messages: { platformNote: 'Instagram has aggressive hashtag restrictions.' },
+        detectionModules: {
+            hashtags: true,
+            cashtags: false,
+            links: true,
+            content: true,
+            mentions: true,
+            emojis: true
+        },
+        messages: { platformNote: 'Instagram maintains aggressive hashtag restrictions. Our database tracks 1,800+ flagged tags.' },
     },
     
     { 
@@ -163,20 +173,28 @@ window.platformData = [
         name: 'TikTok', 
         icon: '🎵', 
         status: 'soon',
-        supports: { accountCheck: true, postCheck: true, hashtagCheck: true, powerCheck: true, engagementTest: false },
+        supports: { accountCheck: true, postCheck: true, hashtagCheck: true, powerCheck: true },
         accountChecks: [
-            'For You Page eligibility',
-            'Search visibility',
-            'Comment visibility',
-            'Duet/Stitch restrictions',
-            'Account trust score indicators',
+            'For You Page eligibility analysis',
+            'Search visibility verification',
+            'Comment visibility detection',
+            'Duet/Stitch restriction analysis',
+            'Account trust score evaluation',
         ],
         hashtagChecks: [
             'Banned hashtag detection',
             'Restricted hashtag identification',
-            'FYP eligibility per hashtag',
+            'FYP eligibility verification',
         ],
-        messages: { platformNote: 'TikTok shadow bans are notoriously hard to detect.' },
+        detectionModules: {
+            hashtags: true,
+            cashtags: false,
+            links: true,
+            content: true,
+            mentions: true,
+            emojis: true
+        },
+        messages: { platformNote: 'TikTok shadow bans are notoriously difficult to detect. Our agents use multiple verification methods.' },
     },
     
     { 
@@ -184,19 +202,27 @@ window.platformData = [
         name: 'Facebook', 
         icon: '📘', 
         status: 'soon',
-        supports: { accountCheck: true, postCheck: true, hashtagCheck: true, powerCheck: true, engagementTest: false },
+        supports: { accountCheck: true, postCheck: true, hashtagCheck: true, powerCheck: true },
         accountChecks: [
             'Reduced distribution status',
             'Fact-check overlay detection',
-            'Group posting restrictions',
-            'Marketplace restrictions',
-            'Comment visibility',
+            'Group posting restriction analysis',
+            'Marketplace restriction detection',
+            'Comment visibility verification',
         ],
         hashtagChecks: [
             'Banned hashtag detection',
             'Restricted hashtag identification',
         ],
-        messages: { platformNote: 'Facebook uses "reduced distribution" instead of shadowbans.' },
+        detectionModules: {
+            hashtags: true,
+            cashtags: false,
+            links: true,
+            content: true,
+            mentions: true,
+            emojis: false
+        },
+        messages: { platformNote: 'Facebook uses "reduced distribution" rather than explicit shadowbans.' },
     },
     
     { 
@@ -204,16 +230,24 @@ window.platformData = [
         name: 'YouTube', 
         icon: '▶️', 
         status: 'soon',
-        supports: { accountCheck: true, postCheck: true, hashtagCheck: false, powerCheck: true, engagementTest: false },
+        supports: { accountCheck: true, postCheck: true, hashtagCheck: false, powerCheck: true },
         accountChecks: [
-            'Search visibility',
+            'Search visibility analysis',
             'Recommendation algorithm status',
-            'Demonetization indicators',
-            'Age restriction flags',
+            'Demonetization indicator detection',
+            'Age restriction flag analysis',
             'Limited state detection',
         ],
         hashtagChecks: null,
-        messages: { platformNote: 'YouTube uses "limited state" for shadow restrictions.' },
+        detectionModules: {
+            hashtags: false,
+            cashtags: false,
+            links: true,
+            content: true,
+            mentions: false,
+            emojis: false
+        },
+        messages: { platformNote: 'YouTube uses "limited state" for shadow restrictions on videos.' },
     },
     
     { 
@@ -221,21 +255,69 @@ window.platformData = [
         name: 'LinkedIn', 
         icon: '💼', 
         status: 'soon',
-        supports: { accountCheck: true, postCheck: true, hashtagCheck: true, powerCheck: true, engagementTest: false },
+        supports: { accountCheck: true, postCheck: true, hashtagCheck: true, powerCheck: true },
         accountChecks: [
-            'Feed visibility',
-            'Search presence',
-            'Connection request restrictions',
-            'Content reach limitations',
-            'Profile view restrictions',
+            'Feed visibility analysis',
+            'Search presence verification',
+            'Connection request restriction detection',
+            'Content reach limitation analysis',
+            'Profile view restriction detection',
         ],
         hashtagChecks: [
             'Banned hashtag detection',
-            'Professional hashtag recommendations',
+            'Professional hashtag analysis',
         ],
-        messages: { platformNote: 'LinkedIn restricts spam-like behavior heavily.' },
+        detectionModules: {
+            hashtags: true,
+            cashtags: false,
+            links: true,
+            content: true,
+            mentions: true,
+            emojis: false
+        },
+        messages: { platformNote: 'LinkedIn heavily restricts spam-like behavior and promotional content.' },
     },
 ];
+
+// =========================================================================
+// 3-POINT INTELLIGENCE MODEL CONFIGURATION
+// =========================================================================
+window.IntelligenceModel = {
+    // Intelligence point weights
+    points: {
+        predictive: { weight: 15, name: 'Predictive Intelligence', description: 'ML-based risk forecasting' },
+        realtime: { weight: 55, name: 'Real-Time Detection', description: 'Live signal analysis across 21 modules' },
+        historical: { weight: 30, name: 'Historical Analysis', description: 'Pattern tracking over time' }
+    },
+    
+    // 5 Specialized Detection Agents
+    agents: {
+        api: { weight: 20, name: 'API Agent', description: 'Direct platform data access' },
+        web: { weight: 20, name: 'Web Analysis Agent', description: 'Search & visibility testing' },
+        historical: { weight: 15, name: 'Historical Agent', description: 'Pattern tracking & trends' },
+        detection: { weight: 25, name: 'Detection Agent', description: '21 signal modules across 6 types' },
+        predictive: { weight: 20, name: 'Predictive AI Agent', description: 'ML-based risk scoring' }
+    },
+    
+    // 6 Signal Types with 21 Detection Modules
+    signalTypes: {
+        hashtags: { modules: 4, name: 'Hashtags', icon: '#️⃣' },
+        cashtags: { modules: 3, name: 'Cashtags', icon: '💲' },
+        links: { modules: 4, name: 'Links', icon: '🔗' },
+        content: { modules: 4, name: 'Content', icon: '📝' },
+        mentions: { modules: 3, name: 'Mentions', icon: '@' },
+        emojis: { modules: 3, name: 'Emojis', icon: '😀' }
+    },
+    
+    totalModules: 21,
+    
+    // Confidence thresholds
+    confidence: {
+        high: { min: 70, label: 'High Confidence', description: '3+ sources corroborate' },
+        medium: { min: 40, label: 'Medium Confidence', description: '2 sources corroborate' },
+        low: { min: 0, label: 'Low Confidence', description: 'Single source' }
+    }
+};
 
 // =========================================================================
 // UTILITY FUNCTIONS
@@ -257,13 +339,6 @@ window.getComingSoonPlatforms = function() {
 window.getHashtagPlatforms = function() {
     return window.platformData.filter(p => 
         p.supports && p.supports.hashtagCheck === true
-    );
-};
-
-window.getEngagementTestPlatforms = function() {
-    return window.platformData.filter(p => 
-        p.supports && p.supports.engagementTest === true && 
-        p.engagementTest && p.engagementTest.enabled === true
     );
 };
 
@@ -340,6 +415,32 @@ window.getChecksPreview = function(platformId, checkType) {
     }
 };
 
+window.getActiveModulesForPlatform = function(platformId) {
+    const platform = window.getPlatformById(platformId);
+    if (!platform || !platform.detectionModules) {
+        return window.IntelligenceModel.totalModules;
+    }
+    
+    let count = 0;
+    const modules = platform.detectionModules;
+    const signalTypes = window.IntelligenceModel.signalTypes;
+    
+    for (const [type, enabled] of Object.entries(modules)) {
+        if (enabled && signalTypes[type]) {
+            count += signalTypes[type].modules;
+        }
+    }
+    
+    return count;
+};
+
+window.getConfidenceLevel = function(confidence) {
+    const thresholds = window.IntelligenceModel.confidence;
+    if (confidence >= thresholds.high.min) return thresholds.high;
+    if (confidence >= thresholds.medium.min) return thresholds.medium;
+    return thresholds.low;
+};
+
 // =========================================================================
 // BACKWARDS COMPATIBILITY
 // =========================================================================
@@ -354,7 +455,8 @@ window.platformsReady = true;
 
 console.log('✅ Platforms loaded:', window.platformData.length, 'platforms');
 console.log('   Live:', window.getLivePlatforms().map(p => p.name).join(', '));
-console.log('   Hashtag-enabled:', window.getHashtagPlatforms().map(p => p.name).join(', '));
+console.log('   3-Point Intelligence Model: Predictive (15%) + Real-Time (55%) + Historical (30%)');
+console.log('   Detection Modules:', window.IntelligenceModel.totalModules, 'across 6 signal types');
 
 // Dispatch ready event
 try {

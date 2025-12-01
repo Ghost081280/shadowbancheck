@@ -10,6 +10,11 @@
    - Verification type
    - Account age and metrics
    - Post visibility and engagement
+   - Hashtag visibility (3-Point Intelligence)
+   - Link blocking status (3-Point Intelligence)
+   - Content visibility (3-Point Intelligence)
+   
+   Version: 2.0.0 - Added 3-Point Intelligence methods
    ============================================================================= */
 
 (function() {
@@ -19,6 +24,10 @@ class PlatformAPIAgent extends window.AgentBase {
     
     constructor() {
         super('platform-api', 1, 20); // Factor 1, 20% weight
+        
+        // Cache for API results (avoid duplicate calls)
+        this.cache = new Map();
+        this.cacheTimeout = 30000; // 30 second cache
     }
     
     async analyze(input) {
@@ -68,6 +77,365 @@ class PlatformAPIAgent extends window.AgentBase {
             });
         }
     }
+    
+    // =========================================================================
+    // 3-POINT INTELLIGENCE METHODS
+    // Called by DetectionAgent for real-time visibility checks
+    // =========================================================================
+    
+    /**
+     * Check if hashtags are visible in platform search (Point 2: Real-Time)
+     * @param {array} hashtags - Array of hashtags to check
+     * @param {string} platformId - Platform identifier
+     * @returns {object} { available, visibility, blocked, visible, riskScore }
+     */
+    async checkHashtagVisibility(hashtags, platformId) {
+        if (!hashtags || hashtags.length === 0) {
+            return { available: false, riskScore: 0 };
+        }
+        
+        const cacheKey = `hashtag_vis_${platformId}_${hashtags.slice(0, 5).join('_')}`;
+        const cached = this.getFromCache(cacheKey);
+        if (cached) return cached;
+        
+        const platform = this.getPlatform(platformId);
+        if (!platform) {
+            return { available: false, riskScore: 0, error: 'Platform not supported' };
+        }
+        
+        const results = {
+            available: true,
+            visibility: 'unknown',
+            blocked: [],
+            visible: [],
+            restricted: [],
+            riskScore: 0
+        };
+        
+        try {
+            // Check each hashtag via platform API
+            for (const tag of hashtags.slice(0, 10)) { // Limit to 10 to avoid rate limits
+                const normalizedTag = tag.replace(/^#/, '').toLowerCase();
+                
+                // Try platform-specific hashtag check
+                if (platform.checkHashtagStatus) {
+                    const status = await platform.checkHashtagStatus(normalizedTag);
+                    
+                    if (status.blocked) {
+                        results.blocked.push({ tag, status: 'blocked', reason: status.reason });
+                        results.riskScore += 30;
+                    } else if (status.restricted) {
+                        results.restricted.push({ tag, status: 'restricted', reason: status.reason });
+                        results.riskScore += 15;
+                    } else if (status.visible) {
+                        results.visible.push({ tag, status: 'visible' });
+                    }
+                } else {
+                    // Fallback: Try searching for the hashtag
+                    const searchResult = await this.searchHashtag(normalizedTag, platform);
+                    
+                    if (searchResult.noResults) {
+                        results.blocked.push({ tag, status: 'no_results', reason: 'No search results' });
+                        results.riskScore += 20;
+                    } else if (searchResult.limited) {
+                        results.restricted.push({ tag, status: 'limited', reason: 'Limited results' });
+                        results.riskScore += 10;
+                    } else {
+                        results.visible.push({ tag, status: 'visible', resultCount: searchResult.count });
+                    }
+                }
+            }
+            
+            // Determine overall visibility
+            if (results.blocked.length > 0) {
+                results.visibility = 'partially_blocked';
+            } else if (results.restricted.length > 0) {
+                results.visibility = 'restricted';
+            } else if (results.visible.length > 0) {
+                results.visibility = 'visible';
+            }
+            
+            // Normalize risk score
+            results.riskScore = Math.min(100, results.riskScore);
+            
+        } catch (error) {
+            this.log(`Hashtag visibility check error: ${error.message}`, 'warn');
+            results.available = false;
+            results.error = error.message;
+        }
+        
+        this.setCache(cacheKey, results);
+        return results;
+    }
+    
+    /**
+     * Check if links are blocked/filtered by platform (Point 2: Real-Time)
+     * @param {array} urls - Array of URLs to check
+     * @param {string} platformId - Platform identifier
+     * @returns {object} { available, blocked, visible, riskScore }
+     */
+    async checkLinkVisibility(urls, platformId) {
+        if (!urls || urls.length === 0) {
+            return { available: false, riskScore: 0 };
+        }
+        
+        const cacheKey = `link_vis_${platformId}_${urls.length}`;
+        const cached = this.getFromCache(cacheKey);
+        if (cached) return cached;
+        
+        const platform = this.getPlatform(platformId);
+        if (!platform) {
+            return { available: false, riskScore: 0, error: 'Platform not supported' };
+        }
+        
+        const results = {
+            available: true,
+            blocked: [],
+            warned: [],
+            visible: [],
+            riskScore: 0
+        };
+        
+        try {
+            for (const url of urls.slice(0, 5)) { // Limit to avoid rate limits
+                const domain = this.extractDomain(url);
+                
+                // Check if platform blocks this domain
+                if (platform.checkLinkStatus) {
+                    const status = await platform.checkLinkStatus(url);
+                    
+                    if (status.blocked) {
+                        results.blocked.push({ url, domain, reason: status.reason });
+                        results.riskScore += 35;
+                    } else if (status.warned) {
+                        results.warned.push({ url, domain, reason: status.reason });
+                        results.riskScore += 15;
+                    } else {
+                        results.visible.push({ url, domain });
+                    }
+                } else {
+                    // Fallback: Check known blocked domains per platform
+                    const isBlocked = this.isKnownBlockedDomain(domain, platformId);
+                    
+                    if (isBlocked) {
+                        results.blocked.push({ url, domain, reason: 'Known blocked domain' });
+                        results.riskScore += 25;
+                    } else {
+                        results.visible.push({ url, domain });
+                    }
+                }
+            }
+            
+            results.riskScore = Math.min(100, results.riskScore);
+            
+        } catch (error) {
+            this.log(`Link visibility check error: ${error.message}`, 'warn');
+            results.available = false;
+            results.error = error.message;
+        }
+        
+        this.setCache(cacheKey, results);
+        return results;
+    }
+    
+    /**
+     * Check account status for mentioned users (Point 2: Real-Time)
+     * @param {array} usernames - Array of @usernames to check
+     * @param {string} platformId - Platform identifier
+     * @returns {object} { available, suspended, shadowbanned, active, riskScore }
+     */
+    async checkAccountStatus(usernames, platformId) {
+        if (!usernames || usernames.length === 0) {
+            return { available: false, riskScore: 0 };
+        }
+        
+        const cacheKey = `account_status_${platformId}_${usernames.slice(0, 5).join('_')}`;
+        const cached = this.getFromCache(cacheKey);
+        if (cached) return cached;
+        
+        const platform = this.getPlatform(platformId);
+        if (!platform) {
+            return { available: false, riskScore: 0, error: 'Platform not supported' };
+        }
+        
+        const results = {
+            available: true,
+            suspended: [],
+            shadowbanned: [],
+            restricted: [],
+            active: [],
+            notFound: [],
+            riskScore: 0
+        };
+        
+        try {
+            for (const username of usernames.slice(0, 5)) {
+                const normalizedUser = username.replace(/^@/, '').toLowerCase();
+                
+                // Get account data via platform
+                const accountData = await platform.getAccountData(normalizedUser);
+                
+                if (accountData.error || !accountData.exists) {
+                    results.notFound.push({ username: normalizedUser, reason: 'Account not found' });
+                    results.riskScore += 10; // Mentioning non-existent accounts is minor risk
+                } else if (accountData.suspended) {
+                    results.suspended.push({ username: normalizedUser, reason: 'Account suspended' });
+                    results.riskScore += 25; // Mentioning suspended accounts = medium risk
+                } else if (accountData.shadowBanned) {
+                    results.shadowbanned.push({ username: normalizedUser });
+                    results.riskScore += 20;
+                } else if (accountData.restricted) {
+                    results.restricted.push({ username: normalizedUser, reason: accountData.restrictionReason });
+                    results.riskScore += 15;
+                } else {
+                    results.active.push({ username: normalizedUser });
+                }
+            }
+            
+            results.riskScore = Math.min(100, results.riskScore);
+            
+        } catch (error) {
+            this.log(`Account status check error: ${error.message}`, 'warn');
+            results.available = false;
+            results.error = error.message;
+        }
+        
+        this.setCache(cacheKey, results);
+        return results;
+    }
+    
+    /**
+     * Check if content would be filtered (Point 2: Real-Time)
+     * @param {string} content - Text content to check
+     * @param {string} platformId - Platform identifier
+     * @returns {object} { available, wouldBeFiltered, filterReasons, riskScore }
+     */
+    async checkContentVisibility(content, platformId) {
+        if (!content) {
+            return { available: false, riskScore: 0 };
+        }
+        
+        const platform = this.getPlatform(platformId);
+        if (!platform) {
+            return { available: false, riskScore: 0, error: 'Platform not supported' };
+        }
+        
+        const results = {
+            available: true,
+            wouldBeFiltered: false,
+            filterReasons: [],
+            sensitiveContent: false,
+            ageRestricted: false,
+            riskScore: 0
+        };
+        
+        try {
+            // Check via platform's content filter if available
+            if (platform.checkContentFilter) {
+                const filterResult = await platform.checkContentFilter(content);
+                
+                results.wouldBeFiltered = filterResult.filtered;
+                results.filterReasons = filterResult.reasons || [];
+                results.sensitiveContent = filterResult.sensitive;
+                results.ageRestricted = filterResult.ageRestricted;
+                
+                if (filterResult.filtered) {
+                    results.riskScore += 50;
+                }
+                if (filterResult.sensitive) {
+                    results.riskScore += 20;
+                }
+                if (filterResult.ageRestricted) {
+                    results.riskScore += 15;
+                }
+            } else {
+                // Fallback: Basic content checks
+                const lowerContent = content.toLowerCase();
+                
+                // Check for sensitive keywords
+                const sensitiveTerms = ['nsfw', 'adult', '18+', 'xxx'];
+                for (const term of sensitiveTerms) {
+                    if (lowerContent.includes(term)) {
+                        results.sensitiveContent = true;
+                        results.riskScore += 15;
+                        break;
+                    }
+                }
+            }
+            
+            results.riskScore = Math.min(100, results.riskScore);
+            
+        } catch (error) {
+            this.log(`Content visibility check error: ${error.message}`, 'warn');
+            results.available = false;
+            results.error = error.message;
+        }
+        
+        return results;
+    }
+    
+    // =========================================================================
+    // HELPER METHODS
+    // =========================================================================
+    
+    async searchHashtag(tag, platform) {
+        // Simulated search - would hit real API in production
+        // Returns: { noResults, limited, count }
+        
+        if (platform.searchHashtag) {
+            return await platform.searchHashtag(tag);
+        }
+        
+        // Demo fallback
+        return {
+            noResults: false,
+            limited: false,
+            count: Math.floor(Math.random() * 1000)
+        };
+    }
+    
+    extractDomain(url) {
+        try {
+            const urlObj = new URL(url);
+            return urlObj.hostname.replace('www.', '');
+        } catch (e) {
+            const match = url.match(/(?:https?:\/\/)?(?:www\.)?([^\/\?]+)/i);
+            return match ? match[1] : url;
+        }
+    }
+    
+    isKnownBlockedDomain(domain, platformId) {
+        // Known domains that specific platforms block
+        const blockedDomains = {
+            twitter: ['facebook.com', 'instagram.com', 'threads.net'],
+            instagram: ['tiktok.com', 'twitter.com', 'x.com'],
+            tiktok: ['youtube.com', 'instagram.com'],
+            facebook: ['tiktok.com']
+        };
+        
+        const platformBlocks = blockedDomains[platformId] || [];
+        return platformBlocks.some(blocked => domain.includes(blocked));
+    }
+    
+    getFromCache(key) {
+        const cached = this.cache.get(key);
+        if (cached && Date.now() - cached.timestamp < this.cacheTimeout) {
+            return cached.data;
+        }
+        return null;
+    }
+    
+    setCache(key, data) {
+        this.cache.set(key, { data, timestamp: Date.now() });
+    }
+    
+    clearCache() {
+        this.cache.clear();
+    }
+    
+    // =========================================================================
+    // ORIGINAL METHODS
+    // =========================================================================
     
     async analyzeAccountAPI(input, platform, startTime) {
         const findings = [];
@@ -344,7 +712,7 @@ if (window.AgentRegistry) {
     window.AgentRegistry.register(platformAPIAgent);
 }
 
-window.PlatformAPIAgent = PlatformAPIAgent;
-console.log('✅ PlatformAPIAgent (Factor 1) loaded');
+window.PlatformAPIAgent = platformAPIAgent;
+console.log('✅ PlatformAPIAgent (Factor 1) loaded - 3-Point Intelligence methods enabled');
 
 })();

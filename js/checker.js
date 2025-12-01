@@ -2,8 +2,8 @@
    CHECKER.JS - Account Checker Page
    ShadowBanCheck.io
    
-   Updated to support 5-Factor Engine when available.
-   Falls back to demo data if engine not loaded.
+   3-Point Intelligence Model: Predictive (15%) + Real-Time (55%) + Historical (30%)
+   Powered by 5 Specialized Detection Agents
    ============================================================================= */
 
 (function() {
@@ -11,7 +11,6 @@
 
 let initialized = false;
 let currentPlatform = null;
-let engagementStepsCompleted = { follow: false, like: false, retweet: false, reply: false };
 
 // ============================================
 // INITIALIZATION
@@ -32,10 +31,10 @@ function init() {
     populatePlatformIcons();
     setupEventListeners();
     
-    // Check 5-Factor Engine status
+    // Check Detection Agents status
     if (window.FiveFactorLoader) {
         const status = window.FiveFactorLoader.getQuickStatus();
-        console.log(`🔧 5-Factor Engine: ${status.ready ? 'Ready' : `${status.loadedCount}/${status.totalCount} modules`}`);
+        console.log(`🤖 Detection Agents: ${status.ready ? 'All Deployed' : `${status.loadedCount}/${status.totalCount} modules`}`);
     }
     
     console.log('✅ Checker.js initialized');
@@ -151,20 +150,6 @@ function setupEventListeners() {
     if (engineInfoBtn) {
         engineInfoBtn.addEventListener('click', () => openModal('engine-info-modal'));
     }
-    
-    document.querySelectorAll('.engagement-checkbox').forEach(cb => {
-        cb.addEventListener('change', handleEngagementCheckboxChange);
-    });
-    
-    const engagementConfirmed = document.getElementById('engagement-confirmed');
-    if (engagementConfirmed) {
-        engagementConfirmed.addEventListener('change', handleEngagementConfirmed);
-    }
-    
-    const skipEngagementBtn = document.getElementById('skip-engagement-btn');
-    if (skipEngagementBtn) {
-        skipEngagementBtn.addEventListener('click', handleSkipEngagement);
-    }
 }
 
 // ============================================
@@ -178,21 +163,21 @@ function handlePlatformChange(e) {
     const platformNote = document.getElementById('platform-note');
     const platformNoteText = document.getElementById('platform-note-text');
     const checkBtn = document.getElementById('check-account-btn');
-    const engagementSection = document.getElementById('engagement-test-section');
     
     if (!platformId) {
-        if (platformStatus) platformStatus.textContent = 'Select a platform to continue';
+        if (platformStatus) platformStatus.textContent = 'Select a platform to deploy agents';
         if (platformNote) platformNote.classList.add('hidden');
         if (checkBtn) checkBtn.disabled = true;
-        if (engagementSection) engagementSection.classList.add('hidden');
         return;
     }
     
     if (currentPlatform) {
+        const moduleCount = window.getActiveModulesForPlatform ? window.getActiveModulesForPlatform(platformId) : 21;
+        
         if (platformStatus) {
             platformStatus.textContent = currentPlatform.status === 'live' 
-                ? `${currentPlatform.name} - Ready to analyze` 
-                : `${currentPlatform.name} - Coming soon`;
+                ? `${currentPlatform.name} — ${moduleCount} detection modules ready` 
+                : `${currentPlatform.name} — Coming soon`;
         }
         
         if (platformNote && platformNoteText && currentPlatform.messages && currentPlatform.messages.platformNote) {
@@ -200,14 +185,6 @@ function handlePlatformChange(e) {
             platformNote.classList.remove('hidden');
         } else if (platformNote) {
             platformNote.classList.add('hidden');
-        }
-        
-        if (currentPlatform.id === 'twitter' && 
-            currentPlatform.supports && currentPlatform.supports.engagementTest &&
-            currentPlatform.engagementTest && currentPlatform.engagementTest.enabled) {
-            if (engagementSection) engagementSection.classList.remove('hidden');
-        } else {
-            if (engagementSection) engagementSection.classList.add('hidden');
         }
     }
     
@@ -259,14 +236,7 @@ function handleFormSubmit(e) {
         return;
     }
     
-    const engagementSection = document.getElementById('engagement-test-section');
-    const engagementConfirmed = document.getElementById('engagement-confirmed');
-    const withEngagement = engagementSection && 
-                          !engagementSection.classList.contains('hidden') &&
-                          engagementConfirmed && 
-                          engagementConfirmed.checked;
-    
-    runAnalysis(username, withEngagement);
+    runAnalysis(username);
 }
 
 function handleClear() {
@@ -275,65 +245,20 @@ function handleClear() {
     const checkBtn = document.getElementById('check-account-btn');
     const platformStatus = document.getElementById('platform-status');
     const platformNote = document.getElementById('platform-note');
-    const engagementSection = document.getElementById('engagement-test-section');
     
     if (platformSelect) platformSelect.value = '';
     if (usernameInput) usernameInput.value = '';
     if (checkBtn) checkBtn.disabled = true;
-    if (platformStatus) platformStatus.textContent = 'Select a platform to continue';
+    if (platformStatus) platformStatus.textContent = 'Select a platform to deploy agents';
     if (platformNote) platformNote.classList.add('hidden');
-    if (engagementSection) engagementSection.classList.add('hidden');
     
     currentPlatform = null;
-    resetEngagementSteps();
-}
-
-// ============================================
-// ENGAGEMENT TEST
-// ============================================
-function handleEngagementCheckboxChange(e) {
-    const step = e.target.id.replace('step-', '');
-    engagementStepsCompleted[step] = e.target.checked;
-    updateEngagementProgress();
-}
-
-function handleEngagementConfirmed(e) {
-    console.log('Engagement confirmed:', e.target.checked);
-}
-
-function handleSkipEngagement() {
-    const engagementSection = document.getElementById('engagement-test-section');
-    if (engagementSection) engagementSection.classList.add('hidden');
-    resetEngagementSteps();
-    
-    const usernameInput = document.getElementById('username-input');
-    const username = usernameInput ? usernameInput.value.trim() : '';
-    if (username && currentPlatform) {
-        runAnalysis(username, false);
-    }
-}
-
-function resetEngagementSteps() {
-    engagementStepsCompleted = { follow: false, like: false, retweet: false, reply: false };
-    document.querySelectorAll('.engagement-checkbox').forEach(cb => cb.checked = false);
-    const ec = document.getElementById('engagement-confirmed');
-    if (ec) ec.checked = false;
-    updateEngagementProgress();
-}
-
-function updateEngagementProgress() {
-    const completed = Object.values(engagementStepsCompleted).filter(v => v).length;
-    const fill = document.getElementById('engagement-progress-fill');
-    const text = document.getElementById('engagement-progress-text');
-    
-    if (fill) fill.style.width = `${(completed / 4) * 100}%`;
-    if (text) text.textContent = `${completed} of 4 steps completed`;
 }
 
 // ============================================
 // ANALYSIS
 // ============================================
-function runAnalysis(username, withEngagement) {
+function runAnalysis(username) {
     const checkerCard = document.getElementById('checker-card');
     const engineAnimation = document.getElementById('engine-animation');
     
@@ -342,32 +267,32 @@ function runAnalysis(username, withEngagement) {
     
     runEngineAnimation();
     
-    // Check if 5-Factor Engine is available
+    // Check if Detection Agents are available
     const useEngine = window.FiveFactorLoader && window.FiveFactorLoader.isEngineReady();
     
     if (useEngine) {
-        console.log('🚀 Using 5-Factor Engine for account check');
-        runFiveFactorAnalysis(username, withEngagement);
+        console.log('🚀 Deploying 5 Specialized Detection Agents');
+        runFiveFactorAnalysis(username);
     } else {
         console.log('📊 Using demo data for account check');
-        simulateAnalysis(username, withEngagement);
+        simulateAnalysis(username);
     }
 }
 
 /**
- * Run analysis using the new 5-Factor Engine
+ * Run analysis using 5 Specialized Detection Agents
  */
-async function runFiveFactorAnalysis(username, withEngagement) {
+async function runFiveFactorAnalysis(username) {
     const platformId = currentPlatform ? currentPlatform.id : 'twitter';
     
     try {
         // Use the engine's checkAccount function
         const result = await window.checkAccount(username, platformId);
         
-        // Add engagement data
-        result.withEngagement = withEngagement;
-        result.engagementSteps = { ...engagementStepsCompleted };
+        // Add metadata
         result.username = username;
+        result.checkType = 'account';
+        result.agentsUsed = 5;
         
         // Store result
         sessionStorage.setItem('lastAnalysisResult', JSON.stringify(result));
@@ -376,11 +301,11 @@ async function runFiveFactorAnalysis(username, withEngagement) {
         window.location.href = `results.html?platform=${platformId}&type=account&username=${encodeURIComponent(username)}&engine=5factor`;
         
     } catch (error) {
-        console.error('5-Factor Engine error:', error);
+        console.error('Detection Agent error:', error);
         showToast('Analysis failed. Using demo data.', 'warning');
         
         // Fall back to demo
-        simulateAnalysis(username, withEngagement);
+        simulateAnalysis(username);
     }
 }
 
@@ -390,19 +315,19 @@ function runEngineAnimation() {
     
     const platform = currentPlatform || { id: 'twitter', name: 'Twitter/X' };
     const isReddit = platform.id === 'reddit';
+    const moduleCount = window.getActiveModulesForPlatform ? window.getActiveModulesForPlatform(platform.id) : 21;
     
     const lines = [
-        { text: `> Initializing 5-Factor Detection Engine...`, delay: 0 },
+        { text: `> Deploying 5 Specialized Detection Agents...`, delay: 0 },
         { text: `> Target platform: ${platform.name}`, delay: 400 },
-        { text: `> Connecting to platform API...`, delay: 800 },
-        { text: `> Querying account status...`, delay: 1200 },
-        { text: `> Running web visibility tests...`, delay: 1800 },
-        { text: `> Analyzing historical patterns...`, delay: 2400 },
-        { text: isReddit ? `> Hashtag check: Scanning recent posts...` : `> Scanning hashtag database...`, delay: 2800 },
-        { text: `> Analyzing bio content & links...`, delay: 3200 },
-        { text: `> Scanning for flagged words...`, delay: 3400 },
-        { text: `> Checking link/domain reputation...`, delay: 3600 },
-        { text: `> Calculating probability score...`, delay: 4000 },
+        { text: `> API Agent: Connecting to platform API...`, delay: 800 },
+        { text: `> API Agent: Querying account status...`, delay: 1200 },
+        { text: `> Web Analysis Agent: Testing visibility...`, delay: 1800 },
+        { text: `> Historical Agent: Analyzing patterns...`, delay: 2400 },
+        { text: isReddit ? `> Detection Agent: ${moduleCount} modules (hashtags N/A)` : `> Detection Agent: Scanning ${moduleCount} signal modules...`, delay: 2800 },
+        { text: `> Detection Agent: Bio & content analysis...`, delay: 3200 },
+        { text: `> Predictive AI Agent: Calculating risk score...`, delay: 3600 },
+        { text: `> Calculating 3-Point Intelligence Score...`, delay: 4000 },
     ];
     
     lines.forEach(line => {
@@ -417,24 +342,28 @@ function runEngineAnimation() {
         }, line.delay);
     });
     
-    const factors = [
+    const agents = [
         { id: 'factor-1', delay: 1000, status: 'complete' },
         { id: 'factor-2', delay: 1800, status: 'complete' },
         { id: 'factor-3', delay: 2400, status: 'complete' },
-        { id: 'factor-4', delay: 2800, status: isReddit ? 'na' : 'complete' },
+        { id: 'factor-4', delay: 2800, status: isReddit ? 'partial' : 'complete' },
         { id: 'factor-5', delay: 3800, status: 'complete' },
     ];
     
-    factors.forEach(factor => {
+    agents.forEach(agent => {
         setTimeout(() => {
-            const el = document.getElementById(factor.id);
+            const el = document.getElementById(agent.id);
             if (el) {
                 let status = el.querySelector('.factor-compact-status') || el.querySelector('.factor-status');
                 if (status) {
-                    if (factor.status === 'complete') {
+                    if (agent.status === 'complete') {
                         status.textContent = '✓';
                         status.classList.remove('pending');
                         status.classList.add('complete');
+                    } else if (agent.status === 'partial') {
+                        status.textContent = '◐';
+                        status.classList.remove('pending');
+                        status.classList.add('partial');
                     } else {
                         status.textContent = '—';
                         status.classList.remove('pending');
@@ -442,7 +371,7 @@ function runEngineAnimation() {
                     }
                 }
             }
-        }, factor.delay);
+        }, agent.delay);
     });
     
     setTimeout(() => {
@@ -451,7 +380,12 @@ function runEngineAnimation() {
         if (phase1) phase1.classList.add('hidden');
         if (phase2) phase2.classList.remove('hidden');
         
-        const aiMessages = ['Cross-referencing signals...', 'Analyzing content patterns...', 'Calculating probability weights...', 'Generating score...'];
+        const aiMessages = [
+            'Cross-referencing intelligence points...',
+            'Analyzing signal patterns...',
+            'Calculating confidence levels...',
+            'Generating suppression probability...'
+        ];
         const aiMessageEl = document.getElementById('ai-processing-message');
         aiMessages.forEach((msg, i) => {
             setTimeout(() => {
@@ -461,11 +395,11 @@ function runEngineAnimation() {
     }, 4200);
 }
 
-function simulateAnalysis(username, withEngagement) {
+function simulateAnalysis(username) {
     setTimeout(() => {
         const platformId = currentPlatform ? currentPlatform.id : 'twitter';
         
-        // Try to get 5-factor format demo data
+        // Try to get demo data in new format
         let demoResult = null;
         if (window.DemoData) {
             demoResult = window.DemoData.getResult(platformId, 'accountCheck', { format: 'auto' });
@@ -473,10 +407,8 @@ function simulateAnalysis(username, withEngagement) {
         
         if (demoResult) {
             demoResult.username = username;
-            demoResult.withEngagement = withEngagement;
-            demoResult.engagementSteps = { ...engagementStepsCompleted };
             demoResult.checkType = 'account';
-            demoResult.factorsUsed = 5;
+            demoResult.agentsUsed = 5;
             sessionStorage.setItem('lastAnalysisResult', JSON.stringify(demoResult));
         }
         
@@ -503,17 +435,21 @@ function showPlatformInfoModal(platform) {
     
     if (statusEl) {
         const statusClass = platform.status === 'live' ? 'live' : 'soon';
-        const statusText = platform.status === 'live' ? 'Live' : 'Coming Soon';
+        const statusText = platform.status === 'live' ? 'Operational' : 'Coming Soon';
         statusEl.innerHTML = `<span class="status-badge ${statusClass}">● ${statusText}</span>`;
     }
     
     if (body) {
-        let html = '<h4>Account Signals We Analyze:</h4><ul class="check-list">';
-        const checks = platform.accountChecks || ['Account visibility', 'Search presence', 'Profile accessibility'];
+        const moduleCount = window.getActiveModulesForPlatform ? window.getActiveModulesForPlatform(platform.id) : 21;
+        
+        let html = '<h4>Detection Capabilities:</h4><ul class="check-list">';
+        const checks = platform.accountChecks || ['Account visibility analysis', 'Search presence detection', 'Profile accessibility verification'];
         checks.forEach(check => {
             html += `<li>${check}</li>`;
         });
         html += '</ul>';
+        
+        html += `<p style="margin-top: var(--space-md); color: var(--text-secondary);"><strong>${moduleCount}</strong> detection modules • <strong>5</strong> specialized agents</p>`;
         
         if (platform.messages && platform.messages.platformNote) {
             html += `<p style="margin-top: var(--space-md); padding: var(--space-md); background: rgba(99, 102, 241, 0.1); border-radius: var(--radius-md);">💡 ${platform.messages.platformNote}</p>`;

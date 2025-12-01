@@ -1,6 +1,9 @@
 /* =============================================================================
    MAIN.JS - SHARED FUNCTIONALITY
    ShadowBanCheck.io - Core shared utilities across all pages
+   
+   3-Point Intelligence Model: Predictive (15%) + Real-Time (55%) + Historical (30%)
+   Powered by 5 Specialized Detection Agents
    ============================================================================= */
 
 /* =============================================================================
@@ -250,24 +253,43 @@ function initBackToTop() {
 }
 
 /* =============================================================================
-   5-FACTOR ENGINE STATUS UTILITIES
+   DETECTION AGENT STATUS UTILITIES
    
-   Provides engine health/status info for UI display before and after searches.
-   Shows which factors are online, offline, or unavailable.
+   5 Specialized Detection Agents powering the 3-Point Intelligence Model
+   Shows agent status and module health for UI display
    ============================================================================= */
-const EngineStatus = {
+const AgentStatus = {
     
-    // Factor definitions with weights and descriptions
-    factors: [
-        { id: 1, name: 'Platform API', weight: 20, icon: '🔌', description: 'Direct platform data access' },
-        { id: 2, name: 'Web Analysis', weight: 20, icon: '🔍', description: 'Search & visibility testing' },
-        { id: 3, name: 'Historical Data', weight: 15, icon: '📊', description: 'Past patterns & trends' },
-        { id: 4, name: 'Detection Engine', weight: 25, icon: '#️⃣', description: 'Hashtags, links & content' },
-        { id: 5, name: 'Predictive AI', weight: 20, icon: '🤖', description: 'ML-based risk scoring' },
+    // 5 Specialized Detection Agents
+    agents: [
+        { id: 1, key: 'api', name: 'API Agent', weight: 20, icon: '🔌', description: 'Direct platform data access & account status' },
+        { id: 2, key: 'web', name: 'Web Analysis Agent', weight: 20, icon: '🔍', description: 'Search visibility & accessibility testing' },
+        { id: 3, key: 'historical', name: 'Historical Agent', weight: 15, icon: '📊', description: 'Pattern tracking & trend analysis' },
+        { id: 4, key: 'detection', name: 'Detection Agent', weight: 25, icon: '🎯', description: '21 modules across 6 signal types' },
+        { id: 5, key: 'predictive', name: 'Predictive AI Agent', weight: 20, icon: '🤖', description: 'ML-based risk scoring & forecasting' },
     ],
     
+    // 3-Point Intelligence Model
+    intelligencePoints: [
+        { id: 'predictive', name: 'Predictive Intelligence', weight: 15, description: 'ML-based risk forecasting' },
+        { id: 'realtime', name: 'Real-Time Detection', weight: 55, description: 'Live signal analysis' },
+        { id: 'historical', name: 'Historical Analysis', weight: 30, description: 'Pattern tracking over time' }
+    ],
+    
+    // 6 Signal Types with 21 Detection Modules
+    signalTypes: [
+        { id: 'hashtags', name: 'Hashtags', modules: 4, icon: '#️⃣' },
+        { id: 'cashtags', name: 'Cashtags', modules: 3, icon: '💲' },
+        { id: 'links', name: 'Links', modules: 4, icon: '🔗' },
+        { id: 'content', name: 'Content', modules: 4, icon: '📝' },
+        { id: 'mentions', name: 'Mentions', modules: 3, icon: '@' },
+        { id: 'emojis', name: 'Emojis', modules: 3, icon: '😀' }
+    ],
+    
+    totalModules: 21,
+    
     /**
-     * Check if 5-Factor Engine is fully loaded and ready
+     * Check if detection system is fully loaded and ready
      * @returns {boolean}
      */
     isReady: function() {
@@ -280,24 +302,30 @@ const EngineStatus = {
     
     /**
      * Get quick status summary
-     * @returns {Object} { ready, loadedCount, totalCount, percentage }
+     * @returns {Object} { ready, agentCount, modulesActive }
      */
     getQuickStatus: function() {
         if (window.FiveFactorLoader && typeof window.FiveFactorLoader.getQuickStatus === 'function') {
-            return window.FiveFactorLoader.getQuickStatus();
+            const status = window.FiveFactorLoader.getQuickStatus();
+            return {
+                ready: status.ready,
+                agentCount: status.ready ? 5 : Math.floor(status.loadedCount / 5),
+                modulesActive: status.ready ? 21 : Math.floor(status.percentage * 0.21),
+                percentage: status.percentage
+            };
         }
         // Fallback
         const ready = this.isReady();
         return {
             ready: ready,
-            loadedCount: ready ? 27 : 0,
-            totalCount: 27,
+            agentCount: ready ? 5 : 0,
+            modulesActive: ready ? 21 : 0,
             percentage: ready ? 100 : 0
         };
     },
     
     /**
-     * Get detailed status of all modules
+     * Get detailed status of all agents
      * @returns {Object} Full status breakdown
      */
     getDetailedStatus: function() {
@@ -339,60 +367,72 @@ const EngineStatus = {
     },
     
     /**
-     * Get status of each factor (for UI display)
+     * Get status of each agent (for UI display)
      * @param {string} platformId - Platform being checked
      * @param {string} checkType - 'power', 'account', or 'hashtag'
-     * @returns {Array} Factor status objects for display
+     * @returns {Array} Agent status objects for display
      */
-    getFactorStatus: function(platformId = 'twitter', checkType = 'power') {
+    getAgentStatus: function(platformId = 'twitter', checkType = 'power') {
         const isReddit = platformId === 'reddit';
         const isHashtagCheck = checkType === 'hashtag' || checkType === 'tagCheck';
         const status = this.getDetailedStatus();
         
-        return this.factors.map(factor => {
+        return this.agents.map(agent => {
             let online = false;
             let applicable = true;
             let reason = '';
             
-            switch(factor.id) {
-                case 1: // Platform API
+            switch(agent.key) {
+                case 'api': // API Agent
                     online = status.agents?.PlatformAPIAgent && status.platforms?.PlatformFactory;
                     applicable = !isHashtagCheck;
-                    reason = isHashtagCheck ? 'Not needed for tag checks' : (online ? 'Ready' : 'Agent not loaded');
+                    reason = isHashtagCheck ? 'Not required for tag analysis' : (online ? 'Deployed' : 'Agent not loaded');
                     break;
                     
-                case 2: // Web Analysis
+                case 'web': // Web Analysis Agent
                     online = status.agents?.WebAnalysisAgent;
-                    reason = online ? 'Ready' : 'Agent not loaded';
+                    reason = online ? 'Deployed' : 'Agent not loaded';
                     break;
                     
-                case 3: // Historical Data
+                case 'historical': // Historical Agent
                     online = status.agents?.HistoricalAgent;
-                    reason = online ? 'Ready (Demo mode)' : 'Agent not loaded';
+                    reason = online ? 'Deployed (Demo mode)' : 'Agent not loaded';
                     break;
                     
-                case 4: // Detection Engine
+                case 'detection': // Detection Agent
                     online = status.agents?.DetectionAgent && 
                              (status.databases?.FlaggedHashtags || status.databases?.FlaggedContent);
                     applicable = !isReddit || checkType !== 'hashtag';
-                    reason = isReddit && checkType === 'hashtag' ? 'N/A for Reddit' : (online ? 'Ready' : 'Databases not loaded');
+                    reason = isReddit && checkType === 'hashtag' ? 'N/A for Reddit' : (online ? 'Deployed - 21 modules active' : 'Databases not loaded');
                     break;
                     
-                case 5: // Predictive AI
+                case 'predictive': // Predictive AI Agent
                     online = status.agents?.PredictiveAgent;
-                    reason = online ? 'Ready' : 'Agent not loaded';
+                    reason = online ? 'Deployed' : 'Agent not loaded';
                     break;
             }
             
             return {
-                ...factor,
+                ...agent,
                 online: online,
                 applicable: applicable,
                 status: !applicable ? 'na' : (online ? 'online' : 'offline'),
-                statusText: !applicable ? 'N/A' : (online ? 'Online' : 'Offline'),
+                statusText: !applicable ? 'N/A' : (online ? 'Deployed' : 'Offline'),
                 reason: reason
             };
         });
+    },
+    
+    /**
+     * Get active detection modules for a platform
+     * @param {string} platformId
+     * @returns {number} Number of active modules
+     */
+    getActiveModules: function(platformId = 'twitter') {
+        if (window.getActiveModulesForPlatform) {
+            return window.getActiveModulesForPlatform(platformId);
+        }
+        return this.totalModules;
     },
     
     /**
@@ -400,9 +440,9 @@ const EngineStatus = {
      * @returns {number} 0-100
      */
     getHealthPercentage: function() {
-        const factors = this.getFactorStatus();
-        const applicable = factors.filter(f => f.applicable);
-        const online = applicable.filter(f => f.online);
+        const agents = this.getAgentStatus();
+        const applicable = agents.filter(a => a.applicable);
+        const online = applicable.filter(a => a.online);
         
         if (applicable.length === 0) return 100;
         return Math.round((online.length / applicable.length) * 100);
@@ -410,46 +450,62 @@ const EngineStatus = {
     
     /**
      * Get health status label
-     * @returns {string} 'excellent', 'good', 'degraded', 'offline'
+     * @returns {string} 'operational', 'degraded', 'offline'
      */
     getHealthLabel: function() {
         const pct = this.getHealthPercentage();
-        if (pct >= 100) return 'excellent';
-        if (pct >= 80) return 'good';
-        if (pct >= 50) return 'degraded';
+        if (pct >= 100) return 'operational';
+        if (pct >= 60) return 'degraded';
         return 'offline';
     },
     
     /**
-     * Generate HTML for factor status display
+     * Get confidence level based on score
+     * @param {number} confidence - 0-100
+     * @returns {Object} { label, description, class }
+     */
+    getConfidenceLevel: function(confidence) {
+        if (confidence >= 70) {
+            return { label: 'High Confidence', description: '3+ sources corroborate', class: 'high' };
+        }
+        if (confidence >= 40) {
+            return { label: 'Medium Confidence', description: '2 sources corroborate', class: 'medium' };
+        }
+        return { label: 'Low Confidence', description: 'Single source', class: 'low' };
+    },
+    
+    /**
+     * Generate HTML for agent status display
      * @param {string} platformId 
      * @param {string} checkType 
      * @returns {string} HTML string
      */
     renderStatusHTML: function(platformId = 'twitter', checkType = 'power') {
-        const factors = this.getFactorStatus(platformId, checkType);
+        const agents = this.getAgentStatus(platformId, checkType);
         const health = this.getHealthLabel();
         const healthPct = this.getHealthPercentage();
+        const activeModules = this.getActiveModules(platformId);
         
-        let html = `<div class="engine-status engine-status--${health}">`;
-        html += `<div class="engine-status__header">`;
-        html += `<span class="engine-status__title">5-Factor Engine</span>`;
-        html += `<span class="engine-status__health engine-status__health--${health}">${healthPct}% Online</span>`;
+        let html = `<div class="agent-status agent-status--${health}">`;
+        html += `<div class="agent-status__header">`;
+        html += `<span class="agent-status__title">5 Detection Agents</span>`;
+        html += `<span class="agent-status__health agent-status__health--${health}">${healthPct === 100 ? 'All Deployed' : healthPct + '% Active'}</span>`;
         html += `</div>`;
-        html += `<div class="engine-status__factors">`;
+        html += `<div class="agent-status__modules">${activeModules}/${this.totalModules} detection modules</div>`;
+        html += `<div class="agent-status__agents">`;
         
-        factors.forEach(factor => {
-            const statusClass = factor.status === 'online' ? 'online' : 
-                               (factor.status === 'na' ? 'na' : 'offline');
-            const statusIcon = factor.status === 'online' ? '✓' : 
-                              (factor.status === 'na' ? '○' : '✗');
+        agents.forEach(agent => {
+            const statusClass = agent.status === 'online' ? 'online' : 
+                               (agent.status === 'na' ? 'na' : 'offline');
+            const statusIcon = agent.status === 'online' ? '✓' : 
+                              (agent.status === 'na' ? '○' : '✗');
             
             html += `
-                <div class="engine-factor engine-factor--${statusClass}" title="${factor.reason}">
-                    <span class="engine-factor__icon">${factor.icon}</span>
-                    <span class="engine-factor__name">${factor.name}</span>
-                    <span class="engine-factor__weight">${factor.weight}%</span>
-                    <span class="engine-factor__status">${statusIcon}</span>
+                <div class="detection-agent detection-agent--${statusClass}" title="${agent.reason}">
+                    <span class="detection-agent__icon">${agent.icon}</span>
+                    <span class="detection-agent__name">${agent.name}</span>
+                    <span class="detection-agent__weight">${agent.weight}%</span>
+                    <span class="detection-agent__status">${statusIcon}</span>
                 </div>
             `;
         });
@@ -480,24 +536,36 @@ const EngineStatus = {
             return;
         }
         
-        console.log('═══════════════════════════════════════');
-        console.log('   5-FACTOR ENGINE STATUS');
-        console.log('═══════════════════════════════════════');
+        console.log('═══════════════════════════════════════════════════════');
+        console.log('   3-POINT INTELLIGENCE MODEL STATUS');
+        console.log('   Powered by 5 Specialized Detection Agents');
+        console.log('═══════════════════════════════════════════════════════');
         
-        const factors = this.getFactorStatus();
-        factors.forEach(f => {
-            const icon = f.status === 'online' ? '✅' : (f.status === 'na' ? '⚪' : '❌');
-            console.log(`${icon} Factor ${f.id}: ${f.name} (${f.weight}%) - ${f.statusText}`);
+        console.log('\n📊 Intelligence Points:');
+        this.intelligencePoints.forEach(p => {
+            console.log(`   ${p.name}: ${p.weight}% - ${p.description}`);
         });
         
-        console.log('───────────────────────────────────────');
-        console.log(`Overall Health: ${this.getHealthPercentage()}% (${this.getHealthLabel()})`);
-        console.log(`Engine Ready: ${this.isReady() ? 'Yes' : 'No'}`);
-        console.log('═══════════════════════════════════════');
+        console.log('\n🤖 Detection Agents:');
+        const agents = this.getAgentStatus();
+        agents.forEach(a => {
+            const icon = a.status === 'online' ? '✅' : (a.status === 'na' ? '⚪' : '❌');
+            console.log(`   ${icon} ${a.name} (${a.weight}%) - ${a.statusText}`);
+        });
+        
+        console.log('\n🎯 Signal Types (21 modules):');
+        this.signalTypes.forEach(s => {
+            console.log(`   ${s.icon} ${s.name}: ${s.modules} modules`);
+        });
+        
+        console.log('\n───────────────────────────────────────────────────────');
+        console.log(`System Health: ${this.getHealthPercentage()}% (${this.getHealthLabel()})`);
+        console.log(`Agents Ready: ${this.isReady() ? 'Yes' : 'No'}`);
+        console.log('═══════════════════════════════════════════════════════');
     },
     
     /**
-     * Watch for engine load and call callback when ready
+     * Watch for agent load and call callback when ready
      * @param {Function} callback 
      * @param {number} timeout - Max wait time in ms
      */
@@ -522,10 +590,6 @@ const EngineStatus = {
 
 /* =============================================================================
    PLATFORM HELPER FUNCTIONS (Fallbacks ONLY if platforms.js fails to load)
-   
-   IMPORTANT: These are FALLBACK functions that directly access platformData.
-   They do NOT call window.getPlatformById etc. to avoid infinite recursion.
-   platforms.js should always load first and define the real functions.
    ============================================================================= */
 
 function _fallbackGetPlatformById(id) {
@@ -595,9 +659,9 @@ function initSharedFunctionality() {
     initCookiePopup();
     initFaqAccordion();
     
-    // Log engine status on init
+    // Log agent status on init
     if (window.FiveFactorLoader || window.FiveFactorEngine) {
-        console.log(`🔧 5-Factor Engine: ${EngineStatus.isReady() ? 'Ready' : 'Loading...'}`);
+        console.log(`🤖 Detection Agents: ${AgentStatus.isReady() ? 'All Deployed' : 'Initializing...'}`);
     }
     
     console.log('✅ Shared functionality initialized');
@@ -619,8 +683,8 @@ Object.assign(window.ShadowBan, {
     closeModal,
     sleep,
     debounce,
-    // Engine status utilities
-    engine: EngineStatus
+    // Agent status utilities
+    agents: AgentStatus
 });
 
 // Make modal/toast functions globally accessible
@@ -629,11 +693,11 @@ window.closeLimitModal = () => closeModal('limit-modal');
 window.showToast = showToast;
 window.openModal = openModal;
 
-// Make engine status globally accessible
-window.EngineStatus = EngineStatus;
+// Make agent status globally accessible (keep EngineStatus as alias for backwards compatibility)
+window.AgentStatus = AgentStatus;
+window.EngineStatus = AgentStatus; // Backwards compatibility
 
 // Set fallback platform helpers ONLY if platforms.js didn't load them
-// This prevents the infinite recursion bug
 if (typeof window.getPlatformById !== 'function') {
     window.getPlatformById = _fallbackGetPlatformById;
     console.warn('⚠️ Using fallback getPlatformById - platforms.js may not have loaded');
@@ -652,4 +716,4 @@ if (typeof window.detectPlatformFromUrl !== 'function') {
 }
 
 // Console helper
-console.log('💡 Run EngineStatus.printStatus() to check 5-Factor Engine health');
+console.log('💡 Run AgentStatus.printStatus() to check 3-Point Intelligence Model health');

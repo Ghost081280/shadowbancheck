@@ -1,6 +1,10 @@
 /* =============================================================================
-   INDEX.JS - Home Page Functionality
+   INDEX.JS - Home Page Functionality + 5-Factor Engine Loader
    ShadowBanCheck.io
+   
+   This file combines:
+   1. Home page UI functionality (forms, modals, animations)
+   2. 5-Factor Engine initialization and status checking
    ============================================================================= */
 
 (function() {
@@ -9,6 +13,185 @@
 let initialized = false;
 let currentPlatform = null;
 let engagementStepsCompleted = { follow: false, like: false, retweet: false, reply: false };
+
+// ============================================================================
+// 5-FACTOR ENGINE LOADER
+// ============================================================================
+
+const FiveFactorLoader = {
+    
+    requiredGlobals: {
+        databases: [
+            'FlaggedContent',
+            'FlaggedHashtags',
+            'FlaggedMentions',
+            'FlaggedEmojis',
+            'FlaggedImages',
+            'FlaggedVideos',
+            'FlaggedAudio'
+        ],
+        platforms: [
+            'PlatformBase',
+            'PlatformFactory',
+            'TwitterPlatform',
+            'RedditPlatform'
+        ],
+        agents: [
+            'AgentBase',
+            'AgentRegistry',
+            'PlatformAPIAgent',
+            'WebAnalysisAgent',
+            'HistoricalAgent',
+            'DetectionAgent',
+            'PredictiveAgent'
+        ],
+        engine: [
+            'FiveFactorEngine',
+            'shadowBanEngine'
+        ],
+        api: [
+            'DetectionAPI',
+            'detectionAPI'
+        ]
+    },
+    
+    /**
+     * Check if all required modules are loaded
+     * @returns {object} Status of all modules
+     */
+    checkStatus: function() {
+        const status = {
+            databases: {},
+            platforms: {},
+            agents: {},
+            engine: {},
+            api: {},
+            allLoaded: true,
+            missing: [],
+            loadedCount: 0,
+            totalCount: 0
+        };
+        
+        for (const [category, globals] of Object.entries(this.requiredGlobals)) {
+            for (const name of globals) {
+                status.totalCount++;
+                const loaded = !!window[name];
+                status[category][name] = loaded;
+                if (loaded) {
+                    status.loadedCount++;
+                } else {
+                    status.allLoaded = false;
+                    status.missing.push(name);
+                }
+            }
+        }
+        
+        return status;
+    },
+    
+    /**
+     * Print status to console
+     */
+    printStatus: function() {
+        const status = this.checkStatus();
+        
+        console.log('='.repeat(60));
+        console.log('5-FACTOR ENGINE STATUS');
+        console.log('='.repeat(60));
+        
+        for (const [category, modules] of Object.entries(status)) {
+            if (typeof modules === 'object' && !Array.isArray(modules) && category !== 'missing') {
+                console.log(`\n📦 ${category.toUpperCase()}:`);
+                for (const [name, loaded] of Object.entries(modules)) {
+                    console.log(`   ${loaded ? '✅' : '❌'} ${name}`);
+                }
+            }
+        }
+        
+        console.log('\n' + '='.repeat(60));
+        console.log(`Loaded: ${status.loadedCount}/${status.totalCount} modules`);
+        if (status.allLoaded) {
+            console.log('✅ ALL MODULES LOADED - Engine ready!');
+        } else {
+            console.log('❌ MISSING MODULES:', status.missing.join(', '));
+        }
+        console.log('='.repeat(60));
+        
+        return status;
+    },
+    
+    /**
+     * Wait for all modules to load
+     * @param {number} timeout - Max wait time in ms
+     * @returns {Promise<boolean>} True if all loaded
+     */
+    waitForLoad: function(timeout = 5000) {
+        return new Promise((resolve) => {
+            const start = Date.now();
+            
+            const check = () => {
+                const status = this.checkStatus();
+                if (status.allLoaded) {
+                    console.log('✅ All 5-Factor Engine modules loaded');
+                    resolve(true);
+                } else if (Date.now() - start > timeout) {
+                    console.warn('⚠️ Timeout waiting for modules:', status.missing);
+                    resolve(false);
+                } else {
+                    setTimeout(check, 100);
+                }
+            };
+            
+            check();
+        });
+    },
+    
+    /**
+     * Initialize engine with options
+     * @param {object} options - { demoMode: boolean }
+     */
+    initEngine: function(options = {}) {
+        const status = this.checkStatus();
+        
+        if (!status.allLoaded) {
+            console.warn('⚠️ Cannot initialize engine - missing modules:', status.missing);
+            return false;
+        }
+        
+        // Set demo mode if specified
+        if (options.demoMode !== undefined && window.shadowBanEngine) {
+            window.shadowBanEngine.setDemoMode(options.demoMode);
+        }
+        
+        console.log('✅ 5-Factor Engine initialized');
+        return true;
+    },
+    
+    /**
+     * Check if engine is available for use
+     * @returns {boolean}
+     */
+    isEngineReady: function() {
+        return !!(window.shadowBanEngine && window.powerCheck);
+    },
+    
+    /**
+     * Get quick status for UI display
+     * @returns {object} { ready, loadedCount, totalCount }
+     */
+    getQuickStatus: function() {
+        const status = this.checkStatus();
+        return {
+            ready: status.allLoaded,
+            loadedCount: status.loadedCount,
+            totalCount: status.totalCount,
+            percentage: Math.round((status.loadedCount / status.totalCount) * 100)
+        };
+    }
+};
+
+// Export loader globally
+window.FiveFactorLoader = FiveFactorLoader;
 
 // ============================================
 // INITIALIZATION
@@ -30,6 +213,14 @@ function init() {
     populatePlatformGrid();
     populatePlatformIcons();
     updateContentAnalysisDisplay();
+    
+    // Check 5-Factor Engine status (non-blocking)
+    const engineStatus = FiveFactorLoader.getQuickStatus();
+    if (engineStatus.ready) {
+        console.log('✅ 5-Factor Engine ready');
+    } else {
+        console.log(`⏳ 5-Factor Engine: ${engineStatus.loadedCount}/${engineStatus.totalCount} modules loaded`);
+    }
     
     console.log('✅ Index.js initialized');
 }
@@ -152,7 +343,33 @@ function handleUrlInput() {
         return;
     }
     
-    const platform = window.detectPlatformFromUrl ? window.detectPlatformFromUrl(url) : null;
+    // Try new platform detection first, fall back to old
+    let platform = null;
+    
+    // New 5-Factor Engine platform detection
+    if (window.PlatformFactory && typeof window.PlatformFactory.fromUrl === 'function') {
+        const platformInstance = window.PlatformFactory.fromUrl(url);
+        if (platformInstance) {
+            // Map to old format for compatibility
+            platform = {
+                id: platformInstance.id,
+                name: platformInstance.getName(),
+                icon: platformInstance.getIcon(),
+                status: 'live',
+                supports: {
+                    hashtagCheck: true,
+                    engagementTest: platformInstance.id === 'twitter'
+                },
+                engagementTest: { enabled: platformInstance.id === 'twitter' }
+            };
+        }
+    }
+    
+    // Fall back to old detection
+    if (!platform && window.detectPlatformFromUrl) {
+        platform = window.detectPlatformFromUrl(url);
+    }
+    
     console.log('🔍 URL detection:', url.substring(0, 50), '→', platform ? platform.name : 'none');
     
     if (platform) {
@@ -329,7 +546,48 @@ function runAnalysis(withEngagement) {
     
     // Run animation
     runEngineAnimation();
-    simulateAnalysis(withEngagement);
+    
+    // Check if new 5-Factor Engine is available
+    if (FiveFactorLoader.isEngineReady()) {
+        console.log('🚀 Using 5-Factor Engine for analysis');
+        runFiveFactorAnalysis(withEngagement);
+    } else {
+        console.log('📊 Using demo data for analysis');
+        simulateAnalysis(withEngagement);
+    }
+}
+
+/**
+ * Run analysis using the new 5-Factor Engine
+ */
+async function runFiveFactorAnalysis(withEngagement) {
+    const powerUrlInput = document.getElementById('power-url-input');
+    const url = powerUrlInput ? powerUrlInput.value.trim() : '';
+    
+    try {
+        // Use the new engine
+        const result = await window.powerCheck(url);
+        
+        // Add engagement data
+        result.withEngagement = withEngagement;
+        result.engagementSteps = { ...engagementStepsCompleted };
+        result.checkType = 'power';
+        result.factorsUsed = 5;
+        
+        // Store result
+        sessionStorage.setItem('lastAnalysisResult', JSON.stringify(result));
+        
+        // Navigate to results
+        const platformId = currentPlatform ? currentPlatform.id : 'twitter';
+        window.location.href = `results.html?platform=${platformId}&type=power&engine=5factor`;
+        
+    } catch (error) {
+        console.error('5-Factor Engine error:', error);
+        showToast('Analysis failed. Please try again.', 'error');
+        
+        // Fall back to demo
+        simulateAnalysis(withEngagement);
+    }
 }
 
 function runEngineAnimation() {
@@ -685,5 +943,10 @@ function showToast(message, type) {
         console.log('Toast:', message, type);
     }
 }
+
+// ============================================
+// CONSOLE HELPER - Check engine status
+// ============================================
+console.log('💡 Tip: Run FiveFactorLoader.printStatus() to check engine modules');
 
 })();

@@ -1,7 +1,10 @@
 /**
  * =============================================================================
- * SHADOW AI - UNIFIED CHATBOT v4.1 (WITH RESEARCH SUPPORT)
+ * SHADOW AI - UNIFIED CHATBOT v4.2 (WITH RESEARCH SUPPORT)
  * ShadowBanCheck.io - Works on ALL pages
+ * 
+ * 3-Point Intelligence Model: Predictive (15%) + Real-Time (55%) + Historical (30%)
+ * Powered by 5 Specialized Detection Agents with 21 Detection Modules
  * 
  * Same style everywhere. Only permissions change:
  * - Website (index.html): 3 lookups/day, "Shadow AI"
@@ -39,7 +42,7 @@
             usageText: (remaining, limit) => `${remaining}/${limit} lookups left`,
             lookupLimit: 3,
             messageLimit: 20,
-            welcomeMessage: "👋 Hi! I'm Shadow AI, your personal shadow ban detective. I can help you understand shadow banning, check your accounts, and provide recovery strategies. What would you like to know?"
+            welcomeMessage: "👋 Hi! I'm Shadow AI, your personal shadow ban detective.\n\nI'm powered by our **3-Point Intelligence Model** and **5 Specialized Detection Agents** that scan 21 signal modules to detect suppression.\n\nWhat would you like to know?"
         },
         dashboard: {
             title: 'Shadow AI Pro',
@@ -47,7 +50,7 @@
             usageText: (remaining, limit) => `${remaining}/${limit} this month`,
             lookupLimit: 25,
             messageLimit: 200,
-            welcomeMessage: "👋 Welcome back! I'm Shadow AI Pro, your dedicated shadow ban assistant. You have **{remaining}** questions remaining this month. How can I help?"
+            welcomeMessage: "👋 Welcome back! I'm Shadow AI Pro, your dedicated shadow ban assistant.\n\nYou have **{remaining}** questions remaining this month. I can run full scans using our **5 Detection Agents** across all 21 signal modules.\n\nHow can I help?"
         },
         agency: {
             title: 'Shadow AI Agency',
@@ -55,7 +58,7 @@
             usageText: () => '∞ Unlimited',
             lookupLimit: Infinity,
             messageLimit: Infinity,
-            welcomeMessage: "👋 Welcome to Shadow AI Agency! I can help you manage client accounts, run bulk checks, and generate dispute letters. Ask me anything or type **help** for commands."
+            welcomeMessage: "👋 Welcome to Shadow AI Agency!\n\nI can help you manage client accounts, run bulk scans with our **5 Detection Agents**, and generate dispute letters.\n\nAsk me anything or type **help** for commands."
         },
         research: {
             title: 'Shadow AI Research',
@@ -64,7 +67,7 @@
             lookupLimit: Infinity,  // Unlimited but billed per question
             messageLimit: Infinity,
             perQuestion: 0.25,
-            welcomeMessage: "👋 Welcome to Shadow AI Research! I can help you analyze suppression patterns, query our dataset, and provide insights on platform behaviors.\n\n**Pricing:** $0.25 per question (billed monthly)\n\nWhat would you like to research?"
+            welcomeMessage: "👋 Welcome to Shadow AI Research!\n\nI can help you analyze suppression patterns using our **3-Point Intelligence Model** (Predictive 15%, Real-Time 55%, Historical 30%).\n\n**Pricing:** $0.25 per question (billed monthly)\n\nWhat would you like to research?"
         },
         admin: {
             title: 'Shadow AI Admin',
@@ -72,12 +75,28 @@
             usageText: () => '∞ Unlimited',
             lookupLimit: Infinity,
             messageLimit: Infinity,
-            welcomeMessage: "👋 Welcome back Andrew! I'm your AI Command Center.\n\n**Quick Commands:**\n• `check @username on twitter` - Run engine scan\n• `lookup user@email.com` - View user's scan history\n• `stats` - Dashboard statistics\n\nOr just ask me anything!"
+            welcomeMessage: "👋 Welcome back Andrew! I'm your AI Command Center.\n\n**Quick Commands:**\n• `check @username on twitter` - Run 5-Agent scan\n• `lookup user@email.com` - View user's scan history\n• `stats` - Dashboard statistics\n\nOr just ask me anything!"
         }
     };
     
     const CURRENT_CONFIG = CONFIG[PAGE_TYPE];
     const DEMO_USERNAME = '@ghost081280';
+    
+    // 5 Specialized Detection Agents Configuration
+    const DETECTION_AGENTS = [
+        { name: 'API Agent', weight: 20, icon: '🔌', description: 'Direct platform API queries' },
+        { name: 'Web Analysis Agent', weight: 20, icon: '🔍', description: 'Browser-based visibility tests' },
+        { name: 'Historical Agent', weight: 15, icon: '📊', description: 'Pattern tracking over time' },
+        { name: 'Detection Agent', weight: 25, icon: '🎯', description: '21 signal modules (hashtags, links, content)' },
+        { name: 'Predictive AI Agent', weight: 20, icon: '🤖', description: 'ML-based risk forecasting' }
+    ];
+    
+    // 3-Point Intelligence Model
+    const INTELLIGENCE_MODEL = {
+        predictive: { weight: 15, label: 'Predictive Intelligence' },
+        realtime: { weight: 55, label: 'Real-Time Intelligence' },
+        historical: { weight: 30, label: 'Historical Intelligence' }
+    };
     
     // Storage keys
     const STORAGE_KEYS = {
@@ -215,7 +234,9 @@
             /#[a-zA-Z0-9_]+.*#[a-zA-Z0-9_]+/,
             /power\s*check/i,
             /3[\s-]?in[\s-]?1/i,
-            /full\s+(analysis|check|scan)/i
+            /full\s+(analysis|check|scan)/i,
+            /run\s+(the\s+)?agents?/i,
+            /deploy\s+(detection\s+)?agents?/i
         ];
         return lookupPatterns.some(pattern => pattern.test(lower));
     }
@@ -228,7 +249,8 @@
                lower.startsWith('scan ') || 
                lower === 'stats' || 
                lower === 'messages' ||
-               lower === 'help';
+               lower === 'help' ||
+               lower === 'agents';
     }
     
     function isResearchQuery(message) {
@@ -246,7 +268,9 @@
             /how\s+many/i,
             /what\s+percentage/i,
             /compare/i,
-            /correlation/i
+            /correlation/i,
+            /intelligence\s+model/i,
+            /detection\s+agents?/i
         ];
         return researchPatterns.some(pattern => pattern.test(lower));
     }
@@ -255,7 +279,9 @@
     // INITIALIZE
     // ==========================================================================
     function init() {
-        console.log(`🤖 Shadow AI v4.1 (${PAGE_TYPE}) Initializing...`);
+        console.log(`🤖 Shadow AI v4.2 (${PAGE_TYPE}) Initializing...`);
+        console.log(`   → 5 Specialized Detection Agents ready`);
+        console.log(`   → 3-Point Intelligence Model active`);
         
         // Add dashboard-page class for CSS if on any dashboard
         if (PAGE_TYPE !== 'website') {
@@ -667,24 +693,59 @@
     function generateAdminResponse(message) {
         const lower = message.toLowerCase().trim();
         
+        // agents command - show detection agent status
+        if (lower === 'agents') {
+            return `**🎯 5 Specialized Detection Agents**\n\n` +
+                   `All agents operational:\n\n` +
+                   `• **API Agent** (20%) — ✅ Online\n` +
+                   `• **Web Analysis Agent** (20%) — ✅ Online\n` +
+                   `• **Historical Agent** (15%) — ✅ Online\n` +
+                   `• **Detection Agent** (25%) — ✅ Online (21 modules)\n` +
+                   `• **Predictive AI Agent** (20%) — ✅ Online\n\n` +
+                   `**3-Point Intelligence Model:**\n` +
+                   `Predictive 15% | Real-Time 55% | Historical 30%`;
+        }
+        
         // check @username on platform
         const checkMatch = lower.match(/^(?:check|scan)\s+@?(\w+)\s+(?:on\s+)?(\w+)/);
         if (checkMatch) {
             const username = checkMatch[1];
             const platform = checkMatch[2];
-            const score = Math.floor(Math.random() * 60) + 10;
-            const status = score < 25 ? '✅ LOW' : score < 50 ? '⚠️ MODERATE' : '🔶 HIGH';
+            const isReddit = platform.toLowerCase() === 'reddit';
+            const moduleCount = isReddit ? 14 : 21;
             
-            return `**🔍 Engine Scan Complete**\n\n` +
+            // Generate random scores for each agent
+            const apiScore = Math.floor(Math.random() * 25 + 5);
+            const webScore = Math.floor(Math.random() * 30 + 10);
+            const histScore = Math.floor(Math.random() * 15 + 0);
+            const detScore = Math.floor(Math.random() * 30 + 10);
+            const predScore = Math.floor(Math.random() * 20 + 5);
+            
+            // Calculate weighted score
+            const weightedScore = Math.round(
+                (apiScore * 0.20) + 
+                (webScore * 0.20) + 
+                (histScore * 0.15) + 
+                (detScore * 0.25) + 
+                (predScore * 0.20)
+            );
+            
+            const status = weightedScore < 25 ? '✅ LOW RISK' : weightedScore < 50 ? '⚠️ MODERATE RISK' : '🔶 HIGH RISK';
+            const confidence = weightedScore < 25 ? 'High' : weightedScore < 50 ? 'Medium' : 'Low';
+            
+            return `**🔍 5-Agent Scan Complete**\n\n` +
                    `**Platform:** ${platform.charAt(0).toUpperCase() + platform.slice(1)}\n` +
                    `**Username:** @${username}\n` +
-                   `**Score:** ${score}% ${status}\n\n` +
-                   `**5-Factor Breakdown:**\n` +
-                   `• Platform API: ${Math.floor(Math.random() * 30 + 10)}%\n` +
-                   `• Web Analysis: ${Math.floor(Math.random() * 30 + 10)}%\n` +
-                   `• Historical: ${Math.floor(Math.random() * 20 + 5)}%\n` +
-                   `• Hashtag Health: ${Math.floor(Math.random() * 25 + 10)}%\n` +
-                   `• IP Analysis: ${Math.floor(Math.random() * 15 + 5)}%`;
+                   `**Probability:** ${weightedScore}% ${status}\n` +
+                   `**Confidence:** ${confidence}\n\n` +
+                   `**5 Detection Agents:**\n` +
+                   `• API Agent (20%): ${apiScore}%\n` +
+                   `• Web Analysis Agent (20%): ${webScore}%\n` +
+                   `• Historical Agent (15%): ${histScore}%\n` +
+                   `• Detection Agent (25%): ${detScore}% — ${moduleCount} modules scanned${isReddit ? ' (hashtags N/A)' : ''}\n` +
+                   `• Predictive AI Agent (20%): ${predScore}%\n\n` +
+                   `**3-Point Intelligence:**\n` +
+                   `Predictive: ${predScore}% | Real-Time: ${Math.round((apiScore + webScore + detScore) / 3)}% | Historical: ${histScore}%`;
         }
         
         // lookup email
@@ -696,8 +757,8 @@
                    `**Plan:** Pro\n` +
                    `**Scans This Month:** 12\n\n` +
                    `**Recent Activity:**\n` +
-                   `• Twitter check: ${DEMO_USERNAME} - 28%\n` +
-                   `• Instagram check: @user - 15%`;
+                   `• Twitter check: ${DEMO_USERNAME} - 28% (High Confidence)\n` +
+                   `• Instagram check: @user - 15% (Medium Confidence)`;
         }
         
         // stats
@@ -705,6 +766,8 @@
             return `**📊 Dashboard Statistics**\n\n` +
                    `**Users:** 156 total (42 Pro, 8 Agency, 3 Research)\n` +
                    `**Today:** 1,234 scans, 89 AI questions\n` +
+                   `**Detection Agents:** 5/5 operational\n` +
+                   `**Modules Active:** 21/21\n` +
                    `**Revenue:** $1,247/mo\n` +
                    `**Support:** 5 unread messages`;
         }
@@ -712,8 +775,9 @@
         // help
         if (lower === 'help') {
             return `**🤖 Admin Commands:**\n\n` +
-                   `• \`check @username on twitter\` - Run scan\n` +
+                   `• \`check @username on twitter\` - Run 5-Agent scan\n` +
                    `• \`lookup user@email.com\` - User info\n` +
+                   `• \`agents\` - Detection Agent status\n` +
                    `• \`stats\` - Dashboard stats\n` +
                    `• \`messages\` - Support tickets\n\n` +
                    `Or just ask me anything!`;
@@ -725,6 +789,23 @@
     function generateResearchResponse(message) {
         const lower = message.toLowerCase();
         
+        // Detection agents / intelligence model queries
+        if (lower.includes('detection agent') || lower.includes('intelligence model')) {
+            return `**🎯 Detection System Overview**\n\n` +
+                   `**5 Specialized Detection Agents:**\n` +
+                   `• API Agent (20%) — Direct platform queries\n` +
+                   `• Web Analysis Agent (20%) — Browser visibility tests\n` +
+                   `• Historical Agent (15%) — Pattern tracking\n` +
+                   `• Detection Agent (25%) — 21 signal modules\n` +
+                   `• Predictive AI Agent (20%) — ML risk forecasting\n\n` +
+                   `**3-Point Intelligence Model:**\n` +
+                   `• Predictive (15%) — Forward-looking risk\n` +
+                   `• Real-Time (55%) — Current state analysis\n` +
+                   `• Historical (30%) — Past behavior patterns\n\n` +
+                   `**21 Signal Modules:**\n` +
+                   `Hashtags (4) | Cashtags (3) | Links (4) | Content (4) | Mentions (3) | Emojis (3)`;
+        }
+        
         // Trend queries
         if (lower.includes('trend')) {
             return `**📈 Suppression Trends (Last 30 Days)**\n\n` +
@@ -734,34 +815,41 @@
                    `• Instagram: 33,421 detections (+15%)\n` +
                    `• TikTok: 24,287 detections (+22%)\n` +
                    `• Reddit: 15,104 detections (-3%)\n\n` +
+                   `**Agent Performance:**\n` +
+                   `• Detection Agent flagging 23% more signals\n` +
+                   `• Predictive AI accuracy improved 8%\n\n` +
                    `**Emerging Pattern:** Political content suppression up 47% across platforms.\n\n` +
-                   `Would you like me to drill into any specific platform?`;
+                   `Would you like me to drill into any specific platform or agent?`;
         }
         
         // Hashtag analysis
         if (lower.includes('hashtag')) {
-            return `**#️⃣ Hashtag Analysis**\n\n` +
-                   `**Currently Flagged:** 1,847 unique hashtags\n\n` +
+            return `**#️⃣ Hashtag Analysis (Detection Agent)**\n\n` +
+                   `**Currently Flagged:** 1,847 unique hashtags\n` +
+                   `**Modules Active:** 4 hashtag detection modules\n\n` +
                    `**Top Flagged This Week:**\n` +
                    `1. #shadowbanned (Twitter) - 2,847 detections\n` +
                    `2. #crypto (Instagram) - 1,932 detections\n` +
                    `3. #election2024 (All) - 1,654 detections\n` +
                    `4. #adulting (TikTok) - 1,287 detections\n` +
                    `5. #weightloss (Instagram) - 1,043 detections\n\n` +
+                   `**Confidence Levels:**\n` +
+                   `High (70%+): 892 tags | Medium (40-69%): 614 tags | Low (<40%): 341 tags\n\n` +
                    `Use the Hashtag Database section to search specific tags.`;
         }
         
         // Platform comparison
         if (lower.includes('compare') || lower.includes('platform')) {
             return `**🌐 Platform Comparison**\n\n` +
-                   `| Platform | Avg Prob | Top Issue |\n` +
-                   `|----------|----------|----------|\n` +
-                   `| Instagram | 38.2% | Hashtag bans |\n` +
-                   `| TikTok | 35.8% | FYP exclusion |\n` +
-                   `| Facebook | 33.1% | Reduced distribution |\n` +
-                   `| Twitter/X | 31.5% | Reply deboosting |\n` +
-                   `| Reddit | 29.4% | AutoMod removal |\n` +
-                   `| LinkedIn | 22.6% | Spam filters |\n\n` +
+                   `| Platform | Avg Prob | Top Issue | Modules |\n` +
+                   `|----------|----------|----------|--------|\n` +
+                   `| Instagram | 38.2% | Hashtag bans | 18 |\n` +
+                   `| TikTok | 35.8% | FYP exclusion | 21 |\n` +
+                   `| Facebook | 33.1% | Reduced dist. | 21 |\n` +
+                   `| Twitter/X | 31.5% | Reply deboosting | 21 |\n` +
+                   `| Reddit | 29.4% | AutoMod removal | 14 |\n` +
+                   `| LinkedIn | 22.6% | Spam filters | 18 |\n\n` +
+                   `**Note:** Reddit uses 14 modules (hashtags/cashtags N/A)\n\n` +
                    `Instagram shows highest average suppression probability.`;
         }
         
@@ -772,11 +860,16 @@
                    `**Average Probability:** 34.2%\n` +
                    `**High Probability (70%+):** 18,423 (14.5%)\n` +
                    `**Recovery Rate:** ~68% within 72 hours\n\n` +
-                   `**Detection Types:**\n` +
-                   `• Reply Deboosting: 45%\n` +
-                   `• Search Ban: 28%\n` +
-                   `• Ghost Ban: 15%\n` +
-                   `• Full Shadow Ban: 12%\n\n` +
+                   `**By Detection Agent:**\n` +
+                   `• API Agent: 89% success rate\n` +
+                   `• Web Analysis Agent: 94% success rate\n` +
+                   `• Historical Agent: 76% (Pro users only)\n` +
+                   `• Detection Agent: 97% success rate\n` +
+                   `• Predictive AI Agent: 82% accuracy\n\n` +
+                   `**Confidence Distribution:**\n` +
+                   `• High Confidence: 45%\n` +
+                   `• Medium Confidence: 38%\n` +
+                   `• Low Confidence: 17%\n\n` +
                    `Use the Search section for custom queries.`;
         }
         
@@ -786,7 +879,8 @@
                `• "What are the current trends?"\n` +
                `• "Compare platforms"\n` +
                `• "Hashtag analysis"\n` +
-               `• "Show me statistics"\n\n` +
+               `• "Show me statistics"\n` +
+               `• "How do detection agents work?"\n\n` +
                `Or use the Search section for custom queries.\n\n` +
                `_Note: $0.25 per question_`;
     }
@@ -799,13 +893,15 @@
                    `✅ **ACME Corporation** - 3 accounts, 1 warning\n` +
                    `🔶 **Tech Startup Inc** - 2 accounts, issues detected\n` +
                    `🚫 **Local Restaurant** - 2 accounts, 1 banned\n\n` +
+                   `All scans use **5 Detection Agents** with **21 signal modules**.\n\n` +
                    `Say "select [client name]" to work with a specific client.`;
         }
         
         if (lower.includes('bulk')) {
             return `**⚡ Bulk Operations:**\n\n` +
                    `• **3 clients**, **7 total accounts**\n` +
-                   `• Estimated cost: $0.35 (7 × $0.05)\n\n` +
+                   `• Estimated cost: $0.35 (7 × $0.05)\n` +
+                   `• Each scan deploys all 5 Detection Agents\n\n` +
                    `Use the Bulk Check panel in dashboard to run.`;
         }
         
@@ -818,13 +914,17 @@
             const username = usernameMatch[1];
             const probability = Math.floor(Math.random() * 35) + 5;
             const status = probability < 15 ? 'LOW RISK ✅' : probability < 30 ? 'MODERATE RISK ⚠️' : 'HIGH RISK 🚨';
+            const confidence = probability < 20 ? 'High' : probability < 35 ? 'Medium' : 'Low';
             
             return `**Account Check: @${username}**\n\n` +
-                   `**Shadow Ban Probability: ${probability}%** (${status})\n\n` +
-                   `**Quick Summary:**\n` +
-                   `✓ Search visibility: ${Math.random() > 0.3 ? 'Visible' : 'Reduced'}\n` +
-                   `✓ Profile accessibility: ${Math.random() > 0.2 ? 'Normal' : 'Limited'}\n` +
-                   `✓ Engagement analysis: ${Math.random() > 0.4 ? 'Healthy' : 'Below average'}\n\n` +
+                   `**Shadow Ban Probability: ${probability}%** (${status})\n` +
+                   `**Confidence:** ${confidence}\n\n` +
+                   `**5 Detection Agents deployed:**\n` +
+                   `✓ API Agent: Account exists\n` +
+                   `✓ Web Analysis Agent: ${Math.random() > 0.3 ? 'Visible' : 'Reduced visibility'}\n` +
+                   `✓ Historical Agent: No baseline (upgrade for tracking)\n` +
+                   `✓ Detection Agent: ${Math.floor(Math.random() * 3)} flags in 21 modules\n` +
+                   `✓ Predictive AI Agent: ${Math.random() > 0.4 ? 'Low' : 'Moderate'} future risk\n\n` +
                    `Want detailed analysis? Use our [full checker](checker.html)!`;
         }
         
@@ -832,20 +932,41 @@
         if (urlMatch) {
             const probability = Math.floor(Math.random() * 30) + 5;
             const status = probability < 15 ? 'VISIBLE ✅' : 'REDUCED REACH ⚠️';
+            const confidence = probability < 15 ? 'High' : 'Medium';
             
             return `**Post Visibility Check**\n\n` +
-                   `**Suppression Probability: ${probability}%** (${status})\n\n` +
-                   `**Analysis:**\n` +
-                   `✓ Search indexing: ${Math.random() > 0.3 ? 'Indexed' : 'Not indexed'}\n` +
-                   `✓ Feed visibility: ${Math.random() > 0.2 ? 'Normal' : 'Reduced'}\n` +
-                   `✓ Hashtag reach: ${Math.random() > 0.4 ? 'Good' : 'Limited'}`;
+                   `**Suppression Probability: ${probability}%** (${status})\n` +
+                   `**Confidence:** ${confidence}\n\n` +
+                   `**Detection Agent Results (21 modules):**\n` +
+                   `✓ Hashtags: ${Math.floor(Math.random() * 2)} flagged\n` +
+                   `✓ Links: ${Math.random() > 0.7 ? '1 warning' : 'Clear'}\n` +
+                   `✓ Content: ${Math.random() > 0.8 ? '1 flag' : 'Clear'}\n` +
+                   `✓ Mentions: Clear\n\n` +
+                   `**3-Point Intelligence:**\n` +
+                   `Predictive: Low | Real-Time: ${status} | Historical: N/A`;
         }
         
-        return "I'd be happy to check! Please provide:\n\n• A **@username** + platform\n• A **post URL**\n• Or **#hashtags** to check";
+        return "I'd be happy to run our **5 Detection Agents**!\n\nPlease provide:\n• A **@username** + platform\n• A **post URL**\n• Or **#hashtags** to check";
     }
     
     function generateGeneralResponse(message) {
         const lower = message.toLowerCase();
+        
+        // Questions about our detection system
+        if (lower.includes('how') && (lower.includes('work') || lower.includes('detect'))) {
+            return `**How ShadowBanCheck Works:**\n\n` +
+                   `We use a **3-Point Intelligence Model**:\n` +
+                   `• **Predictive (15%)** — ML-based risk forecasting\n` +
+                   `• **Real-Time (55%)** — Current state analysis\n` +
+                   `• **Historical (30%)** — Past behavior patterns\n\n` +
+                   `Powered by **5 Specialized Detection Agents**:\n` +
+                   `🔌 API Agent — Direct platform queries\n` +
+                   `🔍 Web Analysis Agent — Visibility tests\n` +
+                   `📊 Historical Agent — Pattern tracking\n` +
+                   `🎯 Detection Agent — 21 signal modules\n` +
+                   `🤖 Predictive AI Agent — Risk forecasting\n\n` +
+                   `Want me to run a check for you?`;
+        }
         
         if (lower.includes('shadow ban') || lower.includes('shadowban')) {
             return "**Shadow banning** is when a platform limits your content's visibility without notifying you.\n\n" +
@@ -854,25 +975,38 @@
                    "• Posts not appearing in hashtag searches\n" +
                    "• Replies hidden behind \"Show more\"\n\n" +
                    `**Example:** If ${DEMO_USERNAME} suddenly sees 90% less engagement, they might be shadow banned.\n\n` +
-                   "Want me to check your account?";
+                   "Our **5 Detection Agents** scan 21 signal modules to detect this. Want me to check your account?";
         }
         
         if (lower.includes('fix') || lower.includes('recover') || lower.includes('appeal')) {
             return "**Shadow Ban Recovery:**\n\n" +
                    "1. **Stop posting** for 24-48 hours\n" +
                    "2. **Remove** potentially violating content\n" +
-                   "3. **Check hashtags** - remove banned ones\n" +
+                   "3. **Check hashtags** - our Detection Agent scans for banned ones\n" +
                    "4. **Disable** automation tools\n\n" +
-                   "**Pro tip:** Use our Resolution Center to generate professional appeal letters!";
+                   "**Pro tip:** Use our Resolution Center to generate professional appeal letters!\n\n" +
+                   "Our **Historical Agent** (Pro tier) tracks recovery progress over time.";
         }
         
         if (lower.includes('price') || lower.includes('upgrade') || lower.includes('pro')) {
             return "**Plans:**\n\n" +
-                   "• **Free:** 3 lookups/day\n" +
-                   "• **Pro ($9/mo):** 25 lookups/month + AI Pro\n" +
+                   "• **Free:** 3 lookups/day, 5 Detection Agents\n" +
+                   "• **Pro ($9/mo):** 25 lookups/month + Historical Agent tracking\n" +
                    "• **Agency ($29/mo):** Unlimited + client management\n" +
                    "• **Research ($49/mo):** Data access + AI ($0.25/q)\n\n" +
+                   "All plans include our full **3-Point Intelligence Model**.\n\n" +
                    "[View Pricing](#pricing)";
+        }
+        
+        if (lower.includes('agent') || lower.includes('factor') || lower.includes('engine')) {
+            return `**5 Specialized Detection Agents:**\n\n` +
+                   `🔌 **API Agent (20%)** — Queries platform APIs directly\n` +
+                   `🔍 **Web Analysis Agent (20%)** — Browser-based visibility tests\n` +
+                   `📊 **Historical Agent (15%)** — Tracks patterns over time (Pro)\n` +
+                   `🎯 **Detection Agent (25%)** — Scans 21 signal modules\n` +
+                   `🤖 **Predictive AI Agent (20%)** — ML risk forecasting\n\n` +
+                   `Combined into our **3-Point Intelligence Model**:\n` +
+                   `Predictive 15% | Real-Time 55% | Historical 30%`;
         }
         
         if (lower.match(/^(hi|hey|hello|yo|sup)/)) {
@@ -881,11 +1015,11 @@
                    "• Checking accounts: \"check @username on Twitter\"\n" +
                    "• Explaining shadow bans\n" +
                    "• Recovery strategies\n\n" +
-                   "What would you like to know?";
+                   "I use **5 Detection Agents** scanning 21 signal modules. What would you like to know?";
         }
         
         if (lower.includes('thank')) {
-            return "You're welcome! 😊 Let me know if you need anything else.";
+            return "You're welcome! 😊 Let me know if you need anything else.\n\nRemember: Our 5 Detection Agents are always ready to help!";
         }
         
         // Default
@@ -893,8 +1027,9 @@
                `**Try:**\n` +
                `• "check @username on Twitter"\n` +
                `• "what is a shadow ban?"\n` +
+               `• "how does detection work?"\n` +
                `• "how do I recover?"\n\n` +
-               `What would you like to know?`;
+               `I use **5 Specialized Detection Agents** with 21 signal modules. What would you like to know?`;
     }
     
     // ==========================================================================
@@ -940,10 +1075,10 @@
         
         const chatSequence = [
             { type: 'user', text: "Am I shadow banned on Twitter?", delay: 800 },
-            { type: 'ai', text: "I can check that for you! What's your Twitter username?", delay: 1200 },
+            { type: 'ai', text: "I'll deploy our 5 Detection Agents to check! What's your Twitter username?", delay: 1200 },
             { type: 'user', text: "@myusername", delay: 600 },
-            { type: 'ai', text: "I'm analyzing your account now...", delay: 1000 },
-            { type: 'ai', text: "✓ Search visibility: Normal\n✓ Reply visibility: Normal\n✓ Profile access: Public\n\n**Result:** No shadow ban detected! Your account appears healthy.", delay: 1500 }
+            { type: 'ai', text: "Deploying Detection Agents... scanning 21 signal modules...", delay: 1000 },
+            { type: 'ai', text: "✓ API Agent: Account active\n✓ Web Analysis Agent: Visible in search\n✓ Detection Agent: No flagged content\n✓ Predictive AI: Low risk\n\n**Result:** No shadow ban detected! (High Confidence)", delay: 1500 }
         ];
         
         let currentIndex = 0;
@@ -1098,7 +1233,9 @@
         close: closeChat,
         toggle: toggleChat,
         getPageType: () => PAGE_TYPE,
-        getConfig: () => CURRENT_CONFIG
+        getConfig: () => CURRENT_CONFIG,
+        getAgents: () => DETECTION_AGENTS,
+        getIntelligenceModel: () => INTELLIGENCE_MODEL
     };
     
     // ==========================================================================

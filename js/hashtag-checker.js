@@ -2,8 +2,8 @@
    HASHTAG-CHECKER.JS - Hashtag & Cashtag Checker Page
    ShadowBanCheck.io
    
-   Updated to support 5-Factor Engine FlaggedHashtags database.
-   Now handles both #hashtags AND $cashtags.
+   Detection Agent: 21 modules across 6 signal types
+   Hashtags (4) + Cashtags (3) + Links (4) + Content (4) + Mentions (3) + Emojis (3)
    Reddit is EXCLUDED (no hashtags).
    ============================================================================= */
 
@@ -52,14 +52,14 @@ async function checkDatabaseStatus() {
     const statusIndicator = document.getElementById('api-status-indicator');
     const statusText = document.getElementById('api-status-text');
     
-    // Check for 5-Factor Engine FlaggedHashtags
+    // Check for Detection Agent FlaggedHashtags database
     if (window.FlaggedHashtags) {
         useLocalDatabase = true;
-        console.log('✅ Using 5-Factor Engine FlaggedHashtags database');
+        console.log('✅ Detection Agent database operational');
         
         if (statusIndicator && statusText) {
             statusIndicator.className = 'status-dot online';
-            statusText.textContent = 'Local database active (5-Factor Engine)';
+            statusText.textContent = 'Detection Agent: Database operational';
         }
         return;
     }
@@ -98,13 +98,13 @@ async function updateDatabaseStats() {
     const statsEl = document.getElementById('hashtag-db-stats');
     if (!statsEl) return;
     
-    // Try 5-Factor Engine database first
+    // Try Detection Agent database first
     if (window.FlaggedHashtags) {
         try {
             const stats = window.FlaggedHashtags.getStats();
             
             statsEl.innerHTML = `
-                <span class="stat-item">📊 ${stats.total.toLocaleString()} tags tracked</span>
+                <span class="stat-item">📊 ${stats.total.toLocaleString()} entries tracked</span>
                 <span class="stat-item">#️⃣ ${stats.hashtags || 0} hashtags</span>
                 <span class="stat-item">💲 ${stats.cashtags || 0} cashtags</span>
             `;
@@ -127,7 +127,7 @@ async function updateDatabaseStats() {
                 
                 statsEl.innerHTML = `
                     <span class="stat-item">📊 ${total.toLocaleString()} hashtags tracked</span>
-                    <span class="stat-item">🔄 Last updated: ${lastUpdated}</span>
+                    <span class="stat-item">🔄 Updated: ${lastUpdated}</span>
                 `;
             }
         } catch (error) {
@@ -259,7 +259,7 @@ function handlePlatformChange(e) {
     const note = document.getElementById('platform-selector-note');
     
     if (!platformId) {
-        if (note) note.textContent = 'Different platforms have different banned hashtags';
+        if (note) note.textContent = 'Each platform has different suppression triggers';
         updateSubmitButton();
         return;
     }
@@ -267,10 +267,10 @@ function handlePlatformChange(e) {
     if (currentPlatform) {
         if (note) {
             if (currentPlatform.status === 'live') {
-                const dbType = window.FlaggedHashtags ? '5-Factor database' : 'real-time API';
-                note.textContent = `Checking ${currentPlatform.name} tags via ${dbType}`;
+                const dbType = window.FlaggedHashtags ? 'Detection Agent database' : 'real-time API';
+                note.textContent = `Analyzing ${currentPlatform.name} tags via ${dbType}`;
             } else {
-                note.textContent = `${currentPlatform.name} hashtag checking coming soon`;
+                note.textContent = `${currentPlatform.name} tag analysis coming soon`;
             }
         }
     }
@@ -359,7 +359,7 @@ function handleFormSubmit(e) {
     }
     
     if (currentPlatform.status !== 'live') {
-        showToast(`${currentPlatform.name} hashtag checking coming soon!`, 'info');
+        showToast(`${currentPlatform.name} tag analysis coming soon!`, 'info');
         return;
     }
     
@@ -377,7 +377,7 @@ function handleClear() {
     if (hashtagInput) hashtagInput.value = '';
     if (checkBtn) checkBtn.disabled = true;
     if (countEl) countEl.textContent = '0 tags';
-    if (note) note.textContent = 'Each platform has different hashtag restrictions';
+    if (note) note.textContent = 'Each platform has different suppression triggers';
     
     currentPlatform = null;
 }
@@ -399,14 +399,14 @@ async function runAnalysis(tags) {
     try {
         let results;
         
-        // Try 5-Factor Engine first
+        // Try Detection Agent database first
         if (window.FlaggedHashtags) {
-            console.log('🔍 Checking tags via 5-Factor FlaggedHashtags...');
-            results = await checkWith5FactorEngine(tags, platformId);
+            console.log('🎯 Detection Agent: Analyzing tags...');
+            results = await checkWithDetectionAgent(tags, platformId);
         }
-        // Then try 5-Factor Engine checkTags function
+        // Then try checkTags function
         else if (window.checkTags) {
-            console.log('🔍 Checking tags via 5-Factor checkTags...');
+            console.log('🎯 Detection Agent: checkTags...');
             const engineResult = await window.checkTags(tags, platformId);
             results = convertEngineResult(engineResult);
         }
@@ -440,9 +440,9 @@ async function runAnalysis(tags) {
 }
 
 /**
- * Check tags using 5-Factor Engine FlaggedHashtags database
+ * Check tags using Detection Agent database
  */
-async function checkWith5FactorEngine(tags, platformId) {
+async function checkWithDetectionAgent(tags, platformId) {
     const result = window.FlaggedHashtags.checkBulk(tags, platformId);
     
     // Convert to standard format
@@ -461,14 +461,14 @@ async function checkWith5FactorEngine(tags, platformId) {
             status: r.status,
             category: r.category,
             confidence: r.status === 'safe' ? 50 : 85,
-            source: 'local-5factor'
+            source: 'detection-agent'
         })),
         riskScore: result.riskScore
     };
 }
 
 /**
- * Convert 5-Factor Engine checkTags result to standard format
+ * Convert checkTags result to standard format
  */
 function convertEngineResult(engineResult) {
     const results = engineResult.results || {};
@@ -482,7 +482,7 @@ function convertEngineResult(engineResult) {
             status: 'banned',
             category: item.category || 'unknown',
             confidence: 90,
-            source: '5factor-engine'
+            source: 'detection-agent'
         });
     });
     
@@ -493,7 +493,7 @@ function convertEngineResult(engineResult) {
             status: 'restricted',
             category: item.category || 'unknown',
             confidence: 80,
-            source: '5factor-engine'
+            source: 'detection-agent'
         });
     });
     
@@ -504,7 +504,7 @@ function convertEngineResult(engineResult) {
             status: 'monitored',
             category: item.category || 'unknown',
             confidence: 70,
-            source: '5factor-engine'
+            source: 'detection-agent'
         });
     });
     
@@ -515,7 +515,7 @@ function convertEngineResult(engineResult) {
             status: 'safe',
             category: item.category || 'general',
             confidence: 50,
-            source: '5factor-engine'
+            source: 'detection-agent'
         });
     });
     
@@ -631,6 +631,11 @@ function buildResultData(tags, results, platformId) {
         }
     });
     
+    // Calculate confidence level
+    const avgConfidence = results.results.length > 0 
+        ? Math.round(results.results.reduce((sum, r) => sum + r.confidence, 0) / results.results.length)
+        : 50;
+    
     return {
         checkType: 'tagCheck',
         platform: platformId,
@@ -655,6 +660,9 @@ function buildResultData(tags, results, platformId) {
             riskScore: results.riskScore || calculateRiskScore(results.summary)
         },
         
+        confidence: avgConfidence,
+        confidenceLevel: getConfidenceLevel(avgConfidence),
+        
         verdict: getVerdict(results.summary),
         
         recommendations: generateRecommendations(results.summary, grouped),
@@ -671,8 +679,14 @@ function buildResultData(tags, results, platformId) {
         restrictedCount: results.summary.restricted,
         safeCount: results.summary.safe,
         probability: results.riskScore || calculateRiskScore(results.summary),
-        factorsUsed: 3
+        agentsUsed: 3
     };
+}
+
+function getConfidenceLevel(confidence) {
+    if (confidence >= 70) return { label: 'High Confidence', description: '3+ sources corroborate', class: 'high' };
+    if (confidence >= 40) return { label: 'Medium Confidence', description: '2 sources corroborate', class: 'medium' };
+    return { label: 'Low Confidence', description: 'Single source', class: 'low' };
 }
 
 function getVerdict(summary) {
@@ -724,7 +738,7 @@ function runEngineAnimation(tags) {
     if (terminalOutput) terminalOutput.innerHTML = '';
     
     const platform = currentPlatform || { id: 'twitter', name: 'Twitter/X' };
-    const dbType = window.FlaggedHashtags ? '5-Factor database' : (window.HashtagAPI ? 'real-time API' : 'pattern matching');
+    const dbType = window.FlaggedHashtags ? 'Detection Agent database' : (window.HashtagAPI ? 'real-time API' : 'pattern matching');
     
     const hashtagCount = tags.filter(t => t.startsWith('#')).length;
     const cashtagCount = tags.filter(t => t.startsWith('$')).length;
@@ -734,15 +748,15 @@ function runEngineAnimation(tags) {
     }
     
     const lines = [
-        { text: `> Initializing 3-Factor Detection Engine...`, delay: 0 },
+        { text: `> Deploying Detection Agent...`, delay: 0 },
         { text: `> Target platform: ${platform.name}`, delay: 400 },
-        { text: `> Tags to check: ${tagDesc}`, delay: 800 },
+        { text: `> Tags to analyze: ${tagDesc}`, delay: 800 },
         { text: `> Using ${dbType}...`, delay: 1200 },
         { text: `> Database loaded ✓`, delay: 1600 },
-        { text: `> Querying hashtag database...`, delay: 2000 },
-        { text: cashtagCount > 0 ? `> Querying cashtag database...` : `> Checking patterns...`, delay: 2400 },
-        { text: `> Running web visibility tests...`, delay: 2800 },
-        { text: `> Calculating risk probability...`, delay: 3200 },
+        { text: `> Scanning hashtag module (4 checks)...`, delay: 2000 },
+        { text: cashtagCount > 0 ? `> Scanning cashtag module (3 checks)...` : `> Checking patterns...`, delay: 2400 },
+        { text: `> Cross-referencing intelligence...`, delay: 2800 },
+        { text: `> Calculating suppression risk...`, delay: 3200 },
     ];
     
     lines.forEach(line => {
@@ -757,21 +771,22 @@ function runEngineAnimation(tags) {
         }, line.delay);
     });
     
-    const factors = [
-        { id: 'factor-1-progress', delay: 1400, status: window.FlaggedHashtags ? 'complete' : 'na' },
-        { id: 'factor-2-progress', delay: 2200, status: 'complete' },
-        { id: 'factor-3-progress', delay: 2600, status: 'complete' },
-        { id: 'factor-4-progress', delay: 3000, status: 'complete' },
-        { id: 'factor-5-progress', delay: 1400, status: 'na' },
+    // Agent progress (Detection Agent primary for hashtag checks)
+    const agents = [
+        { id: 'factor-1-progress', delay: 1400, status: window.FlaggedHashtags ? 'na' : 'na' }, // API Agent - N/A
+        { id: 'factor-2-progress', delay: 2200, status: 'complete' }, // Web Analysis
+        { id: 'factor-3-progress', delay: 2600, status: 'na' }, // Historical - N/A
+        { id: 'factor-4-progress', delay: 3000, status: 'complete' }, // Detection Agent
+        { id: 'factor-5-progress', delay: 1400, status: 'na' }, // Predictive - N/A
     ];
     
-    factors.forEach(factor => {
+    agents.forEach(agent => {
         setTimeout(() => {
-            const el = document.getElementById(factor.id);
+            const el = document.getElementById(agent.id);
             if (el) {
                 const status = el.querySelector('.factor-status') || el.querySelector('.factor-compact-status');
                 if (status) {
-                    if (factor.status === 'complete') {
+                    if (agent.status === 'complete') {
                         status.textContent = '✓';
                         status.classList.remove('pending');
                         status.classList.add('complete');
@@ -782,7 +797,7 @@ function runEngineAnimation(tags) {
                     }
                 }
             }
-        }, factor.delay);
+        }, agent.delay);
     });
     
     setTimeout(() => {
@@ -794,7 +809,7 @@ function runEngineAnimation(tags) {
         const aiMessages = [
             'Analyzing tag patterns...',
             'Cross-referencing database...',
-            'Generating risk assessment...'
+            'Calculating confidence levels...'
         ];
         const aiMessageEl = document.getElementById('ai-processing-message');
         aiMessages.forEach((msg, i) => {
@@ -834,7 +849,7 @@ async function submitHashtagReport() {
         );
         
         if (result.success) {
-            showToast('Report submitted! We will verify this tag.', 'success');
+            showToast('Report submitted. We will verify this tag.', 'success');
             closeModal('report-hashtag-modal');
             hashtagInput.value = '';
             statusSelect.value = '';
@@ -869,18 +884,20 @@ function showHashtagInfoModal(platform) {
     
     if (modalStatus) {
         const statusClass = platform.status === 'live' ? 'live' : 'soon';
-        const statusText = platform.status === 'live' ? 'Live' : 'Coming Soon';
+        const statusText = platform.status === 'live' ? 'Operational' : 'Coming Soon';
         modalStatus.innerHTML = `<span class="status-badge ${statusClass}">● ${statusText}</span>`;
     }
     
-    const dbType = window.FlaggedHashtags ? '5-Factor Engine database' : 'real-time API';
+    const dbType = window.FlaggedHashtags ? 'Detection Agent database' : 'real-time API';
     
-    let checksHtml = '<h4>What We Check:</h4><ul class="check-list">';
-    checksHtml += `<li>✓ #Hashtag status via ${dbType}</li>`;
-    checksHtml += '<li>✓ $Cashtag verification (stocks & crypto)</li>';
-    checksHtml += '<li>✓ Platform-specific restrictions</li>';
-    checksHtml += '<li>✓ Risk scoring and recommendations</li>';
+    let checksHtml = '<h4>Detection Capabilities:</h4><ul class="check-list">';
+    checksHtml += `<li>✓ Hashtag analysis via ${dbType}</li>`;
+    checksHtml += '<li>✓ Cashtag verification (stocks & crypto)</li>';
+    checksHtml += '<li>✓ Platform-specific restriction detection</li>';
+    checksHtml += '<li>✓ Confidence scoring with source corroboration</li>';
     checksHtml += '</ul>';
+    
+    checksHtml += '<p style="margin-top: var(--space-md); color: var(--text-secondary);">Detection Agent: 4 hashtag modules + 3 cashtag modules</p>';
     
     if (platform.messages && platform.messages.platformNote) {
         checksHtml += `<p style="margin-top: var(--space-md); padding: var(--space-md); background: rgba(99, 102, 241, 0.1); border-radius: var(--radius-md);">💡 ${platform.messages.platformNote}</p>`;

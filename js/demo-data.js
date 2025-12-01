@@ -2,15 +2,15 @@
    DEMO-DATA.JS - Demo Result Data for Testing
    ShadowBanCheck.io
    
-   Provides realistic demo data for testing the results page.
-   Supports both legacy format and new 5-Factor Engine format.
+   3-Point Intelligence Model: Predictive (15%) + Real-Time (55%) + Historical (30%)
+   Powered by 5 Specialized Detection Agents with 21 Detection Modules
    ============================================================================= */
 
 (function() {
 'use strict';
 
 // ============================================================================
-// 5-FACTOR ENGINE FORMAT - New comprehensive result structure
+// 5 DETECTION AGENTS FORMAT - New comprehensive result structure
 // ============================================================================
 const fiveFactorResults = {
     
@@ -80,10 +80,11 @@ const fiveFactorResults = {
                 verdict: 'CLEAR'
             },
             
+            // 5 Specialized Detection Agents
             factors: [
                 {
                     factor: 1,
-                    name: 'Platform API Analysis',
+                    name: 'API Agent',
                     weight: 20,
                     rawScore: 15,
                     weightedScore: 3,
@@ -91,12 +92,12 @@ const fiveFactorResults = {
                     findingsCount: 2,
                     findings: [
                         { type: 'good', severity: 'none', message: 'Account exists and is active', impact: 0 },
-                        { type: 'info', severity: 'low', message: 'Account not verified - may affect reach', impact: 5 }
+                        { type: 'info', severity: 'low', message: 'Account not verified — may affect reach', impact: 5 }
                     ]
                 },
                 {
                     factor: 2,
-                    name: 'Web/Search Analysis',
+                    name: 'Web Analysis Agent',
                     weight: 20,
                     rawScore: 25,
                     weightedScore: 5,
@@ -110,24 +111,25 @@ const fiveFactorResults = {
                 },
                 {
                     factor: 3,
-                    name: 'Historical Data',
+                    name: 'Historical Agent',
                     weight: 15,
                     rawScore: 0,
                     weightedScore: 0,
                     confidence: 40,
                     findingsCount: 1,
                     findings: [
-                        { type: 'info', severity: 'none', message: 'No historical data - first analysis (Free tier)', impact: 0 }
+                        { type: 'info', severity: 'none', message: 'No historical data — first analysis (Free tier)', impact: 0 }
                     ]
                 },
                 {
                     factor: 4,
-                    name: 'Real-Time Detection',
+                    name: 'Detection Agent',
                     weight: 25,
                     rawScore: 35,
                     weightedScore: 8.75,
                     confidence: 90,
                     findingsCount: 4,
+                    modulesActive: 21,
                     findings: [
                         { type: 'danger', severity: 'high', message: 'Banned hashtag detected: #followback', impact: 25 },
                         { type: 'warning', severity: 'medium', message: 'Link shortener in bio: bit.ly', impact: 10 },
@@ -137,7 +139,7 @@ const fiveFactorResults = {
                 },
                 {
                     factor: 5,
-                    name: 'Predictive Intelligence',
+                    name: 'Predictive AI Agent',
                     weight: 20,
                     rawScore: 20,
                     weightedScore: 4,
@@ -149,6 +151,13 @@ const fiveFactorResults = {
                     ]
                 }
             ],
+            
+            // 3-Point Intelligence Model
+            intelligenceModel: {
+                predictive: { score: 20, weight: 15, contribution: 3 },
+                realtime: { score: 35, weight: 55, contribution: 19.25 },
+                historical: { score: 0, weight: 30, contribution: 0 }
+            },
             
             overallProbability: 28,
             overallConfidence: 72,
@@ -207,12 +216,18 @@ const fiveFactorResults = {
             },
             
             factors: [
-                { factor: 1, name: 'Platform API Analysis', weight: 20, rawScore: 10, weightedScore: 2, confidence: 90, findingsCount: 1 },
-                { factor: 2, name: 'Web/Search Analysis', weight: 20, rawScore: 15, weightedScore: 3, confidence: 80, findingsCount: 2 },
-                { factor: 3, name: 'Historical Data', weight: 15, rawScore: 0, weightedScore: 0, confidence: 40, findingsCount: 1 },
-                { factor: 4, name: 'Real-Time Detection', weight: 25, rawScore: 10, weightedScore: 2.5, confidence: 85, findingsCount: 2 },
-                { factor: 5, name: 'Predictive Intelligence', weight: 20, rawScore: 5, weightedScore: 1, confidence: 65, findingsCount: 1 }
+                { factor: 1, name: 'API Agent', weight: 20, rawScore: 10, weightedScore: 2, confidence: 90, findingsCount: 1 },
+                { factor: 2, name: 'Web Analysis Agent', weight: 20, rawScore: 15, weightedScore: 3, confidence: 80, findingsCount: 2 },
+                { factor: 3, name: 'Historical Agent', weight: 15, rawScore: 0, weightedScore: 0, confidence: 40, findingsCount: 1 },
+                { factor: 4, name: 'Detection Agent', weight: 25, rawScore: 10, weightedScore: 2.5, confidence: 85, findingsCount: 2, modulesActive: 21 },
+                { factor: 5, name: 'Predictive AI Agent', weight: 20, rawScore: 5, weightedScore: 1, confidence: 65, findingsCount: 1 }
             ],
+            
+            intelligenceModel: {
+                predictive: { score: 5, weight: 15, contribution: 0.75 },
+                realtime: { score: 12, weight: 55, contribution: 6.6 },
+                historical: { score: 0, weight: 30, contribution: 0 }
+            },
             
             overallProbability: 18,
             overallConfidence: 72,
@@ -220,7 +235,7 @@ const fiveFactorResults = {
             
             recommendations: [
                 { priority: 'low', action: 'Consider verification for improved visibility' },
-                { priority: 'info', action: 'Account appears healthy - continue current practices' },
+                { priority: 'info', action: 'Account appears healthy — continue current practices' },
                 { priority: 'info', action: 'Upgrade to Pro for ongoing monitoring' }
             ]
         },
@@ -265,12 +280,15 @@ const fiveFactorResults = {
                 riskScore: 62
             },
             
+            confidence: 85,
+            confidenceLevel: { label: 'High Confidence', description: '3+ sources corroborate', class: 'high' },
+            
             verdict: 'HIGH RISK',
             
             recommendations: [
                 { priority: 'critical', action: 'Remove #followback and #f4f immediately' },
-                { priority: 'critical', action: 'Never use $SCAM - obvious spam indicator' },
-                { priority: 'medium', action: 'Use #crypto sparingly - it\'s monitored' },
+                { priority: 'critical', action: 'Never use $SCAM — obvious spam indicator' },
+                { priority: 'medium', action: 'Use #crypto sparingly — it\'s monitored' },
                 { priority: 'info', action: '#photography and #bitcoin are safe to use' }
             ]
         }
@@ -329,19 +347,25 @@ const fiveFactorResults = {
             },
             
             factors: [
-                { factor: 1, name: 'Platform API Analysis', weight: 20, rawScore: 25, weightedScore: 5, confidence: 85, findingsCount: 2 },
-                { factor: 2, name: 'Web/Search Analysis', weight: 20, rawScore: 40, weightedScore: 8, confidence: 80, findingsCount: 3 },
-                { factor: 3, name: 'Historical Data', weight: 15, rawScore: 30, weightedScore: 4.5, confidence: 75, findingsCount: 2 },
-                { factor: 4, name: 'Real-Time Detection', weight: 25, rawScore: 45, weightedScore: 11.25, confidence: 90, findingsCount: 4 },
-                { factor: 5, name: 'Predictive Intelligence', weight: 20, rawScore: 25, weightedScore: 5, confidence: 65, findingsCount: 2 }
+                { factor: 1, name: 'API Agent', weight: 20, rawScore: 25, weightedScore: 5, confidence: 85, findingsCount: 2 },
+                { factor: 2, name: 'Web Analysis Agent', weight: 20, rawScore: 40, weightedScore: 8, confidence: 80, findingsCount: 3 },
+                { factor: 3, name: 'Historical Agent', weight: 15, rawScore: 30, weightedScore: 4.5, confidence: 75, findingsCount: 2 },
+                { factor: 4, name: 'Detection Agent', weight: 25, rawScore: 45, weightedScore: 11.25, confidence: 90, findingsCount: 4, modulesActive: 15 },
+                { factor: 5, name: 'Predictive AI Agent', weight: 20, rawScore: 25, weightedScore: 5, confidence: 65, findingsCount: 2 }
             ],
+            
+            intelligenceModel: {
+                predictive: { score: 25, weight: 15, contribution: 3.75 },
+                realtime: { score: 45, weight: 55, contribution: 24.75 },
+                historical: { score: 30, weight: 30, contribution: 9 }
+            },
             
             overallProbability: 42,
             overallConfidence: 79,
             combinedVerdict: 'UNCERTAIN',
             
             recommendations: [
-                { priority: 'high', action: 'Reduce self-promotion ratio - follow Reddit\'s 10% rule' },
+                { priority: 'high', action: 'Reduce self-promotion ratio — follow Reddit\'s 10% rule' },
                 { priority: 'high', action: 'Increase comment engagement before posting links' },
                 { priority: 'medium', action: 'Diversify content sources' },
                 { priority: 'medium', action: 'Appeal subreddit ban if appropriate' },
@@ -386,7 +410,7 @@ const fiveFactorResults = {
                 },
                 detection: {
                     hashtags: { checked: 12, flagged: 2, banned: ['#adulting'], restricted: ['#instagood'], monitored: [] },
-                    links: { checked: 1, flagged: 1, issues: ['Linktree detected - may limit reach'] },
+                    links: { checked: 1, flagged: 1, issues: ['Linktree detected — may limit reach'] },
                     content: { checked: true, flagged: 0, issues: [] },
                     mentions: { checked: 3, flagged: 0, issues: [] },
                     emojis: { checked: 8, flagged: 0, issues: [] }
@@ -414,21 +438,27 @@ const fiveFactorResults = {
             },
             
             factors: [
-                { factor: 1, name: 'Platform API Analysis', weight: 20, rawScore: 15, weightedScore: 3, confidence: 80, findingsCount: 2 },
-                { factor: 2, name: 'Web/Search Analysis', weight: 20, rawScore: 35, weightedScore: 7, confidence: 75, findingsCount: 3 },
-                { factor: 3, name: 'Historical Data', weight: 15, rawScore: 0, weightedScore: 0, confidence: 40, findingsCount: 1 },
-                { factor: 4, name: 'Real-Time Detection', weight: 25, rawScore: 40, weightedScore: 10, confidence: 88, findingsCount: 4 },
-                { factor: 5, name: 'Predictive Intelligence', weight: 20, rawScore: 20, weightedScore: 4, confidence: 70, findingsCount: 2 }
+                { factor: 1, name: 'API Agent', weight: 20, rawScore: 15, weightedScore: 3, confidence: 80, findingsCount: 2 },
+                { factor: 2, name: 'Web Analysis Agent', weight: 20, rawScore: 35, weightedScore: 7, confidence: 75, findingsCount: 3 },
+                { factor: 3, name: 'Historical Agent', weight: 15, rawScore: 0, weightedScore: 0, confidence: 40, findingsCount: 1 },
+                { factor: 4, name: 'Detection Agent', weight: 25, rawScore: 40, weightedScore: 10, confidence: 88, findingsCount: 4, modulesActive: 21 },
+                { factor: 5, name: 'Predictive AI Agent', weight: 20, rawScore: 20, weightedScore: 4, confidence: 70, findingsCount: 2 }
             ],
+            
+            intelligenceModel: {
+                predictive: { score: 20, weight: 15, contribution: 3 },
+                realtime: { score: 40, weight: 55, contribution: 22 },
+                historical: { score: 0, weight: 30, contribution: 0 }
+            },
             
             overallProbability: 35,
             overallConfidence: 71,
             combinedVerdict: 'UNCERTAIN',
             
             recommendations: [
-                { priority: 'critical', action: 'Remove #adulting - it\'s currently banned' },
+                { priority: 'critical', action: 'Remove #adulting — it\'s currently banned' },
                 { priority: 'medium', action: 'Consider replacing Linktree with direct link' },
-                { priority: 'low', action: 'Use #instagood sparingly - it\'s oversaturated' },
+                { priority: 'low', action: 'Use #instagood sparingly — it\'s oversaturated' },
                 { priority: 'info', action: 'Wait 24-48 hours before posting after removing banned hashtag' }
             ],
             
@@ -496,22 +526,28 @@ const fiveFactorResults = {
             },
             
             factors: [
-                { factor: 1, name: 'Platform API Analysis', weight: 20, rawScore: 30, weightedScore: 6, confidence: 75, findingsCount: 2 },
-                { factor: 2, name: 'Web/Search Analysis', weight: 20, rawScore: 45, weightedScore: 9, confidence: 80, findingsCount: 3 },
-                { factor: 3, name: 'Historical Data', weight: 15, rawScore: 0, weightedScore: 0, confidence: 40, findingsCount: 1 },
-                { factor: 4, name: 'Real-Time Detection', weight: 25, rawScore: 35, weightedScore: 8.75, confidence: 85, findingsCount: 4 },
-                { factor: 5, name: 'Predictive Intelligence', weight: 20, rawScore: 40, weightedScore: 8, confidence: 70, findingsCount: 2 }
+                { factor: 1, name: 'API Agent', weight: 20, rawScore: 30, weightedScore: 6, confidence: 75, findingsCount: 2 },
+                { factor: 2, name: 'Web Analysis Agent', weight: 20, rawScore: 45, weightedScore: 9, confidence: 80, findingsCount: 3 },
+                { factor: 3, name: 'Historical Agent', weight: 15, rawScore: 0, weightedScore: 0, confidence: 40, findingsCount: 1 },
+                { factor: 4, name: 'Detection Agent', weight: 25, rawScore: 35, weightedScore: 8.75, confidence: 85, findingsCount: 4, modulesActive: 21 },
+                { factor: 5, name: 'Predictive AI Agent', weight: 20, rawScore: 40, weightedScore: 8, confidence: 70, findingsCount: 2 }
             ],
+            
+            intelligenceModel: {
+                predictive: { score: 40, weight: 15, contribution: 6 },
+                realtime: { score: 35, weight: 55, contribution: 19.25 },
+                historical: { score: 0, weight: 30, contribution: 0 }
+            },
             
             overallProbability: 52,
             overallConfidence: 70,
             combinedVerdict: 'LIKELY RESTRICTED',
             
             recommendations: [
-                { priority: 'high', action: 'Video may be under review - wait 24 hours' },
+                { priority: 'high', action: 'Video may be under review — wait 24 hours' },
                 { priority: 'medium', action: 'Remove external link from bio temporarily' },
                 { priority: 'medium', action: 'Replace #viral with niche-specific hashtags' },
-                { priority: 'low', action: 'Use #fyp sparingly - it\'s oversaturated' },
+                { priority: 'low', action: 'Use #fyp sparingly — it\'s oversaturated' },
                 { priority: 'info', action: 'Consider reposting if views stay unusually low' }
             ],
             
@@ -529,7 +565,7 @@ const fiveFactorResults = {
 };
 
 // ============================================================================
-// LEGACY FORMAT - For backwards compatibility with existing results.js
+// LEGACY FORMAT - For backwards compatibility
 // ============================================================================
 const legacyResults = {
     twitter: {
@@ -539,13 +575,13 @@ const legacyResults = {
             platformIcon: '𝕏',
             probability: 28,
             checkType: 'power',
-            factorsUsed: 5,
+            agentsUsed: 5,
             factors: [
-                { name: 'Platform APIs', icon: '🔌', status: 'complete', score: 15, finding: 'Account active, no API flags detected', details: 'Direct API query returned normal account status' },
-                { name: 'Web Analysis', icon: '🔍', status: 'complete', score: 20, finding: 'Mixed search visibility results', details: 'Profile visible logged-in, reduced visibility logged-out' },
-                { name: 'Historical Data', icon: '📊', status: 'complete', score: 0, finding: 'No historical data available (Free tier)', details: 'Upgrade to Pro to track changes over time' },
-                { name: 'Hashtag Database', icon: '#️⃣', status: 'complete', score: 5, finding: 'Post contains 1 restricted hashtag', details: '#followback is commonly restricted' },
-                { name: 'Content & Links', icon: '📝', status: 'complete', score: 8, finding: 'Bio contains shortened link', details: 'Link shorteners (bit.ly) may reduce reach' }
+                { name: 'API Agent', icon: '🔌', status: 'complete', score: 15, finding: 'Account active, no API flags detected', details: 'Direct API query returned normal account status' },
+                { name: 'Web Analysis Agent', icon: '🔍', status: 'complete', score: 20, finding: 'Mixed search visibility results', details: 'Profile visible logged-in, reduced visibility logged-out' },
+                { name: 'Historical Agent', icon: '📊', status: 'complete', score: 0, finding: 'No historical data available (Free tier)', details: 'Upgrade to Pro to track changes over time' },
+                { name: 'Detection Agent', icon: '🎯', status: 'complete', score: 5, finding: 'Post contains 1 restricted hashtag', details: '#followback is commonly restricted' },
+                { name: 'Predictive AI Agent', icon: '🤖', status: 'complete', score: 8, finding: 'Low suppression risk predicted', details: 'Content patterns appear normal' }
             ],
             findings: [
                 { type: 'good', text: 'Account appears in search when logged in' },
@@ -561,11 +597,11 @@ const legacyResults = {
                 taggedUserFlags: []
             },
             recommendations: [
-                'Remove or replace restricted hashtags with alternatives',
-                'Consider using full URLs instead of link shorteners in bio',
-                'Continue engaging authentically with your audience',
-                'Post consistently to maintain algorithmic favor',
-                'Consider verification for improved visibility'
+                { priority: 'high', action: 'Remove or replace restricted hashtags with alternatives' },
+                { priority: 'medium', action: 'Consider using full URLs instead of link shorteners in bio' },
+                { priority: 'info', action: 'Continue engaging authentically with your audience' },
+                { priority: 'info', action: 'Post consistently to maintain algorithmic favor' },
+                { priority: 'low', action: 'Consider verification for improved visibility' }
             ]
         },
         accountCheck: {
@@ -574,27 +610,27 @@ const legacyResults = {
             platformIcon: '𝕏',
             probability: 22,
             checkType: 'account',
-            factorsUsed: 5,
+            agentsUsed: 5,
             factors: [
-                { name: 'Platform APIs', icon: '🔌', status: 'complete', score: 10, finding: 'Account exists and is active', details: 'API returned normal account status' },
-                { name: 'Web Analysis', icon: '🔍', status: 'complete', score: 15, finding: 'Profile visible in all search contexts', details: 'Passed logged-in, logged-out, and incognito tests' },
-                { name: 'Historical Data', icon: '📊', status: 'complete', score: 0, finding: 'No historical baseline (Free tier)', details: 'First analysis - no comparison data available' },
-                { name: 'Hashtag Database', icon: '#️⃣', status: 'complete', score: 5, finding: 'Recent posts use safe hashtags', details: 'Scanned pinned tweet and recent activity' },
-                { name: 'Content & Links', icon: '📝', status: 'complete', score: 5, finding: 'Bio content clean, no flagged patterns', details: 'No flagged words, links appear legitimate' }
+                { name: 'API Agent', icon: '🔌', status: 'complete', score: 10, finding: 'Account exists and is active', details: 'API returned normal account status' },
+                { name: 'Web Analysis Agent', icon: '🔍', status: 'complete', score: 15, finding: 'Profile visible in all search contexts', details: 'Passed logged-in, logged-out, and incognito tests' },
+                { name: 'Historical Agent', icon: '📊', status: 'complete', score: 0, finding: 'No historical baseline (Free tier)', details: 'First analysis — no comparison data available' },
+                { name: 'Detection Agent', icon: '🎯', status: 'complete', score: 5, finding: 'Recent posts use safe hashtags', details: 'Scanned pinned tweet and recent activity' },
+                { name: 'Predictive AI Agent', icon: '🤖', status: 'complete', score: 5, finding: 'Low suppression risk predicted', details: 'No flagged patterns detected' }
             ],
             findings: [
                 { type: 'good', text: 'Account appears in all search contexts' },
                 { type: 'good', text: 'Profile is public and fully accessible' },
                 { type: 'good', text: 'No flagged content in bio or pinned tweet' },
                 { type: 'good', text: 'Links in profile pass reputation checks' },
-                { type: 'info', text: 'Account not verified - may affect reach' }
+                { type: 'info', text: 'Account not verified — may affect reach' }
             ],
             contentAnalysis: { bioFlags: [], postFlags: [], linkFlags: [], taggedUserFlags: [] },
             recommendations: [
-                'Your account appears healthy - keep up the good work',
-                'Continue posting quality content regularly',
-                'Consider verification for improved discoverability',
-                'Upgrade to Pro to track visibility changes over time'
+                { priority: 'info', action: 'Your account appears healthy — keep up the good work' },
+                { priority: 'info', action: 'Continue posting quality content regularly' },
+                { priority: 'low', action: 'Consider verification for improved discoverability' },
+                { priority: 'info', action: 'Upgrade to Pro to track visibility changes over time' }
             ]
         },
         hashtagCheck: {
@@ -603,26 +639,26 @@ const legacyResults = {
             platformIcon: '𝕏',
             probability: 45,
             checkType: 'hashtag',
-            factorsUsed: 3,
+            agentsUsed: 3,
             factors: [
-                { name: 'Platform APIs', icon: '🔌', status: 'na', score: 0, finding: 'Not applicable for hashtag checks', details: 'API queries not used for hashtag analysis' },
-                { name: 'Web Analysis', icon: '🔍', status: 'complete', score: 20, finding: 'Hashtag visibility varies by context', details: 'Some hashtags hidden from non-logged-in users' },
-                { name: 'Historical Data', icon: '📊', status: 'complete', score: 10, finding: 'Known restriction patterns detected', details: 'Based on historical ban wave data' },
-                { name: 'Hashtag Database', icon: '#️⃣', status: 'complete', score: 25, finding: '2 of 5 hashtags are restricted', details: '#followforfollow and #f4f commonly suppressed' },
-                { name: 'Content & Links', icon: '📝', status: 'na', score: 0, finding: 'Not applicable for hashtag checks', details: 'Content analysis not used for hashtag-only checks' }
+                { name: 'API Agent', icon: '🔌', status: 'na', score: 0, finding: 'Not required for tag analysis', details: 'API queries not used for hashtag analysis' },
+                { name: 'Web Analysis Agent', icon: '🔍', status: 'complete', score: 20, finding: 'Hashtag visibility varies by context', details: 'Some hashtags hidden from non-logged-in users' },
+                { name: 'Historical Agent', icon: '📊', status: 'na', score: 0, finding: 'Not required for tag analysis', details: 'Historical data not used for hashtag-only checks' },
+                { name: 'Detection Agent', icon: '🎯', status: 'complete', score: 25, finding: '2 of 5 hashtags are restricted', details: '#followforfollow and #f4f commonly suppressed' },
+                { name: 'Predictive AI Agent', icon: '🤖', status: 'na', score: 0, finding: 'Not required for tag analysis', details: 'Predictive analysis not used for hashtag-only checks' }
             ],
             findings: [
-                { type: 'danger', text: '#followforfollow - RESTRICTED' },
-                { type: 'danger', text: '#f4f - RESTRICTED' },
-                { type: 'good', text: '#photography - SAFE' },
-                { type: 'good', text: '#sunset - SAFE' },
-                { type: 'good', text: '#nature - SAFE' }
+                { type: 'danger', text: '#followforfollow — RESTRICTED' },
+                { type: 'danger', text: '#f4f — RESTRICTED' },
+                { type: 'good', text: '#photography — SAFE' },
+                { type: 'good', text: '#sunset — SAFE' },
+                { type: 'good', text: '#nature — SAFE' }
             ],
             recommendations: [
-                'Remove #followforfollow and #f4f from your posts',
-                'Use community-focused hashtags instead',
-                'Mix popular and niche hashtags for best reach',
-                'Avoid engagement-bait hashtags'
+                { priority: 'critical', action: 'Remove #followforfollow and #f4f from your posts' },
+                { priority: 'medium', action: 'Use community-focused hashtags instead' },
+                { priority: 'info', action: 'Mix popular and niche hashtags for best reach' },
+                { priority: 'info', action: 'Avoid engagement-bait hashtags' }
             ]
         }
     },
@@ -633,13 +669,13 @@ const legacyResults = {
             platformIcon: '📸',
             probability: 35,
             checkType: 'power',
-            factorsUsed: 5,
+            agentsUsed: 5,
             factors: [
-                { name: 'Platform APIs', icon: '🔌', status: 'complete', score: 10, finding: 'Account active, no action blocks', details: 'No temporary restrictions detected' },
-                { name: 'Web Analysis', icon: '🔍', status: 'complete', score: 25, finding: 'Post not appearing in hashtag feeds', details: 'Content may be shadowbanned from hashtag discovery' },
-                { name: 'Historical Data', icon: '📊', status: 'complete', score: 0, finding: 'No tracking history (Free tier)', details: 'Upgrade to Pro for engagement tracking' },
-                { name: 'Hashtag Database', icon: '#️⃣', status: 'complete', score: 15, finding: '1 banned hashtag detected', details: '#adulting is currently banned on Instagram' },
-                { name: 'Content & Links', icon: '📝', status: 'complete', score: 10, finding: 'Bio link flagged as affiliate', details: 'Linktree detected - may affect organic reach' }
+                { name: 'API Agent', icon: '🔌', status: 'complete', score: 10, finding: 'Account active, no action blocks', details: 'No temporary restrictions detected' },
+                { name: 'Web Analysis Agent', icon: '🔍', status: 'complete', score: 25, finding: 'Post not appearing in hashtag feeds', details: 'Content may be shadowbanned from hashtag discovery' },
+                { name: 'Historical Agent', icon: '📊', status: 'complete', score: 0, finding: 'No tracking history (Free tier)', details: 'Upgrade to Pro for engagement tracking' },
+                { name: 'Detection Agent', icon: '🎯', status: 'complete', score: 15, finding: '1 banned hashtag detected', details: '#adulting is currently banned on Instagram' },
+                { name: 'Predictive AI Agent', icon: '🤖', status: 'complete', score: 10, finding: 'Moderate suppression risk', details: 'Linktree detected — may affect organic reach' }
             ],
             findings: [
                 { type: 'danger', text: 'Post using banned hashtag #adulting' },
@@ -655,11 +691,11 @@ const legacyResults = {
                 taggedUserFlags: []
             },
             recommendations: [
-                'Remove #adulting immediately - it\'s currently banned',
-                'Wait 24-48 hours before posting new content',
-                'Consider using direct link instead of Linktree',
-                'Use Instagram\'s built-in link features',
-                'Check our hashtag database before posting'
+                { priority: 'critical', action: 'Remove #adulting immediately — it\'s currently banned' },
+                { priority: 'medium', action: 'Wait 24-48 hours before posting new content' },
+                { priority: 'medium', action: 'Consider using direct link instead of Linktree' },
+                { priority: 'low', action: 'Use Instagram\'s built-in link features' },
+                { priority: 'info', action: 'Check our hashtag database before posting' }
             ]
         },
         accountCheck: {
@@ -668,13 +704,13 @@ const legacyResults = {
             platformIcon: '📸',
             probability: 18,
             checkType: 'account',
-            factorsUsed: 5,
+            agentsUsed: 5,
             factors: [
-                { name: 'Platform APIs', icon: '🔌', status: 'complete', score: 5, finding: 'Account in good standing', details: 'No restrictions or warnings on account' },
-                { name: 'Web Analysis', icon: '🔍', status: 'complete', score: 10, finding: 'Profile visible in search', details: 'Appears in username and hashtag search' },
-                { name: 'Historical Data', icon: '📊', status: 'complete', score: 0, finding: 'No baseline data (Free tier)', details: 'First analysis for this account' },
-                { name: 'Hashtag Database', icon: '#️⃣', status: 'complete', score: 0, finding: 'Recent posts use safe hashtags', details: 'No banned or restricted hashtags detected' },
-                { name: 'Content & Links', icon: '📝', status: 'complete', score: 3, finding: 'Bio clean, links legitimate', details: 'No flagged content patterns detected' }
+                { name: 'API Agent', icon: '🔌', status: 'complete', score: 5, finding: 'Account in good standing', details: 'No restrictions or warnings on account' },
+                { name: 'Web Analysis Agent', icon: '🔍', status: 'complete', score: 10, finding: 'Profile visible in search', details: 'Appears in username and hashtag search' },
+                { name: 'Historical Agent', icon: '📊', status: 'complete', score: 0, finding: 'No baseline data (Free tier)', details: 'First analysis for this account' },
+                { name: 'Detection Agent', icon: '🎯', status: 'complete', score: 0, finding: 'Recent posts use safe hashtags', details: 'No banned or restricted hashtags detected' },
+                { name: 'Predictive AI Agent', icon: '🤖', status: 'complete', score: 3, finding: 'Low suppression risk', details: 'No flagged content patterns detected' }
             ],
             findings: [
                 { type: 'good', text: 'Account appears in search results' },
@@ -685,10 +721,10 @@ const legacyResults = {
             ],
             contentAnalysis: { bioFlags: [], postFlags: [], linkFlags: [], taggedUserFlags: [] },
             recommendations: [
-                'Your account looks healthy!',
-                'Continue using diverse, relevant hashtags',
-                'Maintain consistent posting schedule',
-                'Engage authentically with your community'
+                { priority: 'info', action: 'Your account looks healthy!' },
+                { priority: 'info', action: 'Continue using diverse, relevant hashtags' },
+                { priority: 'info', action: 'Maintain consistent posting schedule' },
+                { priority: 'info', action: 'Engage authentically with your community' }
             ]
         }
     },
@@ -699,13 +735,13 @@ const legacyResults = {
             platformIcon: '🤖',
             probability: 42,
             checkType: 'power',
-            factorsUsed: 4,
+            agentsUsed: 4,
             factors: [
-                { name: 'Platform APIs', icon: '🔌', status: 'complete', score: 15, finding: 'Account active, karma positive', details: 'API shows normal account status' },
-                { name: 'Web Analysis', icon: '🔍', status: 'complete', score: 25, finding: 'Post visibility limited in some subreddits', details: 'Content visible but not appearing in r/all' },
-                { name: 'Historical Data', icon: '📊', status: 'complete', score: 5, finding: 'Previous bans detected', details: 'Account has 1 prior subreddit ban' },
-                { name: 'Hashtag Database', icon: '#️⃣', status: 'na', score: 0, finding: 'Not applicable for Reddit', details: 'Reddit does not use hashtags' },
-                { name: 'Content & Links', icon: '📝', status: 'complete', score: 12, finding: 'Self-promotion ratio high', details: 'Most posts link to same domain - may trigger spam filters' }
+                { name: 'API Agent', icon: '🔌', status: 'complete', score: 15, finding: 'Account active, karma positive', details: 'API shows normal account status' },
+                { name: 'Web Analysis Agent', icon: '🔍', status: 'complete', score: 25, finding: 'Post visibility limited in some subreddits', details: 'Content visible but not appearing in r/all' },
+                { name: 'Historical Agent', icon: '📊', status: 'complete', score: 5, finding: 'Previous bans detected', details: 'Account has 1 prior subreddit ban' },
+                { name: 'Detection Agent', icon: '🎯', status: 'partial', score: 12, finding: 'Self-promotion ratio high', details: 'Most posts link to same domain — may trigger spam filters' },
+                { name: 'Predictive AI Agent', icon: '🤖', status: 'complete', score: 10, finding: 'Moderate suppression risk', details: 'Content patterns suggest potential filtering' }
             ],
             findings: [
                 { type: 'warning', text: 'Post not appearing in r/all' },
@@ -723,11 +759,11 @@ const legacyResults = {
             subredditBans: [{ subreddit: 'r/technology', reason: 'Self-promotion', date: '2024-08-15' }],
             karma: { total: 1234, post: 456, comment: 778, age: '2 years' },
             recommendations: [
-                'Diversify your content sources - Reddit\'s 10% rule',
-                'Engage more in comments before posting links',
-                'Build karma in new subreddits before posting',
-                'Appeal your r/technology ban if possible',
-                'Post more text-based content to balance ratio'
+                { priority: 'high', action: 'Diversify your content sources — Reddit\'s 10% rule' },
+                { priority: 'high', action: 'Engage more in comments before posting links' },
+                { priority: 'medium', action: 'Build karma in new subreddits before posting' },
+                { priority: 'medium', action: 'Appeal your r/technology ban if possible' },
+                { priority: 'info', action: 'Post more text-based content to balance ratio' }
             ]
         },
         accountCheck: {
@@ -736,13 +772,13 @@ const legacyResults = {
             platformIcon: '🤖',
             probability: 25,
             checkType: 'account',
-            factorsUsed: 4,
+            agentsUsed: 4,
             factors: [
-                { name: 'Platform APIs', icon: '🔌', status: 'complete', score: 10, finding: 'Account in good standing', details: 'No site-wide restrictions' },
-                { name: 'Web Analysis', icon: '🔍', status: 'complete', score: 15, finding: 'Profile visible in search', details: 'Username searchable, posts indexed' },
-                { name: 'Historical Data', icon: '📊', status: 'complete', score: 0, finding: 'No prior issues detected', details: 'Clean account history' },
-                { name: 'Hashtag Database', icon: '#️⃣', status: 'na', score: 0, finding: 'N/A for Reddit', details: 'Reddit does not use hashtags' },
-                { name: 'Content & Links', icon: '📝', status: 'complete', score: 5, finding: 'Content patterns normal', details: 'No spam indicators in recent activity' }
+                { name: 'API Agent', icon: '🔌', status: 'complete', score: 10, finding: 'Account in good standing', details: 'No site-wide restrictions' },
+                { name: 'Web Analysis Agent', icon: '🔍', status: 'complete', score: 15, finding: 'Profile visible in search', details: 'Username searchable, posts indexed' },
+                { name: 'Historical Agent', icon: '📊', status: 'complete', score: 0, finding: 'No prior issues detected', details: 'Clean account history' },
+                { name: 'Detection Agent', icon: '🎯', status: 'partial', score: 5, finding: 'Content patterns normal', details: 'No spam indicators in recent activity' },
+                { name: 'Predictive AI Agent', icon: '🤖', status: 'complete', score: 5, finding: 'Low suppression risk', details: 'Account behavior appears normal' }
             ],
             findings: [
                 { type: 'good', text: 'Account is active and visible' },
@@ -754,10 +790,10 @@ const legacyResults = {
             contentAnalysis: { bioFlags: [], postFlags: [], linkFlags: [], taggedUserFlags: [] },
             karma: { total: 2500, post: 1200, comment: 1300, age: '3 years' },
             recommendations: [
-                'Your Reddit account looks healthy',
-                'Continue diverse participation across subreddits',
-                'Maintain the 10% self-promotion rule',
-                'Keep engaging authentically in comments'
+                { priority: 'info', action: 'Your Reddit account looks healthy' },
+                { priority: 'info', action: 'Continue diverse participation across subreddits' },
+                { priority: 'info', action: 'Maintain the 10% self-promotion rule' },
+                { priority: 'info', action: 'Keep engaging authentically in comments' }
             ]
         }
     },
@@ -768,13 +804,13 @@ const legacyResults = {
             platformIcon: '🎵',
             probability: 52,
             checkType: 'power',
-            factorsUsed: 5,
+            agentsUsed: 5,
             factors: [
-                { name: 'Platform APIs', icon: '🔌', status: 'complete', score: 20, finding: 'Video marked for limited distribution', details: 'Content review flag detected' },
-                { name: 'Web Analysis', icon: '🔍', status: 'complete', score: 25, finding: 'Video not appearing on For You page', details: 'Limited to followers only currently' },
-                { name: 'Historical Data', icon: '📊', status: 'complete', score: 0, finding: 'No baseline (Free tier)', details: 'Upgrade to track view patterns' },
-                { name: 'Hashtag Database', icon: '#️⃣', status: 'complete', score: 10, finding: 'Using borderline hashtag', details: '#viral sometimes triggers review' },
-                { name: 'Content & Links', icon: '📝', status: 'complete', score: 15, finding: 'Bio contains external link', details: 'External links may limit distribution' }
+                { name: 'API Agent', icon: '🔌', status: 'complete', score: 20, finding: 'Video marked for limited distribution', details: 'Content review flag detected' },
+                { name: 'Web Analysis Agent', icon: '🔍', status: 'complete', score: 25, finding: 'Video not appearing on For You page', details: 'Limited to followers only currently' },
+                { name: 'Historical Agent', icon: '📊', status: 'complete', score: 0, finding: 'No baseline (Free tier)', details: 'Upgrade to track view patterns' },
+                { name: 'Detection Agent', icon: '🎯', status: 'complete', score: 10, finding: 'Using borderline hashtag', details: '#viral sometimes triggers review' },
+                { name: 'Predictive AI Agent', icon: '🤖', status: 'complete', score: 15, finding: 'Moderate suppression risk', details: 'External links may limit distribution' }
             ],
             findings: [
                 { type: 'danger', text: 'Video flagged for limited distribution' },
@@ -784,17 +820,17 @@ const legacyResults = {
                 { type: 'good', text: 'Account is public' }
             ],
             contentAnalysis: {
-                bioFlags: ['External link detected - may limit distribution'],
+                bioFlags: ['External link detected — may limit distribution'],
                 postFlags: ['Borderline hashtag: #viral'],
                 linkFlags: [],
                 taggedUserFlags: []
             },
             recommendations: [
-                'Remove #viral and use niche-specific hashtags',
-                'Wait 24 hours and repost if views are unusually low',
-                'Consider removing external link from bio temporarily',
-                'Use TikTok\'s native features for links',
-                'Check video for any borderline content'
+                { priority: 'high', action: 'Remove #viral and use niche-specific hashtags' },
+                { priority: 'high', action: 'Wait 24 hours and repost if views are unusually low' },
+                { priority: 'medium', action: 'Consider removing external link from bio temporarily' },
+                { priority: 'low', action: 'Use TikTok\'s native features for links' },
+                { priority: 'info', action: 'Check video for any borderline content' }
             ]
         },
         accountCheck: {
@@ -803,13 +839,13 @@ const legacyResults = {
             platformIcon: '🎵',
             probability: 20,
             checkType: 'account',
-            factorsUsed: 5,
+            agentsUsed: 5,
             factors: [
-                { name: 'Platform APIs', icon: '🔌', status: 'complete', score: 5, finding: 'Account in good standing', details: 'No violations on record' },
-                { name: 'Web Analysis', icon: '🔍', status: 'complete', score: 10, finding: 'Profile discoverable', details: 'Appears in search results' },
-                { name: 'Historical Data', icon: '📊', status: 'complete', score: 0, finding: 'No baseline data', details: 'First analysis for this account' },
-                { name: 'Hashtag Database', icon: '#️⃣', status: 'complete', score: 5, finding: 'Recent videos use safe hashtags', details: 'No restricted hashtags detected' },
-                { name: 'Content & Links', icon: '📝', status: 'complete', score: 0, finding: 'Bio clean, no red flags', details: 'Content patterns appear normal' }
+                { name: 'API Agent', icon: '🔌', status: 'complete', score: 5, finding: 'Account in good standing', details: 'No violations on record' },
+                { name: 'Web Analysis Agent', icon: '🔍', status: 'complete', score: 10, finding: 'Profile discoverable', details: 'Appears in search results' },
+                { name: 'Historical Agent', icon: '📊', status: 'complete', score: 0, finding: 'No baseline data', details: 'First analysis for this account' },
+                { name: 'Detection Agent', icon: '🎯', status: 'complete', score: 5, finding: 'Recent videos use safe hashtags', details: 'No restricted hashtags detected' },
+                { name: 'Predictive AI Agent', icon: '🤖', status: 'complete', score: 0, finding: 'Low suppression risk', details: 'Content patterns appear normal' }
             ],
             findings: [
                 { type: 'good', text: 'Account is active and visible' },
@@ -820,10 +856,10 @@ const legacyResults = {
             ],
             contentAnalysis: { bioFlags: [], postFlags: [], linkFlags: [], taggedUserFlags: [] },
             recommendations: [
-                'Your TikTok account appears healthy',
-                'Continue creating original content',
-                'Engage with your niche community',
-                'Use trending sounds but avoid overused ones'
+                { priority: 'info', action: 'Your TikTok account appears healthy' },
+                { priority: 'info', action: 'Continue creating original content' },
+                { priority: 'info', action: 'Engage with your niche community' },
+                { priority: 'info', action: 'Use trending sounds but avoid overused ones' }
             ]
         }
     }
@@ -835,7 +871,7 @@ const legacyResults = {
 window.DemoData = {
     
     /**
-     * Get demo result - returns 5-Factor format if engine=5factor, else legacy
+     * Get demo result - returns 5 Detection Agents format if engine=5factor, else legacy
      * @param {string} platformId - Platform identifier
      * @param {string} checkType - Check type (powerCheck, accountCheck, hashtagCheck/tagCheck)
      * @param {object} options - { format: 'legacy' | '5factor' | 'auto' }
@@ -862,7 +898,7 @@ window.DemoData = {
         let result = null;
         
         if (use5Factor) {
-            // Try 5-Factor format first
+            // Try 5 Detection Agents format first
             const platform = fiveFactorResults[platformId];
             if (platform && platform[normalizedType]) {
                 result = JSON.parse(JSON.stringify(platform[normalizedType])); // Deep clone
@@ -890,7 +926,7 @@ window.DemoData = {
     },
     
     /**
-     * Get result in 5-Factor Engine format specifically
+     * Get result in 5 Detection Agents format specifically
      */
     get5FactorResult: function(platformId, checkType) {
         return this.getResult(platformId, checkType, { format: '5factor' });
@@ -917,14 +953,14 @@ window.DemoData = {
             platformIcon: platform ? platform.icon : '🔍',
             probability: Math.floor(Math.random() * 30) + 15,
             checkType: checkType,
-            factorsUsed: isHashtag ? 3 : (isReddit ? 4 : 5),
+            agentsUsed: isHashtag ? 3 : (isReddit ? 4 : 5),
             demo: true,
             factors: [
-                { name: 'Platform APIs', icon: '🔌', status: isHashtag ? 'na' : 'complete', score: 10, finding: isHashtag ? 'N/A for hashtag checks' : 'Account queried successfully' },
-                { name: 'Web Analysis', icon: '🔍', status: 'complete', score: 15, finding: 'Web visibility tests completed' },
-                { name: 'Historical Data', icon: '📊', status: 'complete', score: 0, finding: 'No baseline data (Free tier)' },
-                { name: 'Hashtag Database', icon: '#️⃣', status: isReddit ? 'na' : 'complete', score: 5, finding: isReddit ? 'N/A for Reddit' : 'Hashtags checked' },
-                { name: 'Content & Links', icon: '📝', status: isHashtag ? 'na' : 'complete', score: 5, finding: isHashtag ? 'N/A for hashtag checks' : 'Bio and content analyzed' }
+                { name: 'API Agent', icon: '🔌', status: isHashtag ? 'na' : 'complete', score: 10, finding: isHashtag ? 'N/A for tag analysis' : 'Account queried successfully' },
+                { name: 'Web Analysis Agent', icon: '🔍', status: 'complete', score: 15, finding: 'Web visibility tests completed' },
+                { name: 'Historical Agent', icon: '📊', status: 'complete', score: 0, finding: 'No baseline data (Free tier)' },
+                { name: 'Detection Agent', icon: '🎯', status: isReddit ? 'partial' : 'complete', score: 5, finding: isReddit ? 'Hashtag modules N/A for Reddit' : '21 modules scanned' },
+                { name: 'Predictive AI Agent', icon: '🤖', status: isHashtag ? 'na' : 'complete', score: 5, finding: isHashtag ? 'N/A for tag analysis' : 'Risk assessment complete' }
             ],
             findings: [
                 { type: 'good', text: 'Analysis completed successfully' },
@@ -933,9 +969,9 @@ window.DemoData = {
             ],
             contentAnalysis: { bioFlags: [], postFlags: [], linkFlags: [], taggedUserFlags: [] },
             recommendations: [
-                'Continue monitoring your account regularly',
-                'Check our hashtag database before posting',
-                'Consider upgrading to Pro for historical tracking'
+                { priority: 'info', action: 'Continue monitoring your account regularly' },
+                { priority: 'info', action: 'Check our hashtag database before posting' },
+                { priority: 'info', action: 'Consider upgrading to Pro for historical tracking' }
             ],
             timestamp: new Date().toISOString()
         };
@@ -956,13 +992,13 @@ window.DemoData = {
     },
     
     /**
-     * Check if 5-Factor format exists for a platform
+     * Check if 5 Detection Agents format exists for a platform
      */
     has5FactorDemo: function(platformId) {
         return !!fiveFactorResults[platformId];
     }
 };
 
-console.log('✅ DemoData loaded (5-Factor + Legacy) - platforms:', window.DemoData.getAvailablePlatforms().join(', '));
+console.log('✅ DemoData loaded (5 Detection Agents + Legacy) — platforms:', window.DemoData.getAvailablePlatforms().join(', '));
 
 })();

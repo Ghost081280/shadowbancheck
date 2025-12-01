@@ -1,10 +1,9 @@
 /* =============================================================================
-   INDEX.JS - Home Page Functionality + 5-Factor Engine Loader
+   INDEX.JS - Home Page Functionality + Detection Agent Loader
    ShadowBanCheck.io
    
-   This file combines:
-   1. Home page UI functionality (forms, modals, animations)
-   2. 5-Factor Engine initialization and status checking
+   3-Point Intelligence Model: Predictive (15%) + Real-Time (55%) + Historical (30%)
+   Powered by 5 Specialized Detection Agents with 21 Detection Modules
    ============================================================================= */
 
 (function() {
@@ -12,10 +11,9 @@
 
 let initialized = false;
 let currentPlatform = null;
-let engagementStepsCompleted = { follow: false, like: false, retweet: false, reply: false };
 
 // ============================================================================
-// 5-FACTOR ENGINE LOADER
+// DETECTION AGENT LOADER
 // ============================================================================
 
 const FiveFactorLoader = {
@@ -95,9 +93,10 @@ const FiveFactorLoader = {
     printStatus: function() {
         const status = this.checkStatus();
         
-        console.log('='.repeat(60));
-        console.log('5-FACTOR ENGINE STATUS');
-        console.log('='.repeat(60));
+        console.log('═'.repeat(60));
+        console.log('3-POINT INTELLIGENCE MODEL STATUS');
+        console.log('Powered by 5 Specialized Detection Agents');
+        console.log('═'.repeat(60));
         
         for (const [category, modules] of Object.entries(status)) {
             if (typeof modules === 'object' && !Array.isArray(modules) && category !== 'missing') {
@@ -108,14 +107,14 @@ const FiveFactorLoader = {
             }
         }
         
-        console.log('\n' + '='.repeat(60));
+        console.log('\n' + '═'.repeat(60));
         console.log(`Loaded: ${status.loadedCount}/${status.totalCount} modules`);
         if (status.allLoaded) {
-            console.log('✅ ALL MODULES LOADED - Engine ready!');
+            console.log('✅ ALL AGENTS DEPLOYED - System operational');
         } else {
             console.log('❌ MISSING MODULES:', status.missing.join(', '));
         }
-        console.log('='.repeat(60));
+        console.log('═'.repeat(60));
         
         return status;
     },
@@ -132,10 +131,10 @@ const FiveFactorLoader = {
             const check = () => {
                 const status = this.checkStatus();
                 if (status.allLoaded) {
-                    console.log('✅ All 5-Factor Engine modules loaded');
+                    console.log('✅ All Detection Agents deployed');
                     resolve(true);
                 } else if (Date.now() - start > timeout) {
-                    console.warn('⚠️ Timeout waiting for modules:', status.missing);
+                    console.warn('⚠️ Timeout waiting for agents:', status.missing);
                     resolve(false);
                 } else {
                     setTimeout(check, 100);
@@ -154,7 +153,7 @@ const FiveFactorLoader = {
         const status = this.checkStatus();
         
         if (!status.allLoaded) {
-            console.warn('⚠️ Cannot initialize engine - missing modules:', status.missing);
+            console.warn('⚠️ Cannot initialize - missing modules:', status.missing);
             return false;
         }
         
@@ -163,7 +162,7 @@ const FiveFactorLoader = {
             window.shadowBanEngine.setDemoMode(options.demoMode);
         }
         
-        console.log('✅ 5-Factor Engine initialized');
+        console.log('✅ 5 Detection Agents initialized');
         return true;
     },
     
@@ -214,12 +213,12 @@ function init() {
     populatePlatformIcons();
     updateContentAnalysisDisplay();
     
-    // Check 5-Factor Engine status (non-blocking)
-    const engineStatus = FiveFactorLoader.getQuickStatus();
-    if (engineStatus.ready) {
-        console.log('✅ 5-Factor Engine ready');
+    // Check Detection Agents status (non-blocking)
+    const agentStatus = FiveFactorLoader.getQuickStatus();
+    if (agentStatus.ready) {
+        console.log('✅ 5 Detection Agents deployed');
     } else {
-        console.log(`⏳ 5-Factor Engine: ${engineStatus.loadedCount}/${engineStatus.totalCount} modules loaded`);
+        console.log(`⏳ Detection Agents: ${agentStatus.loadedCount}/${agentStatus.totalCount} modules loaded`);
     }
     
     console.log('✅ Index.js initialized');
@@ -246,21 +245,6 @@ function setupEventListeners() {
     
     if (powerForm) {
         powerForm.addEventListener('submit', handlePowerCheckSubmit);
-    }
-    
-    // Engagement test
-    document.querySelectorAll('.engagement-checkbox').forEach(cb => {
-        cb.addEventListener('change', handleEngagementCheckboxChange);
-    });
-    
-    const engagementConfirmed = document.getElementById('engagement-confirmed');
-    if (engagementConfirmed) {
-        engagementConfirmed.addEventListener('change', handleEngagementConfirmed);
-    }
-    
-    const skipEngagementBtn = document.getElementById('skip-engagement-btn');
-    if (skipEngagementBtn) {
-        skipEngagementBtn.addEventListener('click', handleSkipEngagement);
     }
     
     // Info buttons
@@ -296,12 +280,12 @@ function setupEventListeners() {
         });
     }
     
-    // Factor info buttons (Under the Hood section)
-    document.querySelectorAll('.factor-compact-info').forEach(btn => {
+    // Agent info buttons (Under the Hood section)
+    document.querySelectorAll('.factor-compact-info, .agent-info-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
-            const factor = e.target.closest('.engine-factor-compact');
-            if (factor && factor.dataset.factor) {
-                showFactorInfo(factor.dataset.factor);
+            const factor = e.target.closest('.engine-factor-compact, .detection-agent');
+            if (factor && (factor.dataset.factor || factor.dataset.agent)) {
+                showAgentInfo(factor.dataset.factor || factor.dataset.agent);
             }
         });
     });
@@ -319,12 +303,12 @@ function setupEventListeners() {
 }
 
 // ============================================
-// CONTENT ANALYSIS DISPLAY (Replaces IP Display)
+// CONTENT ANALYSIS DISPLAY
 // ============================================
 function updateContentAnalysisDisplay() {
     const statusEl = document.getElementById('content-analysis-status');
     if (statusEl) {
-        statusEl.textContent = 'Ready to scan post content & links';
+        statusEl.textContent = '21 detection modules ready';
     }
 }
 
@@ -337,7 +321,6 @@ function handleUrlInput() {
     
     if (!url) {
         hidePlatformDetection();
-        hideEngagementTest();
         currentPlatform = null;
         updateContentAnalysisDisplay();
         return;
@@ -358,9 +341,7 @@ function handleUrlInput() {
                 status: 'live',
                 supports: {
                     hashtagCheck: true,
-                    engagementTest: platformInstance.id === 'twitter'
-                },
-                engagementTest: { enabled: platformInstance.id === 'twitter' }
+                }
             };
         }
     }
@@ -377,23 +358,14 @@ function handleUrlInput() {
         showPlatformDetection(platform);
         updateChecksPreview(platform);
         
-        // Update content analysis status
+        // Update content analysis status with module count
         const statusEl = document.getElementById('content-analysis-status');
         if (statusEl) {
-            statusEl.textContent = `Will analyze ${platform.name} post content, links & bio`;
-        }
-        
-        // Show engagement test for Twitter
-        if (platform.id === 'twitter' && 
-            platform.supports && platform.supports.engagementTest && 
-            platform.engagementTest && platform.engagementTest.enabled) {
-            showEngagementTest();
-        } else {
-            hideEngagementTest();
+            const moduleCount = window.getActiveModulesForPlatform ? window.getActiveModulesForPlatform(platform.id) : 21;
+            statusEl.textContent = `${moduleCount} detection modules for ${platform.name}`;
         }
     } else {
         hidePlatformDetection();
-        hideEngagementTest();
         currentPlatform = null;
         updateContentAnalysisDisplay();
     }
@@ -451,57 +423,6 @@ function updateChecksPreview(platform) {
 }
 
 // ============================================
-// ENGAGEMENT TEST
-// ============================================
-function showEngagementTest() {
-    const el = document.getElementById('engagement-test-section');
-    if (el) el.classList.remove('hidden');
-}
-
-function hideEngagementTest() {
-    const el = document.getElementById('engagement-test-section');
-    if (el) el.classList.add('hidden');
-    resetEngagementSteps();
-}
-
-function resetEngagementSteps() {
-    engagementStepsCompleted = { follow: false, like: false, retweet: false, reply: false };
-    document.querySelectorAll('.engagement-checkbox').forEach(cb => cb.checked = false);
-    const ec = document.getElementById('engagement-confirmed');
-    if (ec) ec.checked = false;
-    updateEngagementProgress();
-}
-
-function handleEngagementCheckboxChange(e) {
-    const step = e.target.id.replace('step-', '');
-    engagementStepsCompleted[step] = e.target.checked;
-    updateEngagementProgress();
-}
-
-function updateEngagementProgress() {
-    const completed = Object.values(engagementStepsCompleted).filter(v => v).length;
-    const percentage = (completed / 4) * 100;
-    
-    const fill = document.getElementById('engagement-progress-fill');
-    const text = document.getElementById('engagement-progress-text');
-    
-    if (fill) fill.style.width = `${percentage}%`;
-    if (text) text.textContent = `${completed} of 4 steps completed`;
-}
-
-function handleEngagementConfirmed(e) {
-    if (e.target.checked) {
-        // User confirmed they completed steps
-        console.log('Engagement confirmed');
-    }
-}
-
-function handleSkipEngagement() {
-    hideEngagementTest();
-    runAnalysis(false);
-}
-
-// ============================================
 // FORM SUBMISSION & ANALYSIS
 // ============================================
 function handlePowerCheckSubmit(e) {
@@ -525,18 +446,10 @@ function handlePowerCheckSubmit(e) {
         return;
     }
     
-    // Check if engagement test is visible and confirmed
-    const engagementSection = document.getElementById('engagement-test-section');
-    const engagementConfirmed = document.getElementById('engagement-confirmed');
-    const withEngagement = engagementSection && 
-                          !engagementSection.classList.contains('hidden') && 
-                          engagementConfirmed && 
-                          engagementConfirmed.checked;
-    
-    runAnalysis(withEngagement);
+    runAnalysis();
 }
 
-function runAnalysis(withEngagement) {
+function runAnalysis() {
     // Show engine animation
     const engineAnimation = document.getElementById('engine-animation');
     const powerCheckCard = document.getElementById('power-check-card');
@@ -547,32 +460,30 @@ function runAnalysis(withEngagement) {
     // Run animation
     runEngineAnimation();
     
-    // Check if new 5-Factor Engine is available
+    // Check if Detection Agents are available
     if (FiveFactorLoader.isEngineReady()) {
-        console.log('🚀 Using 5-Factor Engine for analysis');
-        runFiveFactorAnalysis(withEngagement);
+        console.log('🚀 Deploying 5 Specialized Detection Agents');
+        runFiveFactorAnalysis();
     } else {
         console.log('📊 Using demo data for analysis');
-        simulateAnalysis(withEngagement);
+        simulateAnalysis();
     }
 }
 
 /**
- * Run analysis using the new 5-Factor Engine
+ * Run analysis using the 5 Specialized Detection Agents
  */
-async function runFiveFactorAnalysis(withEngagement) {
+async function runFiveFactorAnalysis() {
     const powerUrlInput = document.getElementById('power-url-input');
     const url = powerUrlInput ? powerUrlInput.value.trim() : '';
     
     try {
-        // Use the new engine
+        // Use the detection engine
         const result = await window.powerCheck(url);
         
-        // Add engagement data
-        result.withEngagement = withEngagement;
-        result.engagementSteps = { ...engagementStepsCompleted };
+        // Add metadata
         result.checkType = 'power';
-        result.factorsUsed = 5;
+        result.agentsUsed = 5;
         
         // Store result
         sessionStorage.setItem('lastAnalysisResult', JSON.stringify(result));
@@ -582,11 +493,11 @@ async function runFiveFactorAnalysis(withEngagement) {
         window.location.href = `results.html?platform=${platformId}&type=power&engine=5factor`;
         
     } catch (error) {
-        console.error('5-Factor Engine error:', error);
+        console.error('Detection Agent error:', error);
         showToast('Analysis failed. Please try again.', 'error');
         
         // Fall back to demo
-        simulateAnalysis(withEngagement);
+        simulateAnalysis();
     }
 }
 
@@ -596,20 +507,20 @@ function runEngineAnimation() {
     
     const platform = currentPlatform || { id: 'twitter', name: 'Twitter/X' };
     const isReddit = platform.id === 'reddit';
+    const moduleCount = window.getActiveModulesForPlatform ? window.getActiveModulesForPlatform(platform.id) : 21;
     
-    // Updated terminal lines - Content & Links instead of IP
+    // Terminal lines with new messaging
     const lines = [
-        { text: `> Initializing 5-Factor Detection Engine...`, delay: 0 },
+        { text: `> Deploying 5 Specialized Detection Agents...`, delay: 0 },
         { text: `> Target platform: ${platform.name}`, delay: 400 },
-        { text: `> Connecting to platform API...`, delay: 800 },
-        { text: `> Querying account status...`, delay: 1200 },
-        { text: `> Running web visibility tests (U.S. servers)...`, delay: 1800 },
-        { text: `> Analyzing historical patterns...`, delay: 2400 },
-        { text: isReddit ? `> Hashtag check: N/A (Reddit)` : `> Scanning hashtag database...`, delay: 2800 },
-        { text: `> Analyzing content & links...`, delay: 3200 },
-        { text: `> Scanning bio for flagged words...`, delay: 3400 },
-        { text: `> Checking link/domain reputation...`, delay: 3600 },
-        { text: `> Calculating probability score...`, delay: 4000 },
+        { text: `> API Agent: Connecting to platform...`, delay: 800 },
+        { text: `> API Agent: Querying account status...`, delay: 1200 },
+        { text: `> Web Analysis Agent: Testing search visibility...`, delay: 1800 },
+        { text: `> Historical Agent: Analyzing patterns...`, delay: 2400 },
+        { text: isReddit ? `> Detection Agent: Hashtag module skipped (N/A)` : `> Detection Agent: Scanning ${moduleCount} signal modules...`, delay: 2800 },
+        { text: `> Detection Agent: Content & link analysis...`, delay: 3200 },
+        { text: `> Predictive AI Agent: Calculating risk score...`, delay: 3600 },
+        { text: `> Calculating 3-Point Intelligence Score...`, delay: 4000 },
     ];
     
     lines.forEach(line => {
@@ -624,25 +535,29 @@ function runEngineAnimation() {
         }, line.delay);
     });
     
-    // Factor progress - 5 factors for Power Check (Content & Links replaces IP)
-    const factors = [
-        { id: 'factor-1-progress', delay: 1000, status: 'complete' },
-        { id: 'factor-2-progress', delay: 2000, status: 'complete' },
-        { id: 'factor-3-progress', delay: 2600, status: 'complete' },
-        { id: 'factor-4-progress', delay: 3000, status: isReddit ? 'na' : 'complete' },
-        { id: 'factor-5-progress', delay: 3800, status: 'complete' }, // Content & Links
+    // Agent progress - 5 Specialized Detection Agents
+    const agents = [
+        { id: 'factor-1-progress', delay: 1000, status: 'complete' },  // API Agent
+        { id: 'factor-2-progress', delay: 2000, status: 'complete' },  // Web Analysis Agent
+        { id: 'factor-3-progress', delay: 2600, status: 'complete' },  // Historical Agent
+        { id: 'factor-4-progress', delay: 3000, status: isReddit ? 'partial' : 'complete' }, // Detection Agent
+        { id: 'factor-5-progress', delay: 3800, status: 'complete' },  // Predictive AI Agent
     ];
     
-    factors.forEach(factor => {
+    agents.forEach(agent => {
         setTimeout(() => {
-            const el = document.getElementById(factor.id);
+            const el = document.getElementById(agent.id);
             if (el) {
                 const status = el.querySelector('.factor-status');
                 if (status) {
-                    if (factor.status === 'complete') {
+                    if (agent.status === 'complete') {
                         status.textContent = '✓';
                         status.classList.remove('pending');
                         status.classList.add('complete');
+                    } else if (agent.status === 'partial') {
+                        status.textContent = '◐';
+                        status.classList.remove('pending');
+                        status.classList.add('partial');
                     } else {
                         status.textContent = '—';
                         status.classList.remove('pending');
@@ -650,7 +565,7 @@ function runEngineAnimation() {
                     }
                 }
             }
-        }, factor.delay);
+        }, agent.delay);
     });
     
     // Phase 2: AI Analysis
@@ -660,7 +575,12 @@ function runEngineAnimation() {
         if (phase1) phase1.classList.add('hidden');
         if (phase2) phase2.classList.remove('hidden');
         
-        const aiMessages = ['Cross-referencing signals...', 'Analyzing content patterns...', 'Calculating probability weights...', 'Generating final score...'];
+        const aiMessages = [
+            'Cross-referencing intelligence points...',
+            'Analyzing signal patterns...',
+            'Calculating confidence levels...',
+            'Generating suppression probability...'
+        ];
         const aiMessageEl = document.getElementById('ai-processing-message');
         
         aiMessages.forEach((msg, i) => {
@@ -671,16 +591,14 @@ function runEngineAnimation() {
     }, 4200);
 }
 
-function simulateAnalysis(withEngagement) {
+function simulateAnalysis() {
     setTimeout(() => {
         const platformId = currentPlatform ? currentPlatform.id : 'twitter';
         const demoResult = window.DemoData ? window.DemoData.getResult(platformId, 'powerCheck') : null;
         
         if (demoResult) {
-            demoResult.withEngagement = withEngagement;
-            demoResult.engagementSteps = { ...engagementStepsCompleted };
             demoResult.checkType = 'power';
-            demoResult.factorsUsed = 5;
+            demoResult.agentsUsed = 5;
             sessionStorage.setItem('lastAnalysisResult', JSON.stringify(demoResult));
         }
         
@@ -689,7 +607,7 @@ function simulateAnalysis(withEngagement) {
 }
 
 // ============================================
-// PLATFORM GRID - Uses .platform-item CSS class
+// PLATFORM GRID
 // ============================================
 function populatePlatformGrid() {
     const platformGrid = document.getElementById('platform-grid');
@@ -704,7 +622,6 @@ function populatePlatformGrid() {
         const statusClass = platform.status === 'live' ? 'live' : 'soon';
         const statusText = platform.status === 'live' ? 'Live' : 'Soon';
         
-        // Using .platform-item class to match CSS
         html += `
             <div class="platform-item" data-status="${platform.status}" data-platform="${platform.id}">
                 <span class="platform-icon">${platform.icon}</span>
@@ -788,21 +705,25 @@ function showPlatformModal(platform) {
     
     if (modalStatus) {
         const statusClass = platform.status === 'live' ? 'live' : 'soon';
-        const statusText = platform.status === 'live' ? 'Live' : 'Coming Soon';
+        const statusText = platform.status === 'live' ? 'Operational' : 'Coming Soon';
         modalStatus.innerHTML = `<span class="status-badge ${statusClass}">● ${statusText}</span>`;
     }
     
-    // Build checks list
-    let checksHtml = '<h4>Signals We Analyze:</h4><ul class="check-list">';
+    // Build detection info
+    let checksHtml = '<h4>Detection Capabilities:</h4><ul class="check-list">';
     
     const checks = platform.accountChecks && platform.accountChecks.length > 0 
         ? platform.accountChecks 
-        : ['Account visibility analysis', 'Search presence detection', 'Profile accessibility'];
+        : ['Account visibility analysis', 'Search presence detection', 'Profile accessibility verification'];
     
     checks.forEach(check => {
         checksHtml += `<li>${check}</li>`;
     });
     checksHtml += '</ul>';
+    
+    // Add module count
+    const moduleCount = window.getActiveModulesForPlatform ? window.getActiveModulesForPlatform(platform.id) : 21;
+    checksHtml += `<p style="margin-top: var(--space-md); color: var(--text-secondary);"><strong>${moduleCount}</strong> detection modules active for ${platform.name}</p>`;
     
     if (platform.messages && platform.messages.platformNote) {
         checksHtml += `<p style="margin-top: var(--space-md); padding: var(--space-md); background: rgba(99, 102, 241, 0.1); border-radius: var(--radius-md);">💡 ${platform.messages.platformNote}</p>`;
@@ -813,17 +734,47 @@ function showPlatformModal(platform) {
     openModal('platform-modal');
 }
 
-function showFactorInfo(factorType) {
-    // Updated factor data - Content & Links replaces IP
-    const factorData = {
-        'platform-api': { icon: '🔌', title: 'Platform APIs', desc: 'Direct integration with official platform APIs. We query account status, visibility flags, and restriction indicators.' },
-        'web-analysis': { icon: '🔍', title: 'Web Analysis', desc: 'Automated browser testing from U.S. servers. We check search visibility logged-in, logged-out, and in private mode.' },
-        'historical': { icon: '📊', title: 'Historical Data', desc: 'We track accounts over time to detect anomalies. Sudden engagement drops affect probability. Pro only for tracking.' },
-        'hashtag-db': { icon: '#️⃣', title: 'Hashtag Database', desc: '1,800+ banned and restricted hashtags updated daily. We verify restrictions in real-time.' },
-        'content-links': { icon: '📝', title: 'Content & Links', desc: 'We scan post text, bio content, and links for flagged words, suspicious domains, and patterns that trigger platform filters.' },
+function showAgentInfo(agentType) {
+    // 5 Specialized Detection Agents data
+    const agentData = {
+        'platform-api': { 
+            icon: '🔌', 
+            title: 'API Agent', 
+            weight: '20%',
+            desc: 'Direct integration with platform APIs. Queries account status, visibility flags, restriction indicators, and verification status.' 
+        },
+        'web-analysis': { 
+            icon: '🔍', 
+            title: 'Web Analysis Agent', 
+            weight: '20%',
+            desc: 'Automated browser testing from U.S. servers. Tests search visibility across logged-in, logged-out, and private browsing contexts.' 
+        },
+        'historical': { 
+            icon: '📊', 
+            title: 'Historical Agent', 
+            weight: '15%',
+            desc: 'Pattern tracking over time. Detects engagement anomalies, sudden drops, and historical restriction patterns. Pro tier enables tracking.' 
+        },
+        'hashtag-db': { 
+            icon: '🎯', 
+            title: 'Detection Agent', 
+            weight: '25%',
+            desc: '21 detection modules across 6 signal types: hashtags, cashtags, links, content, mentions, and emojis. Real-time database with 1,800+ flagged entries.' 
+        },
+        'content-links': { 
+            icon: '🤖', 
+            title: 'Predictive AI Agent', 
+            weight: '20%',
+            desc: 'Machine learning-based risk scoring. Analyzes content patterns, predicts suppression likelihood, and provides confidence assessments.' 
+        },
+        // Aliases for different naming conventions
+        'api': { icon: '🔌', title: 'API Agent', weight: '20%', desc: 'Direct integration with platform APIs for account status and visibility data.' },
+        'web': { icon: '🔍', title: 'Web Analysis Agent', weight: '20%', desc: 'Browser-based search visibility testing across multiple contexts.' },
+        'detection': { icon: '🎯', title: 'Detection Agent', weight: '25%', desc: '21 modules across hashtags, cashtags, links, content, mentions, and emojis.' },
+        'predictive': { icon: '🤖', title: 'Predictive AI Agent', weight: '20%', desc: 'ML-based risk scoring and suppression probability calculation.' },
     };
     
-    const data = factorData[factorType];
+    const data = agentData[agentType];
     if (!data) return;
     
     const modal = document.getElementById('factor-info-modal');
@@ -834,7 +785,7 @@ function showFactorInfo(factorType) {
     const body = document.getElementById('factor-modal-body');
     
     if (icon) icon.textContent = data.icon;
-    if (title) title.textContent = data.title;
+    if (title) title.textContent = `${data.title} (${data.weight})`;
     if (body) body.innerHTML = `<p>${data.desc}</p>`;
     
     openModal('factor-info-modal');
@@ -842,10 +793,26 @@ function showFactorInfo(factorType) {
 
 function showAudienceInfo(audience) {
     const audienceData = {
-        'influencer': { icon: '📱', title: 'For Influencers & Creators', content: 'When engagement suddenly drops, you need to know if it\'s the algorithm or a shadow ban. Our probability score helps you diagnose the issue and take action.' },
-        'politician': { icon: '🗳️', title: 'For Politicians & Officials', content: 'Your constituents need to hear from you. We analyze your visibility across platforms to ensure your message isn\'t being suppressed.' },
-        'public-figure': { icon: '⭐', title: 'For Public Figures', content: 'Actors, athletes, royalty—when millions follow you, any reduction in reach matters. We help you verify your content is being seen.' },
-        'agency': { icon: '🏛️', title: 'For Agencies & Brands', content: 'Manage multiple client accounts with our Agency plan. Track visibility across all clients and get alerts when issues arise.' },
+        'influencer': { 
+            icon: '📱', 
+            title: 'For Influencers & Creators', 
+            content: 'When engagement suddenly drops, you need intelligence—not guesswork. Our 3-Point Intelligence Model analyzes your visibility across 21 signal types to identify exactly what triggered the suppression.' 
+        },
+        'politician': { 
+            icon: '🗳️', 
+            title: 'For Politicians & Officials', 
+            content: 'Your constituents need to hear from you. Our Detection Agents monitor your visibility across platforms to ensure your message reaches your audience without algorithmic interference.' 
+        },
+        'public-figure': { 
+            icon: '⭐', 
+            title: 'For Public Figures', 
+            content: 'When millions follow you, any reduction in reach matters. We provide the intelligence infrastructure to verify your content visibility and identify suppression patterns.' 
+        },
+        'agency': { 
+            icon: '🏛️', 
+            title: 'For Agencies & Brands', 
+            content: 'Manage multiple client accounts with enterprise-grade detection. Track visibility across all accounts, receive automated alerts, and generate compliance reports.' 
+        },
     };
     
     const data = audienceData[audience];
@@ -909,7 +876,7 @@ function setupShareButtons() {
     const shareLinkedIn = document.getElementById('share-linkedin');
     
     const shareUrl = encodeURIComponent('https://shadowbancheck.io');
-    const shareText = encodeURIComponent('Calculate your shadow ban probability with this free tool!');
+    const shareText = encodeURIComponent('Calculate your shadow ban probability with this intelligence platform!');
     
     if (shareTwitter) {
         shareTwitter.addEventListener('click', () => {
@@ -945,8 +912,8 @@ function showToast(message, type) {
 }
 
 // ============================================
-// CONSOLE HELPER - Check engine status
+// CONSOLE HELPER
 // ============================================
-console.log('💡 Tip: Run FiveFactorLoader.printStatus() to check engine modules');
+console.log('💡 Tip: Run FiveFactorLoader.printStatus() to check Detection Agent status');
 
 })();

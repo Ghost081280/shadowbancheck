@@ -250,6 +250,277 @@ function initBackToTop() {
 }
 
 /* =============================================================================
+   5-FACTOR ENGINE STATUS UTILITIES
+   
+   Provides engine health/status info for UI display before and after searches.
+   Shows which factors are online, offline, or unavailable.
+   ============================================================================= */
+const EngineStatus = {
+    
+    // Factor definitions with weights and descriptions
+    factors: [
+        { id: 1, name: 'Platform API', weight: 20, icon: '🔌', description: 'Direct platform data access' },
+        { id: 2, name: 'Web Analysis', weight: 20, icon: '🔍', description: 'Search & visibility testing' },
+        { id: 3, name: 'Historical Data', weight: 15, icon: '📊', description: 'Past patterns & trends' },
+        { id: 4, name: 'Detection Engine', weight: 25, icon: '#️⃣', description: 'Hashtags, links & content' },
+        { id: 5, name: 'Predictive AI', weight: 20, icon: '🤖', description: 'ML-based risk scoring' },
+    ],
+    
+    /**
+     * Check if 5-Factor Engine is fully loaded and ready
+     * @returns {boolean}
+     */
+    isReady: function() {
+        if (window.FiveFactorLoader && typeof window.FiveFactorLoader.isEngineReady === 'function') {
+            return window.FiveFactorLoader.isEngineReady();
+        }
+        // Fallback: check for key globals
+        return !!(window.FiveFactorEngine && window.powerCheck);
+    },
+    
+    /**
+     * Get quick status summary
+     * @returns {Object} { ready, loadedCount, totalCount, percentage }
+     */
+    getQuickStatus: function() {
+        if (window.FiveFactorLoader && typeof window.FiveFactorLoader.getQuickStatus === 'function') {
+            return window.FiveFactorLoader.getQuickStatus();
+        }
+        // Fallback
+        const ready = this.isReady();
+        return {
+            ready: ready,
+            loadedCount: ready ? 27 : 0,
+            totalCount: 27,
+            percentage: ready ? 100 : 0
+        };
+    },
+    
+    /**
+     * Get detailed status of all modules
+     * @returns {Object} Full status breakdown
+     */
+    getDetailedStatus: function() {
+        if (window.FiveFactorLoader && typeof window.FiveFactorLoader.checkStatus === 'function') {
+            return window.FiveFactorLoader.checkStatus();
+        }
+        // Fallback with basic checks
+        return {
+            databases: {
+                FlaggedContent: !!window.FlaggedContent,
+                FlaggedHashtags: !!window.FlaggedHashtags,
+                FlaggedMentions: !!window.FlaggedMentions,
+                FlaggedEmojis: !!window.FlaggedEmojis,
+                FlaggedLinks: !!window.FlaggedLinks
+            },
+            platforms: {
+                PlatformBase: !!window.PlatformBase,
+                TwitterPlatform: !!window.TwitterPlatform,
+                RedditPlatform: !!window.RedditPlatform,
+                PlatformFactory: !!window.PlatformFactory
+            },
+            agents: {
+                PlatformAPIAgent: !!window.PlatformAPIAgent,
+                WebAnalysisAgent: !!window.WebAnalysisAgent,
+                HistoricalAgent: !!window.HistoricalAgent,
+                DetectionAgent: !!window.DetectionAgent,
+                PredictiveAgent: !!window.PredictiveAgent
+            },
+            engine: {
+                FiveFactorEngine: !!window.FiveFactorEngine
+            },
+            api: {
+                powerCheck: !!window.powerCheck,
+                checkAccount: !!window.checkAccount,
+                checkTags: !!window.checkTags
+            },
+            allLoaded: this.isReady()
+        };
+    },
+    
+    /**
+     * Get status of each factor (for UI display)
+     * @param {string} platformId - Platform being checked
+     * @param {string} checkType - 'power', 'account', or 'hashtag'
+     * @returns {Array} Factor status objects for display
+     */
+    getFactorStatus: function(platformId = 'twitter', checkType = 'power') {
+        const isReddit = platformId === 'reddit';
+        const isHashtagCheck = checkType === 'hashtag' || checkType === 'tagCheck';
+        const status = this.getDetailedStatus();
+        
+        return this.factors.map(factor => {
+            let online = false;
+            let applicable = true;
+            let reason = '';
+            
+            switch(factor.id) {
+                case 1: // Platform API
+                    online = status.agents?.PlatformAPIAgent && status.platforms?.PlatformFactory;
+                    applicable = !isHashtagCheck;
+                    reason = isHashtagCheck ? 'Not needed for tag checks' : (online ? 'Ready' : 'Agent not loaded');
+                    break;
+                    
+                case 2: // Web Analysis
+                    online = status.agents?.WebAnalysisAgent;
+                    reason = online ? 'Ready' : 'Agent not loaded';
+                    break;
+                    
+                case 3: // Historical Data
+                    online = status.agents?.HistoricalAgent;
+                    reason = online ? 'Ready (Demo mode)' : 'Agent not loaded';
+                    break;
+                    
+                case 4: // Detection Engine
+                    online = status.agents?.DetectionAgent && 
+                             (status.databases?.FlaggedHashtags || status.databases?.FlaggedContent);
+                    applicable = !isReddit || checkType !== 'hashtag';
+                    reason = isReddit && checkType === 'hashtag' ? 'N/A for Reddit' : (online ? 'Ready' : 'Databases not loaded');
+                    break;
+                    
+                case 5: // Predictive AI
+                    online = status.agents?.PredictiveAgent;
+                    reason = online ? 'Ready' : 'Agent not loaded';
+                    break;
+            }
+            
+            return {
+                ...factor,
+                online: online,
+                applicable: applicable,
+                status: !applicable ? 'na' : (online ? 'online' : 'offline'),
+                statusText: !applicable ? 'N/A' : (online ? 'Online' : 'Offline'),
+                reason: reason
+            };
+        });
+    },
+    
+    /**
+     * Get overall health percentage
+     * @returns {number} 0-100
+     */
+    getHealthPercentage: function() {
+        const factors = this.getFactorStatus();
+        const applicable = factors.filter(f => f.applicable);
+        const online = applicable.filter(f => f.online);
+        
+        if (applicable.length === 0) return 100;
+        return Math.round((online.length / applicable.length) * 100);
+    },
+    
+    /**
+     * Get health status label
+     * @returns {string} 'excellent', 'good', 'degraded', 'offline'
+     */
+    getHealthLabel: function() {
+        const pct = this.getHealthPercentage();
+        if (pct >= 100) return 'excellent';
+        if (pct >= 80) return 'good';
+        if (pct >= 50) return 'degraded';
+        return 'offline';
+    },
+    
+    /**
+     * Generate HTML for factor status display
+     * @param {string} platformId 
+     * @param {string} checkType 
+     * @returns {string} HTML string
+     */
+    renderStatusHTML: function(platformId = 'twitter', checkType = 'power') {
+        const factors = this.getFactorStatus(platformId, checkType);
+        const health = this.getHealthLabel();
+        const healthPct = this.getHealthPercentage();
+        
+        let html = `<div class="engine-status engine-status--${health}">`;
+        html += `<div class="engine-status__header">`;
+        html += `<span class="engine-status__title">5-Factor Engine</span>`;
+        html += `<span class="engine-status__health engine-status__health--${health}">${healthPct}% Online</span>`;
+        html += `</div>`;
+        html += `<div class="engine-status__factors">`;
+        
+        factors.forEach(factor => {
+            const statusClass = factor.status === 'online' ? 'online' : 
+                               (factor.status === 'na' ? 'na' : 'offline');
+            const statusIcon = factor.status === 'online' ? '✓' : 
+                              (factor.status === 'na' ? '○' : '✗');
+            
+            html += `
+                <div class="engine-factor engine-factor--${statusClass}" title="${factor.reason}">
+                    <span class="engine-factor__icon">${factor.icon}</span>
+                    <span class="engine-factor__name">${factor.name}</span>
+                    <span class="engine-factor__weight">${factor.weight}%</span>
+                    <span class="engine-factor__status">${statusIcon}</span>
+                </div>
+            `;
+        });
+        
+        html += `</div></div>`;
+        return html;
+    },
+    
+    /**
+     * Render status into a DOM element
+     * @param {string|Element} target - Selector or element
+     * @param {string} platformId 
+     * @param {string} checkType 
+     */
+    renderTo: function(target, platformId = 'twitter', checkType = 'power') {
+        const el = typeof target === 'string' ? document.querySelector(target) : target;
+        if (el) {
+            el.innerHTML = this.renderStatusHTML(platformId, checkType);
+        }
+    },
+    
+    /**
+     * Print status to console
+     */
+    printStatus: function() {
+        if (window.FiveFactorLoader && typeof window.FiveFactorLoader.printStatus === 'function') {
+            window.FiveFactorLoader.printStatus();
+            return;
+        }
+        
+        console.log('═══════════════════════════════════════');
+        console.log('   5-FACTOR ENGINE STATUS');
+        console.log('═══════════════════════════════════════');
+        
+        const factors = this.getFactorStatus();
+        factors.forEach(f => {
+            const icon = f.status === 'online' ? '✅' : (f.status === 'na' ? '⚪' : '❌');
+            console.log(`${icon} Factor ${f.id}: ${f.name} (${f.weight}%) - ${f.statusText}`);
+        });
+        
+        console.log('───────────────────────────────────────');
+        console.log(`Overall Health: ${this.getHealthPercentage()}% (${this.getHealthLabel()})`);
+        console.log(`Engine Ready: ${this.isReady() ? 'Yes' : 'No'}`);
+        console.log('═══════════════════════════════════════');
+    },
+    
+    /**
+     * Watch for engine load and call callback when ready
+     * @param {Function} callback 
+     * @param {number} timeout - Max wait time in ms
+     */
+    onReady: function(callback, timeout = 10000) {
+        if (this.isReady()) {
+            callback(true);
+            return;
+        }
+        
+        const startTime = Date.now();
+        const checkInterval = setInterval(() => {
+            if (this.isReady()) {
+                clearInterval(checkInterval);
+                callback(true);
+            } else if (Date.now() - startTime > timeout) {
+                clearInterval(checkInterval);
+                callback(false);
+            }
+        }, 100);
+    }
+};
+
+/* =============================================================================
    PLATFORM HELPER FUNCTIONS (Fallbacks ONLY if platforms.js fails to load)
    
    IMPORTANT: These are FALLBACK functions that directly access platformData.
@@ -324,6 +595,11 @@ function initSharedFunctionality() {
     initCookiePopup();
     initFaqAccordion();
     
+    // Log engine status on init
+    if (window.FiveFactorLoader || window.FiveFactorEngine) {
+        console.log(`🔧 5-Factor Engine: ${EngineStatus.isReady() ? 'Ready' : 'Loading...'}`);
+    }
+    
     console.log('✅ Shared functionality initialized');
 }
 
@@ -342,7 +618,9 @@ Object.assign(window.ShadowBan, {
     openModal,
     closeModal,
     sleep,
-    debounce
+    debounce,
+    // Engine status utilities
+    engine: EngineStatus
 });
 
 // Make modal/toast functions globally accessible
@@ -350,6 +628,9 @@ window.closeModal = closeModal;
 window.closeLimitModal = () => closeModal('limit-modal');
 window.showToast = showToast;
 window.openModal = openModal;
+
+// Make engine status globally accessible
+window.EngineStatus = EngineStatus;
 
 // Set fallback platform helpers ONLY if platforms.js didn't load them
 // This prevents the infinite recursion bug
@@ -369,3 +650,6 @@ if (typeof window.getHashtagPlatforms !== 'function') {
 if (typeof window.detectPlatformFromUrl !== 'function') {
     window.detectPlatformFromUrl = _fallbackDetectPlatformFromUrl;
 }
+
+// Console helper
+console.log('💡 Run EngineStatus.printStatus() to check 5-Factor Engine health');

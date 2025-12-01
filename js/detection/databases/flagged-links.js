@@ -5,22 +5,23 @@
    Database of known flagged domains, link patterns, and content indicators
    that platforms commonly filter or suppress.
    
-   Used by the Content & Links factor (Factor 5) in the 5-Factor Engine.
+   Used by the Detection Agent (Factor 4) in the 5-Factor Engine.
    ============================================================================= */
 
 (function() {
 'use strict';
 
 // ============================================
-// FLAGGED DOMAINS & PATTERNS DATABASE
+// FLAGGED LINKS DATABASE
 // ============================================
-window.flaggedLinks = {
+const FlaggedLinks = {
     
     // ========================================
-    // KNOWN BAD/SPAM DOMAINS
+    // DATA
     // ========================================
+    
+    // Known bad/spam domains
     badDomains: [
-        // Known spam/scam domains
         'spam-site.com',
         'free-followers.net',
         'get-likes-now.com',
@@ -29,19 +30,14 @@ window.flaggedLinks = {
         'viral-boost.net',
         'follow4follow.xyz',
         'like4like.club',
-        // Phishing indicators
         'secure-login-verify.com',
         'account-verify-now.net',
-        // Known malware distributors (examples)
         'download-free-stuff.ru',
         'crack-software.to',
     ],
     
-    // ========================================
-    // LINK SHORTENERS (May reduce reach)
-    // ========================================
+    // Link shorteners (may reduce reach)
     shorteners: [
-        // Major shorteners
         'bit.ly',
         'tinyurl.com',
         'goo.gl',
@@ -61,12 +57,10 @@ window.flaggedLinks = {
         'rb.gy',
         'cutt.ly',
         'lnk.to',
-        'linktr.ee',
         'smarturl.it',
         'dub.sh',
         'short.io',
         'rebrand.ly',
-        // Social-specific shorteners
         'fb.me',
         'youtu.be',
         'amzn.to',
@@ -74,9 +68,7 @@ window.flaggedLinks = {
         'ebay.to',
     ],
     
-    // ========================================
-    // LINK AGGREGATORS (May affect organic reach)
-    // ========================================
+    // Link aggregators (may affect organic reach)
     linkAggregators: [
         'linktr.ee',
         'linktree.com',
@@ -100,68 +92,49 @@ window.flaggedLinks = {
         'withkoji.com',
     ],
     
-    // ========================================
-    // PLATFORM-SPECIFIC BLOCKED DOMAINS
-    // ========================================
-    twitter: [
-        // Domains Twitter has historically blocked or limited
-        'facebook.com', // Cross-platform rivalry
-        'instagram.com', // Same
-        'threads.net', // Competitor
-        // Known spam domains on Twitter
-        'twitterfollow.me',
-        'justunfollow.com',
-        'crowdfire.com', // Automation tools often flagged
-    ],
+    // Platform-specific blocked domains
+    platformDomains: {
+        twitter: [
+            'facebook.com',
+            'instagram.com',
+            'threads.net',
+            'twitterfollow.me',
+            'justunfollow.com',
+            'crowdfire.com',
+        ],
+        reddit: [
+            'clickbait-news.com',
+            'viral-content-farm.net',
+            'my-blog-promo.com',
+            'zerohedge.com',
+            'rt.com',
+        ],
+        instagram: [
+            'linktree.com',
+            'taplink.cc',
+            'tiktok.com',
+            'snapchat.com',
+        ],
+        tiktok: [
+            'youtube.com',
+            'instagram.com',
+            'twitter.com',
+            'x.com',
+        ],
+        facebook: [
+            'tiktok.com',
+            'twitter.com',
+            'x.com',
+        ],
+        youtube: [
+            'tiktok.com',
+            'dailymotion.com',
+            'vimeo.com',
+        ],
+    },
     
-    reddit: [
-        // Domains Reddit commonly blocks
-        'clickbait-news.com',
-        'viral-content-farm.net',
-        // Self-promotion spam indicators
-        'my-blog-promo.com',
-        // Known banned domains on Reddit
-        'zerohedge.com', // Example of historically banned
-        'rt.com', // State media often restricted
-    ],
-    
-    instagram: [
-        // External domains that may reduce reach
-        'linktree.com', // Sometimes deprioritized
-        'taplink.cc',
-        // Competitor links
-        'tiktok.com',
-        'snapchat.com',
-    ],
-    
-    tiktok: [
-        // TikTok restricts most external links
-        'youtube.com',
-        'instagram.com',
-        'twitter.com',
-        'x.com',
-        // Any external commerce not through TikTok Shop
-    ],
-    
-    facebook: [
-        // Domains Facebook has restricted
-        'tiktok.com',
-        'twitter.com',
-        'x.com',
-    ],
-    
-    youtube: [
-        // YouTube restricts competitor platforms
-        'tiktok.com',
-        'dailymotion.com',
-        'vimeo.com', // Sometimes limited in descriptions
-    ],
-    
-    // ========================================
-    // AFFILIATE/REFERRAL PATTERNS
-    // ========================================
+    // Affiliate/referral patterns
     affiliatePatterns: [
-        // URL parameter patterns indicating affiliate links
         '?ref=',
         '?aff=',
         '?affiliate=',
@@ -177,11 +150,9 @@ window.flaggedLinks = {
         'tracking_id=',
         'clickid=',
         'subid=',
-        // Amazon affiliate patterns
         'amzn.to',
         'amazon.com/gp/product',
         'amazon.com?tag=',
-        // Other common affiliate networks
         'shareasale.com',
         'linksynergy.com',
         'cj.com',
@@ -194,11 +165,8 @@ window.flaggedLinks = {
         'warriorplus.com',
     ],
     
-    // ========================================
-    // SUSPICIOUS PATTERNS IN URLS
-    // ========================================
+    // Suspicious URL patterns
     suspiciousPatterns: [
-        // Engagement manipulation indicators
         'free-followers',
         'buy-likes',
         'get-followers',
@@ -209,370 +177,216 @@ window.flaggedLinks = {
         'auto-follow',
         'follow-bot',
         'like-bot',
-        // Crypto/financial scam indicators
         'guaranteed-returns',
         'double-bitcoin',
         'crypto-giveaway',
         'free-crypto',
         'money-flip',
         'cash-app-flip',
-        // Adult/NSFW indicators (platforms often filter)
-        'onlyfans.com', // May reduce reach on some platforms
+        'onlyfans.com',
         'fansly.com',
         'fanvue.com',
-        // Gambling (regulated/restricted)
         'online-casino',
         'sports-betting',
         'free-spins',
-        // MLM/Pyramid indicators
         'join-my-team',
         'passive-income-opportunity',
         'work-from-home-mlm',
     ],
     
     // ========================================
-    // FLAGGED WORDS IN BIO/CONTENT
+    // PUBLIC API METHODS
     // ========================================
-    flaggedBioWords: {
-        // High risk - often trigger filters
-        highRisk: [
-            'dm for collab',
-            'dm to work together',
-            'link in bio',
-            'click link below',
-            'free giveaway',
-            'follow for follow',
-            'f4f',
-            'l4l',
-            'like for like',
-            'follow back',
-            'followback',
-            'team follow back',
-            'tfb',
-            'instant follow back',
-            'follow train',
-            'follow party',
-            'gain with',
-            'gain train',
-            'shoutout for shoutout',
-            's4s',
-            'promo for promo',
-            'p4p',
-            // Financial claims
-            'guaranteed income',
-            'make money fast',
-            'get rich quick',
-            'financial freedom',
-            'passive income',
-            'work from home opportunity',
-            'be your own boss',
-            'fire your boss',
-            // Crypto hype
-            'to the moon',
-            '100x gains',
-            'not financial advice',
-            'dyor',
-            // Adult content indicators
-            'dm for exclusive',
-            'spicy content',
-            'premium content',
-            '18+',
-            'nsfw',
-            'explicit',
-        ],
+    
+    /**
+     * Check a URL for flagged patterns
+     * @param {string} url - URL to check
+     * @param {string} platform - Platform context (optional)
+     * @returns {Object} { status, issues, category }
+     */
+    checkUrl: function(url, platform = null) {
+        if (!url || typeof url !== 'string') {
+            return { status: 'safe', issues: [], category: null };
+        }
         
-        // Medium risk - contextual
-        mediumRisk: [
-            'dm me',
-            'dms open',
-            'collaborations welcome',
-            'brand partnerships',
-            'influencer',
-            'content creator',
-            'entrepreneur',
-            'ceo of',
-            'founder of',
-            'affiliate',
-            'ambassador',
-            'promo code',
-            'discount code',
-            'use my code',
-            'crypto',
-            'bitcoin',
-            'nft',
-            'web3',
-            'metaverse',
-            'trading',
-            'forex',
-            'stocks',
-            'investor',
-        ],
+        const urlLower = url.toLowerCase();
+        const issues = [];
+        let status = 'safe';
+        let category = null;
         
-        // Low risk - just informational
-        lowRisk: [
-            'check out my',
-            'new post',
-            'latest video',
-            'subscribe',
-            'turn on notifications',
-            'join my',
-            'support me',
-            'buy me a coffee',
-        ]
+        // Check bad domains
+        for (const domain of this.badDomains) {
+            if (urlLower.includes(domain)) {
+                issues.push(`Known spam domain: ${domain}`);
+                status = 'banned';
+                category = 'spam';
+            }
+        }
+        
+        // Check shorteners
+        for (const shortener of this.shorteners) {
+            if (urlLower.includes(shortener)) {
+                issues.push(`Link shortener: ${shortener}`);
+                if (status === 'safe') status = 'restricted';
+                category = category || 'shortener';
+            }
+        }
+        
+        // Check link aggregators
+        for (const aggregator of this.linkAggregators) {
+            if (urlLower.includes(aggregator)) {
+                issues.push(`Link aggregator: ${aggregator}`);
+                if (status === 'safe') status = 'restricted';
+                category = category || 'aggregator';
+            }
+        }
+        
+        // Check affiliate patterns
+        for (const pattern of this.affiliatePatterns) {
+            if (urlLower.includes(pattern)) {
+                issues.push(`Affiliate link detected`);
+                if (status === 'safe') status = 'monitored';
+                category = category || 'affiliate';
+                break;
+            }
+        }
+        
+        // Check suspicious patterns
+        for (const pattern of this.suspiciousPatterns) {
+            if (urlLower.includes(pattern)) {
+                issues.push(`Suspicious pattern: ${pattern}`);
+                status = 'banned';
+                category = category || 'suspicious';
+            }
+        }
+        
+        // Check platform-specific
+        if (platform && this.platformDomains[platform]) {
+            for (const domain of this.platformDomains[platform]) {
+                if (urlLower.includes(domain)) {
+                    issues.push(`${platform} may limit: ${domain}`);
+                    if (status === 'safe') status = 'restricted';
+                    category = category || 'platform-specific';
+                }
+            }
+        }
+        
+        return {
+            url: url,
+            status: status,
+            issues: issues,
+            category: category,
+            platform: platform
+        };
     },
     
-    // ========================================
-    // PLATFORM-SPECIFIC FLAGGED PHRASES
-    // ========================================
-    platformFlaggedPhrases: {
-        twitter: [
-            'retweet to win',
-            'rt to enter',
-            'follow and rt',
-            'like and retweet',
-            'quote tweet this',
-            'ratio',
-            'breaking:',
-            'urgent:',
-            'thread 🧵',
-        ],
+    /**
+     * Check multiple URLs at once
+     * @param {Array} urls - Array of URLs to check
+     * @param {string} platform - Platform context
+     * @returns {Object} { results, summary }
+     */
+    checkBulk: function(urls, platform = null) {
+        if (!Array.isArray(urls)) urls = [urls];
         
-        instagram: [
-            'link in bio',
-            'tap link in bio',
-            'check bio',
-            'dm for rates',
-            'dm for price',
-            'comment below',
-            'double tap',
-            'save this post',
-            'share to stories',
-            'tag a friend',
-            'tag someone who',
-        ],
+        const results = urls.map(url => this.checkUrl(url, platform));
         
-        tiktok: [
-            'duet this',
-            'stitch this',
-            'greenscreen this',
-            'use my sound',
-            'fyp',
-            'foryou',
-            'foryoupage',
-            'viral',
-            'blowthisup',
-            'xyzbca',
-        ],
+        const summary = {
+            total: results.length,
+            banned: results.filter(r => r.status === 'banned').length,
+            restricted: results.filter(r => r.status === 'restricted').length,
+            monitored: results.filter(r => r.status === 'monitored').length,
+            safe: results.filter(r => r.status === 'safe').length
+        };
         
-        youtube: [
-            'subscribe',
-            'hit the bell',
-            'notification squad',
-            'like and subscribe',
-            'smash that like',
-            'leave a comment',
-            'check description',
-            'link below',
-        ],
-        
-        reddit: [
-            'upvote if',
-            'awards appreciated',
-            'please upvote',
-            'karma please',
-            'check my profile',
-            'self-promo',
-        ],
+        return { results, summary };
+    },
+    
+    /**
+     * Check if a domain is a known shortener
+     * @param {string} url - URL to check
+     * @returns {boolean}
+     */
+    isShortener: function(url) {
+        if (!url) return false;
+        const urlLower = url.toLowerCase();
+        return this.shorteners.some(s => urlLower.includes(s));
+    },
+    
+    /**
+     * Check if a domain is a link aggregator
+     * @param {string} url - URL to check
+     * @returns {boolean}
+     */
+    isAggregator: function(url) {
+        if (!url) return false;
+        const urlLower = url.toLowerCase();
+        return this.linkAggregators.some(a => urlLower.includes(a));
+    },
+    
+    /**
+     * Check if URL contains affiliate patterns
+     * @param {string} url - URL to check
+     * @returns {boolean}
+     */
+    isAffiliate: function(url) {
+        if (!url) return false;
+        const urlLower = url.toLowerCase();
+        return this.affiliatePatterns.some(p => urlLower.includes(p));
+    },
+    
+    /**
+     * Extract domain from URL
+     * @param {string} url - URL to parse
+     * @returns {string|null}
+     */
+    extractDomain: function(url) {
+        try {
+            const urlObj = new URL(url);
+            return urlObj.hostname.replace('www.', '');
+        } catch (e) {
+            // Try regex fallback
+            const match = url.match(/(?:https?:\/\/)?(?:www\.)?([^\/\?]+)/i);
+            return match ? match[1] : null;
+        }
+    },
+    
+    /**
+     * Get database statistics
+     * @returns {Object}
+     */
+    getStats: function() {
+        return {
+            badDomains: this.badDomains.length,
+            shorteners: this.shorteners.length,
+            linkAggregators: this.linkAggregators.length,
+            affiliatePatterns: this.affiliatePatterns.length,
+            suspiciousPatterns: this.suspiciousPatterns.length,
+            platformSpecific: Object.keys(this.platformDomains).length,
+            total: this.badDomains.length + 
+                   this.shorteners.length + 
+                   this.linkAggregators.length + 
+                   this.affiliatePatterns.length + 
+                   this.suspiciousPatterns.length
+        };
     }
 };
 
 // ============================================
-// UTILITY FUNCTIONS
+// EXPORT TO WINDOW
 // ============================================
+window.FlaggedLinks = FlaggedLinks;
 
-/**
- * Check if a URL contains any flagged patterns
- * @param {string} url - URL to check
- * @param {string} platformId - Platform context (optional)
- * @returns {Object} Result with flagged items
- */
-window.checkUrlForFlags = function(url, platformId = null) {
-    if (!url) return { flagged: false, reasons: [] };
-    
-    const urlLower = url.toLowerCase();
-    const reasons = [];
-    
-    // Check bad domains
-    for (const domain of window.flaggedLinks.badDomains) {
-        if (urlLower.includes(domain)) {
-            reasons.push({ type: 'danger', reason: `Known spam domain: ${domain}` });
-        }
-    }
-    
-    // Check shorteners
-    for (const shortener of window.flaggedLinks.shorteners) {
-        if (urlLower.includes(shortener)) {
-            reasons.push({ type: 'warning', reason: `Link shortener detected: ${shortener}` });
-        }
-    }
-    
-    // Check link aggregators
-    for (const aggregator of window.flaggedLinks.linkAggregators) {
-        if (urlLower.includes(aggregator)) {
-            reasons.push({ type: 'warning', reason: `Link aggregator: ${aggregator} (may reduce organic reach)` });
-        }
-    }
-    
-    // Check affiliate patterns
-    for (const pattern of window.flaggedLinks.affiliatePatterns) {
-        if (urlLower.includes(pattern)) {
-            reasons.push({ type: 'info', reason: `Affiliate link pattern: ${pattern}` });
-            break; // Only flag once for affiliates
-        }
-    }
-    
-    // Check suspicious patterns
-    for (const pattern of window.flaggedLinks.suspiciousPatterns) {
-        if (urlLower.includes(pattern)) {
-            reasons.push({ type: 'danger', reason: `Suspicious pattern: ${pattern}` });
-        }
-    }
-    
-    // Check platform-specific blocked domains
-    if (platformId && window.flaggedLinks[platformId]) {
-        for (const domain of window.flaggedLinks[platformId]) {
-            if (urlLower.includes(domain)) {
-                reasons.push({ type: 'warning', reason: `${platformId} may limit: ${domain}` });
-            }
-        }
-    }
-    
+// Also keep old exports for backwards compatibility
+window.flaggedLinks = FlaggedLinks;
+window.checkUrlForFlags = function(url, platform) {
+    const result = FlaggedLinks.checkUrl(url, platform);
     return {
-        flagged: reasons.length > 0,
-        reasons: reasons
+        flagged: result.status !== 'safe',
+        reasons: result.issues.map(i => ({ type: result.status === 'banned' ? 'danger' : 'warning', reason: i }))
     };
 };
 
-/**
- * Check bio/content text for flagged words
- * @param {string} text - Text to check
- * @param {string} platformId - Platform context (optional)
- * @returns {Object} Result with flagged items
- */
-window.checkTextForFlags = function(text, platformId = null) {
-    if (!text) return { flagged: false, reasons: [] };
-    
-    const textLower = text.toLowerCase();
-    const reasons = [];
-    
-    // Check high risk words
-    for (const word of window.flaggedLinks.flaggedBioWords.highRisk) {
-        if (textLower.includes(word)) {
-            reasons.push({ type: 'danger', reason: `High-risk phrase: "${word}"` });
-        }
-    }
-    
-    // Check medium risk words
-    for (const word of window.flaggedLinks.flaggedBioWords.mediumRisk) {
-        if (textLower.includes(word)) {
-            reasons.push({ type: 'warning', reason: `Contextual flag: "${word}"` });
-        }
-    }
-    
-    // Check platform-specific phrases
-    if (platformId && window.flaggedLinks.platformFlaggedPhrases[platformId]) {
-        for (const phrase of window.flaggedLinks.platformFlaggedPhrases[platformId]) {
-            if (textLower.includes(phrase.toLowerCase())) {
-                reasons.push({ type: 'info', reason: `Platform-specific: "${phrase}"` });
-            }
-        }
-    }
-    
-    return {
-        flagged: reasons.length > 0,
-        reasons: reasons
-    };
-};
-
-/**
- * Full content analysis for Factor 5
- * @param {Object} content - Content object with bio, postText, links, taggedUsers
- * @param {string} platformId - Platform context
- * @returns {Object} Complete analysis result
- */
-window.analyzeContentAndLinks = function(content, platformId) {
-    const result = {
-        score: 0, // Higher = more risk
-        maxScore: 100,
-        bioFlags: [],
-        postFlags: [],
-        linkFlags: [],
-        taggedUserFlags: [],
-        summary: '',
-        recommendations: []
-    };
-    
-    // Analyze bio
-    if (content.bio) {
-        const bioCheck = window.checkTextForFlags(content.bio, platformId);
-        result.bioFlags = bioCheck.reasons;
-        result.score += bioCheck.reasons.filter(r => r.type === 'danger').length * 15;
-        result.score += bioCheck.reasons.filter(r => r.type === 'warning').length * 8;
-        result.score += bioCheck.reasons.filter(r => r.type === 'info').length * 3;
-    }
-    
-    // Analyze post text
-    if (content.postText) {
-        const postCheck = window.checkTextForFlags(content.postText, platformId);
-        result.postFlags = postCheck.reasons;
-        result.score += postCheck.reasons.filter(r => r.type === 'danger').length * 15;
-        result.score += postCheck.reasons.filter(r => r.type === 'warning').length * 8;
-        result.score += postCheck.reasons.filter(r => r.type === 'info').length * 3;
-    }
-    
-    // Analyze links
-    if (content.links && Array.isArray(content.links)) {
-        for (const link of content.links) {
-            const linkCheck = window.checkUrlForFlags(link, platformId);
-            result.linkFlags.push(...linkCheck.reasons);
-            result.score += linkCheck.reasons.filter(r => r.type === 'danger').length * 20;
-            result.score += linkCheck.reasons.filter(r => r.type === 'warning').length * 10;
-            result.score += linkCheck.reasons.filter(r => r.type === 'info').length * 5;
-        }
-    }
-    
-    // Cap score at max
-    result.score = Math.min(result.score, result.maxScore);
-    
-    // Generate summary
-    const totalFlags = result.bioFlags.length + result.postFlags.length + result.linkFlags.length;
-    if (totalFlags === 0) {
-        result.summary = 'No flagged content detected';
-    } else if (result.score < 20) {
-        result.summary = `${totalFlags} minor flags detected`;
-    } else if (result.score < 50) {
-        result.summary = `${totalFlags} flags detected - review recommended`;
-    } else {
-        result.summary = `${totalFlags} significant flags - action needed`;
-    }
-    
-    // Generate recommendations
-    if (result.linkFlags.some(f => f.reason.includes('shortener'))) {
-        result.recommendations.push('Consider using full URLs instead of link shorteners');
-    }
-    if (result.linkFlags.some(f => f.reason.includes('aggregator'))) {
-        result.recommendations.push('Link aggregators may reduce organic reach on some platforms');
-    }
-    if (result.bioFlags.some(f => f.reason.includes('follow'))) {
-        result.recommendations.push('Remove follow-for-follow language from bio');
-    }
-    if (result.postFlags.some(f => f.type === 'danger')) {
-        result.recommendations.push('Remove high-risk phrases from post content');
-    }
-    
-    return result;
-};
-
-console.log('✅ FlaggedLinks database loaded');
+console.log('✅ FlaggedLinks database loaded -', FlaggedLinks.getStats().total, 'patterns');
 
 })();

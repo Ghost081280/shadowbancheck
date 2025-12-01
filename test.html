@@ -1,0 +1,1087 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>5-Factor Engine Test Suite | ShadowBanCheck.io</title>
+    <style>
+        :root {
+            --bg-dark: #0a0a0f;
+            --bg-card: #12121a;
+            --bg-card-hover: #1a1a25;
+            --border: #2a2a3a;
+            --text: #e4e4e7;
+            --text-muted: #71717a;
+            --primary: #6366f1;
+            --primary-hover: #818cf8;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #3b82f6;
+        }
+        
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, var(--bg-dark) 0%, #1a1a2e 100%);
+            color: var(--text);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding-bottom: 2rem;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        h1 span { font-size: 1.5rem; }
+        
+        .subtitle { color: var(--text-muted); }
+        
+        /* Engine Status Panel */
+        .engine-status-panel {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .engine-status-panel h2 {
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .health-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .health-badge.excellent { background: var(--success); color: #000; }
+        .health-badge.good { background: var(--info); color: #fff; }
+        .health-badge.degraded { background: var(--warning); color: #000; }
+        .health-badge.offline { background: var(--danger); color: #fff; }
+        
+        .factors-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .factor-card {
+            background: var(--bg-dark);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .factor-card.online { border-color: var(--success); }
+        .factor-card.offline { border-color: var(--danger); opacity: 0.7; }
+        .factor-card.na { border-color: var(--text-muted); opacity: 0.5; }
+        
+        .factor-icon { font-size: 1.5rem; }
+        
+        .factor-info { flex: 1; }
+        
+        .factor-name { font-weight: 600; font-size: 0.9rem; }
+        
+        .factor-weight { font-size: 0.75rem; color: var(--text-muted); }
+        
+        .factor-status {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+        }
+        
+        .factor-status.online { background: var(--success); color: #000; }
+        .factor-status.offline { background: var(--danger); color: #fff; }
+        .factor-status.na { background: var(--text-muted); color: #fff; }
+        
+        /* Module Status Grid */
+        .modules-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 0.5rem;
+            padding: 1rem;
+            background: var(--bg-dark);
+            border-radius: 8px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .module-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.8rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            background: var(--bg-card);
+        }
+        
+        .module-item.loaded { color: var(--success); }
+        .module-item.missing { color: var(--danger); opacity: 0.7; }
+        
+        /* Test Sections */
+        .test-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .test-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        
+        .test-card-header {
+            padding: 1rem 1.5rem;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(99, 102, 241, 0.05) 100%);
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .test-card-header h3 {
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .test-card-body { padding: 1.5rem; }
+        
+        .form-group { margin-bottom: 1rem; }
+        
+        .form-group label {
+            display: block;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            background: var(--bg-dark);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text);
+            font-size: 0.95rem;
+        }
+        
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        
+        textarea { min-height: 80px; resize: vertical; }
+        
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary {
+            background: var(--primary);
+            color: #fff;
+        }
+        
+        .btn-primary:hover { background: var(--primary-hover); }
+        
+        .btn-primary:disabled {
+            background: var(--text-muted);
+            cursor: not-allowed;
+        }
+        
+        .btn-sm {
+            padding: 0.5rem 1rem;
+            font-size: 0.85rem;
+        }
+        
+        .btn-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+        
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text);
+        }
+        
+        .btn-outline:hover {
+            background: var(--bg-card-hover);
+            border-color: var(--primary);
+        }
+        
+        /* Results */
+        .result-box {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: var(--bg-dark);
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            max-height: 300px;
+            overflow: auto;
+        }
+        
+        .result-box pre {
+            font-family: 'Monaco', 'Consolas', monospace;
+            font-size: 0.8rem;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+        
+        .result-box.success { border-color: var(--success); }
+        .result-box.error { border-color: var(--danger); }
+        
+        /* Status Indicator */
+        .status-row {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem;
+            background: var(--bg-dark);
+            border-radius: 6px;
+            margin-bottom: 1rem;
+        }
+        
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--text-muted);
+        }
+        
+        .status-dot.ready { background: var(--success); }
+        .status-dot.loading { background: var(--warning); animation: pulse 1s infinite; }
+        .status-dot.error { background: var(--danger); }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .status-text { font-size: 0.85rem; }
+        
+        /* Collapsible */
+        .collapsible-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            padding: 0.75rem;
+            background: var(--bg-dark);
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+        }
+        
+        .collapsible-header:hover { background: var(--bg-card-hover); }
+        
+        .collapsible-content {
+            display: none;
+            padding: 0.5rem 0;
+        }
+        
+        .collapsible-content.show { display: block; }
+        
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+        
+        footer a { color: var(--primary); text-decoration: none; }
+        footer a:hover { text-decoration: underline; }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container { padding: 1rem; }
+            .test-grid { grid-template-columns: 1fr; }
+            .factors-grid { grid-template-columns: 1fr 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🔥 <span>5-Factor Detection Engine</span></h1>
+            <p class="subtitle">Test Suite & Status Dashboard</p>
+        </header>
+        
+        <!-- Engine Status Panel -->
+        <section class="engine-status-panel">
+            <h2>
+                <span>⚡ Engine Status</span>
+                <span id="health-badge" class="health-badge offline">Checking...</span>
+            </h2>
+            
+            <div class="status-row">
+                <span id="status-dot" class="status-dot loading"></span>
+                <span id="status-text" class="status-text">Checking engine status...</span>
+            </div>
+            
+            <!-- Factor Cards -->
+            <div id="factors-display" class="factors-grid">
+                <!-- Populated by JS -->
+            </div>
+            
+            <!-- Module Details (Collapsible) -->
+            <div class="collapsible-header" onclick="toggleModules()">
+                <span>📦 Module Details</span>
+                <span id="module-count">0/27 loaded</span>
+            </div>
+            <div id="modules-content" class="collapsible-content">
+                <div id="modules-grid" class="modules-grid">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+        </section>
+        
+        <!-- Test Sections -->
+        <div class="test-grid">
+            
+            <!-- Power Check -->
+            <div class="test-card">
+                <div class="test-card-header">
+                    <h3>🔍 Power Check (3-in-1)</h3>
+                </div>
+                <div class="test-card-body">
+                    <div class="form-group">
+                        <label>Post/Profile URL</label>
+                        <input type="text" id="power-url" placeholder="https://x.com/username/status/123...">
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-sm btn-outline" onclick="setTestUrl('twitter-post')">Twitter Post</button>
+                        <button class="btn btn-sm btn-outline" onclick="setTestUrl('twitter-profile')">Twitter Profile</button>
+                        <button class="btn btn-sm btn-outline" onclick="setTestUrl('reddit-post')">Reddit Post</button>
+                    </div>
+                    <button class="btn btn-primary" style="width: 100%; margin-top: 1rem;" onclick="runPowerCheck()" id="power-btn">
+                        Run Power Check
+                    </button>
+                    <div id="power-result" class="result-box" style="display: none;">
+                        <pre></pre>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Account Check -->
+            <div class="test-card">
+                <div class="test-card-header">
+                    <h3>👤 Account Check</h3>
+                </div>
+                <div class="test-card-body">
+                    <div class="form-group">
+                        <label>Username</label>
+                        <input type="text" id="account-username" placeholder="@username">
+                    </div>
+                    <div class="form-group">
+                        <label>Platform</label>
+                        <select id="account-platform">
+                            <option value="twitter">Twitter/X</option>
+                            <option value="reddit">Reddit</option>
+                            <option value="instagram" disabled>Instagram (Soon)</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary" style="width: 100%;" onclick="runAccountCheck()" id="account-btn">
+                        Check Account
+                    </button>
+                    <div id="account-result" class="result-box" style="display: none;">
+                        <pre></pre>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Tag Check -->
+            <div class="test-card">
+                <div class="test-card-header">
+                    <h3>#️⃣ Tag Check (Hashtags & Cashtags)</h3>
+                </div>
+                <div class="test-card-body">
+                    <div class="form-group">
+                        <label>Tags (one per line or space-separated)</label>
+                        <textarea id="tag-input" placeholder="#shadowban #blessed $BTC $ETH">#shadowban #followback #crypto $BTC</textarea>
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-sm btn-outline" onclick="setTestTags('banned')">Banned Tags</button>
+                        <button class="btn btn-sm btn-outline" onclick="setTestTags('cashtags')">Cashtags</button>
+                        <button class="btn btn-sm btn-outline" onclick="setTestTags('safe')">Safe Tags</button>
+                    </div>
+                    <div class="form-group" style="margin-top: 1rem;">
+                        <label>Platform</label>
+                        <select id="tag-platform">
+                            <option value="twitter">Twitter/X</option>
+                            <option value="instagram" disabled>Instagram (Soon)</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary" style="width: 100%;" onclick="runTagCheck()" id="tag-btn">
+                        Check Tags
+                    </button>
+                    <div id="tag-result" class="result-box" style="display: none;">
+                        <pre></pre>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Content Analysis -->
+            <div class="test-card">
+                <div class="test-card-header">
+                    <h3>📝 Content Analysis</h3>
+                </div>
+                <div class="test-card-body">
+                    <div class="form-group">
+                        <label>Content to Analyze</label>
+                        <textarea id="content-input" placeholder="Paste tweet or post content here...">Check out my free crypto giveaway! Follow and RT to win $1000! bit.ly/scam123 #followback #f4f</textarea>
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-sm btn-outline" onclick="setTestContent('spam')">Spam Example</button>
+                        <button class="btn btn-sm btn-outline" onclick="setTestContent('clean')">Clean Example</button>
+                    </div>
+                    <button class="btn btn-primary" style="width: 100%; margin-top: 1rem;" onclick="runContentAnalysis()" id="content-btn">
+                        Analyze Content
+                    </button>
+                    <div id="content-result" class="result-box" style="display: none;">
+                        <pre></pre>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Database Stats -->
+            <div class="test-card">
+                <div class="test-card-header">
+                    <h3>📊 Database Stats</h3>
+                </div>
+                <div class="test-card-body">
+                    <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem;">
+                        View statistics for loaded detection databases.
+                    </p>
+                    <button class="btn btn-primary" style="width: 100%;" onclick="loadStats()" id="stats-btn">
+                        Load Statistics
+                    </button>
+                    <div id="stats-result" class="result-box" style="display: none;">
+                        <pre></pre>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Demo Data -->
+            <div class="test-card">
+                <div class="test-card-header">
+                    <h3>🎭 Demo Data Test</h3>
+                </div>
+                <div class="test-card-body">
+                    <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem;">
+                        Test the demo data system (used when engine is offline).
+                    </p>
+                    <div class="form-group">
+                        <label>Platform</label>
+                        <select id="demo-platform">
+                            <option value="twitter">Twitter/X</option>
+                            <option value="reddit">Reddit</option>
+                            <option value="instagram">Instagram</option>
+                            <option value="tiktok">TikTok</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Check Type</label>
+                        <select id="demo-checktype">
+                            <option value="powerCheck">Power Check</option>
+                            <option value="accountCheck">Account Check</option>
+                            <option value="tagCheck">Tag Check</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary" style="width: 100%;" onclick="loadDemoData()">
+                        Load Demo Data
+                    </button>
+                    <div id="demo-result" class="result-box" style="display: none;">
+                        <pre></pre>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+        
+        <footer>
+            <p>5-Factor Detection Engine v1.0 | <a href="index.html">Back to Home</a></p>
+            <p style="margin-top: 0.5rem;">Open browser console for detailed logs</p>
+        </footer>
+    </div>
+    
+    <!-- Load Scripts in Order -->
+    
+    <!-- 1. Core Platform Data -->
+    <script src="js/platforms.js"></script>
+    
+    <!-- 2. Main Utilities (includes EngineStatus) -->
+    <script src="js/main.js"></script>
+    
+    <!-- 3. Demo Data -->
+    <script src="js/demo-data.js"></script>
+    
+    <!-- 4. Detection Databases -->
+    <script src="js/detection/databases/flagged-content.js"></script>
+    <script src="js/detection/databases/flagged-hashtags.js"></script>
+    <script src="js/detection/databases/flagged-mentions.js"></script>
+    <script src="js/detection/databases/flagged-emojis.js"></script>
+    <script src="js/detection/databases/flagged-links.js"></script>
+    <script src="js/detection/databases/phase2-placeholder.js"></script>
+    <script src="js/detection/databases/phase3-placeholder.js"></script>
+    
+    <!-- 5. Platform Implementations -->
+    <script src="js/detection/platforms/platform-base.js"></script>
+    <script src="js/detection/platforms/twitter.js"></script>
+    <script src="js/detection/platforms/reddit.js"></script>
+    
+    <!-- 6. Detection Agents -->
+    <script src="js/detection/agents/platform-api-agent.js"></script>
+    <script src="js/detection/agents/web-analysis-agent.js"></script>
+    <script src="js/detection/agents/historical-agent.js"></script>
+    <script src="js/detection/agents/detection-agent.js"></script>
+    <script src="js/detection/agents/predictive-agent.js"></script>
+    
+    <!-- 7. Main Engine -->
+    <script src="js/detection/5-factor-engine.js"></script>
+    
+    <!-- 8. API Client -->
+    <script src="js/detection-api.js"></script>
+    
+    <!-- Test Page Scripts -->
+    <script>
+        // =============================================
+        // STATUS DISPLAY
+        // =============================================
+        
+        function updateStatusDisplay() {
+            const statusDot = document.getElementById('status-dot');
+            const statusText = document.getElementById('status-text');
+            const healthBadge = document.getElementById('health-badge');
+            const factorsDisplay = document.getElementById('factors-display');
+            const moduleCount = document.getElementById('module-count');
+            const modulesGrid = document.getElementById('modules-grid');
+            
+            // Check if EngineStatus is available
+            if (!window.EngineStatus) {
+                statusDot.className = 'status-dot error';
+                statusText.textContent = 'EngineStatus not loaded - main.js may be missing';
+                healthBadge.className = 'health-badge offline';
+                healthBadge.textContent = 'Error';
+                return;
+            }
+            
+            const isReady = EngineStatus.isReady();
+            const health = EngineStatus.getHealthLabel();
+            const healthPct = EngineStatus.getHealthPercentage();
+            const quickStatus = EngineStatus.getQuickStatus();
+            const factors = EngineStatus.getFactorStatus();
+            const detailed = EngineStatus.getDetailedStatus();
+            
+            // Update status indicator
+            statusDot.className = `status-dot ${isReady ? 'ready' : 'loading'}`;
+            statusText.textContent = isReady 
+                ? `Engine ready! ${quickStatus.loadedCount}/${quickStatus.totalCount} modules loaded`
+                : `Loading... ${quickStatus.loadedCount}/${quickStatus.totalCount} modules`;
+            
+            // Update health badge
+            healthBadge.className = `health-badge ${health}`;
+            healthBadge.textContent = `${healthPct}% ${health.charAt(0).toUpperCase() + health.slice(1)}`;
+            
+            // Update factor cards
+            let factorsHTML = '';
+            factors.forEach(factor => {
+                factorsHTML += `
+                    <div class="factor-card ${factor.status}">
+                        <span class="factor-icon">${factor.icon}</span>
+                        <div class="factor-info">
+                            <div class="factor-name">${factor.name}</div>
+                            <div class="factor-weight">${factor.weight}% weight</div>
+                        </div>
+                        <span class="factor-status ${factor.status}">
+                            ${factor.status === 'online' ? '✓' : (factor.status === 'na' ? '○' : '✗')}
+                        </span>
+                    </div>
+                `;
+            });
+            factorsDisplay.innerHTML = factorsHTML;
+            
+            // Update module count
+            moduleCount.textContent = `${quickStatus.loadedCount}/${quickStatus.totalCount} loaded`;
+            
+            // Update modules grid
+            const allModules = {
+                // Databases
+                'FlaggedContent': !!window.FlaggedContent,
+                'FlaggedHashtags': !!window.FlaggedHashtags,
+                'FlaggedMentions': !!window.FlaggedMentions,
+                'FlaggedEmojis': !!window.FlaggedEmojis,
+                'FlaggedLinks': !!window.FlaggedLinks,
+                'Phase2Data': !!window.Phase2Placeholder,
+                'Phase3Data': !!window.Phase3Placeholder,
+                // Platforms
+                'PlatformBase': !!window.PlatformBase,
+                'TwitterPlatform': !!window.TwitterPlatform,
+                'RedditPlatform': !!window.RedditPlatform,
+                'PlatformFactory': !!window.PlatformFactory,
+                // Agents
+                'PlatformAPIAgent': !!window.PlatformAPIAgent,
+                'WebAnalysisAgent': !!window.WebAnalysisAgent,
+                'HistoricalAgent': !!window.HistoricalAgent,
+                'DetectionAgent': !!window.DetectionAgent,
+                'PredictiveAgent': !!window.PredictiveAgent,
+                // Engine & API
+                'FiveFactorEngine': !!window.FiveFactorEngine,
+                'powerCheck': !!window.powerCheck,
+                'checkAccount': !!window.checkAccount,
+                'checkTags': !!window.checkTags,
+                'DetectionAPI': !!window.DetectionAPI,
+                // Support
+                'DemoData': !!window.DemoData,
+                'platformData': !!window.platformData,
+                'EngineStatus': !!window.EngineStatus,
+            };
+            
+            let modulesHTML = '';
+            for (const [name, loaded] of Object.entries(allModules)) {
+                modulesHTML += `
+                    <div class="module-item ${loaded ? 'loaded' : 'missing'}">
+                        ${loaded ? '✅' : '❌'} ${name}
+                    </div>
+                `;
+            }
+            modulesGrid.innerHTML = modulesHTML;
+        }
+        
+        function toggleModules() {
+            const content = document.getElementById('modules-content');
+            content.classList.toggle('show');
+        }
+        
+        // =============================================
+        // TEST URL PRESETS
+        // =============================================
+        
+        function setTestUrl(type) {
+            const input = document.getElementById('power-url');
+            const urls = {
+                'twitter-post': 'https://x.com/elonmusk/status/1234567890',
+                'twitter-profile': 'https://twitter.com/OpenAI',
+                'reddit-post': 'https://reddit.com/r/technology/comments/abc123/test_post'
+            };
+            input.value = urls[type] || '';
+        }
+        
+        function setTestTags(type) {
+            const input = document.getElementById('tag-input');
+            const tags = {
+                'banned': '#followback #f4f #porn #xxx #followforfollow',
+                'cashtags': '$BTC $ETH $DOGE $SCAM $SHIB',
+                'safe': '#technology #coding #AI #webdev #startup'
+            };
+            input.value = tags[type] || '';
+        }
+        
+        function setTestContent(type) {
+            const input = document.getElementById('content-input');
+            const content = {
+                'spam': 'FREE CRYPTO! 🚀🚀🚀 Follow + RT for $1000! bit.ly/scam123 #followback #f4f #giveaway DM me now!!!',
+                'clean': 'Just finished building a new feature for my app. Really happy with how the authentication flow turned out. #coding #webdev'
+            };
+            input.value = content[type] || '';
+        }
+        
+        // =============================================
+        // TEST FUNCTIONS
+        // =============================================
+        
+        async function runPowerCheck() {
+            const url = document.getElementById('power-url').value.trim();
+            const resultBox = document.getElementById('power-result');
+            const resultPre = resultBox.querySelector('pre');
+            const btn = document.getElementById('power-btn');
+            
+            if (!url) {
+                alert('Please enter a URL');
+                return;
+            }
+            
+            btn.disabled = true;
+            btn.textContent = 'Analyzing...';
+            resultBox.style.display = 'block';
+            resultBox.className = 'result-box';
+            resultPre.textContent = 'Running power check...';
+            
+            try {
+                let result;
+                
+                if (window.powerCheck) {
+                    result = await window.powerCheck(url);
+                } else if (window.DemoData) {
+                    const platform = url.includes('reddit') ? 'reddit' : 'twitter';
+                    result = window.DemoData.getResult(platform, 'powerCheck');
+                    result._note = 'Using demo data (engine not loaded)';
+                } else {
+                    throw new Error('No engine or demo data available');
+                }
+                
+                resultBox.className = 'result-box success';
+                resultPre.textContent = JSON.stringify(result, null, 2);
+                
+            } catch (error) {
+                resultBox.className = 'result-box error';
+                resultPre.textContent = `Error: ${error.message}\n\n${error.stack || ''}`;
+            }
+            
+            btn.disabled = false;
+            btn.textContent = 'Run Power Check';
+        }
+        
+        async function runAccountCheck() {
+            const username = document.getElementById('account-username').value.trim();
+            const platform = document.getElementById('account-platform').value;
+            const resultBox = document.getElementById('account-result');
+            const resultPre = resultBox.querySelector('pre');
+            const btn = document.getElementById('account-btn');
+            
+            if (!username) {
+                alert('Please enter a username');
+                return;
+            }
+            
+            btn.disabled = true;
+            btn.textContent = 'Checking...';
+            resultBox.style.display = 'block';
+            resultBox.className = 'result-box';
+            resultPre.textContent = 'Checking account...';
+            
+            try {
+                let result;
+                
+                if (window.checkAccount) {
+                    result = await window.checkAccount(username, platform);
+                } else if (window.DemoData) {
+                    result = window.DemoData.getResult(platform, 'accountCheck');
+                    result._note = 'Using demo data (engine not loaded)';
+                } else {
+                    throw new Error('No engine or demo data available');
+                }
+                
+                resultBox.className = 'result-box success';
+                resultPre.textContent = JSON.stringify(result, null, 2);
+                
+            } catch (error) {
+                resultBox.className = 'result-box error';
+                resultPre.textContent = `Error: ${error.message}`;
+            }
+            
+            btn.disabled = false;
+            btn.textContent = 'Check Account';
+        }
+        
+        async function runTagCheck() {
+            const tagText = document.getElementById('tag-input').value.trim();
+            const platform = document.getElementById('tag-platform').value;
+            const resultBox = document.getElementById('tag-result');
+            const resultPre = resultBox.querySelector('pre');
+            const btn = document.getElementById('tag-btn');
+            
+            if (!tagText) {
+                alert('Please enter some tags');
+                return;
+            }
+            
+            // Parse tags
+            const tags = tagText.match(/[#$][\w]+/g) || tagText.split(/[\s,\n]+/).filter(t => t);
+            
+            btn.disabled = true;
+            btn.textContent = 'Checking...';
+            resultBox.style.display = 'block';
+            resultBox.className = 'result-box';
+            resultPre.textContent = `Checking ${tags.length} tags...`;
+            
+            try {
+                let result;
+                
+                if (window.checkTags) {
+                    result = await window.checkTags(tags, platform);
+                } else if (window.FlaggedHashtags) {
+                    result = window.FlaggedHashtags.checkBulk(tags, platform);
+                    result._note = 'Using FlaggedHashtags directly (engine not fully loaded)';
+                } else if (window.DemoData) {
+                    result = window.DemoData.getResult(platform, 'tagCheck');
+                    result._note = 'Using demo data (engine not loaded)';
+                } else {
+                    throw new Error('No engine or demo data available');
+                }
+                
+                resultBox.className = 'result-box success';
+                resultPre.textContent = JSON.stringify(result, null, 2);
+                
+            } catch (error) {
+                resultBox.className = 'result-box error';
+                resultPre.textContent = `Error: ${error.message}`;
+            }
+            
+            btn.disabled = false;
+            btn.textContent = 'Check Tags';
+        }
+        
+        async function runContentAnalysis() {
+            const content = document.getElementById('content-input').value.trim();
+            const resultBox = document.getElementById('content-result');
+            const resultPre = resultBox.querySelector('pre');
+            const btn = document.getElementById('content-btn');
+            
+            if (!content) {
+                alert('Please enter some content');
+                return;
+            }
+            
+            btn.disabled = true;
+            btn.textContent = 'Analyzing...';
+            resultBox.style.display = 'block';
+            resultBox.className = 'result-box';
+            resultPre.textContent = 'Analyzing content...';
+            
+            try {
+                const analysis = {
+                    input: content,
+                    length: content.length,
+                    wordCount: content.split(/\s+/).length,
+                    hashtags: { found: [], banned: [], restricted: [] },
+                    cashtags: { found: [], flagged: [] },
+                    links: { found: [], suspicious: [] },
+                    content: { issues: [] },
+                    emojis: { found: [], flagged: [] },
+                    overallRisk: 0
+                };
+                
+                // Extract and check hashtags
+                const hashtags = content.match(/#[\w]+/g) || [];
+                analysis.hashtags.found = hashtags;
+                if (window.FlaggedHashtags) {
+                    const hashResult = window.FlaggedHashtags.checkBulk(hashtags, 'twitter');
+                    analysis.hashtags.banned = hashResult.results.filter(r => r.status === 'banned').map(r => r.tag);
+                    analysis.hashtags.restricted = hashResult.results.filter(r => r.status === 'restricted').map(r => r.tag);
+                }
+                
+                // Extract and check cashtags
+                const cashtags = content.match(/\$[A-Za-z]+/g) || [];
+                analysis.cashtags.found = cashtags;
+                if (window.FlaggedHashtags) {
+                    const cashResult = window.FlaggedHashtags.checkBulk(cashtags, 'twitter');
+                    analysis.cashtags.flagged = cashResult.results.filter(r => r.status !== 'safe').map(r => r.tag);
+                }
+                
+                // Extract and check links
+                const links = content.match(/https?:\/\/[^\s]+/g) || [];
+                analysis.links.found = links;
+                if (window.FlaggedLinks) {
+                    links.forEach(link => {
+                        const result = window.FlaggedLinks.checkUrl(link);
+                        if (result.status !== 'safe') {
+                            analysis.links.suspicious.push({ url: link, ...result });
+                        }
+                    });
+                }
+                
+                // Check content patterns
+                if (window.FlaggedContent) {
+                    const contentResult = window.FlaggedContent.analyze(content);
+                    analysis.content = contentResult;
+                }
+                
+                // Check emojis
+                const emojiRegex = /[\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}]/gu;
+                const emojis = content.match(emojiRegex) || [];
+                analysis.emojis.found = emojis;
+                if (window.FlaggedEmojis) {
+                    const emojiResult = window.FlaggedEmojis.checkBulk(emojis);
+                    analysis.emojis.flagged = emojiResult.results.filter(r => r.status !== 'safe');
+                }
+                
+                // Calculate overall risk
+                let risk = 0;
+                risk += analysis.hashtags.banned.length * 20;
+                risk += analysis.hashtags.restricted.length * 10;
+                risk += analysis.cashtags.flagged.length * 15;
+                risk += analysis.links.suspicious.length * 25;
+                risk += (analysis.content.issues?.length || 0) * 10;
+                risk += analysis.emojis.flagged.length * 5;
+                analysis.overallRisk = Math.min(100, risk);
+                
+                resultBox.className = 'result-box success';
+                resultPre.textContent = JSON.stringify(analysis, null, 2);
+                
+            } catch (error) {
+                resultBox.className = 'result-box error';
+                resultPre.textContent = `Error: ${error.message}`;
+            }
+            
+            btn.disabled = false;
+            btn.textContent = 'Analyze Content';
+        }
+        
+        function loadStats() {
+            const resultBox = document.getElementById('stats-result');
+            const resultPre = resultBox.querySelector('pre');
+            
+            resultBox.style.display = 'block';
+            resultBox.className = 'result-box';
+            
+            const stats = {
+                databases: {},
+                engine: {},
+                timestamp: new Date().toISOString()
+            };
+            
+            // Gather database stats
+            if (window.FlaggedHashtags?.getStats) {
+                stats.databases.hashtags = window.FlaggedHashtags.getStats();
+            }
+            if (window.FlaggedContent?.getStats) {
+                stats.databases.content = window.FlaggedContent.getStats();
+            }
+            if (window.FlaggedLinks?.getStats) {
+                stats.databases.links = window.FlaggedLinks.getStats();
+            }
+            if (window.FlaggedMentions?.getStats) {
+                stats.databases.mentions = window.FlaggedMentions.getStats();
+            }
+            if (window.FlaggedEmojis?.getStats) {
+                stats.databases.emojis = window.FlaggedEmojis.getStats();
+            }
+            
+            // Engine status
+            if (window.EngineStatus) {
+                stats.engine = {
+                    ready: EngineStatus.isReady(),
+                    health: EngineStatus.getHealthLabel(),
+                    healthPct: EngineStatus.getHealthPercentage(),
+                    quickStatus: EngineStatus.getQuickStatus()
+                };
+            }
+            
+            resultBox.className = 'result-box success';
+            resultPre.textContent = JSON.stringify(stats, null, 2);
+        }
+        
+        function loadDemoData() {
+            const platform = document.getElementById('demo-platform').value;
+            const checkType = document.getElementById('demo-checktype').value;
+            const resultBox = document.getElementById('demo-result');
+            const resultPre = resultBox.querySelector('pre');
+            
+            resultBox.style.display = 'block';
+            resultBox.className = 'result-box';
+            
+            if (!window.DemoData) {
+                resultBox.className = 'result-box error';
+                resultPre.textContent = 'DemoData not loaded!';
+                return;
+            }
+            
+            try {
+                // Try both formats
+                const legacy = window.DemoData.getLegacyResult(platform, checkType);
+                const fiveFactor = window.DemoData.get5FactorResult(platform, checkType);
+                
+                const result = {
+                    _platform: platform,
+                    _checkType: checkType,
+                    _hasLegacy: !!legacy,
+                    _has5Factor: !!fiveFactor,
+                    legacy: legacy || 'Not available',
+                    fiveFactor: fiveFactor || 'Not available'
+                };
+                
+                resultBox.className = 'result-box success';
+                resultPre.textContent = JSON.stringify(result, null, 2);
+                
+            } catch (error) {
+                resultBox.className = 'result-box error';
+                resultPre.textContent = `Error: ${error.message}`;
+            }
+        }
+        
+        // =============================================
+        // INITIALIZATION
+        // =============================================
+        
+        // Update status every 500ms until ready, then every 5s
+        let statusInterval;
+        
+        function startStatusUpdates() {
+            updateStatusDisplay();
+            
+            if (window.EngineStatus?.isReady()) {
+                // Engine ready - slow down updates
+                clearInterval(statusInterval);
+                statusInterval = setInterval(updateStatusDisplay, 5000);
+            } else {
+                // Still loading - check frequently
+                if (!statusInterval) {
+                    statusInterval = setInterval(() => {
+                        updateStatusDisplay();
+                        if (window.EngineStatus?.isReady()) {
+                            clearInterval(statusInterval);
+                            statusInterval = setInterval(updateStatusDisplay, 5000);
+                        }
+                    }, 500);
+                }
+            }
+        }
+        
+        // Start on DOM ready
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(startStatusUpdates, 100);
+            console.log('🧪 Test page loaded - run tests from the UI or use browser console');
+            console.log('💡 Tip: Run EngineStatus.printStatus() to see detailed status');
+        });
+    </script>
+</body>
+</html>

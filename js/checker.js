@@ -1,6 +1,9 @@
 /* =============================================================================
    CHECKER.JS - Account Checker Page
    ShadowBanCheck.io
+   
+   Updated to support 5-Factor Engine when available.
+   Falls back to demo data if engine not loaded.
    ============================================================================= */
 
 (function() {
@@ -29,6 +32,12 @@ function init() {
     populatePlatformIcons();
     setupEventListeners();
     
+    // Check 5-Factor Engine status
+    if (window.FiveFactorLoader) {
+        const status = window.FiveFactorLoader.getQuickStatus();
+        console.log(`🔧 5-Factor Engine: ${status.ready ? 'Ready' : `${status.loadedCount}/${status.totalCount} modules`}`);
+    }
+    
     console.log('✅ Checker.js initialized');
 }
 
@@ -48,15 +57,12 @@ function populatePlatformSelect() {
         return;
     }
     
-    // Clear existing options except placeholder
     select.innerHTML = '<option value="">Select Platform</option>';
     
-    // Get platforms that support account checks
     const platforms = window.platformData.filter(p => 
         p.supports && p.supports.accountCheck === true
     );
     
-    // Add live platforms first
     const livePlatforms = platforms.filter(p => p.status === 'live');
     const soonPlatforms = platforms.filter(p => p.status === 'soon');
     
@@ -67,7 +73,6 @@ function populatePlatformSelect() {
         select.appendChild(option);
     });
     
-    // Add separator if we have both live and coming soon
     if (livePlatforms.length > 0 && soonPlatforms.length > 0) {
         const separator = document.createElement('option');
         separator.disabled = true;
@@ -92,7 +97,6 @@ function populatePlatformIcons() {
     
     let html = '';
     
-    // Only show platforms that support account checks
     const platforms = window.platformData.filter(p => 
         p.supports && p.supports.accountCheck === true
     );
@@ -105,7 +109,6 @@ function populatePlatformIcons() {
     
     container.innerHTML = html;
     
-    // Add click handlers
     container.querySelectorAll('.platform-chip').forEach(chip => {
         chip.addEventListener('click', () => {
             const platformId = chip.dataset.platform;
@@ -119,31 +122,26 @@ function populatePlatformIcons() {
 // EVENT LISTENERS
 // ============================================
 function setupEventListeners() {
-    // Platform select change
     const platformSelect = document.getElementById('platform-select');
     if (platformSelect) {
         platformSelect.addEventListener('change', handlePlatformChange);
     }
     
-    // Username input
     const usernameInput = document.getElementById('username-input');
     if (usernameInput) {
         usernameInput.addEventListener('input', handleUsernameInput);
     }
     
-    // Form submission
     const form = document.getElementById('account-check-form');
     if (form) {
         form.addEventListener('submit', handleFormSubmit);
     }
     
-    // Clear button
     const clearBtn = document.getElementById('clear-btn');
     if (clearBtn) {
         clearBtn.addEventListener('click', handleClear);
     }
     
-    // Info buttons
     const checkerInfoBtn = document.getElementById('checker-info-btn');
     if (checkerInfoBtn) {
         checkerInfoBtn.addEventListener('click', () => openModal('checker-info-modal'));
@@ -154,7 +152,6 @@ function setupEventListeners() {
         engineInfoBtn.addEventListener('click', () => openModal('engine-info-modal'));
     }
     
-    // Engagement test
     document.querySelectorAll('.engagement-checkbox').forEach(cb => {
         cb.addEventListener('change', handleEngagementCheckboxChange);
     });
@@ -198,7 +195,6 @@ function handlePlatformChange(e) {
                 : `${currentPlatform.name} - Coming soon`;
         }
         
-        // Show platform note if available
         if (platformNote && platformNoteText && currentPlatform.messages && currentPlatform.messages.platformNote) {
             platformNoteText.textContent = currentPlatform.messages.platformNote;
             platformNote.classList.remove('hidden');
@@ -206,7 +202,6 @@ function handlePlatformChange(e) {
             platformNote.classList.add('hidden');
         }
         
-        // Show engagement test for Twitter
         if (currentPlatform.id === 'twitter' && 
             currentPlatform.supports && currentPlatform.supports.engagementTest &&
             currentPlatform.engagementTest && currentPlatform.engagementTest.enabled) {
@@ -222,7 +217,6 @@ function handlePlatformChange(e) {
 function handleUsernameInput(e) {
     let value = e.target.value.trim();
     
-    // Auto-add @ if missing
     if (value && !value.startsWith('@')) {
         e.target.value = '@' + value;
     }
@@ -265,7 +259,6 @@ function handleFormSubmit(e) {
         return;
     }
     
-    // Check engagement confirmation
     const engagementSection = document.getElementById('engagement-test-section');
     const engagementConfirmed = document.getElementById('engagement-confirmed');
     const withEngagement = engagementSection && 
@@ -313,7 +306,6 @@ function handleSkipEngagement() {
     if (engagementSection) engagementSection.classList.add('hidden');
     resetEngagementSteps();
     
-    // Auto-submit
     const usernameInput = document.getElementById('username-input');
     const username = usernameInput ? usernameInput.value.trim() : '';
     if (username && currentPlatform) {
@@ -349,7 +341,47 @@ function runAnalysis(username, withEngagement) {
     if (engineAnimation) engineAnimation.classList.remove('hidden');
     
     runEngineAnimation();
-    simulateAnalysis(username, withEngagement);
+    
+    // Check if 5-Factor Engine is available
+    const useEngine = window.FiveFactorLoader && window.FiveFactorLoader.isEngineReady();
+    
+    if (useEngine) {
+        console.log('🚀 Using 5-Factor Engine for account check');
+        runFiveFactorAnalysis(username, withEngagement);
+    } else {
+        console.log('📊 Using demo data for account check');
+        simulateAnalysis(username, withEngagement);
+    }
+}
+
+/**
+ * Run analysis using the new 5-Factor Engine
+ */
+async function runFiveFactorAnalysis(username, withEngagement) {
+    const platformId = currentPlatform ? currentPlatform.id : 'twitter';
+    
+    try {
+        // Use the engine's checkAccount function
+        const result = await window.checkAccount(username, platformId);
+        
+        // Add engagement data
+        result.withEngagement = withEngagement;
+        result.engagementSteps = { ...engagementStepsCompleted };
+        result.username = username;
+        
+        // Store result
+        sessionStorage.setItem('lastAnalysisResult', JSON.stringify(result));
+        
+        // Navigate to results
+        window.location.href = `results.html?platform=${platformId}&type=account&username=${encodeURIComponent(username)}&engine=5factor`;
+        
+    } catch (error) {
+        console.error('5-Factor Engine error:', error);
+        showToast('Analysis failed. Using demo data.', 'warning');
+        
+        // Fall back to demo
+        simulateAnalysis(username, withEngagement);
+    }
 }
 
 function runEngineAnimation() {
@@ -359,7 +391,6 @@ function runEngineAnimation() {
     const platform = currentPlatform || { id: 'twitter', name: 'Twitter/X' };
     const isReddit = platform.id === 'reddit';
     
-    // Updated terminal lines - 5 factors including Content & Links
     const lines = [
         { text: `> Initializing 5-Factor Detection Engine...`, delay: 0 },
         { text: `> Target platform: ${platform.name}`, delay: 400 },
@@ -386,20 +417,18 @@ function runEngineAnimation() {
         }, line.delay);
     });
     
-    // 5 factors for account check (Content & Links replaces IP, analyzes bio + pinned)
     const factors = [
         { id: 'factor-1', delay: 1000, status: 'complete' },
         { id: 'factor-2', delay: 1800, status: 'complete' },
         { id: 'factor-3', delay: 2400, status: 'complete' },
         { id: 'factor-4', delay: 2800, status: isReddit ? 'na' : 'complete' },
-        { id: 'factor-5', delay: 3800, status: 'complete' }, // Content & Links
+        { id: 'factor-5', delay: 3800, status: 'complete' },
     ];
     
     factors.forEach(factor => {
         setTimeout(() => {
             const el = document.getElementById(factor.id);
             if (el) {
-                // Try both class names for status indicator
                 let status = el.querySelector('.factor-compact-status') || el.querySelector('.factor-status');
                 if (status) {
                     if (factor.status === 'complete') {
@@ -416,7 +445,6 @@ function runEngineAnimation() {
         }, factor.delay);
     });
     
-    // Phase 2: AI Analysis
     setTimeout(() => {
         const phase1 = document.getElementById('engine-phase-1');
         const phase2 = document.getElementById('engine-phase-2');
@@ -436,14 +464,19 @@ function runEngineAnimation() {
 function simulateAnalysis(username, withEngagement) {
     setTimeout(() => {
         const platformId = currentPlatform ? currentPlatform.id : 'twitter';
-        const demoResult = window.DemoData ? window.DemoData.getResult(platformId, 'accountCheck') : null;
+        
+        // Try to get 5-factor format demo data
+        let demoResult = null;
+        if (window.DemoData) {
+            demoResult = window.DemoData.getResult(platformId, 'accountCheck', { format: 'auto' });
+        }
         
         if (demoResult) {
             demoResult.username = username;
             demoResult.withEngagement = withEngagement;
             demoResult.engagementSteps = { ...engagementStepsCompleted };
             demoResult.checkType = 'account';
-            demoResult.factorsUsed = 5; // Now 5 factors for account check
+            demoResult.factorsUsed = 5;
             sessionStorage.setItem('lastAnalysisResult', JSON.stringify(demoResult));
         }
         
@@ -455,13 +488,11 @@ function simulateAnalysis(username, withEngagement) {
 // MODALS
 // ============================================
 function showPlatformInfoModal(platform) {
-    // Try multiple possible modal IDs
     const modal = document.getElementById('platform-modal') || 
                   document.getElementById('platform-info-modal') || 
                   document.getElementById('checker-info-modal');
     if (!modal || !platform) return;
     
-    // Find modal elements (try multiple selectors)
     const icon = modal.querySelector('.modal-icon') || document.getElementById('modal-icon') || document.getElementById('platform-modal-icon');
     const title = modal.querySelector('.modal-title') || document.getElementById('modal-title') || document.getElementById('platform-modal-title');
     const body = modal.querySelector('.modal-body') || document.getElementById('modal-body') || document.getElementById('platform-modal-body');

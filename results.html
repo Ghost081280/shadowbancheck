@@ -6,11 +6,11 @@
     
     <!-- Dynamic title/meta - will be updated by JS based on results -->
     <title id="page-title">Shadow Ban Probability Results - ShadowBanCheck.io</title>
-    <meta name="description" id="page-description" content="Shadow ban probability analysis results from ShadowBanCheck.io's 5-Factor Detection Engine.">
+    <meta name="description" id="page-description" content="Shadow ban probability analysis results from ShadowBanCheck.io's 5-Factor Detection Engine with 3-Point Intelligence Model.">
     
     <!-- Open Graph - Dynamic -->
     <meta property="og:title" id="og-title" content="Shadow Ban Probability Results - ShadowBanCheck.io">
-    <meta property="og:description" id="og-description" content="Shadow ban probability analysis powered by 5-Factor Detection Engine.">
+    <meta property="og:description" id="og-description" content="Shadow ban probability analysis powered by 5-Factor Detection Engine + 3-Point Intelligence Model.">
     <meta property="og:type" content="article">
     <meta property="og:url" id="og-url" content="https://shadowbancheck.io/results">
     <meta property="og:image" content="https://shadowbancheck.io/og-results.png">
@@ -19,7 +19,7 @@
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" id="twitter-title" content="Shadow Ban Probability Results">
-    <meta name="twitter:description" id="twitter-description" content="Analysis powered by 5-Factor Detection Engine">
+    <meta name="twitter:description" id="twitter-description" content="Analysis powered by 5-Factor Detection Engine + 3-Point Intelligence">
     <meta name="twitter:site" content="@ghost081280">
     
     <!-- Schema.org for AI citation - will be populated by JS -->
@@ -28,7 +28,7 @@
         "@context": "https://schema.org",
         "@type": "TechArticle",
         "headline": "Shadow Ban Probability Analysis",
-        "description": "Shadow ban probability results calculated by 5-Factor Detection Engine",
+        "description": "Shadow ban probability results calculated by 5-Factor Detection Engine with 3-Point Intelligence Model",
         "author": {
             "@type": "Organization",
             "name": "ShadowBanCheck.io",
@@ -79,6 +79,23 @@
         .hashtag-summary.success { background: rgba(34, 197, 94, 0.1); border: 1px solid rgba(34, 197, 94, 0.2); }
         .hashtag-summary.warning { background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.2); }
         .hashtag-summary p { margin: 0; font-size: 0.875rem; }
+        
+        /* 3-Point Intelligence Breakdown Styles */
+        .intelligence-breakdown { margin-top: 2rem; }
+        .intelligence-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-top: 1rem; }
+        @media (max-width: 768px) { .intelligence-grid { grid-template-columns: 1fr; } }
+        .intelligence-point { background: var(--bg-tertiary); border-radius: var(--radius-md); padding: 1.25rem; border: 1px solid var(--border); }
+        .intelligence-point.highlight { border-color: var(--primary); background: rgba(var(--primary-rgb), 0.05); }
+        .intelligence-point-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; }
+        .intelligence-point-name { font-weight: 600; font-size: 0.9375rem; }
+        .intelligence-point-weight { font-size: 0.75rem; padding: 0.25rem 0.5rem; background: var(--bg-secondary); border-radius: var(--radius-full); color: var(--text-muted); }
+        .intelligence-point-score { font-size: 1.5rem; font-weight: 700; margin-bottom: 0.5rem; }
+        .intelligence-point-score.good { color: var(--success); }
+        .intelligence-point-score.warning { color: var(--warning); }
+        .intelligence-point-score.danger { color: var(--danger); }
+        .intelligence-point-sources { font-size: 0.75rem; color: var(--text-muted); }
+        .intelligence-correlation { margin-top: 1.5rem; padding: 1rem; background: var(--bg-tertiary); border-radius: var(--radius-md); border-left: 3px solid var(--primary); }
+        .intelligence-correlation p { margin: 0; font-size: 0.875rem; }
     </style>
 </head>
 <body>
@@ -135,12 +152,13 @@
                             
                             <div class="probability-summary" itemprop="articleBody">
                                 <p class="short-answer-text" id="short-answer-text">
-                                    <strong>Short Answer:</strong> Based on our 5-Factor Engine analysis, this account has a <strong id="probability-inline">28%</strong> shadow ban probability. 
+                                    <strong>Short Answer:</strong> Based on our 3-Point Intelligence analysis, this account has a <strong id="probability-inline">28%</strong> shadow ban probability. 
                                     <span id="probability-interpretation">Most signals indicate normal visibility, with minor concerns detected.</span>
                                 </p>
                                 
                                 <div class="verdict-badge-wrap">
                                     <span class="verdict-badge" id="verdict-badge">Likely Visible</span>
+                                    <span class="confidence-badge" id="confidence-badge">High Confidence</span>
                                 </div>
                             </div>
                         </div>
@@ -149,9 +167,9 @@
                         <div class="key-findings" id="key-findings">
                             <h2>Key Findings</h2>
                             <ul class="findings-list" id="findings-list">
-                                <li class="finding-good"><span>✓</span> <span>Account appears in search results</span></li>
-                                <li class="finding-good"><span>✓</span> <span>Profile accessible to public</span></li>
-                                <li class="finding-warning"><span>⚠</span> <span>No verification badge detected (may affect visibility)</span></li>
+                                <li class="finding-good"><span>✓</span> <span>Account appears in search results (Real-Time confirmed)</span></li>
+                                <li class="finding-good"><span>✓</span> <span>Profile accessible to public (API verified)</span></li>
+                                <li class="finding-warning"><span>⚠</span> <span>No verification badge detected (minor visibility impact)</span></li>
                             </ul>
                         </div>
                     </div>
@@ -159,7 +177,7 @@
                     <!-- Citation Block - For AI and researchers -->
                     <footer class="citation-block">
                         <p class="citation-text">
-                            <strong>Source:</strong> ShadowBanCheck.io 5-Factor Detection Engine | 
+                            <strong>Source:</strong> ShadowBanCheck.io 5-Factor Detection Engine + 3-Point Intelligence | 
                             <span id="citation-date">Date</span> | 
                             <a href="#methodology">Methodology</a>
                         </p>
@@ -171,39 +189,82 @@
                     <div class="upgrade-notice-icon">💡</div>
                     <div class="upgrade-notice-content">
                         <strong>Want historical tracking?</strong>
-                        <p>This free check has no historical data. <a href="index.html#pricing">Upgrade to Pro</a> to save this account and track changes over time — historical patterns significantly improve accuracy.</p>
+                        <p>This free check has no historical data. <a href="index.html#pricing">Upgrade to Pro</a> to save this account and track changes over time — historical patterns significantly improve accuracy and enable trend analysis.</p>
                     </div>
                 </div>
             </div>
         </section>
         
         <!-- ============================================
-             DEEP DIVE SECTION (Detailed analysis)
+             3-POINT INTELLIGENCE BREAKDOWN
              ============================================ -->
-        <section class="deep-dive-section section" id="deep-dive">
+        <section class="intelligence-section section" id="intelligence-breakdown">
             <div class="container">
-                <h2 class="section-title">Detailed Analysis</h2>
-                <p class="section-desc">How we calculated this probability score</p>
+                <h2 class="section-title">3-Point Intelligence Breakdown</h2>
+                <p class="section-desc">How we correlated multiple sources to calculate this probability</p>
+                
+                <div class="intelligence-grid">
+                    <div class="intelligence-point" id="intelligence-predictive">
+                        <div class="intelligence-point-header">
+                            <span class="intelligence-point-name">🔮 Predictive</span>
+                            <span class="intelligence-point-weight">15% weight</span>
+                        </div>
+                        <div class="intelligence-point-score good" id="predictive-score">12%</div>
+                        <p class="intelligence-point-sources" id="predictive-sources">Web searches: No recent ban reports found for this account</p>
+                    </div>
+                    
+                    <div class="intelligence-point highlight" id="intelligence-realtime">
+                        <div class="intelligence-point-header">
+                            <span class="intelligence-point-name">⚡ Real-Time</span>
+                            <span class="intelligence-point-weight">55% weight</span>
+                        </div>
+                        <div class="intelligence-point-score good" id="realtime-score">22%</div>
+                        <p class="intelligence-point-sources" id="realtime-sources">API checks: Account visible in search, no active restrictions</p>
+                    </div>
+                    
+                    <div class="intelligence-point" id="intelligence-historical">
+                        <div class="intelligence-point-header">
+                            <span class="intelligence-point-name">📊 Historical</span>
+                            <span class="intelligence-point-weight">30% weight</span>
+                        </div>
+                        <div class="intelligence-point-score warning" id="historical-score">35%</div>
+                        <p class="intelligence-point-sources" id="historical-sources">Database: First check for this account (no historical baseline)</p>
+                    </div>
+                </div>
+                
+                <div class="intelligence-correlation" id="intelligence-correlation">
+                    <p><strong>Correlation Analysis:</strong> <span id="correlation-text">2 of 3 intelligence sources indicate normal visibility. Real-Time API checks (highest weight) show no active restrictions. Historical data unavailable for first-time checks.</span></p>
+                </div>
+            </div>
+        </section>
+        
+        <!-- ============================================
+             DEEP DIVE SECTION (5-Factor Agent Breakdown)
+             ============================================ -->
+        <section class="deep-dive-section section section-alt" id="deep-dive">
+            <div class="container">
+                <h2 class="section-title">5-Factor Agent Analysis</h2>
+                <p class="section-desc">Detailed findings from each specialized agent</p>
                 
                 <!-- 5-Factor Engine Breakdown -->
                 <div class="engine-breakdown" id="engine-breakdown">
                     <div class="engine-summary-card">
                         <div class="engine-summary-header">
-                            <span class="engine-icon">🧠</span>
+                            <span class="engine-icon">🤖</span>
                             <div>
-                                <h3>5-Factor Detection Engine</h3>
-                                <p id="engine-factors-used">5/5 factors analyzed</p>
+                                <h3>5 Specialized Detection Agents</h3>
+                                <p id="engine-factors-used">5/5 agents deployed</p>
                             </div>
                         </div>
                         
                         <div class="factors-breakdown" id="factors-breakdown">
-                            <!-- Factor 1: Platform APIs -->
+                            <!-- Factor 1: Platform API Agent -->
                             <div class="factor-row" id="factor-api">
                                 <div class="factor-indicator active">
                                     <span class="factor-icon">🔌</span>
                                 </div>
                                 <div class="factor-details">
-                                    <h4>Platform APIs</h4>
+                                    <h4>Platform API Agent <span class="factor-weight">(20%)</span></h4>
                                     <p class="factor-finding" id="factor-api-finding">Direct API query confirmed account exists and is active</p>
                                 </div>
                                 <div class="factor-status good">
@@ -211,56 +272,56 @@
                                 </div>
                             </div>
                             
-                            <!-- Factor 2: Web Analysis -->
+                            <!-- Factor 2: Web Analysis Agent -->
                             <div class="factor-row" id="factor-web">
                                 <div class="factor-indicator active">
                                     <span class="factor-icon">🔍</span>
                                 </div>
                                 <div class="factor-details">
-                                    <h4>Web Analysis</h4>
-                                    <p class="factor-finding" id="factor-web-finding">Search visibility tests from U.S. servers passed</p>
+                                    <h4>Web Analysis Agent <span class="factor-weight">(20%)</span></h4>
+                                    <p class="factor-finding" id="factor-web-finding">Search visibility tests from U.S. servers passed. Predictive search found no ban reports.</p>
                                 </div>
                                 <div class="factor-status good">
                                     <span>✓</span>
                                 </div>
                             </div>
                             
-                            <!-- Factor 3: Historical Data -->
+                            <!-- Factor 3: Historical Agent -->
                             <div class="factor-row" id="factor-historical">
                                 <div class="factor-indicator active">
                                     <span class="factor-icon">📊</span>
                                 </div>
                                 <div class="factor-details">
-                                    <h4>Historical Data</h4>
-                                    <p class="factor-finding" id="factor-historical-finding">No historical data (Free tier)</p>
+                                    <h4>Historical Agent <span class="factor-weight">(15%)</span></h4>
+                                    <p class="factor-finding" id="factor-historical-finding">No historical data (Free tier). Upgrade for personal tracking.</p>
                                 </div>
                                 <div class="factor-status neutral">
                                     <span>○</span>
                                 </div>
                             </div>
                             
-                            <!-- Factor 4: Real-Time Hashtag Verification -->
-                            <div class="factor-row" id="factor-hashtag">
+                            <!-- Factor 4: Detection Agent -->
+                            <div class="factor-row" id="factor-detection">
                                 <div class="factor-indicator active">
-                                    <span class="factor-icon">#️⃣</span>
+                                    <span class="factor-icon">🎯</span>
                                 </div>
                                 <div class="factor-details">
-                                    <h4>Real-Time Hashtag Verification</h4>
-                                    <p class="factor-finding" id="factor-hashtag-finding">No flagged or restricted hashtags detected</p>
+                                    <h4>Detection Agent <span class="factor-weight">(25%)</span></h4>
+                                    <p class="factor-finding" id="factor-detection-finding">21 modules scanned 6 signal types. No flagged content detected.</p>
                                 </div>
                                 <div class="factor-status good">
                                     <span>✓</span>
                                 </div>
                             </div>
                             
-                            <!-- Factor 5: Content & Links (NEW - replaces IP Analysis) -->
-                            <div class="factor-row" id="factor-content">
+                            <!-- Factor 5: Predictive AI Agent -->
+                            <div class="factor-row" id="factor-ai">
                                 <div class="factor-indicator active">
-                                    <span class="factor-icon">📝</span>
+                                    <span class="factor-icon">🧠</span>
                                 </div>
                                 <div class="factor-details">
-                                    <h4>Content & Links</h4>
-                                    <p class="factor-finding" id="factor-content-finding">Bio and content scanned, no flagged patterns detected</p>
+                                    <h4>Predictive AI Agent <span class="factor-weight">(20%)</span></h4>
+                                    <p class="factor-finding" id="factor-ai-finding">Synthesized 5 agent findings. High confidence: 3-Point sources corroborate.</p>
                                 </div>
                                 <div class="factor-status good">
                                     <span>✓</span>
@@ -268,51 +329,6 @@
                             </div>
                         </div>
                     </div>
-                </div>
-                
-                <!-- Twitter Engagement Test Results (Twitter only, if completed) -->
-                <div class="engagement-test-results hidden" id="engagement-test-results">
-                    <h3>🎯 Engagement Test Results</h3>
-                    <p class="engagement-test-intro">You completed our enhanced analysis. Here's what we found:</p>
-                    
-                    <div class="engagement-results-grid" id="engagement-results-grid">
-                        <div class="engagement-result" id="engagement-result-follow">
-                            <span class="engagement-result-icon">👤</span>
-                            <div class="engagement-result-content">
-                                <strong>Follow Test</strong>
-                                <p class="engagement-result-status" id="follow-result-status">Visible</p>
-                            </div>
-                            <span class="engagement-result-badge good">✓</span>
-                        </div>
-                        <div class="engagement-result" id="engagement-result-like">
-                            <span class="engagement-result-icon">❤️</span>
-                            <div class="engagement-result-content">
-                                <strong>Like Test</strong>
-                                <p class="engagement-result-status" id="like-result-status">Visible</p>
-                            </div>
-                            <span class="engagement-result-badge good">✓</span>
-                        </div>
-                        <div class="engagement-result" id="engagement-result-retweet">
-                            <span class="engagement-result-icon">🔁</span>
-                            <div class="engagement-result-content">
-                                <strong>Retweet Test</strong>
-                                <p class="engagement-result-status" id="retweet-result-status">Hidden</p>
-                            </div>
-                            <span class="engagement-result-badge warning">⚠</span>
-                        </div>
-                        <div class="engagement-result" id="engagement-result-reply">
-                            <span class="engagement-result-icon">💬</span>
-                            <div class="engagement-result-content">
-                                <strong>Reply Test</strong>
-                                <p class="engagement-result-status" id="reply-result-status">Not completed</p>
-                            </div>
-                            <span class="engagement-result-badge neutral">○</span>
-                        </div>
-                    </div>
-                    
-                    <p class="engagement-test-finding" id="engagement-test-finding">
-                        Your retweets may not be appearing on other users' timelines.
-                    </p>
                 </div>
                 
                 <!-- Platform-Specific Checks -->
@@ -386,17 +402,17 @@
                 
                 <!-- Hashtag Analysis (shows verified hashtags) -->
                 <div class="hashtag-analysis hidden" id="hashtag-analysis">
-                    <h3>#️⃣ Real-Time Hashtag Verification</h3>
-                    <p class="hashtag-analysis-intro">These hashtags were verified through our Real-Time API:</p>
+                    <h3>#️⃣ Content Signal Analysis</h3>
+                    <p class="hashtag-analysis-intro">These content signals were analyzed with 3-Point Intelligence:</p>
                     <div class="hashtag-results" id="hashtag-results">
                         <!-- Populated by JS with status, confidence, lastVerified -->
                     </div>
                     <p class="hashtag-analysis-note">
-                        <small>💡 Confidence scores and "last verified" timestamps indicate how certain we are of each hashtag's status.</small>
+                        <small>💡 Confidence scores indicate how many intelligence sources corroborated each finding. High confidence = multiple sources agree.</small>
                     </p>
                 </div>
                 
-                <!-- Content & Links Analysis (NEW - replaces IP Analysis) -->
+                <!-- Content & Links Analysis -->
                 <div class="content-analysis" id="content-analysis">
                     <h3>Content & Links Analysis</h3>
                     <div class="content-card" id="content-card">
@@ -406,7 +422,7 @@
                                 <span class="content-summary" id="content-summary">No flagged content detected</span>
                             </div>
                         </div>
-                        <p class="content-explanation" id="content-explanation">We scanned bio text, pinned posts, and profile links for flagged words, suspicious domains, and patterns that platforms commonly filter. No problematic content was detected.</p>
+                        <p class="content-explanation" id="content-explanation">The Detection Agent scanned bio text, pinned posts, and profile links for flagged words, suspicious domains, and patterns that platforms commonly filter. No problematic content was detected.</p>
                         
                         <!-- Flagged items (if any) -->
                         <div class="flagged-items hidden" id="flagged-items">
@@ -423,46 +439,46 @@
         <!-- ============================================
              METHODOLOGY SECTION (For credibility/citation)
              ============================================ -->
-        <section class="methodology-section section section-alt" id="methodology">
+        <section class="methodology-section section" id="methodology">
             <div class="container">
                 <h2 class="section-title">Methodology</h2>
                 <p class="section-desc">How we calculate shadow ban probability</p>
                 
                 <div class="methodology-content">
                     <div class="methodology-intro">
-                        <p><strong>Why probability, not yes/no?</strong> No tool can definitively determine if content is being suppressed—platforms don't disclose their algorithms. Instead, we analyze <strong>5 independent signals</strong> and calculate the <strong>probability</strong> of restrictions. This honest approach produces more accurate, trustworthy results.</p>
+                        <p><strong>Why probability, not yes/no?</strong> No tool can definitively determine if content is being suppressed—platforms don't disclose their algorithms. Instead, we deploy <strong>5 specialized agents</strong> and correlate findings using <strong>3-Point Intelligence</strong> (Predictive, Real-Time, Historical) to calculate defensible probability scores with confidence ratings.</p>
                     </div>
                     
                     <div class="methodology-factors">
                         <div class="method-factor">
                             <span class="method-icon">🔌</span>
-                            <h4>Platform APIs</h4>
-                            <p>Direct queries to official platform APIs where available. We check account status, visibility flags, and any restriction indicators exposed by the platform.</p>
+                            <h4>Platform API Agent (20%)</h4>
+                            <p>Direct queries to official platform APIs where available. Checks account status, visibility flags, and restriction indicators.</p>
                         </div>
                         <div class="method-factor">
                             <span class="method-icon">🔍</span>
-                            <h4>Web Analysis</h4>
-                            <p>Automated browser testing from U.S.-based servers. We check if content appears in search results when logged in, logged out, and in private browsing mode.</p>
+                            <h4>Web Analysis Agent (20%)</h4>
+                            <p>Automated browser testing from U.S. servers. Verifies search visibility and searches for emerging ban reports (Predictive Intelligence).</p>
                         </div>
                         <div class="method-factor">
                             <span class="method-icon">📊</span>
-                            <h4>Historical Data</h4>
-                            <p>We compare current engagement patterns against historical baselines. Sudden drops or anomalies contribute to higher probability scores. <strong>Pro only for tracking.</strong></p>
-                        </div>
-                        <div class="method-factor" id="method-hashtag">
-                            <span class="method-icon">#️⃣</span>
-                            <h4>Hashtag Database</h4>
-                            <p>Cross-reference against our database of banned, restricted, and low-reach hashtags, updated daily from multiple sources.</p>
+                            <h4>Historical Agent (15%)</h4>
+                            <p>Compares current signals against baselines. Tracks score trends over time. <strong>Pro only for personal tracking.</strong></p>
                         </div>
                         <div class="method-factor">
-                            <span class="method-icon">📝</span>
-                            <h4>Content & Links</h4>
-                            <p>We scan post text, bio content, and links for flagged words, suspicious domains, and patterns that trigger platform filters.</p>
+                            <span class="method-icon">🎯</span>
+                            <h4>Detection Agent (25%)</h4>
+                            <p>Coordinates 21 detection modules across 6 signal types: hashtags, cashtags, links, content, mentions, emojis. Each signal gets 3-Point scoring.</p>
+                        </div>
+                        <div class="method-factor">
+                            <span class="method-icon">🧠</span>
+                            <h4>Predictive AI Agent (20%)</h4>
+                            <p>Synthesizes all agent findings. Correlates 3-Point Intelligence sources. Calculates final probability score with confidence rating.</p>
                         </div>
                     </div>
                     
                     <div class="methodology-note">
-                        <p><strong>Note:</strong> Our web analysis runs from U.S.-based servers because most major platforms (Twitter, Reddit, etc.) are U.S. companies. Results may vary for users in other regions. Global server expansion is planned through our Regional Partnership program.</p>
+                        <p><strong>3-Point Intelligence:</strong> Every signal is scored using Predictive (15%), Real-Time (55%), and Historical (30%) sources. Scores corroborated by multiple sources have higher confidence ratings. This multi-source correlation is what separates our probability scores from simple database lookups.</p>
                     </div>
                 </div>
             </div>
@@ -471,10 +487,10 @@
         <!-- ============================================
              RECOMMENDATIONS SECTION
              ============================================ -->
-        <section class="recommendations-section section" id="recommendations">
+        <section class="recommendations-section section section-alt" id="recommendations">
             <div class="container">
                 <h2 class="section-title">Recommendations</h2>
-                <p class="section-desc">Based on your probability analysis</p>
+                <p class="section-desc">Based on your intelligence analysis</p>
                 
                 <div class="recommendations-list" id="recommendations-list">
                     <!-- Populated by JS -->
@@ -485,7 +501,7 @@
         <!-- ============================================
              ACTIONS & SHARE
              ============================================ -->
-        <section class="actions-section section section-alt">
+        <section class="actions-section section">
             <div class="container">
                 <div class="actions-grid">
                     <div class="action-card">
@@ -507,14 +523,14 @@
                         <h3>📄 Download Report</h3>
                         <p>Get a detailed PDF report with all analysis data.</p>
                         <button class="btn btn-secondary" id="download-report-btn">Download PDF</button>
-                        <p class="action-note">Includes all 5 factors, methodology, and timestamp</p>
+                        <p class="action-note">Includes 5-factor breakdown, 3-point intelligence, and methodology</p>
                     </div>
                     
                     <div class="action-card highlight">
                         <h3>🤖 Ask Shadow AI</h3>
                         <p>Get personalized advice based on these results.</p>
                         <button class="btn btn-primary" id="ask-ai-btn">Open Shadow AI</button>
-                        <p class="action-note">AI has access to your probability data</p>
+                        <p class="action-note">AI has access to your intelligence data</p>
                     </div>
                 </div>
             </div>
@@ -523,7 +539,7 @@
         <!-- ============================================
              CHECK ANOTHER / RELATED TOOLS
              ============================================ -->
-        <section class="related-tools section">
+        <section class="related-tools section section-alt">
             <div class="container">
                 <h2 class="section-title">Run Another Analysis</h2>
                 <p class="section-desc">Check other accounts or hashtags</p>
@@ -532,19 +548,19 @@
                     <a href="index.html" class="tool-card">
                         <span class="tool-icon">⚡</span>
                         <h4>Power Check (3-in-1)</h4>
-                        <p>Analyze post, account & hashtags together</p>
+                        <p>Analyze post, account & content signals together</p>
                         <span class="tool-arrow">→</span>
                     </a>
                     <a href="checker.html" class="tool-card" data-check-type="username">
                         <span class="tool-icon">👤</span>
                         <h4>Account Check</h4>
-                        <p>Calculate probability for any username</p>
+                        <p>Full 5-factor analysis with all 5 agents</p>
                         <span class="tool-arrow">→</span>
                     </a>
                     <a href="hashtag-checker.html" class="tool-card" data-check-type="hashtag">
                         <span class="tool-icon">#️⃣</span>
-                        <h4>Hashtag Checker</h4>
-                        <p>Check if hashtags are banned/restricted</p>
+                        <h4>Tag Checker</h4>
+                        <p>3-Point Intelligence verification per tag</p>
                         <span class="tool-arrow">→</span>
                     </a>
                 </div>

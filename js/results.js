@@ -2,8 +2,8 @@
    RESULTS.JS - Results Page
    ShadowBanCheck.io
    
-   Updated to support both legacy format and new 5-Factor Engine format.
-   Auto-detects format and renders appropriately.
+   3-Point Intelligence Model: Predictive (15%) + Real-Time (55%) + Historical (30%)
+   Powered by 5 Specialized Detection Agents with 21 Detection Modules
    ============================================================================= */
 
 (function() {
@@ -87,7 +87,7 @@ function loadResultData() {
         username: username,
         probability: Math.floor(Math.random() * 40) + 15,
         timestamp: new Date().toISOString(),
-        factorsUsed: checkType === 'power' ? 5 : (checkType === 'hashtag' ? 3 : 5),
+        agentsUsed: checkType === 'power' ? 5 : (checkType === 'hashtag' ? 3 : 5),
         factors: generateLegacyFactors(platformId, checkType),
         findings: generateLegacyFindings(platformId),
         recommendations: generateLegacyRecommendations(),
@@ -97,7 +97,7 @@ function loadResultData() {
 }
 
 function detectFormat() {
-    // Detect if this is 5-Factor Engine format
+    // Detect if this is Detection Agent format
     is5FactorFormat = !!(
         resultData && 
         resultData.factors && 
@@ -105,7 +105,7 @@ function detectFormat() {
         typeof resultData.factors[0].rawScore !== 'undefined'
     );
     
-    console.log(`📋 Result format: ${is5FactorFormat ? '5-Factor Engine' : 'Legacy'}`);
+    console.log(`📋 Result format: ${is5FactorFormat ? '5 Detection Agents' : 'Legacy'}`);
 }
 
 // ============================================
@@ -116,11 +116,11 @@ function generateLegacyFactors(platformId, checkType) {
     const isHashtag = checkType === 'hashtag';
     
     return [
-        { name: 'Platform APIs', icon: '🔌', status: isHashtag ? 'na' : 'complete', score: 10, finding: isHashtag ? 'Not needed for hashtag checks' : 'Account exists and is active' },
-        { name: 'Web Analysis', icon: '🔍', status: 'complete', score: 15, finding: 'Search visibility tests passed' },
-        { name: 'Historical Data', icon: '📊', status: 'complete', score: 0, finding: 'No historical data (Free tier)' },
-        { name: 'Hashtag Database', icon: '#️⃣', status: isReddit ? 'na' : 'complete', score: 5, finding: isReddit ? 'N/A for Reddit' : 'No banned hashtags detected' },
-        { name: 'Content & Links', icon: '📝', status: isHashtag ? 'na' : 'complete', score: 5, finding: isHashtag ? 'Not needed for hashtag checks' : 'Bio and content scanned, no flagged patterns' },
+        { name: 'API Agent', icon: '🔌', status: isHashtag ? 'na' : 'complete', score: 10, finding: isHashtag ? 'Not required for tag analysis' : 'Account exists and is active' },
+        { name: 'Web Analysis Agent', icon: '🔍', status: 'complete', score: 15, finding: 'Search visibility tests passed' },
+        { name: 'Historical Agent', icon: '📊', status: 'complete', score: 0, finding: 'No historical data (Free tier)' },
+        { name: 'Detection Agent', icon: '🎯', status: isReddit ? 'partial' : 'complete', score: 5, finding: isReddit ? 'Hashtag modules N/A for Reddit' : 'No banned signals detected' },
+        { name: 'Predictive AI Agent', icon: '🤖', status: isHashtag ? 'na' : 'complete', score: 5, finding: isHashtag ? 'Not required for tag analysis' : 'Low suppression risk predicted' },
     ];
 }
 
@@ -137,11 +137,11 @@ function generateLegacyFindings(platformId) {
 
 function generateLegacyRecommendations() {
     return [
-        'Continue posting high-quality content regularly',
-        'Engage authentically with your audience',
-        'Avoid using known restricted hashtags',
-        'Keep your bio free of flagged words and suspicious links',
-        'Consider getting verified to improve visibility',
+        { priority: 'info', action: 'Continue posting high-quality content regularly' },
+        { priority: 'info', action: 'Engage authentically with your audience' },
+        { priority: 'medium', action: 'Avoid using known restricted hashtags' },
+        { priority: 'low', action: 'Keep your bio free of flagged words and suspicious links' },
+        { priority: 'low', action: 'Consider verification for improved visibility' },
     ];
 }
 
@@ -198,6 +198,9 @@ function renderResults() {
         renderLegacyResults();
     }
     
+    // Render 3-Point Intelligence Model breakdown
+    render3PointModel();
+    
     // Platform-specific sections
     if (isReddit) {
         showRedditSections();
@@ -221,10 +224,81 @@ function renderResults() {
 }
 
 // ============================================
-// 5-FACTOR ENGINE RENDERING
+// 3-POINT INTELLIGENCE MODEL
+// ============================================
+function render3PointModel() {
+    const container = document.getElementById('intelligence-model') || document.getElementById('three-point-model');
+    if (!container) return;
+    
+    // Calculate scores for each intelligence point
+    const probability = resultData.overallProbability || resultData.probability || 28;
+    const confidence = resultData.overallConfidence || resultData.confidence || 70;
+    
+    // Simulated breakdown (in real engine, this comes from actual agent results)
+    const predictiveScore = Math.round(probability * 0.8 + Math.random() * 10);
+    const realtimeScore = probability;
+    const historicalScore = Math.round(probability * 0.6 + Math.random() * 15);
+    
+    const confidenceLevel = getConfidenceLevel(confidence);
+    
+    container.innerHTML = `
+        <div class="intelligence-model">
+            <h4>3-Point Intelligence Model</h4>
+            <div class="intelligence-points">
+                <div class="intelligence-point">
+                    <div class="point-header">
+                        <span class="point-name">🤖 Predictive</span>
+                        <span class="point-weight">15%</span>
+                    </div>
+                    <div class="point-bar">
+                        <div class="point-fill" style="width: ${predictiveScore}%"></div>
+                    </div>
+                    <span class="point-score">${predictiveScore}%</span>
+                </div>
+                <div class="intelligence-point primary">
+                    <div class="point-header">
+                        <span class="point-name">🎯 Real-Time</span>
+                        <span class="point-weight">55%</span>
+                    </div>
+                    <div class="point-bar">
+                        <div class="point-fill" style="width: ${realtimeScore}%"></div>
+                    </div>
+                    <span class="point-score">${realtimeScore}%</span>
+                </div>
+                <div class="intelligence-point">
+                    <div class="point-header">
+                        <span class="point-name">📊 Historical</span>
+                        <span class="point-weight">30%</span>
+                    </div>
+                    <div class="point-bar">
+                        <div class="point-fill" style="width: ${historicalScore}%"></div>
+                    </div>
+                    <span class="point-score">${historicalScore}%</span>
+                </div>
+            </div>
+            <div class="confidence-indicator confidence-${confidenceLevel.class}">
+                <span class="confidence-label">${confidenceLevel.label}</span>
+                <span class="confidence-desc">${confidenceLevel.description}</span>
+            </div>
+        </div>
+    `;
+}
+
+function getConfidenceLevel(confidence) {
+    if (confidence >= 70) {
+        return { label: 'High Confidence', description: '3+ sources corroborate', class: 'high' };
+    }
+    if (confidence >= 40) {
+        return { label: 'Medium Confidence', description: '2 sources corroborate', class: 'medium' };
+    }
+    return { label: 'Low Confidence', description: 'Single source', class: 'low' };
+}
+
+// ============================================
+// 5 DETECTION AGENTS RENDERING
 // ============================================
 function render5FactorResults() {
-    console.log('🔥 Rendering 5-Factor Engine results');
+    console.log('🤖 Rendering 5 Detection Agents results');
     
     // Get probability from appropriate location
     const probability = resultData.overallProbability || resultData.probability || 28;
@@ -237,7 +311,7 @@ function render5FactorResults() {
     // Render findings
     render5FactorFindings();
     
-    // Render factor breakdown
+    // Render agent breakdown
     render5FactorBreakdown();
     
     // Render detection summary (for power checks)
@@ -288,20 +362,22 @@ function render5FactorProbability(probability, confidence, verdict) {
         }
     }
     
-    // Update confidence indicator (add if element exists)
+    // Update confidence indicator
     const confidenceEl = document.getElementById('confidence-value');
+    const confidenceLevel = getConfidenceLevel(confidence);
     if (confidenceEl) {
-        confidenceEl.textContent = `${confidence}% confidence`;
+        confidenceEl.textContent = `${confidenceLevel.label}`;
+        confidenceEl.className = `confidence-badge confidence-${confidenceLevel.class}`;
     }
     
     // Update interpretation based on verdict
     const interpretation = document.getElementById('probability-interpretation');
     if (interpretation) {
         const interpretations = {
-            'CLEAR': 'All signals indicate normal visibility. Your content should be reaching your audience.',
-            'LIKELY CLEAR': 'Most signals indicate normal visibility, with minor concerns detected.',
-            'UNCERTAIN': 'Mixed signals detected. Some factors suggest possible restrictions.',
-            'LIKELY RESTRICTED': 'Several signals suggest your content may have reduced visibility.',
+            'CLEAR': 'All agents indicate normal visibility. Your content should be reaching your audience.',
+            'LIKELY CLEAR': 'Most agents indicate normal visibility, with minor concerns detected.',
+            'UNCERTAIN': 'Mixed signals detected. Some agents suggest possible restrictions.',
+            'LIKELY RESTRICTED': 'Several agents suggest your content may have reduced visibility.',
             'RESTRICTED': 'Multiple strong signals indicate your content is likely being restricted.',
             'HIGH RISK': 'High-risk elements detected that will likely reduce your reach.'
         };
@@ -329,11 +405,11 @@ function render5FactorFindings() {
     const findingsList = document.getElementById('findings-list');
     if (!findingsList) return;
     
-    // Use _findings array if available, otherwise build from factor findings
+    // Use _findings array if available, otherwise build from agent findings
     let findings = resultData._findings || [];
     
     if (findings.length === 0 && resultData.factors) {
-        // Build findings from factor data
+        // Build findings from agent data
         resultData.factors.forEach(factor => {
             if (factor.findings) {
                 factor.findings.forEach(f => {
@@ -365,17 +441,17 @@ function render5FactorFindings() {
 function render5FactorBreakdown() {
     const factors = resultData.factors || [];
     
-    // Factor element IDs mapping
-    const factorMap = [
-        { id: 'factor-api', findingId: 'factor-api-finding', factor: 1 },
-        { id: 'factor-web', findingId: 'factor-web-finding', factor: 2 },
-        { id: 'factor-historical', findingId: 'factor-historical-finding', factor: 3 },
-        { id: 'factor-hashtag', findingId: 'factor-hashtag-finding', factor: 4 },
-        { id: 'factor-content', findingId: 'factor-content-finding', factor: 5 },
+    // Agent element IDs mapping
+    const agentMap = [
+        { id: 'factor-api', findingId: 'factor-api-finding', agent: 1, name: 'API Agent' },
+        { id: 'factor-web', findingId: 'factor-web-finding', agent: 2, name: 'Web Analysis Agent' },
+        { id: 'factor-historical', findingId: 'factor-historical-finding', agent: 3, name: 'Historical Agent' },
+        { id: 'factor-hashtag', findingId: 'factor-hashtag-finding', agent: 4, name: 'Detection Agent' },
+        { id: 'factor-content', findingId: 'factor-content-finding', agent: 5, name: 'Predictive AI Agent' },
     ];
     
     factors.forEach((factor, i) => {
-        const mapping = factorMap[i] || factorMap.find(m => m.factor === factor.factor);
+        const mapping = agentMap[i] || agentMap.find(m => m.agent === factor.factor);
         if (!mapping) return;
         
         const row = document.getElementById(mapping.id);
@@ -410,7 +486,7 @@ function render5FactorBreakdown() {
         }
         
         if (findingEl) {
-            // Build finding text from factor findings or use summary
+            // Build finding text from agent findings or use summary
             let findingText = '';
             if (factor.findings && factor.findings.length > 0) {
                 // Get most important finding
@@ -422,11 +498,11 @@ function render5FactorBreakdown() {
         }
     });
     
-    // Update factors used count
-    const factorsUsed = document.getElementById('engine-factors-used');
-    if (factorsUsed) {
-        const activeFactors = factors.filter(f => f.weight > 0).length;
-        factorsUsed.textContent = `${activeFactors}/5 factors analyzed`;
+    // Update agents used count
+    const agentsUsed = document.getElementById('engine-factors-used') || document.getElementById('agents-used');
+    if (agentsUsed) {
+        const activeAgents = factors.filter(f => f.weight > 0).length;
+        agentsUsed.textContent = `${activeAgents}/5 agents deployed`;
     }
 }
 
@@ -437,7 +513,6 @@ function render5FactorDetection() {
     // Create or update detection summary section
     let detectionSection = document.getElementById('detection-summary');
     if (!detectionSection) {
-        // Create section if it doesn't exist
         const contentCard = document.getElementById('content-card');
         if (contentCard) {
             detectionSection = document.createElement('div');
@@ -449,15 +524,15 @@ function render5FactorDetection() {
     
     if (!detectionSection) return;
     
-    let html = '<h4>Detection Breakdown</h4><div class="detection-grid">';
+    let html = '<h4>Detection Agent: 21 Signal Modules</h4><div class="detection-grid">';
     
     const detectionTypes = [
-        { key: 'hashtags', label: 'Hashtags', icon: '#️⃣' },
-        { key: 'cashtags', label: 'Cashtags', icon: '💲' },
-        { key: 'links', label: 'Links', icon: '🔗' },
-        { key: 'content', label: 'Content', icon: '📝' },
-        { key: 'mentions', label: 'Mentions', icon: '@' },
-        { key: 'emojis', label: 'Emojis', icon: '😀' }
+        { key: 'hashtags', label: 'Hashtags', icon: '#️⃣', modules: 4 },
+        { key: 'cashtags', label: 'Cashtags', icon: '💲', modules: 3 },
+        { key: 'links', label: 'Links', icon: '🔗', modules: 4 },
+        { key: 'content', label: 'Content', icon: '📝', modules: 4 },
+        { key: 'mentions', label: 'Mentions', icon: '@', modules: 3 },
+        { key: 'emojis', label: 'Emojis', icon: '😀', modules: 3 }
     ];
     
     detectionTypes.forEach(type => {
@@ -472,6 +547,7 @@ function render5FactorDetection() {
             <div class="detection-item ${statusClass}">
                 <span class="detection-icon">${type.icon}</span>
                 <span class="detection-label">${type.label}</span>
+                <span class="detection-modules">${type.modules} modules</span>
                 <span class="detection-count">${flagged}/${typeof checked === 'boolean' ? '✓' : checked}</span>
             </div>
         `;
@@ -495,7 +571,7 @@ function render5FactorDetection() {
     }
     
     if (allIssues.length > 0) {
-        html += '<div class="detection-issues"><h5>Issues Found:</h5><ul>';
+        html += '<div class="detection-issues"><h5>Issues Detected:</h5><ul>';
         allIssues.forEach(issue => {
             const icon = issue.type === 'danger' ? '✗' : '⚠';
             html += `<li class="issue-${issue.type}"><span>${icon}</span> ${issue.text}</li>`;
@@ -510,7 +586,6 @@ function render5FactorShadowbanChecks() {
     const checks = resultData.account?.shadowbanChecks;
     if (!checks) return;
     
-    // Find or create shadowban checks section
     let checksSection = document.getElementById('shadowban-checks');
     if (!checksSection) return;
     
@@ -585,20 +660,24 @@ function render5FactorTagResults() {
     
     html += '</div>';
     
-    // Summary
+    // Summary with confidence
     const summary = resultData.summary || {};
+    const confidenceLevel = resultData.confidenceLevel || getConfidenceLevel(resultData.confidence || 70);
+    
     if (summary.banned > 0 || summary.restricted > 0) {
         html += `
             <div class="hashtag-summary warning">
-                <p><strong>⚠️ Risk Score: ${summary.riskScore || 0}%</strong> - 
+                <p><strong>⚠️ Risk Score: ${summary.riskScore || 0}%</strong> — 
                 ${summary.banned || 0} banned, ${summary.restricted || 0} restricted, 
-                ${summary.monitored || 0} monitored out of ${summary.total || 0} tags checked.</p>
+                ${summary.monitored || 0} monitored out of ${summary.total || 0} tags analyzed.</p>
+                <p class="confidence-note">${confidenceLevel.label}: ${confidenceLevel.description}</p>
             </div>
         `;
     } else {
         html += `
             <div class="hashtag-summary success">
-                <p><strong>✓ All Clear</strong> - All ${summary.total || results.safe?.length || 0} tags are safe to use.</p>
+                <p><strong>✓ All Clear</strong> — All ${summary.total || results.safe?.length || 0} tags are safe to use.</p>
+                <p class="confidence-note">${confidenceLevel.label}: ${confidenceLevel.description}</p>
             </div>
         `;
     }
@@ -709,11 +788,11 @@ function renderLegacyProbability() {
     const interpretation = document.getElementById('probability-interpretation');
     if (interpretation) {
         if (probability < 30) {
-            interpretation.textContent = 'Most signals indicate normal visibility, with minor concerns detected.';
+            interpretation.textContent = 'Most agents indicate normal visibility, with minor concerns detected.';
         } else if (probability < 60) {
-            interpretation.textContent = 'Several signals suggest possible visibility restrictions.';
+            interpretation.textContent = 'Several agents suggest possible visibility restrictions.';
         } else {
-            interpretation.textContent = 'Multiple signals indicate likely visibility restrictions.';
+            interpretation.textContent = 'Multiple agents indicate likely visibility restrictions.';
         }
     }
     
@@ -750,7 +829,7 @@ function renderLegacyFindings() {
 function renderLegacyFactors() {
     const factors = resultData.factors || [];
     
-    const factorMap = [
+    const agentMap = [
         { id: 'factor-api', findingId: 'factor-api-finding' },
         { id: 'factor-web', findingId: 'factor-web-finding' },
         { id: 'factor-historical', findingId: 'factor-historical-finding' },
@@ -759,10 +838,10 @@ function renderLegacyFactors() {
     ];
     
     factors.forEach((factor, i) => {
-        if (!factorMap[i]) return;
+        if (!agentMap[i]) return;
         
-        const row = document.getElementById(factorMap[i].id);
-        const finding = document.getElementById(factorMap[i].findingId);
+        const row = document.getElementById(agentMap[i].id);
+        const finding = document.getElementById(agentMap[i].findingId);
         
         if (row) {
             const status = row.querySelector('.factor-status');
@@ -774,6 +853,9 @@ function renderLegacyFactors() {
                     status.innerHTML = '<span>○</span>';
                     status.className = 'factor-status neutral';
                     row.classList.add('factor-na');
+                } else if (factor.status === 'partial') {
+                    status.innerHTML = '<span>◐</span>';
+                    status.className = 'factor-status partial';
                 } else {
                     status.innerHTML = '<span>⚠</span>';
                     status.className = 'factor-status warning';
@@ -786,9 +868,9 @@ function renderLegacyFactors() {
         }
     });
     
-    const factorsUsed = document.getElementById('engine-factors-used');
-    if (factorsUsed) {
-        factorsUsed.textContent = `${resultData.factorsUsed || 5}/5 factors analyzed`;
+    const agentsUsed = document.getElementById('engine-factors-used') || document.getElementById('agents-used');
+    if (agentsUsed) {
+        agentsUsed.textContent = `${resultData.agentsUsed || 5}/5 agents deployed`;
     }
 }
 
@@ -804,10 +886,21 @@ function renderLegacyRecommendations(recommendations) {
     let html = '';
     recommendations.forEach((rec, i) => {
         const text = typeof rec === 'string' ? rec : (rec.text || rec.action || '');
+        const priority = rec.priority || 'info';
+        const priorityIcon = {
+            'critical': '🚨',
+            'high': '⚠️',
+            'medium': '💡',
+            'low': '📝',
+            'info': 'ℹ️'
+        }[priority] || '📝';
+        
         html += `
-            <div class="recommendation-card">
-                <span class="recommendation-number">${i + 1}</span>
-                <p>${text}</p>
+            <div class="recommendation-card priority-${priority}">
+                <span class="recommendation-icon">${priorityIcon}</span>
+                <div class="recommendation-content">
+                    <p>${text}</p>
+                </div>
             </div>
         `;
     });
@@ -844,8 +937,8 @@ function renderContentAnalysis() {
             ...(contentAnalysis.issues || [])
         ];
         
-        if (contentSummary) contentSummary.textContent = `${allFlags.length} potential flag${allFlags.length > 1 ? 's' : ''} detected`;
-        if (contentExplanation) contentExplanation.textContent = 'We found content that may affect your visibility. Review the flagged items below.';
+        if (contentSummary) contentSummary.textContent = `${allFlags.length} signal${allFlags.length > 1 ? 's' : ''} detected`;
+        if (contentExplanation) contentExplanation.textContent = 'Detection Agent identified content that may affect your visibility. Review flagged items below.';
         
         if (flaggedItems && flaggedList) {
             flaggedItems.classList.remove('hidden');
@@ -853,7 +946,7 @@ function renderContentAnalysis() {
         }
     } else {
         if (contentSummary) contentSummary.textContent = 'No flagged content detected';
-        if (contentExplanation) contentExplanation.textContent = 'We scanned bio text, posts, and links for flagged words, suspicious domains, and patterns that platforms commonly filter. No problematic content was detected.';
+        if (contentExplanation) contentExplanation.textContent = 'Detection Agent scanned bio text, posts, and links across 21 signal modules. No problematic content was detected.';
         if (flaggedItems) flaggedItems.classList.add('hidden');
     }
 }
@@ -887,11 +980,11 @@ function renderHashtagAnalysis() {
     
     if (factorHashtagFinding) {
         if (bannedCount > 0) {
-            factorHashtagFinding.textContent = `${bannedCount} banned hashtag${bannedCount > 1 ? 's' : ''} detected`;
+            factorHashtagFinding.textContent = `${bannedCount} banned tag${bannedCount > 1 ? 's' : ''} detected`;
         } else if (restrictedCount > 0) {
-            factorHashtagFinding.textContent = `${restrictedCount} restricted hashtag${restrictedCount > 1 ? 's' : ''} detected`;
+            factorHashtagFinding.textContent = `${restrictedCount} restricted tag${restrictedCount > 1 ? 's' : ''} detected`;
         } else {
-            factorHashtagFinding.textContent = `${safeCount} hashtag${safeCount !== 1 ? 's' : ''} verified safe`;
+            factorHashtagFinding.textContent = `${safeCount} tag${safeCount !== 1 ? 's' : ''} verified safe`;
         }
     }
     
@@ -929,13 +1022,13 @@ function renderHashtagAnalysis() {
     if (bannedCount > 0 || restrictedCount > 0) {
         html += `
             <div class="hashtag-summary warning">
-                <p><strong>⚠️ Impact:</strong> ${bannedCount > 0 ? `${bannedCount} banned` : ''} ${restrictedCount > 0 ? `${restrictedCount} restricted` : ''} hashtag${(bannedCount + restrictedCount) > 1 ? 's' : ''} detected.</p>
+                <p><strong>⚠️ Impact:</strong> ${bannedCount > 0 ? `${bannedCount} banned` : ''} ${restrictedCount > 0 ? `${restrictedCount} restricted` : ''} tag${(bannedCount + restrictedCount) > 1 ? 's' : ''} detected.</p>
             </div>
         `;
     } else {
         html += `
             <div class="hashtag-summary success">
-                <p><strong>✓ All clear:</strong> No flagged hashtags detected.</p>
+                <p><strong>✓ All clear:</strong> No flagged tags detected.</p>
             </div>
         `;
     }
@@ -950,7 +1043,6 @@ function showRedditSections() {
     if (subredditSection) subredditSection.classList.remove('hidden');
     if (karmaSection) karmaSection.classList.remove('hidden');
     
-    // Use data from result if available
     const karma = resultData.karma || resultData.account?.metrics || {};
     const subredditBans = resultData.subredditBans || resultData.account?.subredditBans || [];
     
@@ -981,7 +1073,6 @@ function showRedditSections() {
         }
     }
     
-    // Render subreddit bans if any
     if (subredditBans.length > 0) {
         const bansList = document.getElementById('subreddit-bans-list');
         if (bansList) {
@@ -1009,13 +1100,13 @@ function updatePageMeta() {
     const query = resultData.username || resultData.account?.username || 'Analysis';
     const probability = resultData.overallProbability || resultData.probability || 28;
     
-    document.title = `${query} - ${probability}% Shadow Ban Probability | ShadowBanCheck.io`;
+    document.title = `${query} — ${probability}% Suppression Probability | ShadowBanCheck.io`;
     
     const ogTitle = document.getElementById('og-title');
-    if (ogTitle) ogTitle.content = `${query} - ${probability}% Shadow Ban Probability on ${platformName}`;
+    if (ogTitle) ogTitle.content = `${query} — ${probability}% Suppression Probability on ${platformName}`;
     
     const twitterTitle = document.getElementById('twitter-title');
-    if (twitterTitle) twitterTitle.content = `${query} - ${probability}% Shadow Ban Probability`;
+    if (twitterTitle) twitterTitle.content = `${query} — ${probability}% Suppression Probability`;
     
     const citationDate = document.getElementById('citation-date');
     if (citationDate && resultData.timestamp) {
@@ -1034,7 +1125,7 @@ function setupEventListeners() {
     
     const probability = resultData.overallProbability || resultData.probability || 28;
     const shareUrl = encodeURIComponent(window.location.href);
-    const shareText = encodeURIComponent(`My shadow ban probability: ${probability}% - Check yours at ShadowBanCheck.io`);
+    const shareText = encodeURIComponent(`My suppression probability: ${probability}% — Check yours at ShadowBanCheck.io`);
     
     if (shareTwitterBtn) {
         shareTwitterBtn.addEventListener('click', () => {

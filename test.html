@@ -3,211 +3,256 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>5-Factor Engine Test Suite | ShadowBanCheck.io</title>
+    <title>🧪 5-Factor Engine Test Suite</title>
     <style>
         :root {
-            --bg-dark: #0a0a0f;
-            --bg-card: #12121a;
-            --bg-card-hover: #1a1a25;
+            --bg: #0a0a0f;
+            --card: #12121a;
             --border: #2a2a3a;
             --text: #e4e4e7;
-            --text-muted: #71717a;
-            --primary: #6366f1;
-            --primary-hover: #818cf8;
+            --muted: #71717a;
             --success: #22c55e;
             --warning: #f59e0b;
             --danger: #ef4444;
             --info: #3b82f6;
+            --primary: #6366f1;
         }
         
         * { box-sizing: border-box; margin: 0; padding: 0; }
         
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, var(--bg-dark) 0%, #1a1a2e 100%);
+            background: var(--bg);
             color: var(--text);
             min-height: 100vh;
-            line-height: 1.6;
+            padding: 1rem;
         }
         
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 2rem;
-        }
+        .container { max-width: 1000px; margin: 0 auto; }
         
         header {
             text-align: center;
-            margin-bottom: 2rem;
-            padding-bottom: 2rem;
+            padding: 2rem 1rem;
             border-bottom: 1px solid var(--border);
+            margin-bottom: 2rem;
         }
         
-        h1 {
-            font-size: 2rem;
-            margin-bottom: 0.5rem;
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
+        h1 { font-size: 1.75rem; margin-bottom: 0.5rem; }
+        .subtitle { color: var(--muted); }
         
-        h1 span { font-size: 1.5rem; }
-        
-        .subtitle { color: var(--text-muted); }
-        
-        /* Engine Status Panel */
-        .engine-status-panel {
-            background: var(--bg-card);
+        /* Status Panel */
+        .status-panel {
+            background: var(--card);
             border: 1px solid var(--border);
             border-radius: 12px;
             padding: 1.5rem;
             margin-bottom: 2rem;
         }
         
-        .engine-status-panel h2 {
-            font-size: 1.1rem;
-            margin-bottom: 1rem;
+        .status-header {
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 1rem;
+            margin-bottom: 1rem;
         }
         
-        .health-badge {
+        .status-header h2 { font-size: 1.25rem; }
+        
+        .status-badge {
             padding: 0.25rem 0.75rem;
             border-radius: 20px;
             font-size: 0.8rem;
             font-weight: 600;
         }
         
-        .health-badge.excellent { background: var(--success); color: #000; }
-        .health-badge.good { background: var(--info); color: #fff; }
-        .health-badge.degraded { background: var(--warning); color: #000; }
-        .health-badge.offline { background: var(--danger); color: #fff; }
+        .status-badge.excellent { background: var(--success); color: #000; }
+        .status-badge.good { background: #84cc16; color: #000; }
+        .status-badge.degraded { background: var(--warning); color: #000; }
+        .status-badge.offline { background: var(--danger); color: #fff; }
         
-        .factors-grid {
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--muted);
+            font-size: 0.9rem;
+        }
+        
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        
+        .status-dot.ready { background: var(--success); }
+        .status-dot.loading { background: var(--warning); }
+        .status-dot.error { background: var(--danger); }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        /* Factor Cards */
+        .factor-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
             gap: 1rem;
-            margin-bottom: 1rem;
+            margin: 1.5rem 0;
         }
         
         .factor-card {
-            background: var(--bg-dark);
+            background: var(--bg);
             border: 1px solid var(--border);
             border-radius: 8px;
             padding: 1rem;
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
+            text-align: center;
+            position: relative;
         }
         
         .factor-card.online { border-color: var(--success); }
         .factor-card.offline { border-color: var(--danger); opacity: 0.7; }
-        .factor-card.na { border-color: var(--text-muted); opacity: 0.5; }
         
-        .factor-icon { font-size: 1.5rem; }
-        
-        .factor-info { flex: 1; }
-        
-        .factor-name { font-weight: 600; font-size: 0.9rem; }
-        
-        .factor-weight { font-size: 0.75rem; color: var(--text-muted); }
+        .factor-icon { font-size: 1.5rem; margin-bottom: 0.5rem; }
+        .factor-name { font-size: 0.85rem; font-weight: 600; }
+        .factor-weight { font-size: 0.75rem; color: var(--muted); }
         
         .factor-status {
-            width: 24px;
-            height: 24px;
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            width: 20px;
+            height: 20px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.8rem;
+            font-size: 0.7rem;
         }
         
         .factor-status.online { background: var(--success); color: #000; }
         .factor-status.offline { background: var(--danger); color: #fff; }
-        .factor-status.na { background: var(--text-muted); color: #fff; }
         
-        /* Module Status Grid */
-        .modules-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-            gap: 0.5rem;
-            padding: 1rem;
-            background: var(--bg-dark);
-            border-radius: 8px;
-            max-height: 200px;
-            overflow-y: auto;
+        /* Module Grid */
+        .module-section {
+            margin-top: 1.5rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border);
         }
         
-        .module-item {
+        .module-header {
             display: flex;
+            justify-content: space-between;
             align-items: center;
-            gap: 0.5rem;
-            font-size: 0.8rem;
-            padding: 0.25rem 0.5rem;
-            border-radius: 4px;
-            background: var(--bg-card);
+            margin-bottom: 1rem;
+            cursor: pointer;
         }
         
-        .module-item.loaded { color: var(--success); }
-        .module-item.missing { color: var(--danger); opacity: 0.7; }
-        
-        /* Test Sections */
-        .test-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
-        
-        .test-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            overflow: hidden;
-        }
-        
-        .test-card-header {
-            padding: 1rem 1.5rem;
-            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(99, 102, 241, 0.05) 100%);
-            border-bottom: 1px solid var(--border);
-        }
-        
-        .test-card-header h3 {
+        .module-header h3 {
             font-size: 1rem;
             display: flex;
             align-items: center;
             gap: 0.5rem;
         }
         
-        .test-card-body { padding: 1.5rem; }
-        
-        .form-group { margin-bottom: 1rem; }
-        
-        .form-group label {
-            display: block;
+        .module-count {
             font-size: 0.85rem;
-            color: var(--text-muted);
-            margin-bottom: 0.5rem;
+            color: var(--muted);
         }
         
-        input, select, textarea {
+        .module-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 0.5rem;
+        }
+        
+        .module-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem;
+            background: var(--bg);
+            border-radius: 4px;
+            font-size: 0.8rem;
+        }
+        
+        .module-item.loaded { color: var(--success); }
+        .module-item.missing { color: var(--danger); opacity: 0.7; }
+        
+        /* Test Cards */
+        .test-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .test-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        
+        .test-header {
+            padding: 1rem 1.5rem;
+            background: rgba(99, 102, 241, 0.1);
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .test-header h3 {
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .test-content { padding: 1.5rem; }
+        
+        .test-input {
             width: 100%;
-            padding: 0.75rem 1rem;
-            background: var(--bg-dark);
+            padding: 0.75rem;
+            background: var(--bg);
             border: 1px solid var(--border);
             border-radius: 8px;
             color: var(--text);
-            font-size: 0.95rem;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
         }
         
-        input:focus, select:focus, textarea:focus {
+        .test-input:focus {
             outline: none;
             border-color: var(--primary);
         }
         
-        textarea { min-height: 80px; resize: vertical; }
+        textarea.test-input {
+            min-height: 80px;
+            resize: vertical;
+        }
+        
+        .test-presets {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-bottom: 1rem;
+        }
+        
+        .preset-btn {
+            padding: 0.25rem 0.5rem;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            color: var(--muted);
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .preset-btn:hover {
+            border-color: var(--primary);
+            color: var(--text);
+        }
         
         .btn {
             display: inline-flex;
@@ -216,871 +261,630 @@
             gap: 0.5rem;
             padding: 0.75rem 1.5rem;
             border-radius: 8px;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             font-weight: 500;
             cursor: pointer;
             border: none;
             transition: all 0.2s;
+            width: 100%;
         }
         
-        .btn-primary {
-            background: var(--primary);
-            color: #fff;
-        }
+        .btn-primary { background: var(--primary); color: #fff; }
+        .btn-primary:hover { background: #818cf8; }
+        .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
         
-        .btn-primary:hover { background: var(--primary-hover); }
-        
-        .btn-primary:disabled {
-            background: var(--text-muted);
-            cursor: not-allowed;
-        }
-        
-        .btn-sm {
-            padding: 0.5rem 1rem;
-            font-size: 0.85rem;
-        }
-        
-        .btn-group {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-            margin-top: 0.5rem;
-        }
-        
-        .btn-outline {
-            background: transparent;
-            border: 1px solid var(--border);
-            color: var(--text);
-        }
-        
-        .btn-outline:hover {
-            background: var(--bg-card-hover);
-            border-color: var(--primary);
-        }
+        .btn-success { background: var(--success); color: #000; }
         
         /* Results */
-        .result-box {
+        .test-result {
             margin-top: 1rem;
             padding: 1rem;
-            background: var(--bg-dark);
+            background: var(--bg);
             border-radius: 8px;
-            border: 1px solid var(--border);
-            max-height: 300px;
-            overflow: auto;
-        }
-        
-        .result-box pre {
             font-family: 'Monaco', 'Consolas', monospace;
             font-size: 0.8rem;
+            max-height: 300px;
+            overflow-y: auto;
             white-space: pre-wrap;
-            word-break: break-word;
-        }
-        
-        .result-box.success { border-color: var(--success); }
-        .result-box.error { border-color: var(--danger); }
-        
-        /* Status Indicator */
-        .status-row {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.5rem;
-            background: var(--bg-dark);
-            border-radius: 6px;
-            margin-bottom: 1rem;
-        }
-        
-        .status-dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background: var(--text-muted);
-        }
-        
-        .status-dot.ready { background: var(--success); }
-        .status-dot.loading { background: var(--warning); animation: pulse 1s infinite; }
-        .status-dot.error { background: var(--danger); }
-        
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-        
-        .status-text { font-size: 0.85rem; }
-        
-        /* Collapsible */
-        .collapsible-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            cursor: pointer;
-            padding: 0.75rem;
-            background: var(--bg-dark);
-            border-radius: 8px;
-            margin-bottom: 0.5rem;
-        }
-        
-        .collapsible-header:hover { background: var(--bg-card-hover); }
-        
-        .collapsible-content {
             display: none;
-            padding: 0.5rem 0;
         }
         
-        .collapsible-content.show { display: block; }
+        .test-result.visible { display: block; }
+        .test-result.success { border-left: 3px solid var(--success); }
+        .test-result.error { border-left: 3px solid var(--danger); }
         
         /* Footer */
         footer {
             text-align: center;
             padding: 2rem;
-            color: var(--text-muted);
+            color: var(--muted);
             font-size: 0.85rem;
         }
         
         footer a { color: var(--primary); text-decoration: none; }
-        footer a:hover { text-decoration: underline; }
-        
-        /* Responsive */
-        @media (max-width: 768px) {
-            .container { padding: 1rem; }
-            .test-grid { grid-template-columns: 1fr; }
-            .factors-grid { grid-template-columns: 1fr 1fr; }
-        }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>🔥 <span>5-Factor Detection Engine</span></h1>
-            <p class="subtitle">Test Suite & Status Dashboard</p>
+            <h1>🧪 5-Factor Engine Test Suite</h1>
+            <p class="subtitle">Real-time engine status & functional tests</p>
         </header>
         
         <!-- Engine Status Panel -->
-        <section class="engine-status-panel">
-            <h2>
-                <span>⚡ Engine Status</span>
-                <span id="health-badge" class="health-badge offline">Checking...</span>
-            </h2>
-            
-            <div class="status-row">
-                <span id="status-dot" class="status-dot loading"></span>
-                <span id="status-text" class="status-text">Checking engine status...</span>
+        <div class="status-panel">
+            <div class="status-header">
+                <h2>⚡ Engine Status</h2>
+                <span id="health-badge" class="status-badge offline">Loading...</span>
             </div>
             
-            <!-- Factor Cards -->
-            <div id="factors-display" class="factors-grid">
+            <div class="status-indicator">
+                <span id="status-dot" class="status-dot loading"></span>
+                <span id="status-text">Checking modules...</span>
+            </div>
+            
+            <!-- 5 Factor Cards -->
+            <div class="factor-grid" id="factor-grid">
                 <!-- Populated by JS -->
             </div>
             
-            <!-- Module Details (Collapsible) -->
-            <div class="collapsible-header" onclick="toggleModules()">
-                <span>📦 Module Details</span>
-                <span id="module-count">0/27 loaded</span>
-            </div>
-            <div id="modules-content" class="collapsible-content">
-                <div id="modules-grid" class="modules-grid">
+            <!-- Module Details -->
+            <div class="module-section">
+                <div class="module-header" onclick="toggleModules()">
+                    <h3>📦 Module Details</h3>
+                    <span id="module-count" class="module-count">0/0 loaded</span>
+                </div>
+                <div id="module-grid" class="module-grid">
                     <!-- Populated by JS -->
                 </div>
             </div>
-        </section>
+        </div>
         
-        <!-- Test Sections -->
+        <!-- Test Cards -->
         <div class="test-grid">
-            
-            <!-- Power Check -->
+            <!-- Power Check Test -->
             <div class="test-card">
-                <div class="test-card-header">
-                    <h3>🔍 Power Check (3-in-1)</h3>
+                <div class="test-header">
+                    <h3>🔍 Power Check</h3>
                 </div>
-                <div class="test-card-body">
-                    <div class="form-group">
-                        <label>Post/Profile URL</label>
-                        <input type="text" id="power-url" placeholder="https://x.com/username/status/123...">
+                <div class="test-content">
+                    <input type="text" id="power-url" class="test-input" placeholder="Enter URL to check...">
+                    <div class="test-presets">
+                        <button class="preset-btn" onclick="setPreset('power', 'https://x.com/elonmusk/status/123')">Twitter Post</button>
+                        <button class="preset-btn" onclick="setPreset('power', 'https://x.com/shadowbantest')">Twitter Profile</button>
+                        <button class="preset-btn" onclick="setPreset('power', 'https://reddit.com/r/test/comments/abc123')">Reddit Post</button>
                     </div>
-                    <div class="btn-group">
-                        <button class="btn btn-sm btn-outline" onclick="setTestUrl('twitter-post')">Twitter Post</button>
-                        <button class="btn btn-sm btn-outline" onclick="setTestUrl('twitter-profile')">Twitter Profile</button>
-                        <button class="btn btn-sm btn-outline" onclick="setTestUrl('reddit-post')">Reddit Post</button>
-                    </div>
-                    <button class="btn btn-primary" style="width: 100%; margin-top: 1rem;" onclick="runPowerCheck()" id="power-btn">
-                        Run Power Check
-                    </button>
-                    <div id="power-result" class="result-box" style="display: none;">
-                        <pre></pre>
-                    </div>
+                    <button class="btn btn-primary" onclick="runPowerCheck()">Run Power Check</button>
+                    <div id="power-result" class="test-result"></div>
                 </div>
             </div>
             
-            <!-- Account Check -->
+            <!-- Account Check Test -->
             <div class="test-card">
-                <div class="test-card-header">
+                <div class="test-header">
                     <h3>👤 Account Check</h3>
                 </div>
-                <div class="test-card-body">
-                    <div class="form-group">
-                        <label>Username</label>
-                        <input type="text" id="account-username" placeholder="@username">
-                    </div>
-                    <div class="form-group">
-                        <label>Platform</label>
-                        <select id="account-platform">
-                            <option value="twitter">Twitter/X</option>
-                            <option value="reddit">Reddit</option>
-                            <option value="instagram" disabled>Instagram (Soon)</option>
-                        </select>
-                    </div>
-                    <button class="btn btn-primary" style="width: 100%;" onclick="runAccountCheck()" id="account-btn">
-                        Check Account
-                    </button>
-                    <div id="account-result" class="result-box" style="display: none;">
-                        <pre></pre>
-                    </div>
+                <div class="test-content">
+                    <input type="text" id="account-username" class="test-input" placeholder="@username">
+                    <select id="account-platform" class="test-input">
+                        <option value="twitter">Twitter/X</option>
+                        <option value="reddit">Reddit</option>
+                        <option value="instagram" disabled>Instagram (coming soon)</option>
+                    </select>
+                    <button class="btn btn-primary" onclick="runAccountCheck()">Check Account</button>
+                    <div id="account-result" class="test-result"></div>
                 </div>
             </div>
             
-            <!-- Tag Check -->
+            <!-- Tag Check Test -->
             <div class="test-card">
-                <div class="test-card-header">
-                    <h3>#️⃣ Tag Check (Hashtags & Cashtags)</h3>
+                <div class="test-header">
+                    <h3>#️⃣ Tag Check</h3>
                 </div>
-                <div class="test-card-body">
-                    <div class="form-group">
-                        <label>Tags (one per line or space-separated)</label>
-                        <textarea id="tag-input" placeholder="#shadowban #blessed $BTC $ETH">#shadowban #followback #crypto $BTC</textarea>
+                <div class="test-content">
+                    <textarea id="tag-input" class="test-input" placeholder="Enter hashtags or cashtags...">#test #shadowban $BTC</textarea>
+                    <div class="test-presets">
+                        <button class="preset-btn" onclick="setPreset('tag', '#followback #f4f #teamfollowback')">Banned Tags</button>
+                        <button class="preset-btn" onclick="setPreset('tag', '$BTC $ETH $SCAM $DOGE')">Cashtags</button>
+                        <button class="preset-btn" onclick="setPreset('tag', '#photography #nature #travel')">Safe Tags</button>
                     </div>
-                    <div class="btn-group">
-                        <button class="btn btn-sm btn-outline" onclick="setTestTags('banned')">Banned Tags</button>
-                        <button class="btn btn-sm btn-outline" onclick="setTestTags('cashtags')">Cashtags</button>
-                        <button class="btn btn-sm btn-outline" onclick="setTestTags('safe')">Safe Tags</button>
-                    </div>
-                    <div class="form-group" style="margin-top: 1rem;">
-                        <label>Platform</label>
-                        <select id="tag-platform">
-                            <option value="twitter">Twitter/X</option>
-                            <option value="instagram" disabled>Instagram (Soon)</option>
-                        </select>
-                    </div>
-                    <button class="btn btn-primary" style="width: 100%;" onclick="runTagCheck()" id="tag-btn">
-                        Check Tags
-                    </button>
-                    <div id="tag-result" class="result-box" style="display: none;">
-                        <pre></pre>
-                    </div>
+                    <button class="btn btn-primary" onclick="runTagCheck()">Check Tags</button>
+                    <div id="tag-result" class="test-result"></div>
                 </div>
             </div>
             
-            <!-- Content Analysis -->
+            <!-- Content Analysis Test -->
             <div class="test-card">
-                <div class="test-card-header">
+                <div class="test-header">
                     <h3>📝 Content Analysis</h3>
                 </div>
-                <div class="test-card-body">
-                    <div class="form-group">
-                        <label>Content to Analyze</label>
-                        <textarea id="content-input" placeholder="Paste tweet or post content here...">Check out my free crypto giveaway! Follow and RT to win $1000! bit.ly/scam123 #followback #f4f</textarea>
+                <div class="test-content">
+                    <textarea id="content-input" class="test-input" placeholder="Enter text to analyze..."></textarea>
+                    <div class="test-presets">
+                        <button class="preset-btn" onclick="setPreset('content', 'FREE CRYPTO GIVEAWAY! Follow and RT to win! DM for collab 🚀🚀🚀 bit.ly/scam')">Spam Example</button>
+                        <button class="preset-btn" onclick="setPreset('content', 'Just had a great coffee at the local cafe. Beautiful weather today!')">Clean Example</button>
                     </div>
-                    <div class="btn-group">
-                        <button class="btn btn-sm btn-outline" onclick="setTestContent('spam')">Spam Example</button>
-                        <button class="btn btn-sm btn-outline" onclick="setTestContent('clean')">Clean Example</button>
-                    </div>
-                    <button class="btn btn-primary" style="width: 100%; margin-top: 1rem;" onclick="runContentAnalysis()" id="content-btn">
-                        Analyze Content
-                    </button>
-                    <div id="content-result" class="result-box" style="display: none;">
-                        <pre></pre>
-                    </div>
+                    <button class="btn btn-primary" onclick="runContentAnalysis()">Analyze Content</button>
+                    <div id="content-result" class="test-result"></div>
                 </div>
             </div>
             
             <!-- Database Stats -->
             <div class="test-card">
-                <div class="test-card-header">
+                <div class="test-header">
                     <h3>📊 Database Stats</h3>
                 </div>
-                <div class="test-card-body">
-                    <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem;">
-                        View statistics for loaded detection databases.
+                <div class="test-content">
+                    <p style="color: var(--muted); margin-bottom: 1rem; font-size: 0.85rem;">
+                        Load statistics from all detection databases
                     </p>
-                    <button class="btn btn-primary" style="width: 100%;" onclick="loadStats()" id="stats-btn">
-                        Load Statistics
-                    </button>
-                    <div id="stats-result" class="result-box" style="display: none;">
-                        <pre></pre>
-                    </div>
+                    <button class="btn btn-primary" onclick="loadStats()">Load Stats</button>
+                    <div id="stats-result" class="test-result"></div>
                 </div>
             </div>
             
-            <!-- Demo Data -->
+            <!-- Demo Data Test -->
             <div class="test-card">
-                <div class="test-card-header">
+                <div class="test-header">
                     <h3>🎭 Demo Data Test</h3>
                 </div>
-                <div class="test-card-body">
-                    <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem;">
-                        Test the demo data system (used when engine is offline).
-                    </p>
-                    <div class="form-group">
-                        <label>Platform</label>
-                        <select id="demo-platform">
-                            <option value="twitter">Twitter/X</option>
-                            <option value="reddit">Reddit</option>
-                            <option value="instagram">Instagram</option>
-                            <option value="tiktok">TikTok</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Check Type</label>
-                        <select id="demo-checktype">
-                            <option value="powerCheck">Power Check</option>
-                            <option value="accountCheck">Account Check</option>
-                            <option value="tagCheck">Tag Check</option>
-                        </select>
-                    </div>
-                    <button class="btn btn-primary" style="width: 100%;" onclick="loadDemoData()">
-                        Load Demo Data
-                    </button>
-                    <div id="demo-result" class="result-box" style="display: none;">
-                        <pre></pre>
-                    </div>
+                <div class="test-content">
+                    <select id="demo-platform" class="test-input">
+                        <option value="twitter">Twitter</option>
+                        <option value="reddit">Reddit</option>
+                        <option value="instagram">Instagram</option>
+                        <option value="tiktok">TikTok</option>
+                    </select>
+                    <select id="demo-type" class="test-input">
+                        <option value="powerCheck">Power Check</option>
+                        <option value="accountCheck">Account Check</option>
+                        <option value="tagCheck">Tag Check</option>
+                    </select>
+                    <button class="btn btn-primary" onclick="loadDemoData()">Load Demo Data</button>
+                    <div id="demo-result" class="test-result"></div>
                 </div>
             </div>
-            
         </div>
         
         <footer>
-            <p>5-Factor Detection Engine v1.0 | <a href="index.html">Back to Home</a></p>
-            <p style="margin-top: 0.5rem;">Open browser console for detailed logs</p>
+            <p>5-Factor Detection Engine Test Suite</p>
+            <p><a href="index.html">← Back to Home</a> | <a href="engine-diagnostic.html">Run Diagnostic</a></p>
         </footer>
     </div>
     
-    <!-- Load Scripts in Order -->
-    
-    <!-- 1. Core Platform Data -->
+    <!-- Load Scripts in Correct Order -->
+    <!-- 1. Core files first -->
     <script src="js/platforms.js"></script>
-    
-    <!-- 2. Main Utilities (includes EngineStatus) -->
     <script src="js/main.js"></script>
-    
-    <!-- 3. Demo Data -->
     <script src="js/demo-data.js"></script>
     
-    <!-- 4. Detection Databases -->
+    <!-- 2. Databases -->
     <script src="js/detection/databases/flagged-content.js"></script>
     <script src="js/detection/databases/flagged-hashtags.js"></script>
     <script src="js/detection/databases/flagged-mentions.js"></script>
     <script src="js/detection/databases/flagged-emojis.js"></script>
     <script src="js/detection/databases/flagged-links.js"></script>
-    <script src="js/detection/databases/phase2-placeholder.js"></script>
-    <script src="js/detection/databases/phase3-placeholder.js"></script>
+    <script src="js/detection/databases/flagged-images.js"></script>
+    <script src="js/detection/databases/flagged-videos.js"></script>
+    <script src="js/detection/databases/flagged-audio.js"></script>
     
-    <!-- 5. Platform Implementations -->
+    <!-- 3. Platforms -->
     <script src="js/detection/platforms/platform-base.js"></script>
     <script src="js/detection/platforms/twitter.js"></script>
     <script src="js/detection/platforms/reddit.js"></script>
     
-    <!-- 6. Detection Agents -->
-    <script src="js/detection/agents/platform-api-agent.js"></script>
-    <script src="js/detection/agents/web-analysis-agent.js"></script>
-    <script src="js/detection/agents/historical-agent.js"></script>
-    <script src="js/detection/agents/detection-agent.js"></script>
-    <script src="js/detection/agents/predictive-agent.js"></script>
+    <!-- 4. Agents - BASE MUST BE FIRST -->
+    <script src="js/detection/agents/agent-base.js"></script>
+    <script src="js/detection/agents/agent-platform-api.js"></script>
+    <script src="js/detection/agents/agent-web-analysis.js"></script>
+    <script src="js/detection/agents/agent-historical.js"></script>
+    <script src="js/detection/agents/agent-detection.js"></script>
+    <script src="js/detection/agents/agent-predictive.js"></script>
     
-    <!-- 7. Main Engine -->
+    <!-- 5. Engine & API -->
     <script src="js/detection/5-factor-engine.js"></script>
-    
-    <!-- 8. API Client -->
     <script src="js/detection-api.js"></script>
     
-    <!-- Test Page Scripts -->
+    <!-- 6. Page scripts (uses engine) -->
+    <script src="js/index.js"></script>
+    
     <script>
-        // =============================================
-        // STATUS DISPLAY
-        // =============================================
+        // =========================================
+        // MODULE DEFINITIONS - MATCHING YOUR FILES
+        // =========================================
         
-        function updateStatusDisplay() {
-            const statusDot = document.getElementById('status-dot');
-            const statusText = document.getElementById('status-text');
-            const healthBadge = document.getElementById('health-badge');
-            const factorsDisplay = document.getElementById('factors-display');
-            const moduleCount = document.getElementById('module-count');
-            const modulesGrid = document.getElementById('modules-grid');
+        const MODULES = {
+            // Databases
+            databases: [
+                { name: 'FlaggedContent', global: 'FlaggedContent' },
+                { name: 'FlaggedHashtags', global: 'FlaggedHashtags' },
+                { name: 'FlaggedMentions', global: 'FlaggedMentions' },
+                { name: 'FlaggedEmojis', global: 'FlaggedEmojis' },
+                { name: 'FlaggedLinks', global: 'FlaggedLinks' },
+                { name: 'FlaggedImages', global: 'FlaggedImages' },
+                { name: 'FlaggedVideos', global: 'FlaggedVideos' },
+                { name: 'FlaggedAudio', global: 'FlaggedAudio' },
+            ],
+            // Platforms
+            platforms: [
+                { name: 'PlatformBase', global: 'PlatformBase' },
+                { name: 'TwitterPlatform', global: 'TwitterPlatform' },
+                { name: 'RedditPlatform', global: 'RedditPlatform' },
+                { name: 'PlatformFactory', global: 'PlatformFactory' },
+            ],
+            // Agents
+            agents: [
+                { name: 'AgentBase', global: 'AgentBase' },
+                { name: 'AgentRegistry', global: 'AgentRegistry' },
+                { name: 'PlatformAPIAgent', global: 'PlatformAPIAgent' },
+                { name: 'WebAnalysisAgent', global: 'WebAnalysisAgent' },
+                { name: 'HistoricalAgent', global: 'HistoricalAgent' },
+                { name: 'DetectionAgent', global: 'DetectionAgent' },
+                { name: 'PredictiveAgent', global: 'PredictiveAgent' },
+            ],
+            // Engine & Core
+            engine: [
+                { name: 'FiveFactorEngine', global: 'FiveFactorEngine' },
+                { name: 'DetectionAPI', global: 'DetectionAPI' },
+                { name: 'FiveFactorLoader', global: 'FiveFactorLoader' },
+                { name: 'EngineStatus', global: 'EngineStatus' },
+                { name: 'DemoData', global: 'DemoData' },
+                { name: 'platformData', global: 'platformData' },
+            ],
+            // Functions
+            functions: [
+                { name: 'powerCheck', global: 'powerCheck' },
+                { name: 'checkAccount', global: 'checkAccount' },
+                { name: 'checkTags', global: 'checkTags' },
+            ]
+        };
+        
+        const FACTORS = [
+            { id: 1, name: 'Platform API', weight: 20, icon: '🔌', agents: ['PlatformAPIAgent'] },
+            { id: 2, name: 'Web Analysis', weight: 20, icon: '🔍', agents: ['WebAnalysisAgent'] },
+            { id: 3, name: 'Historical Data', weight: 15, icon: '📊', agents: ['HistoricalAgent'] },
+            { id: 4, name: 'Detection Engine', weight: 25, icon: '#️⃣', agents: ['DetectionAgent'] },
+            { id: 5, name: 'Predictive AI', weight: 20, icon: '🤖', agents: ['PredictiveAgent'] },
+        ];
+        
+        // =========================================
+        // STATUS UPDATE
+        // =========================================
+        
+        function checkModule(globalName) {
+            return typeof window[globalName] !== 'undefined';
+        }
+        
+        function updateStatus() {
+            // Count loaded modules
+            let loaded = 0;
+            let total = 0;
             
-            // Check if EngineStatus is available
-            if (!window.EngineStatus) {
-                statusDot.className = 'status-dot error';
-                statusText.textContent = 'EngineStatus not loaded - main.js may be missing';
-                healthBadge.className = 'health-badge offline';
-                healthBadge.textContent = 'Error';
-                return;
-            }
+            const allModules = [
+                ...MODULES.databases,
+                ...MODULES.platforms,
+                ...MODULES.agents,
+                ...MODULES.engine,
+                ...MODULES.functions
+            ];
             
-            const isReady = EngineStatus.isReady();
-            const health = EngineStatus.getHealthLabel();
-            const healthPct = EngineStatus.getHealthPercentage();
-            const quickStatus = EngineStatus.getQuickStatus();
-            const factors = EngineStatus.getFactorStatus();
-            const detailed = EngineStatus.getDetailedStatus();
+            total = allModules.length;
             
-            // Update status indicator
-            statusDot.className = `status-dot ${isReady ? 'ready' : 'loading'}`;
-            statusText.textContent = isReady 
-                ? `Engine ready! ${quickStatus.loadedCount}/${quickStatus.totalCount} modules loaded`
-                : `Loading... ${quickStatus.loadedCount}/${quickStatus.totalCount} modules`;
+            // Update module grid
+            const moduleGrid = document.getElementById('module-grid');
+            let moduleHtml = '';
             
-            // Update health badge
-            healthBadge.className = `health-badge ${health}`;
-            healthBadge.textContent = `${healthPct}% ${health.charAt(0).toUpperCase() + health.slice(1)}`;
-            
-            // Update factor cards
-            let factorsHTML = '';
-            factors.forEach(factor => {
-                factorsHTML += `
-                    <div class="factor-card ${factor.status}">
-                        <span class="factor-icon">${factor.icon}</span>
-                        <div class="factor-info">
-                            <div class="factor-name">${factor.name}</div>
-                            <div class="factor-weight">${factor.weight}% weight</div>
-                        </div>
-                        <span class="factor-status ${factor.status}">
-                            ${factor.status === 'online' ? '✓' : (factor.status === 'na' ? '○' : '✗')}
-                        </span>
+            allModules.forEach(mod => {
+                const isLoaded = checkModule(mod.global);
+                if (isLoaded) loaded++;
+                
+                moduleHtml += `
+                    <div class="module-item ${isLoaded ? 'loaded' : 'missing'}">
+                        ${isLoaded ? '✅' : '❌'} ${mod.name}
                     </div>
                 `;
             });
-            factorsDisplay.innerHTML = factorsHTML;
             
-            // Update module count
-            moduleCount.textContent = `${quickStatus.loadedCount}/${quickStatus.totalCount} loaded`;
+            moduleGrid.innerHTML = moduleHtml;
+            document.getElementById('module-count').textContent = `${loaded}/${total} loaded`;
             
-            // Update modules grid
-            const allModules = {
-                // Databases
-                'FlaggedContent': !!window.FlaggedContent,
-                'FlaggedHashtags': !!window.FlaggedHashtags,
-                'FlaggedMentions': !!window.FlaggedMentions,
-                'FlaggedEmojis': !!window.FlaggedEmojis,
-                'FlaggedLinks': !!window.FlaggedLinks,
-                'Phase2Data': !!window.Phase2Placeholder,
-                'Phase3Data': !!window.Phase3Placeholder,
-                // Platforms
-                'PlatformBase': !!window.PlatformBase,
-                'TwitterPlatform': !!window.TwitterPlatform,
-                'RedditPlatform': !!window.RedditPlatform,
-                'PlatformFactory': !!window.PlatformFactory,
-                // Agents
-                'PlatformAPIAgent': !!window.PlatformAPIAgent,
-                'WebAnalysisAgent': !!window.WebAnalysisAgent,
-                'HistoricalAgent': !!window.HistoricalAgent,
-                'DetectionAgent': !!window.DetectionAgent,
-                'PredictiveAgent': !!window.PredictiveAgent,
-                // Engine & API
-                'FiveFactorEngine': !!window.FiveFactorEngine,
-                'powerCheck': !!window.powerCheck,
-                'checkAccount': !!window.checkAccount,
-                'checkTags': !!window.checkTags,
-                'DetectionAPI': !!window.DetectionAPI,
-                // Support
-                'DemoData': !!window.DemoData,
-                'platformData': !!window.platformData,
-                'EngineStatus': !!window.EngineStatus,
-            };
+            // Update factor cards
+            const factorGrid = document.getElementById('factor-grid');
+            let factorHtml = '';
             
-            let modulesHTML = '';
-            for (const [name, loaded] of Object.entries(allModules)) {
-                modulesHTML += `
-                    <div class="module-item ${loaded ? 'loaded' : 'missing'}">
-                        ${loaded ? '✅' : '❌'} ${name}
+            FACTORS.forEach(factor => {
+                const isOnline = factor.agents.every(a => checkModule(a));
+                
+                factorHtml += `
+                    <div class="factor-card ${isOnline ? 'online' : 'offline'}">
+                        <div class="factor-status ${isOnline ? 'online' : 'offline'}">
+                            ${isOnline ? '✓' : '✗'}
+                        </div>
+                        <div class="factor-icon">${factor.icon}</div>
+                        <div class="factor-name">${factor.name}</div>
+                        <div class="factor-weight">${factor.weight}% weight</div>
                     </div>
                 `;
+            });
+            
+            factorGrid.innerHTML = factorHtml;
+            
+            // Calculate health
+            const onlineFactors = FACTORS.filter(f => f.agents.every(a => checkModule(a))).length;
+            const healthPct = Math.round((onlineFactors / FACTORS.length) * 100);
+            
+            // Update health badge
+            const badge = document.getElementById('health-badge');
+            if (healthPct === 100) {
+                badge.textContent = '100% Online';
+                badge.className = 'status-badge excellent';
+            } else if (healthPct >= 80) {
+                badge.textContent = `${healthPct}% Online`;
+                badge.className = 'status-badge good';
+            } else if (healthPct >= 40) {
+                badge.textContent = `${healthPct}% Degraded`;
+                badge.className = 'status-badge degraded';
+            } else {
+                badge.textContent = `${healthPct}% Offline`;
+                badge.className = 'status-badge offline';
             }
-            modulesGrid.innerHTML = modulesHTML;
+            
+            // Update status indicator
+            const dot = document.getElementById('status-dot');
+            const text = document.getElementById('status-text');
+            
+            if (loaded === total) {
+                dot.className = 'status-dot ready';
+                text.textContent = `Engine ready! ${loaded}/${total} modules loaded`;
+            } else if (loaded > 0) {
+                dot.className = 'status-dot loading';
+                text.textContent = `Loading... ${loaded}/${total} modules`;
+            } else {
+                dot.className = 'status-dot error';
+                text.textContent = 'Engine offline - no modules loaded';
+            }
         }
         
         function toggleModules() {
-            const content = document.getElementById('modules-content');
-            content.classList.toggle('show');
+            const grid = document.getElementById('module-grid');
+            grid.style.display = grid.style.display === 'none' ? 'grid' : 'none';
         }
         
-        // =============================================
-        // TEST URL PRESETS
-        // =============================================
-        
-        function setTestUrl(type) {
-            const input = document.getElementById('power-url');
-            const urls = {
-                'twitter-post': 'https://x.com/elonmusk/status/1234567890',
-                'twitter-profile': 'https://twitter.com/OpenAI',
-                'reddit-post': 'https://reddit.com/r/technology/comments/abc123/test_post'
-            };
-            input.value = urls[type] || '';
-        }
-        
-        function setTestTags(type) {
-            const input = document.getElementById('tag-input');
-            const tags = {
-                'banned': '#followback #f4f #porn #xxx #followforfollow',
-                'cashtags': '$BTC $ETH $DOGE $SCAM $SHIB',
-                'safe': '#technology #coding #AI #webdev #startup'
-            };
-            input.value = tags[type] || '';
-        }
-        
-        function setTestContent(type) {
-            const input = document.getElementById('content-input');
-            const content = {
-                'spam': 'FREE CRYPTO! 🚀🚀🚀 Follow + RT for $1000! bit.ly/scam123 #followback #f4f #giveaway DM me now!!!',
-                'clean': 'Just finished building a new feature for my app. Really happy with how the authentication flow turned out. #coding #webdev'
-            };
-            input.value = content[type] || '';
-        }
-        
-        // =============================================
+        // =========================================
         // TEST FUNCTIONS
-        // =============================================
+        // =========================================
+        
+        function setPreset(type, value) {
+            const inputs = {
+                power: 'power-url',
+                tag: 'tag-input',
+                content: 'content-input'
+            };
+            
+            if (inputs[type]) {
+                document.getElementById(inputs[type]).value = value;
+            }
+        }
+        
+        function showResult(elementId, content, isSuccess = true) {
+            const el = document.getElementById(elementId);
+            el.textContent = typeof content === 'object' ? JSON.stringify(content, null, 2) : content;
+            el.className = `test-result visible ${isSuccess ? 'success' : 'error'}`;
+        }
         
         async function runPowerCheck() {
             const url = document.getElementById('power-url').value.trim();
-            const resultBox = document.getElementById('power-result');
-            const resultPre = resultBox.querySelector('pre');
-            const btn = document.getElementById('power-btn');
-            
             if (!url) {
-                alert('Please enter a URL');
+                showResult('power-result', 'Please enter a URL', false);
                 return;
             }
             
-            btn.disabled = true;
-            btn.textContent = 'Analyzing...';
-            resultBox.style.display = 'block';
-            resultBox.className = 'result-box';
-            resultPre.textContent = 'Running power check...';
-            
             try {
-                let result;
-                
                 if (window.powerCheck) {
-                    result = await window.powerCheck(url);
+                    const result = await window.powerCheck(url);
+                    showResult('power-result', result);
                 } else if (window.DemoData) {
                     const platform = url.includes('reddit') ? 'reddit' : 'twitter';
-                    result = window.DemoData.getResult(platform, 'powerCheck');
-                    result._note = 'Using demo data (engine not loaded)';
+                    const result = DemoData.getResult(platform, 'powerCheck');
+                    showResult('power-result', { source: 'DemoData', ...result });
                 } else {
-                    throw new Error('No engine or demo data available');
+                    showResult('power-result', 'powerCheck not available', false);
                 }
-                
-                resultBox.className = 'result-box success';
-                resultPre.textContent = JSON.stringify(result, null, 2);
-                
-            } catch (error) {
-                resultBox.className = 'result-box error';
-                resultPre.textContent = `Error: ${error.message}\n\n${error.stack || ''}`;
+            } catch (e) {
+                showResult('power-result', `Error: ${e.message}`, false);
             }
-            
-            btn.disabled = false;
-            btn.textContent = 'Run Power Check';
         }
         
         async function runAccountCheck() {
-            const username = document.getElementById('account-username').value.trim();
+            const username = document.getElementById('account-username').value.trim().replace('@', '');
             const platform = document.getElementById('account-platform').value;
-            const resultBox = document.getElementById('account-result');
-            const resultPre = resultBox.querySelector('pre');
-            const btn = document.getElementById('account-btn');
             
             if (!username) {
-                alert('Please enter a username');
+                showResult('account-result', 'Please enter a username', false);
                 return;
             }
             
-            btn.disabled = true;
-            btn.textContent = 'Checking...';
-            resultBox.style.display = 'block';
-            resultBox.className = 'result-box';
-            resultPre.textContent = 'Checking account...';
-            
             try {
-                let result;
-                
                 if (window.checkAccount) {
-                    result = await window.checkAccount(username, platform);
+                    const result = await window.checkAccount(username, platform);
+                    showResult('account-result', result);
                 } else if (window.DemoData) {
-                    result = window.DemoData.getResult(platform, 'accountCheck');
-                    result._note = 'Using demo data (engine not loaded)';
+                    const result = DemoData.getResult(platform, 'accountCheck');
+                    showResult('account-result', { source: 'DemoData', ...result });
                 } else {
-                    throw new Error('No engine or demo data available');
+                    showResult('account-result', 'checkAccount not available', false);
                 }
-                
-                resultBox.className = 'result-box success';
-                resultPre.textContent = JSON.stringify(result, null, 2);
-                
-            } catch (error) {
-                resultBox.className = 'result-box error';
-                resultPre.textContent = `Error: ${error.message}`;
+            } catch (e) {
+                showResult('account-result', `Error: ${e.message}`, false);
             }
-            
-            btn.disabled = false;
-            btn.textContent = 'Check Account';
         }
         
         async function runTagCheck() {
-            const tagText = document.getElementById('tag-input').value.trim();
-            const platform = document.getElementById('tag-platform').value;
-            const resultBox = document.getElementById('tag-result');
-            const resultPre = resultBox.querySelector('pre');
-            const btn = document.getElementById('tag-btn');
-            
-            if (!tagText) {
-                alert('Please enter some tags');
+            const input = document.getElementById('tag-input').value.trim();
+            if (!input) {
+                showResult('tag-result', 'Please enter hashtags or cashtags', false);
                 return;
             }
             
             // Parse tags
-            const tags = tagText.match(/[#$][\w]+/g) || tagText.split(/[\s,\n]+/).filter(t => t);
+            const tags = input.match(/[#$][a-zA-Z0-9_]+/g) || [];
             
-            btn.disabled = true;
-            btn.textContent = 'Checking...';
-            resultBox.style.display = 'block';
-            resultBox.className = 'result-box';
-            resultPre.textContent = `Checking ${tags.length} tags...`;
-            
-            try {
-                let result;
-                
-                if (window.checkTags) {
-                    result = await window.checkTags(tags, platform);
-                } else if (window.FlaggedHashtags) {
-                    result = window.FlaggedHashtags.checkBulk(tags, platform);
-                    result._note = 'Using FlaggedHashtags directly (engine not fully loaded)';
-                } else if (window.DemoData) {
-                    result = window.DemoData.getResult(platform, 'tagCheck');
-                    result._note = 'Using demo data (engine not loaded)';
-                } else {
-                    throw new Error('No engine or demo data available');
-                }
-                
-                resultBox.className = 'result-box success';
-                resultPre.textContent = JSON.stringify(result, null, 2);
-                
-            } catch (error) {
-                resultBox.className = 'result-box error';
-                resultPre.textContent = `Error: ${error.message}`;
-            }
-            
-            btn.disabled = false;
-            btn.textContent = 'Check Tags';
-        }
-        
-        async function runContentAnalysis() {
-            const content = document.getElementById('content-input').value.trim();
-            const resultBox = document.getElementById('content-result');
-            const resultPre = resultBox.querySelector('pre');
-            const btn = document.getElementById('content-btn');
-            
-            if (!content) {
-                alert('Please enter some content');
+            if (tags.length === 0) {
+                showResult('tag-result', 'No valid hashtags or cashtags found', false);
                 return;
             }
             
-            btn.disabled = true;
-            btn.textContent = 'Analyzing...';
-            resultBox.style.display = 'block';
-            resultBox.className = 'result-box';
-            resultPre.textContent = 'Analyzing content...';
+            try {
+                if (window.checkTags) {
+                    const result = await window.checkTags(tags, 'twitter');
+                    showResult('tag-result', result);
+                } else if (window.FlaggedHashtags && window.FlaggedHashtags.checkBulk) {
+                    const result = FlaggedHashtags.checkBulk(tags, 'twitter');
+                    showResult('tag-result', { source: 'FlaggedHashtags', ...result });
+                } else if (window.DemoData) {
+                    const result = DemoData.getResult('twitter', 'tagCheck');
+                    showResult('tag-result', { source: 'DemoData', ...result });
+                } else {
+                    showResult('tag-result', 'No tag check method available', false);
+                }
+            } catch (e) {
+                showResult('tag-result', `Error: ${e.message}`, false);
+            }
+        }
+        
+        async function runContentAnalysis() {
+            const text = document.getElementById('content-input').value.trim();
+            if (!text) {
+                showResult('content-result', 'Please enter text to analyze', false);
+                return;
+            }
+            
+            const results = {
+                text: text,
+                analysis: {}
+            };
             
             try {
-                const analysis = {
-                    input: content,
-                    length: content.length,
-                    wordCount: content.split(/\s+/).length,
-                    hashtags: { found: [], banned: [], restricted: [] },
-                    cashtags: { found: [], flagged: [] },
-                    links: { found: [], suspicious: [] },
-                    content: { issues: [] },
-                    emojis: { found: [], flagged: [] },
-                    overallRisk: 0
-                };
+                // Check with FlaggedContent
+                if (window.FlaggedContent && window.FlaggedContent.analyze) {
+                    results.analysis.content = FlaggedContent.analyze(text);
+                }
                 
                 // Extract and check hashtags
-                const hashtags = content.match(/#[\w]+/g) || [];
-                analysis.hashtags.found = hashtags;
-                if (window.FlaggedHashtags) {
-                    const hashResult = window.FlaggedHashtags.checkBulk(hashtags, 'twitter');
-                    analysis.hashtags.banned = hashResult.results.filter(r => r.status === 'banned').map(r => r.tag);
-                    analysis.hashtags.restricted = hashResult.results.filter(r => r.status === 'restricted').map(r => r.tag);
+                const hashtags = text.match(/#[a-zA-Z0-9_]+/g) || [];
+                if (hashtags.length > 0 && window.FlaggedHashtags) {
+                    results.analysis.hashtags = FlaggedHashtags.checkBulk(hashtags, 'twitter');
                 }
                 
                 // Extract and check cashtags
-                const cashtags = content.match(/\$[A-Za-z]+/g) || [];
-                analysis.cashtags.found = cashtags;
-                if (window.FlaggedHashtags) {
-                    const cashResult = window.FlaggedHashtags.checkBulk(cashtags, 'twitter');
-                    analysis.cashtags.flagged = cashResult.results.filter(r => r.status !== 'safe').map(r => r.tag);
+                const cashtags = text.match(/\$[a-zA-Z0-9_]+/g) || [];
+                if (cashtags.length > 0 && window.FlaggedHashtags) {
+                    results.analysis.cashtags = FlaggedHashtags.checkBulk(cashtags, 'twitter');
                 }
                 
                 // Extract and check links
-                const links = content.match(/https?:\/\/[^\s]+/g) || [];
-                analysis.links.found = links;
-                if (window.FlaggedLinks) {
-                    links.forEach(link => {
-                        const result = window.FlaggedLinks.checkUrl(link);
-                        if (result.status !== 'safe') {
-                            analysis.links.suspicious.push({ url: link, ...result });
-                        }
-                    });
-                }
-                
-                // Check content patterns
-                if (window.FlaggedContent) {
-                    const contentResult = window.FlaggedContent.analyze(content);
-                    analysis.content = contentResult;
+                const links = text.match(/https?:\/\/[^\s]+/g) || [];
+                if (links.length > 0 && window.FlaggedLinks) {
+                    results.analysis.links = FlaggedLinks.checkBulk(links, 'twitter');
                 }
                 
                 // Check emojis
-                const emojiRegex = /[\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}]/gu;
-                const emojis = content.match(emojiRegex) || [];
-                analysis.emojis.found = emojis;
-                if (window.FlaggedEmojis) {
-                    const emojiResult = window.FlaggedEmojis.checkBulk(emojis);
-                    analysis.emojis.flagged = emojiResult.results.filter(r => r.status !== 'safe');
+                if (window.FlaggedEmojis && window.FlaggedEmojis.analyze) {
+                    results.analysis.emojis = FlaggedEmojis.analyze(text);
                 }
                 
-                // Calculate overall risk
-                let risk = 0;
-                risk += analysis.hashtags.banned.length * 20;
-                risk += analysis.hashtags.restricted.length * 10;
-                risk += analysis.cashtags.flagged.length * 15;
-                risk += analysis.links.suspicious.length * 25;
-                risk += (analysis.content.issues?.length || 0) * 10;
-                risk += analysis.emojis.flagged.length * 5;
-                analysis.overallRisk = Math.min(100, risk);
-                
-                resultBox.className = 'result-box success';
-                resultPre.textContent = JSON.stringify(analysis, null, 2);
-                
-            } catch (error) {
-                resultBox.className = 'result-box error';
-                resultPre.textContent = `Error: ${error.message}`;
+                showResult('content-result', results);
+            } catch (e) {
+                showResult('content-result', `Error: ${e.message}`, false);
             }
-            
-            btn.disabled = false;
-            btn.textContent = 'Analyze Content';
         }
         
         function loadStats() {
-            const resultBox = document.getElementById('stats-result');
-            const resultPre = resultBox.querySelector('pre');
-            
-            resultBox.style.display = 'block';
-            resultBox.className = 'result-box';
-            
             const stats = {
                 databases: {},
                 engine: {},
-                timestamp: new Date().toISOString()
+                agents: {}
             };
             
-            // Gather database stats
+            // Database stats
             if (window.FlaggedHashtags?.getStats) {
-                stats.databases.hashtags = window.FlaggedHashtags.getStats();
+                stats.databases.hashtags = FlaggedHashtags.getStats();
             }
             if (window.FlaggedContent?.getStats) {
-                stats.databases.content = window.FlaggedContent.getStats();
+                stats.databases.content = FlaggedContent.getStats();
             }
             if (window.FlaggedLinks?.getStats) {
-                stats.databases.links = window.FlaggedLinks.getStats();
-            }
-            if (window.FlaggedMentions?.getStats) {
-                stats.databases.mentions = window.FlaggedMentions.getStats();
+                stats.databases.links = FlaggedLinks.getStats();
             }
             if (window.FlaggedEmojis?.getStats) {
-                stats.databases.emojis = window.FlaggedEmojis.getStats();
+                stats.databases.emojis = FlaggedEmojis.getStats();
+            }
+            if (window.FlaggedMentions?.getStats) {
+                stats.databases.mentions = FlaggedMentions.getStats();
             }
             
             // Engine status
             if (window.EngineStatus) {
-                stats.engine = {
-                    ready: EngineStatus.isReady(),
-                    health: EngineStatus.getHealthLabel(),
-                    healthPct: EngineStatus.getHealthPercentage(),
-                    quickStatus: EngineStatus.getQuickStatus()
-                };
+                stats.engine = EngineStatus.getQuickStatus();
             }
             
-            resultBox.className = 'result-box success';
-            resultPre.textContent = JSON.stringify(stats, null, 2);
+            // Agent registry
+            if (window.AgentRegistry) {
+                const agents = AgentRegistry.getAll();
+                for (const [id, agent] of Object.entries(agents)) {
+                    stats.agents[id] = agent.getInfo();
+                }
+            }
+            
+            showResult('stats-result', stats);
         }
         
         function loadDemoData() {
             const platform = document.getElementById('demo-platform').value;
-            const checkType = document.getElementById('demo-checktype').value;
-            const resultBox = document.getElementById('demo-result');
-            const resultPre = resultBox.querySelector('pre');
+            const type = document.getElementById('demo-type').value;
             
-            resultBox.style.display = 'block';
-            resultBox.className = 'result-box';
-            
-            if (!window.DemoData) {
-                resultBox.className = 'result-box error';
-                resultPre.textContent = 'DemoData not loaded!';
-                return;
-            }
-            
-            try {
-                // Try both formats
-                const legacy = window.DemoData.getLegacyResult(platform, checkType);
-                const fiveFactor = window.DemoData.get5FactorResult(platform, checkType);
-                
-                const result = {
-                    _platform: platform,
-                    _checkType: checkType,
-                    _hasLegacy: !!legacy,
-                    _has5Factor: !!fiveFactor,
-                    legacy: legacy || 'Not available',
-                    fiveFactor: fiveFactor || 'Not available'
-                };
-                
-                resultBox.className = 'result-box success';
-                resultPre.textContent = JSON.stringify(result, null, 2);
-                
-            } catch (error) {
-                resultBox.className = 'result-box error';
-                resultPre.textContent = `Error: ${error.message}`;
-            }
-        }
-        
-        // =============================================
-        // INITIALIZATION
-        // =============================================
-        
-        // Update status every 500ms until ready, then every 5s
-        let statusInterval;
-        
-        function startStatusUpdates() {
-            updateStatusDisplay();
-            
-            if (window.EngineStatus?.isReady()) {
-                // Engine ready - slow down updates
-                clearInterval(statusInterval);
-                statusInterval = setInterval(updateStatusDisplay, 5000);
+            if (window.DemoData) {
+                const result = DemoData.getResult(platform, type);
+                showResult('demo-result', {
+                    platform,
+                    type,
+                    data: result || 'No demo data available for this combination'
+                });
             } else {
-                // Still loading - check frequently
-                if (!statusInterval) {
-                    statusInterval = setInterval(() => {
-                        updateStatusDisplay();
-                        if (window.EngineStatus?.isReady()) {
-                            clearInterval(statusInterval);
-                            statusInterval = setInterval(updateStatusDisplay, 5000);
-                        }
-                    }, 500);
-                }
+                showResult('demo-result', 'DemoData not available', false);
             }
         }
         
-        // Start on DOM ready
+        // =========================================
+        // INIT
+        // =========================================
+        
+        // Initial status check
         document.addEventListener('DOMContentLoaded', () => {
-            setTimeout(startStatusUpdates, 100);
-            console.log('🧪 Test page loaded - run tests from the UI or use browser console');
-            console.log('💡 Tip: Run EngineStatus.printStatus() to see detailed status');
+            // Wait a bit for scripts to execute
+            setTimeout(updateStatus, 500);
+            
+            // Keep checking every 2 seconds while loading
+            const interval = setInterval(() => {
+                updateStatus();
+                
+                // Stop checking once everything is loaded
+                const allModules = [
+                    ...MODULES.databases,
+                    ...MODULES.platforms,
+                    ...MODULES.agents,
+                    ...MODULES.engine,
+                    ...MODULES.functions
+                ];
+                
+                const loaded = allModules.filter(m => checkModule(m.global)).length;
+                if (loaded === allModules.length) {
+                    clearInterval(interval);
+                }
+            }, 2000);
+            
+            // Stop after 30 seconds regardless
+            setTimeout(() => clearInterval(interval), 30000);
         });
     </script>
 </body>

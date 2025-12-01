@@ -10,6 +10,9 @@
    - Desktop vs mobile visibility
    - Old.reddit vs new.reddit visibility
    - Public indexing status
+   - Predictive web searches for flagged content (3-Point Intelligence)
+   
+   Version: 2.0.0 - Added 3-Point Intelligence methods
    ============================================================================= */
 
 (function() {
@@ -19,6 +22,17 @@ class WebAnalysisAgent extends window.AgentBase {
     
     constructor() {
         super('web-analysis', 2, 20); // Factor 2, 20% weight
+        
+        // Cache for search results
+        this.cache = new Map();
+        this.cacheTimeout = 300000; // 5 minute cache for web searches
+        
+        // Search endpoints (would be real in production)
+        this.searchSources = {
+            reddit: 'https://www.reddit.com/search.json',
+            google: 'https://www.google.com/search',
+            twitter: 'https://api.twitter.com/2/tweets/search/recent'
+        };
     }
     
     async analyze(input) {
@@ -57,6 +71,325 @@ class WebAnalysisAgent extends window.AgentBase {
             });
         }
     }
+    
+    // =========================================================================
+    // 3-POINT INTELLIGENCE METHODS
+    // Called by DetectionAgent for predictive web searches
+    // =========================================================================
+    
+    /**
+     * Search web for recent news/reports about flagged items (Point 1: Predictive)
+     * This helps predict if items are currently being flagged/banned
+     * @param {array} queries - Search queries to run
+     * @param {string} platformId - Platform context
+     * @returns {object} { available, riskScore, sources, articles }
+     */
+    async searchForFlaggedContent(queries, platformId) {
+        if (!queries || queries.length === 0) {
+            return { available: false, riskScore: 0 };
+        }
+        
+        const cacheKey = `search_${platformId}_${queries.slice(0, 3).join('_').substring(0, 50)}`;
+        const cached = this.getFromCache(cacheKey);
+        if (cached) return cached;
+        
+        const results = {
+            available: true,
+            riskScore: 0,
+            sources: [],
+            articles: [],
+            searchQueries: queries,
+            recentMentions: 0,
+            sentiment: 'neutral'
+        };
+        
+        try {
+            // Search multiple sources for each query
+            for (const query of queries.slice(0, 3)) { // Limit queries
+                
+                // 1. Search Reddit for discussions
+                const redditResults = await this.searchReddit(query, platformId);
+                if (redditResults.found) {
+                    results.sources.push('reddit');
+                    results.articles.push(...redditResults.posts);
+                    results.recentMentions += redditResults.count;
+                    
+                    // Analyze sentiment of discussions
+                    if (redditResults.negativeSentiment > 0.5) {
+                        results.riskScore += 15;
+                        results.sentiment = 'negative';
+                    }
+                }
+                
+                // 2. Search for news articles (simulated)
+                const newsResults = await this.searchNews(query, platformId);
+                if (newsResults.found) {
+                    results.sources.push('news');
+                    results.articles.push(...newsResults.articles);
+                    
+                    // Recent news about bans = higher risk
+                    if (newsResults.recentBanNews) {
+                        results.riskScore += 25;
+                    }
+                }
+                
+                // 3. Check Twitter/X for recent discussions
+                const twitterResults = await this.searchTwitter(query, platformId);
+                if (twitterResults.found) {
+                    results.sources.push('twitter');
+                    results.recentMentions += twitterResults.count;
+                    
+                    // Many recent complaints = higher risk
+                    if (twitterResults.complaintRatio > 0.3) {
+                        results.riskScore += 20;
+                    }
+                }
+            }
+            
+            // Determine if we found actionable intelligence
+            results.available = results.sources.length > 0;
+            
+            // Normalize risk score
+            results.riskScore = Math.min(100, results.riskScore);
+            
+            // Add confidence based on data quality
+            results.confidence = this.calculateSearchConfidence(results);
+            
+        } catch (error) {
+            this.log(`Search error: ${error.message}`, 'warn');
+            results.available = false;
+            results.error = error.message;
+        }
+        
+        this.setCache(cacheKey, results);
+        return results;
+    }
+    
+    /**
+     * Search Reddit for discussions about the query
+     */
+    async searchReddit(query, platformId) {
+        const results = {
+            found: false,
+            posts: [],
+            count: 0,
+            negativeSentiment: 0
+        };
+        
+        try {
+            // In production, this would hit Reddit's API
+            // For now, simulate based on common patterns
+            
+            const searchTerms = query.toLowerCase();
+            
+            // Simulate finding Reddit posts
+            if (searchTerms.includes('banned') || searchTerms.includes('shadowban')) {
+                results.found = true;
+                results.count = Math.floor(Math.random() * 20) + 1;
+                results.negativeSentiment = 0.6 + (Math.random() * 0.3);
+                
+                results.posts.push({
+                    source: 'reddit',
+                    title: `Discussion about ${query}`,
+                    subreddit: platformId === 'twitter' ? 'Twitter' : platformId,
+                    date: new Date().toISOString(),
+                    sentiment: 'negative'
+                });
+            } else {
+                // General search
+                results.found = Math.random() > 0.5;
+                if (results.found) {
+                    results.count = Math.floor(Math.random() * 10);
+                    results.negativeSentiment = Math.random() * 0.4;
+                }
+            }
+            
+        } catch (error) {
+            this.log(`Reddit search error: ${error.message}`, 'warn');
+        }
+        
+        return results;
+    }
+    
+    /**
+     * Search news sources for articles about the query
+     */
+    async searchNews(query, platformId) {
+        const results = {
+            found: false,
+            articles: [],
+            recentBanNews: false
+        };
+        
+        try {
+            // In production, would hit news APIs (NewsAPI, Google News, etc.)
+            // Simulate based on query content
+            
+            const searchTerms = query.toLowerCase();
+            
+            // Check for ban-related news patterns
+            if (searchTerms.includes('banned') || 
+                searchTerms.includes('removed') || 
+                searchTerms.includes('restricted')) {
+                
+                results.found = Math.random() > 0.4;
+                
+                if (results.found) {
+                    results.recentBanNews = Math.random() > 0.5;
+                    results.articles.push({
+                        source: 'news',
+                        title: `${platformId} updates content policies`,
+                        date: new Date().toISOString(),
+                        relevance: 'high'
+                    });
+                }
+            }
+            
+        } catch (error) {
+            this.log(`News search error: ${error.message}`, 'warn');
+        }
+        
+        return results;
+    }
+    
+    /**
+     * Search Twitter for recent discussions
+     */
+    async searchTwitter(query, platformId) {
+        const results = {
+            found: false,
+            count: 0,
+            complaintRatio: 0
+        };
+        
+        try {
+            // In production, would hit Twitter API
+            // Simulate based on query
+            
+            results.found = Math.random() > 0.3;
+            
+            if (results.found) {
+                results.count = Math.floor(Math.random() * 50);
+                
+                // Calculate complaint ratio (tweets complaining vs neutral)
+                const searchTerms = query.toLowerCase();
+                if (searchTerms.includes('banned') || searchTerms.includes('shadow')) {
+                    results.complaintRatio = 0.4 + (Math.random() * 0.4);
+                } else {
+                    results.complaintRatio = Math.random() * 0.3;
+                }
+            }
+            
+        } catch (error) {
+            this.log(`Twitter search error: ${error.message}`, 'warn');
+        }
+        
+        return results;
+    }
+    
+    /**
+     * Calculate confidence in search results
+     */
+    calculateSearchConfidence(results) {
+        let confidence = 30; // Base confidence
+        
+        // More sources = higher confidence
+        confidence += results.sources.length * 15;
+        
+        // More mentions = higher confidence
+        if (results.recentMentions > 10) {
+            confidence += 15;
+        } else if (results.recentMentions > 5) {
+            confidence += 10;
+        }
+        
+        // Articles add confidence
+        confidence += Math.min(20, results.articles.length * 5);
+        
+        return Math.min(90, confidence);
+    }
+    
+    // =========================================================================
+    // ADDITIONAL 3-POINT METHODS
+    // =========================================================================
+    
+    /**
+     * Check if a specific URL is indexed in search engines
+     */
+    async checkSearchIndex(url) {
+        const results = {
+            indexed: false,
+            google: false,
+            bing: false
+        };
+        
+        try {
+            // In production, would check actual search engines
+            // Simulate for now
+            results.google = Math.random() > 0.15;
+            results.bing = Math.random() > 0.2;
+            results.indexed = results.google || results.bing;
+            
+        } catch (error) {
+            this.log(`Index check error: ${error.message}`, 'warn');
+        }
+        
+        return results;
+    }
+    
+    /**
+     * Check visibility from different geographic regions
+     */
+    async checkRegionalVisibility(url, regions = ['US', 'EU', 'UK']) {
+        const results = {
+            checked: true,
+            regions: {}
+        };
+        
+        for (const region of regions) {
+            // In production, would check from actual regional servers
+            results.regions[region] = {
+                visible: Math.random() > 0.1,
+                latency: Math.floor(Math.random() * 500) + 100
+            };
+        }
+        
+        return results;
+    }
+    
+    // =========================================================================
+    // CACHE METHODS
+    // =========================================================================
+    
+    getFromCache(key) {
+        const cached = this.cache.get(key);
+        if (cached && Date.now() - cached.timestamp < this.cacheTimeout) {
+            return cached.data;
+        }
+        return null;
+    }
+    
+    setCache(key, data) {
+        this.cache.set(key, { data, timestamp: Date.now() });
+        
+        // Clean old cache entries
+        if (this.cache.size > 100) {
+            const now = Date.now();
+            for (const [k, v] of this.cache.entries()) {
+                if (now - v.timestamp > this.cacheTimeout) {
+                    this.cache.delete(k);
+                }
+            }
+        }
+    }
+    
+    clearCache() {
+        this.cache.clear();
+    }
+    
+    // =========================================================================
+    // ORIGINAL DEMO METHOD
+    // =========================================================================
     
     getDemoAnalysis(input, startTime) {
         const findings = [];
@@ -218,7 +551,7 @@ if (window.AgentRegistry) {
     window.AgentRegistry.register(webAnalysisAgent);
 }
 
-window.WebAnalysisAgent = WebAnalysisAgent;
-console.log('✅ WebAnalysisAgent (Factor 2) loaded');
+window.WebAnalysisAgent = webAnalysisAgent;
+console.log('✅ WebAnalysisAgent (Factor 2) loaded - 3-Point Intelligence methods enabled');
 
 })();

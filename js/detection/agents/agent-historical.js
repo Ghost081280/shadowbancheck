@@ -10,6 +10,9 @@
    - Pattern recognition from past moderation actions
    - User report history
    - Stored scores and predictions
+   - Past scores for specific items (3-Point Intelligence)
+   
+   Version: 2.0.0 - Added 3-Point Intelligence methods
    ============================================================================= */
 
 (function() {
@@ -23,6 +26,10 @@ class HistoricalAgent extends window.AgentBase {
         // In-memory store for demo (would be database in production)
         this.historyStore = new Map();
         this.maxHistoryItems = 100;
+        
+        // Separate store for item-specific scores (hashtags, links, etc.)
+        this.itemScoreStore = new Map();
+        this.maxItemScores = 500;
     }
     
     async analyze(input) {
@@ -137,7 +144,227 @@ class HistoricalAgent extends window.AgentBase {
     }
     
     // =========================================================================
-    // HISTORY MANAGEMENT
+    // 3-POINT INTELLIGENCE METHODS
+    // Called by DetectionAgent for historical item scores
+    // =========================================================================
+    
+    /**
+     * Get past scores for specific items (Point 3: Historical)
+     * Used by DetectionAgent for 3-Point Intelligence
+     * @param {array} items - Items to look up (hashtags, links, mentions, etc.)
+     * @param {string} type - Type of items ('hashtags', 'links', 'content', 'mentions', 'emojis')
+     * @param {string} platformId - Platform context
+     * @returns {object} { available, scores, trends, averageScore, trendDirection }
+     */
+    async getPastScores(items, type, platformId) {
+        if (!items || items.length === 0) {
+            return { available: false, scores: [], averageScore: 0 };
+        }
+        
+        const results = {
+            available: true,
+            scores: [],
+            trends: [],
+            averageScore: 0,
+            trendDirection: 'stable',
+            itemsWithHistory: 0,
+            itemsWithoutHistory: 0
+        };
+        
+        try {
+            let totalScore = 0;
+            let scoreCount = 0;
+            let recentScores = [];
+            let olderScores = [];
+            
+            for (const item of items) {
+                const itemKey = this.getItemKey(item, type, platformId);
+                const itemHistory = this.getItemHistory(itemKey);
+                
+                if (itemHistory.length > 0) {
+                    results.itemsWithHistory++;
+                    
+                    // Get most recent score
+                    const latestScore = itemHistory[itemHistory.length - 1];
+                    results.scores.push({
+                        item,
+                        currentScore: latestScore.score,
+                        checkCount: itemHistory.length,
+                        lastChecked: latestScore.timestamp,
+                        trend: this.calculateItemTrend(itemHistory)
+                    });
+                    
+                    totalScore += latestScore.score;
+                    scoreCount++;
+                    
+                    // Track for overall trend
+                    if (itemHistory.length >= 2) {
+                        recentScores.push(itemHistory[itemHistory.length - 1].score);
+                        olderScores.push(itemHistory[0].score);
+                    }
+                    
+                    // Add trend info
+                    results.trends.push({
+                        item,
+                        direction: this.calculateItemTrend(itemHistory),
+                        history: itemHistory.slice(-5) // Last 5 scores
+                    });
+                } else {
+                    results.itemsWithoutHistory++;
+                    results.scores.push({
+                        item,
+                        currentScore: null,
+                        checkCount: 0,
+                        lastChecked: null,
+                        trend: 'unknown'
+                    });
+                }
+            }
+            
+            // Calculate average score
+            results.averageScore = scoreCount > 0 ? totalScore / scoreCount : 0;
+            
+            // Calculate overall trend direction
+            if (recentScores.length >= 2 && olderScores.length >= 2) {
+                const recentAvg = recentScores.reduce((a, b) => a + b, 0) / recentScores.length;
+                const olderAvg = olderScores.reduce((a, b) => a + b, 0) / olderScores.length;
+                
+                if (recentAvg > olderAvg + 10) {
+                    results.trendDirection = 'worsening';
+                } else if (recentAvg < olderAvg - 10) {
+                    results.trendDirection = 'improving';
+                }
+            }
+            
+            // Determine if we have useful historical data
+            results.available = results.itemsWithHistory > 0;
+            
+        } catch (error) {
+            this.log(`getPastScores error: ${error.message}`, 'warn');
+            results.available = false;
+            results.error = error.message;
+        }
+        
+        return results;
+    }
+    
+    /**
+     * Store a score for a specific item
+     * Called after detection to build historical data
+     * @param {string} item - The item (hashtag, link, etc.)
+     * @param {string} type - Type of item
+     * @param {string} platformId - Platform
+     * @param {number} score - Score to store
+     */
+    storeItemScore(item, type, platformId, score) {
+        const itemKey = this.getItemKey(item, type, platformId);
+        let history = this.itemScoreStore.get(itemKey) || [];
+        
+        history.push({
+            score,
+            timestamp: new Date().toISOString(),
+            platform: platformId
+        });
+        
+        // Keep only recent history
+        if (history.length > 20) {
+            history = history.slice(-20);
+        }
+        
+        this.itemScoreStore.set(itemKey, history);
+        
+        // Cleanup if store is too large
+        if (this.itemScoreStore.size > this.maxItemScores) {
+            this.cleanupItemStore();
+        }
+    }
+    
+    /**
+     * Store multiple item scores at once
+     * @param {array} items - Array of {item, type, score} objects
+     * @param {string} platformId - Platform
+     */
+    storeItemScores(items, platformId) {
+        for (const { item, type, score } of items) {
+            this.storeItemScore(item, type, platformId, score);
+        }
+    }
+    
+    /**
+     * Get trend for a specific item
+     */
+    getItemTrend(item, type, platformId) {
+        const itemKey = this.getItemKey(item, type, platformId);
+        const history = this.getItemHistory(itemKey);
+        
+        if (history.length < 2) {
+            return { trend: 'unknown', dataPoints: history.length };
+        }
+        
+        return {
+            trend: this.calculateItemTrend(history),
+            dataPoints: history.length,
+            firstScore: history[0].score,
+            lastScore: history[history.length - 1].score,
+            firstDate: history[0].timestamp,
+            lastDate: history[history.length - 1].timestamp
+        };
+    }
+    
+    // =========================================================================
+    // HELPER METHODS FOR 3-POINT INTELLIGENCE
+    // =========================================================================
+    
+    getItemKey(item, type, platformId) {
+        // Normalize the item
+        let normalizedItem = String(item).toLowerCase().trim();
+        
+        // Remove prefixes
+        if (type === 'hashtags') {
+            normalizedItem = normalizedItem.replace(/^#/, '');
+        } else if (type === 'mentions') {
+            normalizedItem = normalizedItem.replace(/^@/, '');
+        }
+        
+        return `item:${type}:${platformId}:${normalizedItem}`;
+    }
+    
+    getItemHistory(itemKey) {
+        return this.itemScoreStore.get(itemKey) || [];
+    }
+    
+    calculateItemTrend(history) {
+        if (history.length < 2) return 'unknown';
+        
+        const scores = history.map(h => h.score);
+        const recentAvg = scores.slice(-3).reduce((a, b) => a + b, 0) / Math.min(3, scores.length);
+        const olderAvg = scores.slice(0, -3).length > 0 
+            ? scores.slice(0, -3).reduce((a, b) => a + b, 0) / scores.slice(0, -3).length
+            : recentAvg;
+        
+        if (recentAvg > olderAvg + 10) return 'worsening';
+        if (recentAvg < olderAvg - 10) return 'improving';
+        return 'stable';
+    }
+    
+    cleanupItemStore() {
+        // Remove oldest entries
+        const entries = Array.from(this.itemScoreStore.entries());
+        entries.sort((a, b) => {
+            const aLatest = a[1][a[1].length - 1]?.timestamp || '';
+            const bLatest = b[1][b[1].length - 1]?.timestamp || '';
+            return aLatest.localeCompare(bLatest);
+        });
+        
+        // Remove oldest 20%
+        const removeCount = Math.floor(entries.length * 0.2);
+        for (let i = 0; i < removeCount; i++) {
+            this.itemScoreStore.delete(entries[i][0]);
+        }
+    }
+    
+    // =========================================================================
+    // ORIGINAL HISTORY MANAGEMENT
     // =========================================================================
     
     getHistoryKey(input) {
@@ -288,8 +515,35 @@ class HistoricalAgent extends window.AgentBase {
         return {
             uniqueKeys: this.historyStore.size,
             totalItems,
-            maxPerKey: this.maxHistoryItems
+            maxPerKey: this.maxHistoryItems,
+            itemScores: {
+                uniqueItems: this.itemScoreStore.size,
+                maxItems: this.maxItemScores
+            }
         };
+    }
+    
+    /**
+     * Export all stored data (for debugging/backup)
+     */
+    exportData() {
+        return {
+            history: Object.fromEntries(this.historyStore),
+            itemScores: Object.fromEntries(this.itemScoreStore),
+            exportedAt: new Date().toISOString()
+        };
+    }
+    
+    /**
+     * Import stored data (for restore)
+     */
+    importData(data) {
+        if (data.history) {
+            this.historyStore = new Map(Object.entries(data.history));
+        }
+        if (data.itemScores) {
+            this.itemScoreStore = new Map(Object.entries(data.itemScores));
+        }
     }
 }
 
@@ -299,7 +553,7 @@ if (window.AgentRegistry) {
     window.AgentRegistry.register(historicalAgent);
 }
 
-window.HistoricalAgent = HistoricalAgent;
-console.log('✅ HistoricalAgent (Factor 3) loaded');
+window.HistoricalAgent = historicalAgent;
+console.log('✅ HistoricalAgent (Factor 3) loaded - 3-Point Intelligence methods enabled');
 
 })();

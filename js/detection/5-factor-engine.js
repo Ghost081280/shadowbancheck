@@ -2,29 +2,23 @@
    5-FACTOR-ENGINE.JS - Main Orchestrator
    ShadowBanCheck.io
    
-   The core engine that orchestrates all 5 factors:
+   UPDATED: Properly passes through Detection Agent's 3-Point Intelligence
+   
+   5 Factors:
    - Factor 1: Platform API Analysis (20%)
    - Factor 2: Web/Search Analysis (20%)
    - Factor 3: Historical Data (15%)
-   - Factor 4: Real-Time Detection (25%)
+   - Factor 4: Real-Time Detection (25%) - 3-Point Intelligence
    - Factor 5: Predictive Intelligence (20%)
-   
-   Three public tools:
-   1. 3-in-1 Power Check - Post URL input → Full sweep (Post + Account)
-   2. Account Checker - @username input → Account status only
-   3. Hashtag Checker - #tags or $cashtags input → Tag safety check
    ============================================================================= */
 
 (function() {
 'use strict';
 
-// ============================================================================
-// FIVE FACTOR ENGINE
-// ============================================================================
 class FiveFactorEngine {
     
     constructor() {
-        this.version = '1.0.0';
+        this.version = '2.0.0';
         this.useDemo = true;
         
         // Factor weights (must sum to 100)
@@ -32,17 +26,8 @@ class FiveFactorEngine {
             1: 20, // Platform API
             2: 20, // Web Analysis
             3: 15, // Historical
-            4: 25, // Detection
+            4: 25, // Detection (highest - has 3-Point Intelligence)
             5: 20  // Predictive
-        };
-        
-        // Confidence thresholds for final verdict
-        this.verdictThresholds = {
-            clear: { maxScore: 15, minConfidence: 60 },
-            likely_clear: { maxScore: 30, minConfidence: 50 },
-            uncertain: { maxScore: 50, minConfidence: 40 },
-            likely_restricted: { maxScore: 70, minConfidence: 50 },
-            restricted: { minScore: 70, minConfidence: 60 }
         };
     }
     
@@ -50,69 +35,50 @@ class FiveFactorEngine {
     // PUBLIC TOOL 1: 3-in-1 POWER CHECK
     // =========================================================================
     
-    /**
-     * Full analysis of a post URL (Post + Account)
-     * @param {string} url - Post URL (twitter.com or x.com or reddit.com)
-     * @returns {Promise<object>} Complete analysis result
-     */
     async powerCheck(url) {
         const startTime = Date.now();
         
         try {
-            // Detect platform and validate URL
+            // Detect platform
             const platform = this.detectPlatform(url);
             if (!platform) {
-                return this.createErrorResult('Invalid or unsupported URL. Please provide a Twitter/X or Reddit post URL.');
+                return this.createErrorResult('Invalid or unsupported URL');
             }
             
             // Get platform instance
             const platformInstance = this.getPlatformInstance(platform);
-            if (!platformInstance) {
-                return this.createErrorResult(`Platform ${platform} not supported`);
+            const normalizedUrl = platformInstance?.getCanonicalUrl?.(url) || url;
+            
+            // Parse URL for identifiers
+            const urlInfo = platformInstance?.getUrlType?.(url) || { valid: true };
+            if (!urlInfo.valid) {
+                return this.createErrorResult(urlInfo.error || 'Invalid URL format');
             }
             
-            // Normalize URL
-            const normalizedUrl = platformInstance.getCanonicalUrl 
-                ? platformInstance.getCanonicalUrl(url)
-                : url;
-            
-            // Extract identifiers
-            const urlType = platformInstance.getUrlType(url);
-            if (!urlType.valid) {
-                return this.createErrorResult(urlType.error || 'Invalid URL format');
-            }
-            
-            // Build input object
+            // Build input
             const input = {
-                type: urlType.type === 'tweet' || urlType.type === 'post' ? 'post' : urlType.type,
+                type: 'post',
                 platform: platform,
                 url: url,
                 normalizedUrl: normalizedUrl,
-                postId: urlType.tweetId || urlType.postId,
-                username: urlType.username,
-                subreddit: urlType.subreddit
+                postId: urlInfo.tweetId || urlInfo.postId,
+                username: urlInfo.username,
+                subreddit: urlInfo.subreddit
             };
             
             // Run all 5 factors
-            const factorResults = await this.runAllFactors(input);
+            const agentResults = await this.runAllFactors(input);
             
-            // Get post and account data for display
-            let postData = null;
-            let accountData = null;
+            // Get post/account data
+            const postData = input.postId ? await this.getPostData(platformInstance, input.postId) : null;
+            const accountData = input.username ? await this.getAccountData(platformInstance, input.username) : null;
             
-            if (input.postId) {
-                postData = await this.getPostData(platformInstance, input.postId);
-            }
-            if (input.username) {
-                accountData = await this.getAccountData(platformInstance, input.username);
-            }
+            // Synthesize results
+            const synthesis = this.synthesizeResults(agentResults);
             
-            // Synthesize final result
-            const synthesis = this.synthesizeResults(factorResults);
-            
-            // Build final output
+            // Build final output with FULL agent data (including Detection Agent's signals)
             return {
-                checkType: '3-in-1 Power Check',
+                checkType: 'powerCheck',
                 platform: platform,
                 inputUrl: url,
                 normalizedUrl: normalizedUrl,
@@ -121,62 +87,43 @@ class FiveFactorEngine {
                 demo: this.useDemo,
                 
                 // Post analysis
-                post: postData ? {
-                    id: input.postId,
-                    exists: postData.exists,
-                    showingUp: !postData.tombstoned && !postData.removed,
-                    reachScore: 100 - synthesis.probability,
-                    probability: synthesis.probability,
-                    visibility: {
-                        directLink: postData.exists,
-                        onProfile: !postData.tombstoned,
-                        inSearch: synthesis.findings.some(f => f.type === 'search_visible'),
-                        inHashtagFeeds: true, // Would check from detection results
-                        inCashtagFeeds: true,
-                        inRecommendations: synthesis.probability < 50
-                    },
-                    detection: this.extractDetectionSummary(factorResults),
-                    verdict: this.getPostVerdict(synthesis.probability)
-                } : null,
+                post: postData ? this.buildPostOutput(input, postData, synthesis, agentResults) : null,
                 
                 // Account analysis
-                account: accountData ? {
-                    username: input.username,
-                    exists: accountData.exists,
-                    showingUp: !accountData.suspended && !accountData.shadowBanned,
-                    verifiedType: accountData.verifiedType || 'none',
-                    accountLabels: accountData.accountLabels || [],
-                    accountAge: accountData.accountAge,
-                    reachScore: 100 - synthesis.probability,
-                    probability: synthesis.probability,
-                    visibility: {
-                        searchable: !accountData.searchBan,
-                        suggestable: !accountData.suggestBan,
-                        repliesVisible: !accountData.replyDeboosting
-                    },
-                    verdict: this.getAccountVerdict(synthesis.probability, accountData)
-                } : null,
+                account: accountData ? this.buildAccountOutput(input, accountData, synthesis) : null,
                 
-                // Factor breakdown
-                factors: factorResults.map(r => ({
-                    factor: r.factorNumber,
-                    name: r.factorName,
+                // FULL agent outputs (includes Detection Agent's signals!)
+                agents: agentResults.map(r => this.formatAgentOutput(r)),
+                
+                // Factor summary (compact view)
+                factors: agentResults.map(r => ({
+                    factor: r.factorNumber || r.factor,
+                    name: r.factorName || this.getFactorName(r.factorNumber || r.factor),
                     weight: r.weight,
                     rawScore: r.rawScore,
                     weightedScore: r.weightedScore,
                     confidence: r.confidence,
-                    findingsCount: r.findings ? r.findings.length : 0
+                    findingsCount: r.findings?.length || 0
                 })),
                 
-                // Overall results
-                overallProbability: synthesis.probability,
-                overallConfidence: synthesis.confidence,
-                combinedVerdict: synthesis.verdict,
-                recommendations: this.generateRecommendations(synthesis, factorResults),
+                // Final synthesis
+                synthesis: {
+                    probability: synthesis.probability,
+                    reachScore: 100 - synthesis.probability,
+                    confidence: {
+                        level: synthesis.confidence >= 70 ? 'high' : synthesis.confidence >= 40 ? 'medium' : 'low',
+                        score: synthesis.confidence,
+                        sources: agentResults.filter(r => r.status === 'complete').length,
+                        description: `${agentResults.filter(r => r.status === 'complete').length} agents corroborate`
+                    },
+                    verdict: synthesis.verdict,
+                    verdictDescription: this.getVerdictDescription(synthesis.verdict),
+                    primaryIssues: synthesis.primaryIssues,
+                    agentAgreement: this.calculateAgentAgreement(agentResults)
+                },
                 
-                // Detailed findings (for debugging/advanced users)
-                _findings: synthesis.findings,
-                _flags: synthesis.flags
+                // Recommendations
+                recommendations: this.generateRecommendations(synthesis, agentResults)
             };
             
         } catch (error) {
@@ -186,193 +133,151 @@ class FiveFactorEngine {
     }
     
     // =========================================================================
-    // PUBLIC TOOL 2: ACCOUNT CHECKER
+    // PUBLIC TOOL 2: ACCOUNT CHECK
     // =========================================================================
     
-    /**
-     * Account-only analysis
-     * @param {string} username - Username (with or without @)
-     * @param {string} platform - Platform ID (default: 'twitter')
-     * @returns {Promise<object>} Account analysis result
-     */
     async checkAccount(username, platform = 'twitter') {
         const startTime = Date.now();
         
         try {
-            // Clean username
             const cleanUsername = username.replace(/^@/, '').trim();
-            
             if (!cleanUsername) {
                 return this.createErrorResult('Please provide a username');
             }
             
-            // Get platform instance
             const platformInstance = this.getPlatformInstance(platform);
-            if (!platformInstance) {
-                return this.createErrorResult(`Platform ${platform} not supported`);
-            }
             
-            // Validate username
-            const validation = platformInstance.validateUsername(cleanUsername);
-            if (!validation.valid) {
-                return this.createErrorResult(validation.error);
-            }
-            
-            // Build input
             const input = {
                 type: 'account',
                 platform: platform,
-                username: validation.username
+                username: cleanUsername
             };
             
-            // Run all factors
-            const factorResults = await this.runAllFactors(input);
-            
-            // Get account data
-            const accountData = await this.getAccountData(platformInstance, validation.username);
-            
-            // Synthesize
-            const synthesis = this.synthesizeResults(factorResults);
+            const agentResults = await this.runAllFactors(input);
+            const accountData = await this.getAccountData(platformInstance, cleanUsername);
+            const synthesis = this.synthesizeResults(agentResults);
             
             return {
-                checkType: 'Account Check',
+                checkType: 'accountCheck',
                 platform: platform,
-                username: validation.username,
+                username: cleanUsername,
                 timestamp: new Date().toISOString(),
                 processingTime: Date.now() - startTime,
                 demo: this.useDemo,
                 
                 account: {
-                    username: validation.username,
-                    displayName: accountData.displayName || `@${validation.username}`,
-                    exists: accountData.exists,
-                    suspended: accountData.suspended,
-                    protected: accountData.protected,
-                    verifiedType: accountData.verifiedType || 'none',
-                    accountAge: accountData.accountAge,
+                    username: cleanUsername,
+                    displayName: accountData?.displayName || `@${cleanUsername}`,
+                    exists: accountData?.exists ?? true,
+                    suspended: accountData?.suspended ?? false,
+                    protected: accountData?.protected ?? false,
+                    verifiedType: accountData?.verifiedType || 'none',
+                    accountAge: accountData?.accountAge,
                     metrics: {
-                        followers: accountData.followerCount,
-                        following: accountData.followingCount,
-                        posts: accountData.tweetCount || accountData.postCount,
-                        karma: accountData.totalKarma // Reddit
+                        followers: accountData?.followerCount,
+                        following: accountData?.followingCount,
+                        posts: accountData?.tweetCount || accountData?.postCount
                     },
                     shadowbanChecks: {
-                        searchBan: accountData.searchBan || false,
-                        ghostBan: accountData.ghostBan || false,
-                        replyDeboosting: accountData.replyDeboosting || false,
-                        suggestBan: accountData.suggestBan || false
+                        searchBan: accountData?.searchBan || false,
+                        searchSuggestionBan: accountData?.searchSuggestionBan || false,
+                        ghostBan: accountData?.ghostBan || false,
+                        replyDeboosting: accountData?.replyDeboosting || false,
+                        suggestBan: accountData?.suggestBan || false
                     },
                     probability: synthesis.probability,
-                    verdict: this.getAccountVerdict(synthesis.probability, accountData)
+                    verdict: synthesis.verdict
                 },
                 
-                factors: factorResults.map(r => ({
-                    factor: r.factorNumber,
-                    name: r.factorName,
-                    rawScore: r.rawScore,
-                    confidence: r.confidence
-                })),
+                agents: agentResults.map(r => this.formatAgentOutput(r)),
                 
-                overallProbability: synthesis.probability,
-                overallConfidence: synthesis.confidence,
-                verdict: synthesis.verdict,
-                recommendations: this.generateRecommendations(synthesis, factorResults)
+                synthesis: {
+                    probability: synthesis.probability,
+                    confidence: { level: synthesis.confidence >= 70 ? 'high' : 'medium', score: synthesis.confidence },
+                    verdict: synthesis.verdict
+                },
+                
+                recommendations: this.generateRecommendations(synthesis, agentResults)
             };
             
         } catch (error) {
-            console.error('Account check error:', error);
             return this.createErrorResult(`Account check failed: ${error.message}`);
         }
     }
     
     // =========================================================================
-    // PUBLIC TOOL 3: HASHTAG/CASHTAG CHECKER
+    // PUBLIC TOOL 3: TAG CHECK
     // =========================================================================
     
-    /**
-     * Check hashtags and/or cashtags
-     * @param {string|array} tags - Tags to check (can include # and $)
-     * @param {string} platform - Platform ID (default: 'twitter')
-     * @returns {Promise<object>} Tag analysis result
-     */
     async checkTags(tags, platform = 'twitter') {
         const startTime = Date.now();
         
         try {
-            // Normalize input to array
-            let tagArray = [];
-            if (typeof tags === 'string') {
-                // Split by spaces, commas, or newlines
-                tagArray = tags.split(/[\s,\n]+/).filter(t => t.length > 0);
-            } else if (Array.isArray(tags)) {
-                tagArray = tags;
-            }
+            let tagArray = typeof tags === 'string' 
+                ? tags.split(/[\s,\n]+/).filter(t => t.length > 0)
+                : tags;
             
             if (tagArray.length === 0) {
-                return this.createErrorResult('Please provide at least one hashtag or cashtag');
+                return this.createErrorResult('Please provide at least one tag');
             }
             
-            // Check if FlaggedHashtags is available
-            if (!window.FlaggedHashtags) {
-                return this.createErrorResult('Hashtag database not loaded');
+            // Use FlaggedHashtags if available
+            let results = { banned: [], restricted: [], monitored: [], safe: tagArray };
+            let riskScore = 0;
+            
+            if (window.FlaggedHashtags) {
+                const check = window.FlaggedHashtags.checkBulk(tagArray, platform);
+                results = check;
+                riskScore = check.summary?.riskScore || 0;
             }
             
-            // Check all tags
-            const results = window.FlaggedHashtags.checkBulk(tagArray, platform);
-            
-            // Build response
             return {
-                checkType: 'Hashtag/Cashtag Check',
+                checkType: 'tagCheck',
                 platform: platform,
                 timestamp: new Date().toISOString(),
                 processingTime: Date.now() - startTime,
                 demo: this.useDemo,
                 
-                input: {
-                    tags: tagArray,
-                    count: tagArray.length
-                },
+                input: { tags: tagArray, count: tagArray.length },
                 
                 results: {
-                    banned: results.banned.map(t => ({
+                    banned: results.banned?.map(t => ({
                         tag: t.tag,
-                        type: t.type,
+                        type: t.type || 'hashtag',
                         category: t.category,
                         reason: t.notes || 'Banned on platform'
-                    })),
-                    restricted: results.restricted.map(t => ({
+                    })) || [],
+                    restricted: results.restricted?.map(t => ({
                         tag: t.tag,
-                        type: t.type,
-                        category: t.category,
+                        type: t.type || 'hashtag',
                         reason: t.notes || 'May reduce reach'
-                    })),
-                    monitored: results.monitored.map(t => ({
+                    })) || [],
+                    monitored: results.monitored?.map(t => ({
                         tag: t.tag,
-                        type: t.type,
-                        category: t.category,
+                        type: t.type || 'hashtag',
                         reason: t.notes || 'Being monitored'
-                    })),
-                    safe: results.safe.map(t => ({
-                        tag: t.tag,
-                        type: t.type || 'unknown'
-                    }))
+                    })) || [],
+                    safe: results.safe?.map(t => ({
+                        tag: typeof t === 'string' ? t : t.tag,
+                        type: 'hashtag'
+                    })) || []
                 },
                 
                 summary: {
                     total: tagArray.length,
-                    banned: results.banned.length,
-                    restricted: results.restricted.length,
-                    monitored: results.monitored.length,
-                    safe: results.safe.length,
-                    riskScore: results.summary.riskScore
+                    banned: results.banned?.length || 0,
+                    restricted: results.restricted?.length || 0,
+                    monitored: results.monitored?.length || 0,
+                    safe: results.safe?.length || 0,
+                    riskScore: riskScore
                 },
                 
-                verdict: this.getTagVerdict(results.summary),
+                confidence: { level: 'high', score: 85 },
+                verdict: this.getTagVerdict(results),
                 recommendations: this.generateTagRecommendations(results)
             };
             
         } catch (error) {
-            console.error('Tag check error:', error);
             return this.createErrorResult(`Tag check failed: ${error.message}`);
         }
     }
@@ -384,21 +289,22 @@ class FiveFactorEngine {
     async runAllFactors(input) {
         const results = [];
         
-        // Get all registered agents
         if (window.AgentRegistry) {
             const agentResults = await window.AgentRegistry.runAll(input);
             results.push(...agentResults);
         } else {
-            // Fallback: create empty results for each factor
+            // Create placeholder results
             for (let factor = 1; factor <= 5; factor++) {
                 results.push({
                     factorNumber: factor,
+                    factor: factor,
                     factorName: this.getFactorName(factor),
                     weight: this.factorWeights[factor],
                     rawScore: 0,
                     weightedScore: 0,
                     confidence: 0,
                     findings: [],
+                    status: 'na',
                     message: 'Agent not loaded'
                 });
             }
@@ -407,46 +313,40 @@ class FiveFactorEngine {
         return results;
     }
     
-    synthesizeResults(factorResults) {
+    synthesizeResults(agentResults) {
         const findings = [];
-        const flags = [];
+        const primaryIssues = [];
         let weightedTotal = 0;
         let weightSum = 0;
         let confidenceSum = 0;
         let confidenceCount = 0;
         
-        for (const result of factorResults) {
+        for (const result of agentResults) {
             // Collect findings
             if (result.findings) {
-                findings.push(...result.findings);
-            }
-            if (result.flags) {
-                flags.push(...result.flags);
+                for (const finding of result.findings) {
+                    findings.push(finding);
+                    if (finding.type === 'danger' || (finding.severity === 'high' && finding.message)) {
+                        primaryIssues.push(finding.message);
+                    }
+                }
             }
             
             // Calculate weighted score
             const weight = result.weight || this.factorWeights[result.factorNumber] || 20;
-            weightedTotal += (result.rawScore || 0) * weight;
+            const score = result.rawScore || 0;
+            weightedTotal += score * weight;
             weightSum += weight;
             
             // Track confidence
-            if (result.confidence !== undefined) {
+            if (result.confidence !== undefined && result.confidence > 0) {
                 confidenceSum += result.confidence;
                 confidenceCount++;
             }
         }
         
-        // Calculate final probability
-        const probability = weightSum > 0 
-            ? Math.round(weightedTotal / weightSum)
-            : 0;
-        
-        // Calculate average confidence
-        const confidence = confidenceCount > 0
-            ? Math.round(confidenceSum / confidenceCount)
-            : 50;
-        
-        // Determine verdict
+        const probability = weightSum > 0 ? Math.round(weightedTotal / weightSum) : 0;
+        const confidence = confidenceCount > 0 ? Math.round(confidenceSum / confidenceCount) : 50;
         const verdict = this.determineVerdict(probability, confidence);
         
         return {
@@ -454,30 +354,152 @@ class FiveFactorEngine {
             confidence,
             verdict,
             findings,
-            flags
+            primaryIssues: primaryIssues.slice(0, 5) // Top 5 issues
         };
     }
     
     // =========================================================================
-    // HELPER METHODS
+    // OUTPUT FORMATTERS
+    // =========================================================================
+    
+    formatAgentOutput(result) {
+        // Return full agent output, including Detection Agent's signals
+        const output = {
+            agent: result.agent || result.factorName,
+            agentId: result.agentId || result.id,
+            factor: result.factorNumber || result.factor,
+            weight: result.weight,
+            status: result.status || 'complete',
+            rawScore: result.rawScore,
+            weightedScore: result.weightedScore,
+            confidence: result.confidence,
+            findings: result.findings || []
+        };
+        
+        // Include Detection Agent specific data
+        if (result.factorNumber === 4 || result.factor === 4 || result.agentId === 'detection') {
+            output.modulesActive = result.modulesActive;
+            output.signals = result.signals;           // 3-Point Intelligence per signal
+            output.signalSummary = result.signalSummary;
+        }
+        
+        // Include other agent-specific data
+        if (result.checks) output.checks = result.checks;
+        if (result.synthesis) output.synthesis = result.synthesis;
+        if (result.riskFactors) output.riskFactors = result.riskFactors;
+        if (result.predictions) output.predictions = result.predictions;
+        
+        return output;
+    }
+    
+    buildPostOutput(input, postData, synthesis, agentResults) {
+        // Get Detection Agent's signal summary
+        const detectionAgent = agentResults.find(r => r.factorNumber === 4 || r.agentId === 'detection');
+        
+        return {
+            id: input.postId,
+            exists: postData?.exists ?? true,
+            tombstoned: postData?.tombstoned ?? false,
+            ageRestricted: postData?.ageRestricted ?? false,
+            
+            visibility: {
+                directLink: true,
+                onProfile: !postData?.tombstoned,
+                inSearch: synthesis.probability < 50,
+                inHashtagFeeds: synthesis.probability < 60,
+                inCashtagFeeds: synthesis.probability < 60,
+                inRecommendations: synthesis.probability < 40,
+                inReplies: true
+            },
+            
+            metrics: postData?.metrics || {},
+            content: postData?.content || {},
+            
+            reachScore: 100 - synthesis.probability,
+            probability: synthesis.probability,
+            verdict: synthesis.verdict,
+            
+            // Include detection summary if available
+            detection: detectionAgent?.signalSummary || null
+        };
+    }
+    
+    buildAccountOutput(input, accountData, synthesis) {
+        return {
+            username: input.username,
+            displayName: accountData?.displayName || `@${input.username}`,
+            exists: accountData?.exists ?? true,
+            suspended: accountData?.suspended ?? false,
+            protected: accountData?.protected ?? false,
+            verifiedType: accountData?.verifiedType || 'none',
+            accountLabels: accountData?.accountLabels || [],
+            accountAge: accountData?.accountAge,
+            
+            metrics: {
+                followers: accountData?.followerCount,
+                following: accountData?.followingCount,
+                tweets: accountData?.tweetCount,
+                listed: accountData?.listedCount
+            },
+            
+            visibility: {
+                searchable: !accountData?.searchBan,
+                inSuggestions: !accountData?.searchSuggestionBan,
+                repliesVisible: !accountData?.replyDeboosting,
+                suggestable: !accountData?.suggestBan
+            },
+            
+            shadowbanChecks: {
+                searchBan: accountData?.searchBan || false,
+                searchSuggestionBan: accountData?.searchSuggestionBan || false,
+                ghostBan: accountData?.ghostBan || false,
+                replyDeboosting: accountData?.replyDeboosting || false,
+                suggestBan: accountData?.suggestBan || false
+            },
+            
+            reachScore: 100 - synthesis.probability,
+            probability: synthesis.probability,
+            verdict: synthesis.verdict
+        };
+    }
+    
+    calculateAgentAgreement(agentResults) {
+        const agreement = {};
+        const riskThresholds = { low: 25, medium: 50, high: 75 };
+        
+        for (const result of agentResults) {
+            const id = result.agentId || `factor${result.factorNumber}`;
+            const score = result.rawScore || 0;
+            
+            if (score >= riskThresholds.high) {
+                agreement[id] = 'high_risk';
+            } else if (score >= riskThresholds.medium) {
+                agreement[id] = 'medium_risk';
+            } else if (score >= riskThresholds.low) {
+                agreement[id] = 'low_risk';
+            } else {
+                agreement[id] = 'clear';
+            }
+        }
+        
+        return agreement;
+    }
+    
+    // =========================================================================
+    // HELPERS
     // =========================================================================
     
     detectPlatform(url) {
         if (!url) return null;
         const lower = url.toLowerCase();
         
-        if (lower.includes('twitter.com') || lower.includes('x.com')) {
-            return 'twitter';
-        }
-        if (lower.includes('reddit.com') || lower.includes('redd.it')) {
-            return 'reddit';
-        }
-        if (lower.includes('instagram.com')) {
-            return 'instagram';
-        }
-        if (lower.includes('tiktok.com')) {
-            return 'tiktok';
-        }
+        if (lower.includes('twitter.com') || lower.includes('x.com')) return 'twitter';
+        if (lower.includes('reddit.com') || lower.includes('redd.it')) return 'reddit';
+        if (lower.includes('instagram.com')) return 'instagram';
+        if (lower.includes('tiktok.com')) return 'tiktok';
+        if (lower.includes('facebook.com')) return 'facebook';
+        if (lower.includes('youtube.com') || lower.includes('youtu.be')) return 'youtube';
+        if (lower.includes('linkedin.com')) return 'linkedin';
         
         return null;
     }
@@ -490,19 +512,13 @@ class FiveFactorEngine {
     }
     
     async getPostData(platform, postId) {
-        if (platform.getPostData) {
-            return await platform.getPostData(postId);
-        }
-        if (platform.getTweetData) {
-            return await platform.getTweetData(postId);
-        }
+        if (platform?.getPostData) return await platform.getPostData(postId);
+        if (platform?.getTweetData) return await platform.getTweetData(postId);
         return { exists: true, demo: true };
     }
     
     async getAccountData(platform, username) {
-        if (platform.getAccountData) {
-            return await platform.getAccountData(username);
-        }
+        if (platform?.getAccountData) return await platform.getAccountData(username);
         return { exists: true, demo: true };
     }
     
@@ -517,32 +533,6 @@ class FiveFactorEngine {
         return names[factorNumber] || `Factor ${factorNumber}`;
     }
     
-    extractDetectionSummary(factorResults) {
-        const factor4 = factorResults.find(r => r.factorNumber === 4);
-        if (!factor4 || !factor4.findings) {
-            return {
-                hashtags: { found: 0, flagged: 0 },
-                cashtags: { found: 0, flagged: 0 },
-                links: { found: 0, flagged: 0 },
-                content: { found: 0, flagged: 0 },
-                mentions: { found: 0, flagged: 0 },
-                emojis: { found: 0, flagged: 0 }
-            };
-        }
-        
-        const summary = {};
-        for (const finding of factor4.findings) {
-            if (finding.details && finding.details.type) {
-                summary[finding.details.type] = {
-                    found: finding.details.found || 0,
-                    flagged: finding.details.flagged ? finding.details.flagged.length : 0
-                };
-            }
-        }
-        
-        return summary;
-    }
-    
     determineVerdict(probability, confidence) {
         if (probability <= 15 && confidence >= 60) return 'CLEAR';
         if (probability <= 30 && confidence >= 50) return 'LIKELY CLEAR';
@@ -552,59 +542,80 @@ class FiveFactorEngine {
         return 'UNCERTAIN';
     }
     
-    getPostVerdict(probability) {
-        if (probability <= 20) return 'Post appears to be showing normally';
-        if (probability <= 40) return 'Post may have slightly reduced visibility';
-        if (probability <= 60) return 'Post likely has reduced reach';
-        if (probability <= 80) return 'Post is probably being suppressed';
-        return 'Post appears to be heavily restricted';
+    getVerdictDescription(verdict) {
+        const descriptions = {
+            'CLEAR': 'No issues detected - content appears healthy',
+            'LIKELY CLEAR': 'Minor indicators but likely showing normally',
+            'UNCERTAIN': 'Mixed signals - some issues may be present',
+            'LIKELY RESTRICTED': 'Multiple suppression indicators detected',
+            'RESTRICTED': 'Strong evidence of visibility restrictions'
+        };
+        return descriptions[verdict] || 'Analysis complete';
     }
     
-    getAccountVerdict(probability, accountData) {
-        if (accountData.suspended) return 'Account is suspended';
-        if (accountData.shadowBanned) return 'Account appears to be shadowbanned';
-        if (probability <= 20) return 'Account appears healthy';
-        if (probability <= 40) return 'Account may have minor visibility issues';
-        if (probability <= 60) return 'Account likely has reduced reach';
-        return 'Account appears to have significant restrictions';
+    getTagVerdict(results) {
+        if (results.banned?.length > 0) return `AVOID - ${results.banned.length} banned tag(s)`;
+        if (results.restricted?.length > 0) return `CAUTION - ${results.restricted.length} restricted tag(s)`;
+        if (results.monitored?.length > 0) return `WATCH - ${results.monitored.length} monitored tag(s)`;
+        return 'SAFE - All tags appear safe';
     }
     
-    getTagVerdict(summary) {
-        if (summary.banned > 0) {
-            return `AVOID - ${summary.banned} banned tag(s) found`;
-        }
-        if (summary.restricted > 0) {
-            return `CAUTION - ${summary.restricted} restricted tag(s) found`;
-        }
-        if (summary.monitored > 0) {
-            return `WATCH - ${summary.monitored} monitored tag(s) found`;
-        }
-        return 'SAFE - All tags appear safe to use';
-    }
-    
-    generateRecommendations(synthesis, factorResults) {
+    generateRecommendations(synthesis, agentResults) {
         const recommendations = [];
         
-        if (synthesis.probability > 50) {
-            recommendations.push('Consider reviewing flagged content before posting');
+        // Get Detection Agent for signal-specific recommendations
+        const detectionAgent = agentResults.find(r => r.factorNumber === 4 || r.agentId === 'detection');
+        
+        if (detectionAgent?.signals) {
+            const signals = detectionAgent.signals;
+            
+            // Hashtag recommendations
+            if (signals.hashtags?.flagged?.banned?.length > 0) {
+                recommendations.push({
+                    priority: 'critical',
+                    action: `Remove banned hashtag(s): ${signals.hashtags.flagged.banned.map(h => h.tag).join(', ')}`,
+                    impact: 'Could improve score by 25+ points',
+                    effort: 'Easy - edit post'
+                });
+            }
+            
+            // Link recommendations
+            if (signals.links?.flagged?.shorteners?.length > 0) {
+                recommendations.push({
+                    priority: 'high',
+                    action: 'Replace link shorteners with full URLs',
+                    impact: 'Improves trust signals',
+                    effort: 'Easy - edit links'
+                });
+            }
+            
+            if (signals.links?.flagged?.throttled?.length > 0) {
+                recommendations.push({
+                    priority: 'medium',
+                    action: `Consider alternatives to throttled domains: ${signals.links.flagged.throttled.map(t => t.domain).join(', ')}`,
+                    impact: 'Avoids 2.5s throttle delay',
+                    effort: 'Medium'
+                });
+            }
         }
         
-        // Check for specific flags
-        if (synthesis.flags.includes('search_ban')) {
-            recommendations.push('Content may not appear in search - consider rewording');
-        }
-        if (synthesis.flags.includes('high_risk_hashtags')) {
-            recommendations.push('Remove or replace flagged hashtags');
-        }
-        if (synthesis.flags.includes('high_risk_links')) {
-            recommendations.push('Some links may be blocked - use alternative URLs');
-        }
-        if (synthesis.flags.includes('spam_pattern')) {
-            recommendations.push('Content matches spam patterns - rephrase to sound more natural');
+        // General recommendations based on probability
+        if (synthesis.probability > 50 && recommendations.length === 0) {
+            recommendations.push({
+                priority: 'medium',
+                action: 'Review content for potential triggers',
+                impact: 'May improve visibility',
+                effort: 'Medium'
+            });
         }
         
-        if (recommendations.length === 0 && synthesis.probability <= 20) {
-            recommendations.push('Content looks good! No major issues detected.');
+        if (recommendations.length === 0) {
+            recommendations.push({
+                priority: 'info',
+                action: 'Content looks good! No major issues detected.',
+                impact: 'N/A',
+                effort: 'None'
+            });
         }
         
         return recommendations;
@@ -613,18 +624,25 @@ class FiveFactorEngine {
     generateTagRecommendations(results) {
         const recommendations = [];
         
-        if (results.banned.length > 0) {
-            recommendations.push(`Remove these banned tags: ${results.banned.map(t => t.tag).join(', ')}`);
-        }
-        if (results.restricted.length > 0) {
-            recommendations.push(`Consider removing restricted tags for better reach: ${results.restricted.map(t => t.tag).join(', ')}`);
-        }
-        if (results.monitored.length > 0) {
-            recommendations.push(`These tags are being watched: ${results.monitored.map(t => t.tag).join(', ')}`);
+        if (results.banned?.length > 0) {
+            recommendations.push({
+                priority: 'critical',
+                action: `Remove banned tags: ${results.banned.map(t => t.tag).join(', ')}`
+            });
         }
         
-        if (recommendations.length === 0) {
-            recommendations.push('All tags look safe to use!');
+        if (results.restricted?.length > 0) {
+            recommendations.push({
+                priority: 'high',
+                action: `Consider removing restricted tags: ${results.restricted.map(t => t.tag).join(', ')}`
+            });
+        }
+        
+        if (results.safe?.length > 0 && results.banned?.length === 0) {
+            recommendations.push({
+                priority: 'info',
+                action: 'All checked tags are safe to use'
+            });
         }
         
         return recommendations;
@@ -645,10 +663,9 @@ class FiveFactorEngine {
     setDemoMode(useDemo) {
         this.useDemo = !!useDemo;
         
-        // Propagate to all agents
         if (window.AgentRegistry) {
             for (const agent of Object.values(window.AgentRegistry.getAll())) {
-                agent.setDemoMode(this.useDemo);
+                if (agent.setDemoMode) agent.setDemoMode(this.useDemo);
             }
         }
     }
@@ -658,20 +675,16 @@ class FiveFactorEngine {
             version: this.version,
             useDemo: this.useDemo,
             factorWeights: this.factorWeights,
-            agentsLoaded: window.AgentRegistry ? Object.keys(window.AgentRegistry.getAll()).length : 0,
-            allFactorsCovered: window.AgentRegistry ? window.AgentRegistry.hasAllFactors() : false
+            agentsLoaded: window.AgentRegistry ? Object.keys(window.AgentRegistry.getAll()).length : 0
         };
     }
 }
 
 // ============================================================================
-// SINGLETON INSTANCE
+// SINGLETON & EXPORTS
 // ============================================================================
 const engine = new FiveFactorEngine();
 
-// ============================================================================
-// EXPORTS
-// ============================================================================
 window.FiveFactorEngine = FiveFactorEngine;
 window.shadowBanEngine = engine;
 
@@ -680,10 +693,6 @@ window.powerCheck = (url) => engine.powerCheck(url);
 window.checkAccount = (username, platform) => engine.checkAccount(username, platform);
 window.checkTags = (tags, platform) => engine.checkTags(tags, platform);
 
-// ============================================================================
-// INITIALIZATION
-// ============================================================================
-console.log('✅ 5-Factor Engine loaded');
-console.log('   Status:', engine.getStatus());
+console.log('✅ 5-Factor Engine v2.0 loaded - 3-Point Intelligence support');
 
 })();

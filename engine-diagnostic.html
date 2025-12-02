@@ -3,749 +3,757 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🔧 5-Factor Engine Diagnostic Test</title>
+    <title>ShadowBanCheck - Engine Diagnostic</title>
     <style>
-        :root {
-            --bg: #0a0a0f;
-            --card: #12121a;
-            --border: #2a2a3a;
-            --text: #e4e4e7;
-            --muted: #71717a;
-            --success: #22c55e;
-            --warning: #f59e0b;
-            --danger: #ef4444;
-            --info: #3b82f6;
-            --primary: #6366f1;
-        }
-        
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            min-height: 100vh;
-            padding: 1rem;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: #0a0a0f;
+            color: #e2e8f0;
+            padding: 20px;
+            line-height: 1.6;
         }
-        
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
+        h1 {
+            color: #a855f7;
+            margin-bottom: 10px;
         }
-        
-        header {
-            text-align: center;
-            padding: 2rem 1rem;
-            border-bottom: 1px solid var(--border);
-            margin-bottom: 2rem;
+        h2 {
+            color: #6366f1;
+            margin: 30px 0 15px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #333;
         }
-        
-        h1 { font-size: 1.75rem; margin-bottom: 0.5rem; }
-        .subtitle { color: var(--muted); font-size: 0.95rem; }
-        
-        /* Summary Box */
-        .summary-box {
-            background: var(--card);
-            border: 2px solid var(--border);
-            border-radius: 12px;
-            padding: 1.5rem;
-            margin-bottom: 2rem;
-            text-align: center;
+        h3 {
+            color: #8b5cf6;
+            margin: 20px 0 10px;
         }
-        
-        .summary-box.success { border-color: var(--success); }
-        .summary-box.warning { border-color: var(--warning); }
-        .summary-box.error { border-color: var(--danger); }
-        
-        .summary-title { font-size: 1.5rem; margin-bottom: 0.5rem; }
-        
-        .summary-stats {
-            display: flex;
-            justify-content: center;
-            gap: 2rem;
-            margin-top: 1rem;
-            flex-wrap: wrap;
+        .subtitle {
+            color: #64748b;
+            margin-bottom: 30px;
         }
-        
-        .stat { text-align: center; }
-        .stat-value { font-size: 2rem; font-weight: bold; }
-        .stat-value.success { color: var(--success); }
-        .stat-value.warning { color: var(--warning); }
-        .stat-value.danger { color: var(--danger); }
-        .stat-label { font-size: 0.85rem; color: var(--muted); }
-        
-        /* Progress */
-        .progress-container { margin: 1.5rem 0; }
-        .progress-bar {
-            height: 8px;
-            background: var(--border);
-            border-radius: 4px;
-            overflow: hidden;
-        }
-        .progress-fill {
-            height: 100%;
-            background: var(--primary);
-            transition: width 0.3s;
-            border-radius: 4px;
-        }
-        .progress-text {
-            text-align: center;
-            margin-top: 0.5rem;
-            font-size: 0.9rem;
-            color: var(--muted);
-        }
-        
-        /* Sections */
         .section {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            margin-bottom: 1.5rem;
-            overflow: hidden;
-        }
-        
-        .section-header {
-            padding: 1rem 1.5rem;
-            background: rgba(99, 102, 241, 0.1);
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            cursor: pointer;
-        }
-        
-        .section-header:hover { background: rgba(99, 102, 241, 0.15); }
-        
-        .section-title {
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        
-        .section-status {
-            padding: 0.25rem 0.75rem;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 600;
-        }
-        
-        .section-status.success { background: var(--success); color: #000; }
-        .section-status.partial { background: var(--warning); color: #000; }
-        .section-status.error { background: var(--danger); color: #fff; }
-        .section-status.pending { background: var(--muted); color: #fff; }
-        
-        .section-content { padding: 1rem 1.5rem; }
-        
-        /* File List */
-        .file-list { list-style: none; }
-        
-        .file-item {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            padding: 0.75rem;
+            background: #12121a;
+            border: 1px solid #1e1e2e;
             border-radius: 8px;
-            margin-bottom: 0.5rem;
-            background: var(--bg);
+            padding: 20px;
+            margin-bottom: 20px;
         }
-        
-        .file-item.loaded { border-left: 3px solid var(--success); }
-        .file-item.missing { border-left: 3px solid var(--danger); opacity: 0.8; }
-        
-        .file-icon { font-size: 1.25rem; width: 28px; text-align: center; }
-        .file-info { flex: 1; }
-        .file-name { font-family: 'Monaco', 'Consolas', monospace; font-size: 0.85rem; }
-        .file-desc { font-size: 0.75rem; color: var(--muted); }
-        .file-status { font-size: 0.8rem; padding: 0.25rem 0.5rem; border-radius: 4px; }
-        .file-status.loaded { color: var(--success); }
-        .file-status.missing { color: var(--danger); }
-        
-        /* Global Tests */
-        .global-test {
+        .check-item {
             display: flex;
             align-items: center;
-            gap: 0.75rem;
-            padding: 0.5rem 0;
-            border-bottom: 1px solid var(--border);
+            gap: 12px;
+            padding: 10px 0;
+            border-bottom: 1px solid #1e1e2e;
         }
-        
-        .global-test:last-child { border-bottom: none; }
-        .global-icon { font-size: 1.25rem; }
-        .global-name { flex: 1; font-family: 'Monaco', 'Consolas', monospace; font-size: 0.85rem; }
-        .global-result { font-size: 0.85rem; }
-        .global-result.yes { color: var(--success); }
-        .global-result.no { color: var(--danger); }
-        
-        /* Buttons */
-        .btn {
-            display: inline-flex;
+        .check-item:last-child { border-bottom: none; }
+        .status {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
             align-items: center;
             justify-content: center;
-            gap: 0.5rem;
-            padding: 0.75rem 1.5rem;
-            border-radius: 8px;
-            font-size: 1rem;
-            font-weight: 500;
-            cursor: pointer;
-            border: none;
-            transition: all 0.2s;
+            font-size: 14px;
+            flex-shrink: 0;
         }
+        .status.found { background: #22c55e33; color: #22c55e; }
+        .status.missing { background: #ef444433; color: #ef4444; }
+        .status.partial { background: #f59e0b33; color: #f59e0b; }
+        .name { font-family: monospace; color: #a5b4fc; }
+        .type { color: #64748b; font-size: 0.85em; margin-left: auto; }
         
-        .btn-primary { background: var(--primary); color: #fff; }
-        .btn-primary:hover { background: #818cf8; }
-        .btn-success { background: var(--success); color: #000; }
-        
-        .btn-group {
-            display: flex;
-            gap: 1rem;
-            justify-content: center;
-            margin-top: 1.5rem;
-            flex-wrap: wrap;
-        }
-        
-        /* Issue Box */
-        .issue-box {
-            background: rgba(239, 68, 68, 0.1);
-            border: 1px solid var(--danger);
-            border-radius: 8px;
-            padding: 1rem 1.5rem;
-            margin-bottom: 1.5rem;
-        }
-        
-        .issue-box h3 { color: var(--danger); margin-bottom: 0.5rem; }
-        .issue-box p { color: var(--muted); font-size: 0.9rem; margin-bottom: 0.5rem; }
-        .issue-box code {
-            background: var(--bg);
-            padding: 0.2rem 0.5rem;
-            border-radius: 4px;
-            font-size: 0.85rem;
-        }
-        
-        /* Footer */
-        footer {
-            text-align: center;
-            padding: 2rem;
-            color: var(--muted);
-            font-size: 0.85rem;
-        }
-        
-        footer a { color: var(--primary); text-decoration: none; }
-
-        /* Quick Test Output */
-        .test-output {
-            background: var(--bg);
-            padding: 1rem;
-            border-radius: 8px;
-            font-family: 'Monaco', 'Consolas', monospace;
-            font-size: 0.8rem;
+        .output-box {
+            background: #0a0a0f;
+            border: 1px solid #333;
+            border-radius: 6px;
+            padding: 15px;
+            margin-top: 10px;
+            font-family: monospace;
+            font-size: 13px;
             white-space: pre-wrap;
+            word-break: break-all;
             max-height: 400px;
             overflow-y: auto;
+        }
+        .output-box.error { border-color: #ef4444; color: #fca5a5; }
+        .output-box.success { border-color: #22c55e; }
+        
+        button {
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            margin: 5px;
+        }
+        button:hover { opacity: 0.9; }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+        
+        input, select {
+            background: #1e1e2e;
+            border: 1px solid #333;
+            color: #e2e8f0;
+            padding: 10px 14px;
+            border-radius: 6px;
+            font-size: 14px;
+            margin: 5px;
+        }
+        input { width: 250px; }
+        
+        .test-section {
+            background: #1a1a2e;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 15px;
+        }
+        
+        .summary-box {
+            background: linear-gradient(135deg, #6366f120, #a855f720);
+            border: 1px solid #6366f150;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .summary-stat {
+            text-align: center;
+        }
+        .summary-stat .number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #a855f7;
+        }
+        .summary-stat .label {
+            color: #64748b;
+            font-size: 0.9em;
+        }
+        
+        #copy-report {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 100;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>🔧 5-Factor Engine Diagnostic</h1>
-            <p class="subtitle">File Loading & Status Check</p>
-        </header>
-        
-        <!-- Summary Box -->
-        <div id="summary-box" class="summary-box">
-            <div id="summary-title" class="summary-title">⏳ Running Diagnostic...</div>
-            <div id="summary-message">Checking all files...</div>
-            
-            <div class="progress-container">
-                <div class="progress-bar">
-                    <div id="progress-fill" class="progress-fill" style="width: 0%"></div>
-                </div>
-                <div id="progress-text" class="progress-text">0 / 0 files</div>
-            </div>
-            
-            <div class="summary-stats">
-                <div class="stat">
-                    <div id="stat-loaded" class="stat-value success">0</div>
-                    <div class="stat-label">Loaded</div>
-                </div>
-                <div class="stat">
-                    <div id="stat-missing" class="stat-value danger">0</div>
-                    <div class="stat-label">Missing</div>
-                </div>
-                <div class="stat">
-                    <div id="stat-total" class="stat-value">0</div>
-                    <div class="stat-label">Total</div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Known Issue Alert -->
-        <div id="issue-box" class="issue-box" style="display: none;">
-            <h3>⚠️ File Location Issue Detected</h3>
-            <p id="issue-text"></p>
-        </div>
-        
-        <!-- Core Files -->
-        <div class="section">
-            <div class="section-header" onclick="toggleSection('core')">
-                <span class="section-title">📁 Core Files (js/)</span>
-                <span id="core-status" class="section-status pending">...</span>
-            </div>
-            <div id="core-content" class="section-content">
-                <ul id="core-list" class="file-list"></ul>
-            </div>
-        </div>
-        
-        <!-- Database Files -->
-        <div class="section">
-            <div class="section-header" onclick="toggleSection('databases')">
-                <span class="section-title">🗄️ Databases (js/detection/databases/)</span>
-                <span id="databases-status" class="section-status pending">...</span>
-            </div>
-            <div id="databases-content" class="section-content">
-                <ul id="databases-list" class="file-list"></ul>
-            </div>
-        </div>
-        
-        <!-- Platform Files -->
-        <div class="section">
-            <div class="section-header" onclick="toggleSection('platforms')">
-                <span class="section-title">🌐 Platforms (js/detection/platforms/)</span>
-                <span id="platforms-status" class="section-status pending">...</span>
-            </div>
-            <div id="platforms-content" class="section-content">
-                <ul id="platforms-list" class="file-list"></ul>
-            </div>
-        </div>
-        
-        <!-- Agent Files -->
-        <div class="section">
-            <div class="section-header" onclick="toggleSection('agents')">
-                <span class="section-title">🤖 Agents (js/detection/agents/)</span>
-                <span id="agents-status" class="section-status pending">...</span>
-            </div>
-            <div id="agents-content" class="section-content">
-                <ul id="agents-list" class="file-list"></ul>
-            </div>
-        </div>
-        
-        <!-- Engine Files -->
-        <div class="section">
-            <div class="section-header" onclick="toggleSection('engine')">
-                <span class="section-title">⚡ Engine (js/detection/)</span>
-                <span id="engine-status" class="section-status pending">...</span>
-            </div>
-            <div id="engine-content" class="section-content">
-                <ul id="engine-list" class="file-list"></ul>
-            </div>
-        </div>
-        
-        <!-- Global Variables -->
-        <div class="section">
-            <div class="section-header" onclick="toggleSection('globals')">
-                <span class="section-title">🔗 Global Variables</span>
-                <span id="globals-status" class="section-status pending">...</span>
-            </div>
-            <div id="globals-content" class="section-content">
-                <div id="globals-list"></div>
-            </div>
-        </div>
-        
-        <!-- Quick Test Results -->
-        <div id="test-section" class="section" style="display: none;">
-            <div class="section-header">
-                <span class="section-title">🧪 Quick Test Results</span>
-            </div>
-            <div class="section-content">
-                <div id="test-output" class="test-output"></div>
-            </div>
-        </div>
-        
-        <!-- Buttons -->
-        <div class="btn-group">
-            <button class="btn btn-primary" onclick="runDiagnostic()">🔄 Re-Run Diagnostic</button>
-            <button id="test-btn" class="btn btn-success" onclick="runQuickTest()" style="display: none;">
-                ✅ Run Quick Test
-            </button>
-        </div>
-        
-        <footer>
-            <p>5-Factor Detection Engine Diagnostic</p>
-            <p><a href="index.html">← Back to Home</a></p>
-        </footer>
-    </div>
+    <h1>🔍 ShadowBanCheck Engine Diagnostic</h1>
+    <p class="subtitle">Checking what engine functions exist and what data structures they return</p>
     
+    <div class="summary-box">
+        <h3>Summary</h3>
+        <div class="summary-grid" id="summary-grid">
+            <div class="summary-stat">
+                <div class="number" id="found-count">-</div>
+                <div class="label">Found</div>
+            </div>
+            <div class="summary-stat">
+                <div class="number" id="missing-count">-</div>
+                <div class="label">Missing</div>
+            </div>
+            <div class="summary-stat">
+                <div class="number" id="partial-count">-</div>
+                <div class="label">Partial</div>
+            </div>
+        </div>
+    </div>
+
+    <h2>1. Global Objects & Functions</h2>
+    <div class="section" id="globals-section">
+        <p>Checking window.* for engine-related objects...</p>
+    </div>
+
+    <h2>2. Platform Data</h2>
+    <div class="section" id="platforms-section">
+        <p>Checking platform configuration...</p>
+    </div>
+
+    <h2>3. Detection Agent Status</h2>
+    <div class="section" id="agents-section">
+        <p>Checking AgentStatus / EngineStatus...</p>
+    </div>
+
+    <h2>4. Hashtag/Cashtag Database</h2>
+    <div class="section" id="hashtag-section">
+        <p>Checking FlaggedHashtags and related functions...</p>
+    </div>
+
+    <h2>5. Demo Data</h2>
+    <div class="section" id="demo-section">
+        <p>Checking DemoData availability...</p>
+    </div>
+
+    <h2>6. Live Function Tests</h2>
+    <div class="section">
+        <h3>Test Account Check</h3>
+        <div class="test-section">
+            <select id="test-platform">
+                <option value="twitter">Twitter/X</option>
+                <option value="instagram">Instagram</option>
+                <option value="tiktok">TikTok</option>
+                <option value="reddit">Reddit</option>
+            </select>
+            <input type="text" id="test-username" placeholder="@username" value="@ghost081280">
+            <button onclick="testAccountCheck()">Test checkAccount()</button>
+            <div class="output-box" id="account-output">Click button to test...</div>
+        </div>
+
+        <h3>Test Post/URL Check</h3>
+        <div class="test-section">
+            <input type="text" id="test-url" placeholder="Post URL" value="https://x.com/ghost081280/status/123" style="width: 350px;">
+            <button onclick="testPostCheck()">Test checkPost()</button>
+            <div class="output-box" id="post-output">Click button to test...</div>
+        </div>
+
+        <h3>Test Hashtag Check</h3>
+        <div class="test-section">
+            <input type="text" id="test-tags" placeholder="#hashtag1 #hashtag2" value="#crypto #followback #photography">
+            <button onclick="testHashtagCheck()">Test checkTags()</button>
+            <button onclick="testFlaggedHashtags()">Test FlaggedHashtags</button>
+            <div class="output-box" id="hashtag-output">Click button to test...</div>
+        </div>
+
+        <h3>Test Demo Data</h3>
+        <div class="test-section">
+            <select id="demo-platform">
+                <option value="twitter">Twitter</option>
+                <option value="instagram">Instagram</option>
+                <option value="reddit">Reddit</option>
+                <option value="tiktok">TikTok</option>
+            </select>
+            <select id="demo-type">
+                <option value="powerCheck">Power Check</option>
+                <option value="accountCheck">Account Check</option>
+                <option value="tagCheck">Tag Check</option>
+            </select>
+            <button onclick="testDemoData()">Get Demo Data</button>
+            <div class="output-box" id="demo-output">Click button to test...</div>
+        </div>
+    </div>
+
+    <h2>7. Full Report (Copy for Claude)</h2>
+    <div class="section">
+        <button onclick="generateReport()">Generate Full Report</button>
+        <button onclick="copyReport()">📋 Copy to Clipboard</button>
+        <div class="output-box" id="full-report" style="max-height: 600px;">Click "Generate Full Report" to create...</div>
+    </div>
+
+    <button id="copy-report" onclick="copyReport()">📋 Copy Report</button>
+
+    <!-- Load your JS files here -->
+    <script src="js/platforms.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/demo-data.js"></script>
+    <!-- Add any other engine files you have -->
+    <!-- <script src="js/engine.js"></script> -->
+    <!-- <script src="js/api.js"></script> -->
+    <!-- <script src="js/five-factor.js"></script> -->
+    <!-- <script src="js/flagged-hashtags.js"></script> -->
+
     <script>
-        // =========================================
-        // FILE DEFINITIONS - MATCHING YOUR ACTUAL FILES
-        // =========================================
+        // =====================================================================
+        // DIAGNOSTIC CHECKS
+        // =====================================================================
         
-        const FILES = {
-            core: [
-                { path: 'js/platforms.js', desc: 'Platform configuration', global: 'platformData' },
-                { path: 'js/main.js', desc: 'Shared utilities & EngineStatus', global: 'EngineStatus' },
-                { path: 'js/demo-data.js', desc: 'Demo/fallback data', global: 'DemoData' },
-                { path: 'js/index.js', desc: 'Home page + FiveFactorLoader', global: 'FiveFactorLoader' },
-                { path: 'js/detection-api.js', desc: 'Frontend API client', global: 'DetectionAPI' },
-                { path: 'js/checker.js', desc: 'Account checker page', global: null },
-                { path: 'js/hashtag-checker.js', desc: 'Hashtag checker page', global: null },
-                { path: 'js/results.js', desc: 'Results page', global: null },
-            ],
-            databases: [
-                { path: 'js/detection/databases/flagged-content.js', desc: 'Content patterns', global: 'FlaggedContent' },
-                { path: 'js/detection/databases/flagged-hashtags.js', desc: 'Hashtags & cashtags', global: 'FlaggedHashtags' },
-                { path: 'js/detection/databases/flagged-mentions.js', desc: 'Mentions database', global: 'FlaggedMentions' },
-                { path: 'js/detection/databases/flagged-emojis.js', desc: 'Emoji patterns', global: 'FlaggedEmojis' },
-                { path: 'js/detection/databases/flagged-links.js', desc: 'Links/domains', global: 'FlaggedLinks' },
-                { path: 'js/detection/databases/flagged-images.js', desc: 'Image detection (Phase 2)', global: 'FlaggedImages' },
-                { path: 'js/detection/databases/flagged-videos.js', desc: 'Video detection (Phase 2)', global: 'FlaggedVideos' },
-                { path: 'js/detection/databases/flagged-audio.js', desc: 'Audio detection (Phase 3)', global: 'FlaggedAudio' },
-            ],
-            platforms: [
-                { path: 'js/detection/platforms/platform-base.js', desc: 'Base platform class', global: 'PlatformBase' },
-                { path: 'js/detection/platforms/twitter.js', desc: 'Twitter/X handler', global: 'TwitterPlatform' },
-                { path: 'js/detection/platforms/reddit.js', desc: 'Reddit handler', global: 'RedditPlatform' },
-            ],
-            agents: [
-                { path: 'js/detection/agents/agent-base.js', desc: 'Base agent class', global: 'AgentBase' },
-                { path: 'js/detection/agents/agent-platform-api.js', desc: 'Factor 1: Platform API (20%)', global: 'PlatformAPIAgent' },
-                { path: 'js/detection/agents/agent-web-analysis.js', desc: 'Factor 2: Web Analysis (20%)', global: 'WebAnalysisAgent' },
-                { path: 'js/detection/agents/agent-historical.js', desc: 'Factor 3: Historical (15%)', global: 'HistoricalAgent' },
-                { path: 'js/detection/agents/agent-predictive.js', desc: 'Factor 5: Predictive (20%)', global: 'PredictiveAgent' },
-            ],
-            engine: [
-                { path: 'js/detection/5-factor-engine.js', desc: 'Main orchestrator', global: 'FiveFactorEngine' },
-            ]
+        const results = {
+            globals: [],
+            platforms: [],
+            agents: [],
+            hashtags: [],
+            demo: [],
+            functions: {}
         };
-        
-        // Check for agent-detection.js in wrong location
-        const MISPLACED_FILES = [
-            { wrongPath: 'js/agent-detection.js', correctPath: 'js/detection/agents/agent-detection.js', desc: 'Detection Agent (Factor 4)' }
+
+        // Things to check for
+        const GLOBAL_CHECKS = [
+            // Core engine functions
+            { name: 'checkAccount', desc: 'Account checking function' },
+            { name: 'checkPost', desc: 'Post/URL checking function' },
+            { name: 'checkTags', desc: 'Hashtag checking function' },
+            { name: 'runCheck', desc: 'Generic check runner' },
+            { name: 'runAnalysis', desc: 'Analysis runner' },
+            
+            // 5-Factor / Detection Agents
+            { name: 'FiveFactorEngine', desc: '5-Factor engine object' },
+            { name: 'FiveFactorLoader', desc: '5-Factor loader' },
+            { name: 'DetectionAgents', desc: 'Detection agents object' },
+            { name: 'AgentStatus', desc: 'Agent status utility' },
+            { name: 'EngineStatus', desc: 'Engine status (legacy alias)' },
+            
+            // Platform data
+            { name: 'platformData', desc: 'Platform configuration' },
+            { name: 'PLATFORMS', desc: 'Platforms (legacy alias)' },
+            { name: 'getPlatformById', desc: 'Get platform by ID' },
+            { name: 'getActiveModulesForPlatform', desc: 'Get active modules count' },
+            
+            // Hashtag database
+            { name: 'FlaggedHashtags', desc: 'Flagged hashtags database' },
+            { name: 'HashtagDatabase', desc: 'Hashtag database' },
+            { name: 'HashtagAPI', desc: 'Hashtag API' },
+            { name: 'checkHashtags', desc: 'Check hashtags function' },
+            
+            // Demo data
+            { name: 'DemoData', desc: 'Demo data object' },
+            
+            // API / Backend
+            { name: 'API', desc: 'API object' },
+            { name: 'api', desc: 'API object (lowercase)' },
+            { name: 'Backend', desc: 'Backend object' },
+            { name: 'ShadowBanAPI', desc: 'ShadowBan API' },
+            
+            // Other utilities
+            { name: 'ShadowAI', desc: 'Shadow AI chatbot' },
+            { name: 'IntelligenceModel', desc: 'Intelligence model config' }
         ];
-        
-        // Key globals to verify
-        const KEY_GLOBALS = [
-            { name: 'platformData', desc: 'Platform config' },
-            { name: 'EngineStatus', desc: 'Engine status' },
-            { name: 'FiveFactorLoader', desc: 'Engine loader' },
-            { name: 'DemoData', desc: 'Demo data' },
-            { name: 'FlaggedHashtags', desc: 'Hashtag DB' },
-            { name: 'FlaggedContent', desc: 'Content DB' },
-            { name: 'FlaggedLinks', desc: 'Links DB' },
-            { name: 'PlatformBase', desc: 'Platform base' },
-            { name: 'PlatformFactory', desc: 'Platform factory' },
-            { name: 'FiveFactorEngine', desc: 'Main engine' },
-            { name: 'powerCheck', desc: 'Power check fn' },
-            { name: 'checkAccount', desc: 'Account check fn' },
-            { name: 'checkTags', desc: 'Tag check fn' },
-        ];
-        
-        // =========================================
-        // STATE
-        // =========================================
-        
-        let results = { loaded: 0, missing: 0, total: 0, errors: [], misplaced: [] };
-        
-        // =========================================
-        // FUNCTIONS
-        // =========================================
-        
-        async function checkFile(fileDef) {
-            return new Promise((resolve) => {
-                const script = document.createElement('script');
-                script.src = fileDef.path + '?t=' + Date.now();
-                script.onload = () => resolve({ ...fileDef, status: 'loaded' });
-                script.onerror = () => resolve({ ...fileDef, status: 'missing' });
-                document.head.appendChild(script);
-            });
-        }
-        
-        async function checkMisplacedFile(fileDef) {
-            return new Promise((resolve) => {
-                const script = document.createElement('script');
-                script.src = fileDef.wrongPath + '?t=' + Date.now();
-                script.onload = () => resolve({ ...fileDef, found: true });
-                script.onerror = () => resolve({ ...fileDef, found: false });
-                document.head.appendChild(script);
-            });
-        }
-        
-        function updateProgress(current, total) {
-            const pct = Math.round((current / total) * 100);
-            document.getElementById('progress-fill').style.width = pct + '%';
-            document.getElementById('progress-text').textContent = `${current} / ${total} files`;
-        }
-        
-        function renderFileList(category, fileResults) {
-            const list = document.getElementById(category + '-list');
-            const statusEl = document.getElementById(category + '-status');
-            
-            let html = '';
-            let loadedCount = 0;
-            
-            fileResults.forEach(file => {
-                const isLoaded = file.status === 'loaded';
-                if (isLoaded) loadedCount++;
-                
-                html += `
-                    <li class="file-item ${isLoaded ? 'loaded' : 'missing'}">
-                        <span class="file-icon">${isLoaded ? '✅' : '❌'}</span>
-                        <div class="file-info">
-                            <div class="file-name">${file.path}</div>
-                            <div class="file-desc">${file.desc}${file.global ? ' → window.' + file.global : ''}</div>
-                        </div>
-                        <span class="file-status ${isLoaded ? 'loaded' : 'missing'}">${isLoaded ? 'Loaded' : 'Missing'}</span>
-                    </li>
-                `;
-            });
-            
-            list.innerHTML = html;
-            
-            if (loadedCount === fileResults.length) {
-                statusEl.textContent = `${loadedCount}/${fileResults.length} ✓`;
-                statusEl.className = 'section-status success';
-            } else if (loadedCount > 0) {
-                statusEl.textContent = `${loadedCount}/${fileResults.length}`;
-                statusEl.className = 'section-status partial';
-            } else {
-                statusEl.textContent = `0/${fileResults.length}`;
-                statusEl.className = 'section-status error';
-            }
-        }
-        
-        function checkGlobals() {
-            const container = document.getElementById('globals-list');
-            const statusEl = document.getElementById('globals-status');
-            
-            let html = '';
-            let available = 0;
-            
-            KEY_GLOBALS.forEach(g => {
-                const exists = typeof window[g.name] !== 'undefined';
-                if (exists) available++;
-                
-                html += `
-                    <div class="global-test">
-                        <span class="global-icon">${exists ? '✅' : '❌'}</span>
-                        <span class="global-name">window.${g.name}</span>
-                        <span class="global-result ${exists ? 'yes' : 'no'}">${exists ? 'OK' : 'Missing'}</span>
-                    </div>
-                `;
-            });
-            
-            container.innerHTML = html;
-            
-            if (available === KEY_GLOBALS.length) {
-                statusEl.textContent = `${available}/${KEY_GLOBALS.length} ✓`;
-                statusEl.className = 'section-status success';
-            } else if (available > 0) {
-                statusEl.textContent = `${available}/${KEY_GLOBALS.length}`;
-                statusEl.className = 'section-status partial';
-            } else {
-                statusEl.textContent = `0/${KEY_GLOBALS.length}`;
-                statusEl.className = 'section-status error';
-            }
-        }
-        
-        function updateSummary() {
-            const summaryBox = document.getElementById('summary-box');
-            const titleEl = document.getElementById('summary-title');
-            const messageEl = document.getElementById('summary-message');
-            
-            document.getElementById('stat-loaded').textContent = results.loaded;
-            document.getElementById('stat-missing').textContent = results.missing;
-            document.getElementById('stat-total').textContent = results.total;
-            
-            if (results.missing === 0 && results.misplaced.length === 0) {
-                summaryBox.className = 'summary-box success';
-                titleEl.textContent = '✅ All Files Loaded!';
-                messageEl.textContent = 'The 5-Factor Engine is ready.';
-                document.getElementById('test-btn').style.display = 'inline-flex';
-            } else if (results.loaded > 0) {
-                summaryBox.className = 'summary-box warning';
-                titleEl.textContent = '⚠️ Some Issues Found';
-                messageEl.textContent = `${results.missing} missing file(s). See details below.`;
-            } else {
-                summaryBox.className = 'summary-box error';
-                titleEl.textContent = '❌ Files Not Found';
-                messageEl.textContent = 'Check your folder structure.';
-            }
-            
-            // Show misplaced file warning
-            if (results.misplaced.length > 0) {
-                const issueBox = document.getElementById('issue-box');
-                const issueText = document.getElementById('issue-text');
-                issueBox.style.display = 'block';
-                
-                let issueHtml = '';
-                results.misplaced.forEach(f => {
-                    issueHtml += `<code>${f.wrongPath}</code> should be moved to <code>${f.correctPath}</code><br>`;
-                });
-                issueText.innerHTML = issueHtml;
-            }
-        }
-        
-        async function runDiagnostic() {
-            results = { loaded: 0, missing: 0, total: 0, errors: [], misplaced: [] };
-            
-            // Reset UI
-            document.getElementById('summary-box').className = 'summary-box';
-            document.getElementById('summary-title').textContent = '⏳ Running...';
-            document.getElementById('test-btn').style.display = 'none';
-            document.getElementById('test-section').style.display = 'none';
-            document.getElementById('issue-box').style.display = 'none';
-            
-            const categories = ['core', 'databases', 'platforms', 'agents', 'engine'];
-            let allFiles = [];
-            categories.forEach(cat => allFiles = allFiles.concat(FILES[cat]));
-            results.total = allFiles.length;
-            
-            // Check all files
-            let checked = 0;
-            for (const category of categories) {
-                const categoryResults = [];
-                
-                for (const file of FILES[category]) {
-                    const result = await checkFile(file);
-                    categoryResults.push(result);
-                    
-                    if (result.status === 'loaded') results.loaded++;
-                    else results.missing++;
-                    
-                    checked++;
-                    updateProgress(checked, results.total);
-                    await new Promise(r => setTimeout(r, 30));
+
+        function checkExists(name) {
+            try {
+                const parts = name.split('.');
+                let obj = window;
+                for (const part of parts) {
+                    obj = obj[part];
+                    if (obj === undefined) return { exists: false };
                 }
-                
-                renderFileList(category, categoryResults);
+                return { 
+                    exists: true, 
+                    type: typeof obj,
+                    isFunction: typeof obj === 'function',
+                    isObject: typeof obj === 'object' && obj !== null,
+                    keys: typeof obj === 'object' && obj !== null ? Object.keys(obj) : []
+                };
+            } catch (e) {
+                return { exists: false, error: e.message };
             }
-            
-            // Check for misplaced files
-            for (const misplaced of MISPLACED_FILES) {
-                const result = await checkMisplacedFile(misplaced);
-                if (result.found) {
-                    results.misplaced.push(result);
+        }
+
+        function runGlobalChecks() {
+            const section = document.getElementById('globals-section');
+            let html = '';
+            let found = 0, missing = 0;
+
+            for (const check of GLOBAL_CHECKS) {
+                const result = checkExists(check.name);
+                results.globals.push({ ...check, ...result });
+
+                if (result.exists) {
+                    found++;
+                    html += `
+                        <div class="check-item">
+                            <div class="status found">✓</div>
+                            <span class="name">window.${check.name}</span>
+                            <span class="type">${result.type}${result.keys.length ? ` (${result.keys.length} keys)` : ''}</span>
+                        </div>`;
+                } else {
+                    missing++;
+                    html += `
+                        <div class="check-item">
+                            <div class="status missing">✗</div>
+                            <span class="name">window.${check.name}</span>
+                            <span class="type">not found</span>
+                        </div>`;
                 }
             }
-            
-            // Wait for scripts to execute
-            await new Promise(r => setTimeout(r, 500));
-            
-            // Check globals
-            checkGlobals();
-            
-            // Update summary
-            updateSummary();
+
+            section.innerHTML = html || '<p>No checks performed</p>';
+            return { found, missing };
         }
-        
-        async function runQuickTest() {
-            const section = document.getElementById('test-section');
-            const output = document.getElementById('test-output');
-            
-            section.style.display = 'block';
-            output.textContent = 'Running tests...\n\n';
-            
-            const lines = [];
-            
-            // Test EngineStatus
-            lines.push('=== EngineStatus ===');
-            if (window.EngineStatus) {
-                lines.push('✅ Available');
-                lines.push(`   Ready: ${EngineStatus.isReady()}`);
-                lines.push(`   Health: ${EngineStatus.getHealthLabel()}`);
+
+        function runPlatformChecks() {
+            const section = document.getElementById('platforms-section');
+            let html = '';
+
+            const platformData = window.platformData || window.PLATFORMS;
+            if (platformData) {
+                html += '<h3>Available Platforms:</h3>';
+                for (const [id, platform] of Object.entries(platformData)) {
+                    const modules = platform.detectionModules || {};
+                    const moduleCount = Object.values(modules).reduce((a, b) => a + (b || 0), 0);
+                    results.platforms.push({ id, ...platform, moduleCount });
+                    
+                    html += `
+                        <div class="check-item">
+                            <div class="status found">✓</div>
+                            <span class="name">${platform.icon || '📱'} ${platform.name || id}</span>
+                            <span class="type">${moduleCount} modules | hashtagCheck: ${platform.hashtagCheck !== false}</span>
+                        </div>`;
+                }
+
+                // Show structure of first platform
+                const first = Object.values(platformData)[0];
+                html += `<h3>Platform Data Structure:</h3>
+                    <div class="output-box">${JSON.stringify(first, null, 2)}</div>`;
             } else {
-                lines.push('❌ Not available');
+                html = '<div class="check-item"><div class="status missing">✗</div><span class="name">No platform data found</span></div>';
             }
-            
-            // Test DemoData
-            lines.push('\n=== DemoData ===');
+
+            section.innerHTML = html;
+        }
+
+        function runAgentChecks() {
+            const section = document.getElementById('agents-section');
+            let html = '';
+
+            const agentStatus = window.AgentStatus || window.EngineStatus;
+            if (agentStatus) {
+                html += '<h3>AgentStatus Object:</h3>';
+                html += `<div class="output-box">${JSON.stringify(agentStatus, null, 2)}</div>`;
+                
+                // Check for specific methods
+                const methods = ['getAgentStatus', 'getActiveModules', 'getConfidenceLevel', 'printStatus', 'renderStatusHTML'];
+                html += '<h3>Available Methods:</h3>';
+                for (const method of methods) {
+                    const exists = typeof agentStatus[method] === 'function';
+                    results.agents.push({ method, exists });
+                    html += `
+                        <div class="check-item">
+                            <div class="status ${exists ? 'found' : 'missing'}">${exists ? '✓' : '✗'}</div>
+                            <span class="name">AgentStatus.${method}()</span>
+                        </div>`;
+                }
+            } else {
+                html = '<div class="check-item"><div class="status missing">✗</div><span class="name">AgentStatus not found</span></div>';
+            }
+
+            section.innerHTML = html;
+        }
+
+        function runHashtagChecks() {
+            const section = document.getElementById('hashtag-section');
+            let html = '';
+
+            const flagged = window.FlaggedHashtags;
+            if (flagged) {
+                html += '<h3>FlaggedHashtags Object:</h3>';
+                const keys = Object.keys(flagged);
+                html += `<p>Keys: ${keys.join(', ')}</p>`;
+                
+                // Check methods
+                const methods = ['check', 'checkBulk', 'checkTag', 'search', 'getStatus', 'isLoaded'];
+                html += '<h3>Available Methods:</h3>';
+                for (const method of methods) {
+                    const exists = typeof flagged[method] === 'function';
+                    results.hashtags.push({ method, exists });
+                    html += `
+                        <div class="check-item">
+                            <div class="status ${exists ? 'found' : 'missing'}">${exists ? '✓' : '✗'}</div>
+                            <span class="name">FlaggedHashtags.${method}()</span>
+                        </div>`;
+                }
+            } else {
+                html = '<div class="check-item"><div class="status missing">✗</div><span class="name">FlaggedHashtags not found</span></div>';
+            }
+
+            // Check for other hashtag-related
+            const others = ['HashtagDatabase', 'HashtagAPI', 'checkHashtags'];
+            for (const name of others) {
+                if (window[name]) {
+                    html += `
+                        <div class="check-item">
+                            <div class="status found">✓</div>
+                            <span class="name">window.${name}</span>
+                            <span class="type">${typeof window[name]}</span>
+                        </div>`;
+                }
+            }
+
+            section.innerHTML = html;
+        }
+
+        function runDemoChecks() {
+            const section = document.getElementById('demo-section');
+            let html = '';
+
             if (window.DemoData) {
-                lines.push('✅ Available');
-                lines.push(`   Platforms: ${DemoData.getAvailablePlatforms().join(', ')}`);
-            } else {
-                lines.push('❌ Not available');
-            }
-            
-            // Test FlaggedHashtags
-            lines.push('\n=== FlaggedHashtags ===');
-            if (window.FlaggedHashtags) {
-                lines.push('✅ Available');
-                if (FlaggedHashtags.check) {
-                    const test = FlaggedHashtags.check('#followback', 'twitter');
-                    lines.push(`   Test #followback: ${test.status || 'unknown'}`);
+                html += '<h3>DemoData Object:</h3>';
+                const methods = Object.keys(window.DemoData);
+                html += `<p>Methods: ${methods.join(', ')}</p>`;
+                
+                // Check available platforms
+                if (window.DemoData.getAvailablePlatforms) {
+                    const platforms = window.DemoData.getAvailablePlatforms();
+                    html += `<p>Available demo platforms: ${platforms.join(', ')}</p>`;
                 }
-                if (FlaggedHashtags.getStats) {
-                    const stats = FlaggedHashtags.getStats();
-                    lines.push(`   Total tags: ${stats.total || 'N/A'}`);
-                }
-            } else {
-                lines.push('❌ Not available');
-            }
-            
-            // Test FlaggedContent
-            lines.push('\n=== FlaggedContent ===');
-            if (window.FlaggedContent) {
-                lines.push('✅ Available');
-                if (FlaggedContent.analyze) {
-                    const test = FlaggedContent.analyze('free crypto giveaway');
-                    lines.push(`   Issues found: ${test.issues?.length || 0}`);
+
+                // Show structure
+                html += '<h3>DemoData Methods:</h3>';
+                for (const method of methods) {
+                    const isFunc = typeof window.DemoData[method] === 'function';
+                    html += `
+                        <div class="check-item">
+                            <div class="status ${isFunc ? 'found' : 'partial'}">${isFunc ? '✓' : '○'}</div>
+                            <span class="name">DemoData.${method}</span>
+                            <span class="type">${typeof window.DemoData[method]}</span>
+                        </div>`;
                 }
             } else {
-                lines.push('❌ Not available');
+                html = '<div class="check-item"><div class="status missing">✗</div><span class="name">DemoData not found</span></div>';
             }
-            
-            // Test FlaggedLinks
-            lines.push('\n=== FlaggedLinks ===');
-            if (window.FlaggedLinks) {
-                lines.push('✅ Available');
-                if (FlaggedLinks.checkUrl) {
-                    const test = FlaggedLinks.checkUrl('https://bit.ly/test');
-                    lines.push(`   Test bit.ly: ${test.status || 'unknown'}`);
-                }
-            } else {
-                lines.push('❌ Not available');
-            }
-            
-            // Test powerCheck
-            lines.push('\n=== powerCheck ===');
-            if (window.powerCheck) {
-                lines.push('✅ Available');
-                try {
-                    const result = await powerCheck('https://x.com/test/status/123');
-                    lines.push(`   Verdict: ${result.combinedVerdict || result.verdict || 'OK'}`);
-                } catch (e) {
-                    lines.push(`   Error: ${e.message}`);
-                }
-            } else {
-                lines.push('❌ Not available');
-            }
-            
-            // Test checkTags
-            lines.push('\n=== checkTags ===');
-            if (window.checkTags) {
-                lines.push('✅ Available');
-                try {
-                    const result = await checkTags(['#test', '#followback'], 'twitter');
-                    lines.push(`   Total: ${result.summary?.total || 'N/A'}`);
-                    lines.push(`   Banned: ${result.summary?.banned || 0}`);
-                } catch (e) {
-                    lines.push(`   Error: ${e.message}`);
-                }
-            } else {
-                lines.push('❌ Not available');
-            }
-            
-            output.textContent = lines.join('\n');
+
+            section.innerHTML = html;
         }
-        
-        function toggleSection(id) {
-            const content = document.getElementById(id + '-content');
-            content.style.display = content.style.display === 'none' ? 'block' : 'none';
+
+        // =====================================================================
+        // LIVE TESTS
+        // =====================================================================
+
+        async function testAccountCheck() {
+            const output = document.getElementById('account-output');
+            const platform = document.getElementById('test-platform').value;
+            const username = document.getElementById('test-username').value;
+
+            output.textContent = 'Testing...';
+            output.className = 'output-box';
+
+            try {
+                if (typeof window.checkAccount === 'function') {
+                    const result = await window.checkAccount(username, platform);
+                    output.textContent = 'checkAccount() returned:\n\n' + JSON.stringify(result, null, 2);
+                    output.className = 'output-box success';
+                    results.functions.checkAccount = result;
+                } else if (window.DemoData) {
+                    const result = window.DemoData.getResult(platform, 'accountCheck');
+                    output.textContent = 'checkAccount() NOT FOUND\n\nFalling back to DemoData.getResult():\n\n' + JSON.stringify(result, null, 2);
+                    output.className = 'output-box';
+                    results.functions.checkAccount = { fallback: 'DemoData', result };
+                } else {
+                    output.textContent = 'checkAccount() NOT FOUND\nNo fallback available';
+                    output.className = 'output-box error';
+                }
+            } catch (e) {
+                output.textContent = 'ERROR: ' + e.message + '\n\n' + e.stack;
+                output.className = 'output-box error';
+            }
         }
-        
+
+        async function testPostCheck() {
+            const output = document.getElementById('post-output');
+            const url = document.getElementById('test-url').value;
+
+            output.textContent = 'Testing...';
+            output.className = 'output-box';
+
+            try {
+                if (typeof window.checkPost === 'function') {
+                    const result = await window.checkPost(url);
+                    output.textContent = 'checkPost() returned:\n\n' + JSON.stringify(result, null, 2);
+                    output.className = 'output-box success';
+                    results.functions.checkPost = result;
+                } else if (window.DemoData) {
+                    // Detect platform from URL
+                    let platform = 'twitter';
+                    if (url.includes('instagram')) platform = 'instagram';
+                    if (url.includes('tiktok')) platform = 'tiktok';
+                    if (url.includes('reddit')) platform = 'reddit';
+                    
+                    const result = window.DemoData.getResult(platform, 'powerCheck');
+                    output.textContent = 'checkPost() NOT FOUND\n\nFalling back to DemoData.getResult():\n\n' + JSON.stringify(result, null, 2);
+                    output.className = 'output-box';
+                    results.functions.checkPost = { fallback: 'DemoData', result };
+                } else {
+                    output.textContent = 'checkPost() NOT FOUND\nNo fallback available';
+                    output.className = 'output-box error';
+                }
+            } catch (e) {
+                output.textContent = 'ERROR: ' + e.message + '\n\n' + e.stack;
+                output.className = 'output-box error';
+            }
+        }
+
+        async function testHashtagCheck() {
+            const output = document.getElementById('hashtag-output');
+            const tags = document.getElementById('test-tags').value;
+
+            output.textContent = 'Testing checkTags()...';
+            output.className = 'output-box';
+
+            try {
+                if (typeof window.checkTags === 'function') {
+                    const result = await window.checkTags(tags);
+                    output.textContent = 'checkTags() returned:\n\n' + JSON.stringify(result, null, 2);
+                    output.className = 'output-box success';
+                    results.functions.checkTags = result;
+                } else {
+                    output.textContent = 'checkTags() NOT FOUND';
+                    output.className = 'output-box error';
+                }
+            } catch (e) {
+                output.textContent = 'ERROR: ' + e.message + '\n\n' + e.stack;
+                output.className = 'output-box error';
+            }
+        }
+
+        async function testFlaggedHashtags() {
+            const output = document.getElementById('hashtag-output');
+            const tags = document.getElementById('test-tags').value;
+
+            output.textContent = 'Testing FlaggedHashtags...';
+            output.className = 'output-box';
+
+            try {
+                if (window.FlaggedHashtags) {
+                    let result = {};
+                    
+                    // Try different methods
+                    if (typeof window.FlaggedHashtags.checkBulk === 'function') {
+                        const tagList = tags.match(/[#$][a-zA-Z0-9_]+/g) || [];
+                        result.checkBulk = await window.FlaggedHashtags.checkBulk(tagList);
+                    }
+                    if (typeof window.FlaggedHashtags.check === 'function') {
+                        result.check = await window.FlaggedHashtags.check('#crypto');
+                    }
+                    if (typeof window.FlaggedHashtags.isLoaded === 'function') {
+                        result.isLoaded = window.FlaggedHashtags.isLoaded();
+                    }
+                    if (typeof window.FlaggedHashtags.getStatus === 'function') {
+                        result.getStatus = window.FlaggedHashtags.getStatus();
+                    }
+
+                    output.textContent = 'FlaggedHashtags results:\n\n' + JSON.stringify(result, null, 2);
+                    output.className = 'output-box success';
+                    results.functions.FlaggedHashtags = result;
+                } else {
+                    output.textContent = 'FlaggedHashtags NOT FOUND';
+                    output.className = 'output-box error';
+                }
+            } catch (e) {
+                output.textContent = 'ERROR: ' + e.message + '\n\n' + e.stack;
+                output.className = 'output-box error';
+            }
+        }
+
+        function testDemoData() {
+            const output = document.getElementById('demo-output');
+            const platform = document.getElementById('demo-platform').value;
+            const type = document.getElementById('demo-type').value;
+
+            output.textContent = 'Testing DemoData...';
+            output.className = 'output-box';
+
+            try {
+                if (window.DemoData && typeof window.DemoData.getResult === 'function') {
+                    const result = window.DemoData.getResult(platform, type);
+                    output.textContent = `DemoData.getResult('${platform}', '${type}'):\n\n` + JSON.stringify(result, null, 2);
+                    output.className = 'output-box success';
+                } else {
+                    output.textContent = 'DemoData.getResult() NOT FOUND';
+                    output.className = 'output-box error';
+                }
+            } catch (e) {
+                output.textContent = 'ERROR: ' + e.message + '\n\n' + e.stack;
+                output.className = 'output-box error';
+            }
+        }
+
+        // =====================================================================
+        // REPORT GENERATION
+        // =====================================================================
+
+        function generateReport() {
+            const report = document.getElementById('full-report');
+            
+            let text = `SHADOWBANCHECK ENGINE DIAGNOSTIC REPORT
+Generated: ${new Date().toISOString()}
+=========================================
+
+## GLOBAL OBJECTS & FUNCTIONS
+
+`;
+            for (const item of results.globals) {
+                const status = item.exists ? '✓ FOUND' : '✗ MISSING';
+                text += `${status}: window.${item.name}`;
+                if (item.exists) {
+                    text += ` (${item.type})`;
+                    if (item.keys && item.keys.length) {
+                        text += `\n   Keys: ${item.keys.join(', ')}`;
+                    }
+                }
+                text += '\n';
+            }
+
+            text += `\n## PLATFORMS\n\n`;
+            for (const p of results.platforms) {
+                text += `- ${p.name || p.id}: ${p.moduleCount} modules, hashtagCheck=${p.hashtagCheck !== false}\n`;
+            }
+
+            text += `\n## AGENT STATUS METHODS\n\n`;
+            for (const a of results.agents) {
+                text += `${a.exists ? '✓' : '✗'} AgentStatus.${a.method}()\n`;
+            }
+
+            text += `\n## FLAGGED HASHTAGS METHODS\n\n`;
+            for (const h of results.hashtags) {
+                text += `${h.exists ? '✓' : '✗'} FlaggedHashtags.${h.method}()\n`;
+            }
+
+            text += `\n## FUNCTION TEST RESULTS\n\n`;
+            text += JSON.stringify(results.functions, null, 2);
+
+            text += `\n\n## WHAT CLAUDE NEEDS TO KNOW
+
+Based on this diagnostic:
+
+1. Which check functions actually exist and work?
+   - checkAccount(): ${results.globals.find(g => g.name === 'checkAccount')?.exists ? 'EXISTS' : 'MISSING'}
+   - checkPost(): ${results.globals.find(g => g.name === 'checkPost')?.exists ? 'EXISTS' : 'MISSING'}
+   - checkTags(): ${results.globals.find(g => g.name === 'checkTags')?.exists ? 'EXISTS' : 'MISSING'}
+
+2. What data structure do they return?
+   See "FUNCTION TEST RESULTS" above
+
+3. What should demo-data.js match?
+   The structure returned by the actual functions (or define what we WANT to return)
+
+=========================================
+END OF REPORT
+`;
+
+            report.textContent = text;
+        }
+
+        function copyReport() {
+            const report = document.getElementById('full-report');
+            if (report.textContent.includes('Click "Generate')) {
+                generateReport();
+            }
+            navigator.clipboard.writeText(report.textContent).then(() => {
+                alert('Report copied to clipboard!');
+            });
+        }
+
+        // =====================================================================
+        // INIT
+        // =====================================================================
+
+        function updateSummary() {
+            let found = 0, missing = 0, partial = 0;
+            for (const item of results.globals) {
+                if (item.exists) found++;
+                else missing++;
+            }
+            document.getElementById('found-count').textContent = found;
+            document.getElementById('missing-count').textContent = missing;
+            document.getElementById('partial-count').textContent = partial;
+        }
+
         // Run on load
-        document.addEventListener('DOMContentLoaded', () => setTimeout(runDiagnostic, 100));
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                runGlobalChecks();
+                runPlatformChecks();
+                runAgentChecks();
+                runHashtagChecks();
+                runDemoChecks();
+                updateSummary();
+            }, 500); // Wait for other scripts to load
+        });
     </script>
 </body>
 </html>

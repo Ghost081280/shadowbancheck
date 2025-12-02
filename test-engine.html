@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Engine Test - ShadowBanCheck.io</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 1200px; margin: 0 auto; padding: 20px; background: #0a0a0a; color: #e0e0e0; }
+        h1 { color: #ff6b35; }
+        h2 { color: #ffa500; border-bottom: 1px solid #333; padding-bottom: 10px; }
+        .test-section { background: #1a1a1a; border-radius: 8px; padding: 20px; margin: 20px 0; }
+        .pass { color: #4ade80; }
+        .fail { color: #f87171; }
+        .info { color: #60a5fa; }
+        pre { background: #0d0d0d; padding: 15px; border-radius: 4px; overflow-x: auto; font-size: 12px; }
+        button { background: #ff6b35; color: white; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-size: 16px; margin: 5px; }
+        button:hover { background: #ff8c5a; }
+        input, textarea { background: #0d0d0d; border: 1px solid #333; color: #e0e0e0; padding: 10px; border-radius: 4px; width: 100%; margin: 10px 0; }
+        textarea { height: 100px; font-family: monospace; }
+        .result { margin-top: 20px; }
+        .score-box { display: inline-block; padding: 10px 20px; border-radius: 6px; font-weight: bold; font-size: 24px; }
+        .score-low { background: #166534; }
+        .score-medium { background: #ca8a04; }
+        .score-high { background: #dc2626; }
+    </style>
+</head>
+<body>
+    <h1>🔥 ShadowBanCheck Engine Test</h1>
+    <p>Testing the 3 critical files: demo-data.js, 5-factor-engine.js, agent-detection.js</p>
+    
+    <!-- Load Status -->
+    <div class="test-section">
+        <h2>1. File Load Status</h2>
+        <div id="load-status">Checking...</div>
+    </div>
+    
+    <!-- Demo Data Test -->
+    <div class="test-section">
+        <h2>2. Demo Data Test</h2>
+        <button onclick="testDemoData()">Run Demo Data Test</button>
+        <div id="demo-result" class="result"></div>
+    </div>
+    
+    <!-- Detection Agent Test -->
+    <div class="test-section">
+        <h2>3. Detection Agent Test</h2>
+        <textarea id="test-text" placeholder="Enter text to analyze...">Check out my new project! #followback #crypto #tech https://bit.ly/myproject</textarea>
+        <button onclick="testDetectionAgent()">Test Detection Agent</button>
+        <div id="detection-result" class="result"></div>
+    </div>
+    
+    <!-- Full Engine Test -->
+    <div class="test-section">
+        <h2>4. Full Engine Test (3-in-1 Power Check)</h2>
+        <input type="text" id="test-url" placeholder="Enter URL..." value="https://x.com/demo_user/status/1234567890">
+        <button onclick="testFullEngine()">Run Power Check</button>
+        <div id="engine-result" class="result"></div>
+    </div>
+    
+    <!-- 3-Point Intelligence Verification -->
+    <div class="test-section">
+        <h2>5. 3-Point Intelligence Structure Check</h2>
+        <button onclick="verify3Point()">Verify 3-Point Format</button>
+        <div id="threepoint-result" class="result"></div>
+    </div>
+
+    <!-- AgentBase stub (needed for DetectionAgent) -->
+    <script>
+        // Minimal AgentBase stub for testing
+        window.AgentBase = class AgentBase {
+            constructor(id, factor, weight) {
+                this.id = id;
+                this.factorNumber = factor;
+                this.weight = weight;
+                this.useDemo = true;
+            }
+            
+            setDemoMode(demo) { this.useDemo = demo; }
+            log(msg, level = 'info') { console.log(`[${this.id}] ${msg}`); }
+            
+            createResult(data) {
+                return {
+                    agentId: this.id,
+                    factorNumber: this.factorNumber,
+                    weight: this.weight,
+                    ...data
+                };
+            }
+            
+            createFinding(id, message, score, details) {
+                return { id, message, score, details, type: score > 50 ? 'danger' : score > 20 ? 'warning' : 'info' };
+            }
+        };
+        
+        // Minimal AgentRegistry stub
+        window.AgentRegistry = {
+            agents: {},
+            register(agent) { this.agents[agent.id] = agent; console.log('Registered:', agent.id); },
+            getAll() { return this.agents; },
+            async runAll(input) {
+                const results = [];
+                for (const agent of Object.values(this.agents)) {
+                    if (agent.analyze) {
+                        results.push(await agent.analyze(input));
+                    }
+                }
+                return results;
+            }
+        };
+    </script>
+    
+    <!-- Load the 3 critical files -->
+    <script src="demo-data.js"></script>
+    <script src="5-factor-engine.js"></script>
+    <script src="agent-detection.js"></script>
+    
+    <script>
+        // Check load status
+        function checkLoadStatus() {
+            const status = document.getElementById('load-status');
+            let html = '';
+            
+            // Check DemoData
+            if (window.DemoData) {
+                html += `<p class="pass">✅ demo-data.js loaded (v${window.DemoData.version})</p>`;
+                html += `<p class="info">   Scenarios: ${window.DemoData.getScenarioIds().join(', ')}</p>`;
+            } else {
+                html += '<p class="fail">❌ demo-data.js NOT loaded</p>';
+            }
+            
+            // Check Engine
+            if (window.shadowBanEngine) {
+                html += `<p class="pass">✅ 5-factor-engine.js loaded (v${window.shadowBanEngine.version})</p>`;
+            } else {
+                html += '<p class="fail">❌ 5-factor-engine.js NOT loaded</p>';
+            }
+            
+            // Check Detection Agent
+            if (window.DetectionAgent && window.detectionAgent) {
+                html += '<p class="pass">✅ agent-detection.js loaded</p>';
+            } else {
+                html += '<p class="fail">❌ agent-detection.js NOT loaded</p>';
+            }
+            
+            // Check AgentRegistry
+            const agentCount = Object.keys(window.AgentRegistry?.agents || {}).length;
+            html += `<p class="info">   Registered agents: ${agentCount}</p>`;
+            
+            status.innerHTML = html;
+        }
+        
+        // Test Demo Data
+        function testDemoData() {
+            const result = document.getElementById('demo-result');
+            
+            try {
+                // Get demo scenario
+                const demo = window.DemoData.getScenarioResult('twitter_moderate_issues', 'powerCheck');
+                
+                if (!demo) {
+                    result.innerHTML = '<p class="fail">❌ Failed to get demo scenario</p>';
+                    return;
+                }
+                
+                let html = '<p class="pass">✅ Demo data retrieved successfully</p>';
+                
+                // Check structure
+                const checks = [
+                    { name: 'Has agents array', pass: Array.isArray(demo.agents) },
+                    { name: 'Has 5 agents', pass: demo.agents?.length === 5 },
+                    { name: 'Detection Agent has signals', pass: demo.agents?.[3]?.signals !== undefined },
+                    { name: 'Signals have 3-Point', pass: demo.agents?.[3]?.signals?.hashtags?.threePoint !== undefined },
+                    { name: 'Has synthesis', pass: demo.synthesis !== undefined },
+                    { name: 'Has recommendations', pass: Array.isArray(demo.recommendations) }
+                ];
+                
+                for (const check of checks) {
+                    html += `<p class="${check.pass ? 'pass' : 'fail'}">${check.pass ? '✅' : '❌'} ${check.name}</p>`;
+                }
+                
+                // Show Detection Agent signals
+                const detAgent = demo.agents?.[3];
+                if (detAgent?.signals) {
+                    html += '<h3>Detection Agent Signals:</h3>';
+                    html += `<pre>${JSON.stringify(detAgent.signalSummary, null, 2)}</pre>`;
+                }
+                
+                result.innerHTML = html;
+                
+            } catch (error) {
+                result.innerHTML = `<p class="fail">❌ Error: ${error.message}</p>`;
+            }
+        }
+        
+        // Test Detection Agent
+        async function testDetectionAgent() {
+            const result = document.getElementById('detection-result');
+            const text = document.getElementById('test-text').value;
+            
+            try {
+                if (!window.detectionAgent) {
+                    result.innerHTML = '<p class="fail">❌ Detection Agent not loaded</p>';
+                    return;
+                }
+                
+                const analysis = await window.detectionAgent.analyze({
+                    platform: 'twitter',
+                    text: text
+                });
+                
+                let html = '<p class="pass">✅ Detection Agent ran successfully</p>';
+                
+                // Show score
+                const scoreClass = analysis.rawScore > 50 ? 'score-high' : analysis.rawScore > 25 ? 'score-medium' : 'score-low';
+                html += `<div class="score-box ${scoreClass}">Score: ${analysis.rawScore}</div>`;
+                html += `<p>Confidence: ${analysis.confidence}%</p>`;
+                
+                // Show signal summary
+                html += '<h3>Signal Summary:</h3>';
+                html += `<pre>${JSON.stringify(analysis.signalSummary, null, 2)}</pre>`;
+                
+                // Show 3-Point for hashtags
+                if (analysis.signals?.hashtags) {
+                    html += '<h3>Hashtags 3-Point Intelligence:</h3>';
+                    html += `<pre>${JSON.stringify(analysis.signals.hashtags.threePoint, null, 2)}</pre>`;
+                }
+                
+                // Show findings
+                html += '<h3>Findings:</h3>';
+                for (const finding of analysis.findings || []) {
+                    const cls = finding.type === 'danger' ? 'fail' : finding.type === 'warning' ? 'info' : 'pass';
+                    html += `<p class="${cls}">${finding.message}</p>`;
+                }
+                
+                result.innerHTML = html;
+                
+            } catch (error) {
+                result.innerHTML = `<p class="fail">❌ Error: ${error.message}</p><pre>${error.stack}</pre>`;
+            }
+        }
+        
+        // Test Full Engine
+        async function testFullEngine() {
+            const result = document.getElementById('engine-result');
+            const url = document.getElementById('test-url').value;
+            
+            try {
+                if (!window.shadowBanEngine) {
+                    result.innerHTML = '<p class="fail">❌ Engine not loaded</p>';
+                    return;
+                }
+                
+                const check = await window.shadowBanEngine.powerCheck(url);
+                
+                if (check.error) {
+                    result.innerHTML = `<p class="fail">❌ ${check.message}</p>`;
+                    return;
+                }
+                
+                let html = '<p class="pass">✅ Power Check completed</p>';
+                
+                // Show synthesis
+                html += `<h3>Verdict: ${check.synthesis?.verdict || 'N/A'}</h3>`;
+                html += `<p>Probability: ${check.synthesis?.probability || 0}%</p>`;
+                html += `<p>Confidence: ${check.synthesis?.confidence?.score || 0}%</p>`;
+                
+                // Check if agents array has Detection Agent with signals
+                const detAgent = check.agents?.find(a => a.factor === 4 || a.agentId === 'detection');
+                if (detAgent) {
+                    html += '<h3>Detection Agent in Output:</h3>';
+                    html += `<p class="${detAgent.signals ? 'pass' : 'fail'}">${detAgent.signals ? '✅' : '❌'} Has signals object</p>`;
+                    html += `<p class="${detAgent.signalSummary ? 'pass' : 'fail'}">${detAgent.signalSummary ? '✅' : '❌'} Has signalSummary</p>`;
+                    
+                    if (detAgent.signalSummary) {
+                        html += `<pre>${JSON.stringify(detAgent.signalSummary, null, 2)}</pre>`;
+                    }
+                }
+                
+                // Show recommendations
+                html += '<h3>Recommendations:</h3>';
+                for (const rec of check.recommendations || []) {
+                    html += `<p><strong>[${rec.priority}]</strong> ${rec.action}</p>`;
+                }
+                
+                result.innerHTML = html;
+                
+            } catch (error) {
+                result.innerHTML = `<p class="fail">❌ Error: ${error.message}</p><pre>${error.stack}</pre>`;
+            }
+        }
+        
+        // Verify 3-Point Intelligence Structure
+        function verify3Point() {
+            const result = document.getElementById('threepoint-result');
+            
+            try {
+                // Get demo and check structure matches spec
+                const demo = window.DemoData.getScenarioResult('twitter_moderate_issues', 'powerCheck');
+                const detAgent = demo?.agents?.[3];
+                const hashtags = detAgent?.signals?.hashtags;
+                
+                if (!hashtags) {
+                    result.innerHTML = '<p class="fail">❌ Cannot find hashtags signal in demo</p>';
+                    return;
+                }
+                
+                let html = '<h3>3-Point Intelligence Structure Check</h3>';
+                
+                const threePoint = hashtags.threePoint;
+                const checks = [
+                    { name: 'Has predictive object', pass: threePoint?.predictive !== undefined },
+                    { name: 'Predictive weight = 15', pass: threePoint?.predictive?.weight === 15 },
+                    { name: 'Has realtime object', pass: threePoint?.realtime !== undefined },
+                    { name: 'Realtime weight = 55', pass: threePoint?.realtime?.weight === 55 },
+                    { name: 'Has historical object', pass: threePoint?.historical !== undefined },
+                    { name: 'Historical weight = 30', pass: threePoint?.historical?.weight === 30 },
+                    { name: 'Weights sum to 100', pass: (threePoint?.predictive?.weight + threePoint?.realtime?.weight + threePoint?.historical?.weight) === 100 },
+                    { name: 'Has combinedScore', pass: hashtags.combinedScore !== undefined },
+                    { name: 'Has confidence object', pass: hashtags.confidence !== undefined },
+                    { name: 'Confidence has level', pass: hashtags.confidence?.level !== undefined }
+                ];
+                
+                let allPass = true;
+                for (const check of checks) {
+                    html += `<p class="${check.pass ? 'pass' : 'fail'}">${check.pass ? '✅' : '❌'} ${check.name}</p>`;
+                    if (!check.pass) allPass = false;
+                }
+                
+                if (allPass) {
+                    html += '<p class="pass" style="font-size: 18px; margin-top: 20px;">🎉 All 3-Point Intelligence checks passed!</p>';
+                }
+                
+                // Show actual structure
+                html += '<h3>Actual 3-Point Structure:</h3>';
+                html += `<pre>${JSON.stringify(threePoint, null, 2)}</pre>`;
+                
+                result.innerHTML = html;
+                
+            } catch (error) {
+                result.innerHTML = `<p class="fail">❌ Error: ${error.message}</p>`;
+            }
+        }
+        
+        // Run on load
+        window.onload = function() {
+            setTimeout(checkLoadStatus, 100);
+        };
+    </script>
+</body>
+</html>

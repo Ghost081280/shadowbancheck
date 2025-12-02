@@ -164,6 +164,7 @@ class DetectionAgent extends window.AgentBase {
     async analyzeHashtags(text, platform, platformModules) {
         const timestamp = new Date().toISOString();
         const moduleCount = platformModules.hashtags;
+        this.currentPlatform = platform; // Store for historical lookups
         
         // Platform doesn't support hashtags
         if (moduleCount === 0) {
@@ -196,25 +197,19 @@ class DetectionAgent extends window.AgentBase {
             realtimeSources.push('Database not loaded - basic extraction only');
         }
         
-        // Predictive score (community reports, trends)
-        const predictiveScore = this.getPredictiveScore('hashtags', found, platform);
-        const predictiveSources = predictiveScore > 0 
-            ? ['Community reports analyzed', 'Trend data checked']
-            : [];
+        // Get Predictive score (community reports, trends)
+        const predictive = await this.getPredictiveScore('hashtags', found, platform);
         
-        // Historical score (past scans, database age)
-        const historicalScore = this.getHistoricalScore('hashtags', found, banned);
-        const historicalSources = historicalScore > 0
-            ? ['Database records checked', 'Historical patterns analyzed']
-            : [];
+        // Get Historical score (past scans, database age)
+        const historical = await this.getHistoricalScore('hashtags', found, banned);
         
         // Calculate 3-Point score
-        const threePoint = this.calculate3PointScore(predictiveScore, realtimeScore, historicalScore);
-        threePoint.predictive.sources = predictiveSources;
+        const threePoint = this.calculate3PointScore(predictive.score, realtimeScore, historical.score);
+        threePoint.predictive.sources = predictive.sources;
         threePoint.realtime.sources = realtimeSources;
-        threePoint.historical.sources = historicalSources;
+        threePoint.historical.sources = historical.sources;
         
-        const activeSourceCount = [predictiveScore, realtimeScore, historicalScore].filter(s => s > 0).length;
+        const activeSourceCount = [predictive.score, realtimeScore, historical.score].filter(s => s > 0).length;
         
         return {
             signalType: 'hashtags',
@@ -545,34 +540,131 @@ class DetectionAgent extends window.AgentBase {
         return '';
     }
     
-    getPredictiveScore(signalType, items, platform) {
-        // In production, this would query WebAnalysisAgent or community reports
-        // For now, return simulated scores based on item count
-        if (items.length === 0) return 0;
+    async getPredictiveScore(signalType, items, platform) {
+        // Point 1: Predictive - Query WebAnalysisAgent for community reports/trends
+        if (items.length === 0) return { score: 0, sources: [] };
         
-        // Simulate predictive intelligence
-        if (this.useDemo) {
-            const baseScores = {
-                hashtags: 20,
-                cashtags: 15,
-                links: 25,
-                content: 10,
-                mentions: 5,
-                emojis: 5
-            };
-            return baseScores[signalType] || 0;
+        const sources = [];
+        let score = 0;
+        
+        try {
+            // Try to get WebAnalysisAgent for predictive searches
+            const webAgent = window.AgentRegistry?.get('web-analysis') || window.WebAnalysisAgent;
+            
+            if (webAgent && webAgent.searchForFlaggedContent) {
+                // Build search queries based on signal type
+                const queries = this.buildPredictiveQueries(signalType, items, platform);
+                
+                if (queries.length > 0) {
+                    const searchResults = await webAgent.searchForFlaggedContent(queries, platform);
+                    
+                    if (searchResults.available) {
+                        score = searchResults.riskScore || 0;
+                        
+                        if (searchResults.sources?.length > 0) {
+                            sources.push(`Web search: ${searchResults.sources.join(', ')}`);
+                        }
+                        if (searchResults.recentMentions > 0) {
+                            sources.push(`${searchResults.recentMentions} recent discussions found`);
+                        }
+                        if (searchResults.sentiment === 'negative') {
+                            sources.push('Negative sentiment in community discussions');
+                        }
+                    }
+                }
+            } else if (this.useDemo) {
+                // Demo fallback
+                const baseScores = { hashtags: 20, cashtags: 15, links: 25, content: 10, mentions: 5, emojis: 5 };
+                score = baseScores[signalType] || 0;
+                if (score > 0) sources.push('Demo predictive data');
+            }
+        } catch (error) {
+            this.log(`Predictive score error: ${error.message}`, 'warn');
         }
         
-        return 0;
+        return { score, sources };
     }
     
-    getHistoricalScore(signalType, items, flagged) {
-        // In production, this would query HistoricalAgent
-        // For now, base on flagged items
-        if (flagged.length === 0) return 0;
+    buildPredictiveQueries(signalType, items, platform) {
+        const queries = [];
         
-        // More flagged items = higher historical score
-        return Math.min(100, flagged.length * 25);
+        if (signalType === 'hashtags' && items.length > 0) {
+            // Search for reports about specific hashtags being banned
+            for (const tag of items.slice(0, 3)) {
+                queries.push(`${tag} banned ${platform}`);
+                queries.push(`${tag} shadowban`);
+            }
+        } else if (signalType === 'links' && items.length > 0) {
+            // Search for reports about domains being throttled
+            for (const url of items.slice(0, 2)) {
+                const domain = this.extractDomain(url);
+                if (domain) {
+                    queries.push(`${domain} blocked ${platform}`);
+                }
+            }
+        } else if (signalType === 'content') {
+            queries.push(`${platform} content filter`);
+        }
+        
+        return queries.slice(0, 5); // Limit queries
+    }
+    
+    extractDomain(url) {
+        try {
+            const urlObj = new URL(url);
+            return urlObj.hostname.replace('www.', '');
+        } catch (e) {
+            const match = url.match(/(?:https?:\/\/)?(?:www\.)?([^\/\?]+)/i);
+            return match ? match[1] : null;
+        }
+    }
+    
+    async getHistoricalScore(signalType, items, flagged) {
+        // Point 3: Historical - Query HistoricalAgent for past scores
+        if (items.length === 0 && flagged.length === 0) return { score: 0, sources: [] };
+        
+        const sources = [];
+        let score = 0;
+        
+        try {
+            // Try to get HistoricalAgent
+            const histAgent = window.AgentRegistry?.get('historical') || window.HistoricalAgent;
+            
+            if (histAgent && histAgent.getPastScores) {
+                const pastScores = await histAgent.getPastScores(items, signalType, this.currentPlatform || 'twitter');
+                
+                if (pastScores.available) {
+                    score = pastScores.averageScore || 0;
+                    
+                    if (pastScores.itemsWithHistory > 0) {
+                        sources.push(`${pastScores.itemsWithHistory} item(s) found in history`);
+                    }
+                    if (pastScores.trendDirection === 'worsening') {
+                        sources.push('Historical trend: worsening');
+                        score += 10; // Boost score if trend is worsening
+                    } else if (pastScores.trendDirection === 'improving') {
+                        sources.push('Historical trend: improving');
+                    }
+                }
+            }
+            
+            // Also factor in currently flagged items
+            if (flagged.length > 0) {
+                const flaggedScore = Math.min(100, flagged.length * 25);
+                score = Math.max(score, flaggedScore);
+                sources.push(`${flagged.length} flagged item(s) in database`);
+            }
+            
+        } catch (error) {
+            this.log(`Historical score error: ${error.message}`, 'warn');
+            // Fallback to flagged-based scoring
+            if (flagged.length > 0) {
+                score = Math.min(100, flagged.length * 25);
+                sources.push('Database records checked');
+            }
+        }
+        
+        return { score, sources };
     }
     
     createDisabledSignal(signalType, note) {

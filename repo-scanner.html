@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ShadowBanCheck.io - Repo Scanner & Engine Analyzer</title>
+    <style>
+        :root {
+            --primary: #ff6b35;
+            --secondary: #1a1a2e;
+            --accent: #16213e;
+            --success: #00d26a;
+            --warning: #ffc107;
+            --danger: #ff4757;
+            --text: #e8e8e8;
+            --muted: #6c757d;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, var(--secondary) 0%, var(--accent) 100%);
+            min-height: 100vh;
+            color: var(--text);
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            padding: 30px 0;
+            border-bottom: 2px solid var(--primary);
+            margin-bottom: 30px;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(90deg, var(--primary), #ff8c42);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .subtitle {
+            color: var(--muted);
+            margin-top: 10px;
+            font-size: 1.1rem;
+        }
+        
+        .upload-section {
+            background: rgba(255,255,255,0.05);
+            border: 2px dashed var(--primary);
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+            margin-bottom: 30px;
+            transition: all 0.3s ease;
+        }
+        
+        .upload-section:hover {
+            background: rgba(255,107,53,0.1);
+            border-style: solid;
+        }
+        
+        .upload-section input[type="file"] {
+            display: none;
+        }
+        
+        .upload-btn {
+            background: linear-gradient(135deg, var(--primary), #ff8c42);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.1rem;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        
+        .upload-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(255,107,53,0.3);
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+        }
+        
+        .card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 15px;
+            padding: 25px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .card h2 {
+            color: var(--primary);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .file-tree {
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.9rem;
+            background: rgba(0,0,0,0.3);
+            padding: 20px;
+            border-radius: 10px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .file-tree .folder {
+            color: #ffc107;
+        }
+        
+        .file-tree .file {
+            color: var(--text);
+        }
+        
+        .file-tree .file.js {
+            color: #f0db4f;
+        }
+        
+        .file-tree .file.html {
+            color: #e34c26;
+        }
+        
+        .file-tree .file.css {
+            color: #264de4;
+        }
+        
+        .file-tree .file.json {
+            color: #00d26a;
+        }
+        
+        .file-tree .file.md {
+            color: #83a598;
+        }
+        
+        .status-list {
+            list-style: none;
+        }
+        
+        .status-list li {
+            padding: 12px 15px;
+            margin-bottom: 10px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .status-badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        
+        .status-badge.exists {
+            background: rgba(0,210,106,0.2);
+            color: var(--success);
+        }
+        
+        .status-badge.missing {
+            background: rgba(255,71,87,0.2);
+            color: var(--danger);
+        }
+        
+        .status-badge.update {
+            background: rgba(255,193,7,0.2);
+            color: var(--warning);
+        }
+        
+        .requirement-section {
+            margin-top: 30px;
+        }
+        
+        .requirement-section h3 {
+            color: var(--primary);
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .code-block {
+            background: #0d1117;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px 0;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.85rem;
+            overflow-x: auto;
+        }
+        
+        .code-block .comment {
+            color: #6a737d;
+        }
+        
+        .code-block .keyword {
+            color: #ff7b72;
+        }
+        
+        .code-block .string {
+            color: #a5d6ff;
+        }
+        
+        .code-block .number {
+            color: #79c0ff;
+        }
+        
+        .priority-high {
+            border-left: 4px solid var(--danger);
+        }
+        
+        .priority-medium {
+            border-left: 4px solid var(--warning);
+        }
+        
+        .priority-low {
+            border-left: 4px solid var(--success);
+        }
+        
+        .summary-stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .stat-card .number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--primary);
+        }
+        
+        .stat-card .label {
+            color: var(--muted);
+            margin-top: 5px;
+        }
+        
+        .analysis-output {
+            display: none;
+        }
+        
+        .analysis-output.active {
+            display: block;
+        }
+        
+        .checklist {
+            list-style: none;
+        }
+        
+        .checklist li {
+            padding: 10px 15px;
+            margin-bottom: 8px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .checklist li::before {
+            content: '☐';
+            font-size: 1.2rem;
+            color: var(--muted);
+        }
+        
+        .checklist li.complete::before {
+            content: '✓';
+            color: var(--success);
+        }
+        
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .summary-stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🔍 ShadowBanCheck.io - Repo Scanner</h1>
+            <p class="subtitle">Analyze your project structure and identify files needed for the Master Engine update</p>
+        </header>
+        
+        <div class="upload-section" id="dropZone">
+            <p style="margin-bottom: 20px;">📁 Drop your project folder here or click to browse</p>
+            <input type="file" id="folderInput" webkitdirectory directory multiple>
+            <label for="folderInput" class="upload-btn">Select Project Folder</label>
+        </div>
+        
+        <div class="analysis-output" id="analysisOutput">
+            <div class="summary-stats" id="summaryStats">
+                <div class="stat-card">
+                    <div class="number" id="totalFiles">0</div>
+                    <div class="label">Total Files</div>
+                </div>
+                <div class="stat-card">
+                    <div class="number" id="jsFiles">0</div>
+                    <div class="label">JavaScript</div>
+                </div>
+                <div class="stat-card">
+                    <div class="number" id="missingFiles">0</div>
+                    <div class="label">Missing</div>
+                </div>
+                <div class="stat-card">
+                    <div class="number" id="updateFiles">0</div>
+                    <div class="label">Need Update</div>
+                </div>
+            </div>
+            
+            <div class="grid">
+                <div class="card">
+                    <h2>📂 Project Structure</h2>
+                    <div class="file-tree" id="fileTree">
+                        <!-- Populated by JavaScript -->
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h2>📋 Required Files Status</h2>
+                    <ul class="status-list" id="statusList">
+                        <!-- Populated by JavaScript -->
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="requirement-section">
+                <h3>🎯 PRIORITY 1: Files That Need Immediate Update</h3>
+                <div id="priority1Files"></div>
+            </div>
+            
+            <div class="requirement-section">
+                <h3>🔧 PRIORITY 2: Files That Need Creation</h3>
+                <div id="priority2Files"></div>
+            </div>
+            
+            <div class="requirement-section">
+                <h3>✅ Implementation Checklist</h3>
+                <ul class="checklist" id="implementationChecklist">
+                    <li>Every agent returns full check structure</li>
+                    <li>Every signal type has 3-Point Intelligence breakdown</li>
+                    <li>Confidence levels calculated correctly</li>
+                    <li>Platform-specific module counts accurate</li>
+                    <li>Reddit/YouTube exclude hashtag/cashtag modules</li>
+                    <li>LinkedIn has 3 hashtag modules (not 4)</li>
+                    <li>Real-world scenarios feel authentic</li>
+                    <li>Data structure matches what UI expects</li>
+                    <li>All known banned signals are in database</li>
+                    <li>Free/Pro/Pro+ feature gates work correctly</li>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- Default Analysis (shown before file upload) -->
+        <div class="analysis-output active" id="defaultAnalysis">
+            <div class="card" style="margin-bottom: 20px;">
+                <h2>📋 Required File Structure for Master Engine</h2>
+                <div class="file-tree">
+<span class="folder">shadowbancheck.io/</span>
+├── <span class="file html">index.html</span>                    # Landing page
+├── <span class="file html">results.html</span>                  # Results display
+├── <span class="folder">css/</span>
+│   └── <span class="file css">styles.css</span>                 # Global styles
+├── <span class="folder">js/</span>
+│   ├── <span class="file js">main.js</span>                     # Core application logic
+│   ├── <span class="file js">demo-data.js</span>                # 🔴 REWRITE NEEDED - Demo scenarios
+│   ├── <span class="file js">platforms.js</span>                # 🟡 UPDATE NEEDED - Module counts
+│   ├── <span class="file js">results.js</span>                  # 🟡 UPDATE NEEDED - 3-Point display
+│   ├── <span class="folder">agents/</span>
+│   │   ├── <span class="file js">api-agent.js</span>            # 🟢 CREATE - API Agent logic
+│   │   ├── <span class="file js">web-agent.js</span>            # 🟢 CREATE - Web Analysis Agent
+│   │   ├── <span class="file js">historical-agent.js</span>     # 🟢 CREATE - Historical Agent
+│   │   ├── <span class="file js">detection-agent.js</span>      # 🟢 CREATE - Detection Agent
+│   │   └── <span class="file js">predictive-agent.js</span>     # 🟢 CREATE - Predictive AI Agent
+│   └── <span class="folder">utils/</span>
+│       ├── <span class="file js">confidence.js</span>           # 🟢 CREATE - Confidence calc
+│       ├── <span class="file js">scoring.js</span>              # 🟢 CREATE - Score aggregation
+│       └── <span class="file js">database.js</span>             # 🟢 CREATE - Signals database
+├── <span class="folder">data/</span>
+│   ├── <span class="file json">banned-hashtags.json</span>      # 🟢 CREATE - All platforms
+│   ├── <span class="file json">throttled-domains.json</span>    # 🟢 CREATE - Twitter confirmed
+│   └── <span class="file json">automod-triggers.json</span>     # 🟢 CREATE - Reddit patterns
+└── <span class="folder">api/</span>
+    └── <span class="file">(future backend)</span>
+                </div>
+            </div>
+            
+            <div class="card priority-high" style="margin-bottom: 20px;">
+                <h2>🔴 PRIORITY 1: Immediate Updates Required</h2>
+                <h3 style="color: var(--warning); margin: 20px 0 10px;">1. demo-data.js - Complete Rewrite</h3>
+                <p style="margin-bottom: 15px;">Must include all 5 agents with proper 3-Point Intelligence structure for each signal type.</p>
+                <div class="code-block">
+<span class="comment">// Required structure for each demo scenario:</span>
+<span class="keyword">const</span> demoScenario = {
+  username: <span class="string">'@demo_user'</span>,
+  platform: <span class="string">'twitter'</span>,
+  
+  agents: {
+    api: {
+      status: <span class="string">'complete'</span>,
+      weight: <span class="number">20</span>,
+      checks: { <span class="comment">/* full API checks */</span> },
+      findings: [],
+      rawScore: <span class="number">15</span>,
+      weightedScore: <span class="number">3</span>
+    },
+    web: { <span class="comment">/* Web Analysis Agent */</span> },
+    historical: { <span class="comment">/* Historical Agent */</span> },
+    detection: {
+      signalTypes: {
+        hashtags: {
+          threePoint: {
+            predictive: { weight: <span class="number">15</span>, score: <span class="number">X</span>, sources: [] },
+            realtime: { weight: <span class="number">55</span>, score: <span class="number">X</span>, sources: [] },
+            historical: { weight: <span class="number">30</span>, score: <span class="number">X</span>, sources: [] }
+          },
+          combinedScore: <span class="number">X</span>
+        },
+        <span class="comment">// ... cashtags, links, content, mentions, emojis</span>
+      }
+    },
+    predictive: { <span class="comment">/* Final synthesis */</span> }
+  },
+  
+  finalScore: <span class="number">X</span>,
+  confidence: <span class="string">'high'</span>
+};
+                </div>
+                
+                <h3 style="color: var(--warning); margin: 20px 0 10px;">2. platforms.js - Update Module Counts</h3>
+                <div class="code-block">
+<span class="keyword">const</span> PLATFORMS = {
+  twitter:   { modules: <span class="number">21</span>, hashtags: <span class="number">4</span>, cashtags: <span class="number">3</span>, links: <span class="number">4</span>, content: <span class="number">4</span>, mentions: <span class="number">3</span>, emojis: <span class="number">3</span> },
+  instagram: { modules: <span class="number">18</span>, hashtags: <span class="number">4</span>, cashtags: <span class="number">0</span>, links: <span class="number">4</span>, content: <span class="number">4</span>, mentions: <span class="number">3</span>, emojis: <span class="number">3</span> },
+  tiktok:    { modules: <span class="number">21</span>, hashtags: <span class="number">4</span>, cashtags: <span class="number">3</span>, links: <span class="number">4</span>, content: <span class="number">4</span>, mentions: <span class="number">3</span>, emojis: <span class="number">3</span> },
+  reddit:    { modules: <span class="number">14</span>, hashtags: <span class="number">0</span>, cashtags: <span class="number">0</span>, links: <span class="number">4</span>, content: <span class="number">4</span>, mentions: <span class="number">3</span>, emojis: <span class="number">3</span> },
+  facebook:  { modules: <span class="number">18</span>, hashtags: <span class="number">4</span>, cashtags: <span class="number">0</span>, links: <span class="number">4</span>, content: <span class="number">4</span>, mentions: <span class="number">3</span>, emojis: <span class="number">3</span> },
+  youtube:   { modules: <span class="number">14</span>, hashtags: <span class="number">0</span>, cashtags: <span class="number">0</span>, links: <span class="number">4</span>, content: <span class="number">4</span>, mentions: <span class="number">3</span>, emojis: <span class="number">3</span> },
+  linkedin:  { modules: <span class="number">17</span>, hashtags: <span class="number">3</span>, cashtags: <span class="number">0</span>, links: <span class="number">4</span>, content: <span class="number">4</span>, mentions: <span class="number">3</span>, emojis: <span class="number">3</span> }
+};
+                </div>
+                
+                <h3 style="color: var(--warning); margin: 20px 0 10px;">3. results.js - Add 3-Point Intelligence Display</h3>
+                <div class="code-block">
+<span class="comment">// Must render 3-Point breakdown for each signal type:</span>
+<span class="keyword">function</span> renderThreePointIntelligence(signalType) {
+  <span class="keyword">return</span> <span class="string">`
+    &lt;div class="three-point-intel"&gt;
+      &lt;div class="intel-source predictive"&gt;
+        &lt;span class="weight"&gt;15%&lt;/span&gt;
+        &lt;span class="label"&gt;Predictive&lt;/span&gt;
+        &lt;span class="score"&gt;\${signalType.threePoint.predictive.score}&lt;/span&gt;
+      &lt;/div&gt;
+      &lt;div class="intel-source realtime"&gt;
+        &lt;span class="weight"&gt;55%&lt;/span&gt;
+        &lt;span class="label"&gt;Real-Time&lt;/span&gt;
+        &lt;span class="score"&gt;\${signalType.threePoint.realtime.score}&lt;/span&gt;
+      &lt;/div&gt;
+      &lt;div class="intel-source historical"&gt;
+        &lt;span class="weight"&gt;30%&lt;/span&gt;
+        &lt;span class="label"&gt;Historical&lt;/span&gt;
+        &lt;span class="score"&gt;\${signalType.threePoint.historical.score}&lt;/span&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  `</span>;
+}
+                </div>
+            </div>
+            
+            <div class="card priority-medium" style="margin-bottom: 20px;">
+                <h2>🟡 PRIORITY 2: New Files to Create</h2>
+                
+                <h3 style="color: var(--text); margin: 20px 0 10px;">Agent Files (js/agents/)</h3>
+                <ul class="status-list">
+                    <li>api-agent.js <span class="status-badge missing">CREATE</span></li>
+                    <li>web-agent.js <span class="status-badge missing">CREATE</span></li>
+                    <li>historical-agent.js <span class="status-badge missing">CREATE</span></li>
+                    <li>detection-agent.js <span class="status-badge missing">CREATE</span></li>
+                    <li>predictive-agent.js <span class="status-badge missing">CREATE</span></li>
+                </ul>
+                
+                <h3 style="color: var(--text); margin: 20px 0 10px;">Utility Files (js/utils/)</h3>
+                <ul class="status-list">
+                    <li>confidence.js <span class="status-badge missing">CREATE</span></li>
+                    <li>scoring.js <span class="status-badge missing">CREATE</span></li>
+                    <li>database.js <span class="status-badge missing">CREATE</span></li>
+                </ul>
+                
+                <h3 style="color: var(--text); margin: 20px 0 10px;">Data Files (data/)</h3>
+                <ul class="status-list">
+                    <li>banned-hashtags.json <span class="status-badge missing">CREATE</span></li>
+                    <li>throttled-domains.json <span class="status-badge missing">CREATE</span></li>
+                    <li>automod-triggers.json <span class="status-badge missing">CREATE</span></li>
+                </ul>
+            </div>
+            
+            <div class="card" style="margin-bottom: 20px;">
+                <h2>📊 Platform-Specific Signal Coverage</h2>
+                <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
+                    <thead>
+                        <tr style="border-bottom: 2px solid var(--primary);">
+                            <th style="text-align: left; padding: 10px;">Platform</th>
+                            <th style="text-align: center; padding: 10px;">Total</th>
+                            <th style="text-align: center; padding: 10px;">#️⃣</th>
+                            <th style="text-align: center; padding: 10px;">💲</th>
+                            <th style="text-align: center; padding: 10px;">🔗</th>
+                            <th style="text-align: center; padding: 10px;">📝</th>
+                            <th style="text-align: center; padding: 10px;">@</th>
+                            <th style="text-align: center; padding: 10px;">😀</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+                            <td style="padding: 10px;">Twitter/X</td>
+                            <td style="text-align: center; padding: 10px; color: var(--primary); font-weight: bold;">21</td>
+                            <td style="text-align: center; padding: 10px;">4</td>
+                            <td style="text-align: center; padding: 10px;">3</td>
+                            <td style="text-align: center; padding: 10px;">4</td>
+                            <td style="text-align: center; padding: 10px;">4</td>
+                            <td style="text-align: center; padding: 10px;">3</td>
+                            <td style="text-align: center; padding: 10px;">3</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+                            <td style="padding: 10px;">Instagram</td>
+                            <td style="text-align: center; padding: 10px; color: var(--primary); font-weight: bold;">18</td>
+                            <td style="text-align: center; padding: 10px;">4</td>
+                            <td style="text-align: center; padding: 10px; color: var(--muted);">—</td>
+                            <td style="text-align: center; padding: 10px;">4</td>
+                            <td style="text-align: center; padding: 10px;">4</td>
+                            <td style="text-align: center; padding: 10px;">3</td>
+                            <td style="text-align: center; padding: 10px;">3</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+                            <td style="padding: 10px;">TikTok</td>
+                            <td style="text-align: center; padding: 10px; color: var(--primary); font-weight: bold;">21</td>
+                            <td style="text-align: center; padding: 10px;">4</td>
+                            <td style="text-align: center; padding: 10px;">3</td>
+                            <td style="text-align: center; padding: 10px;">4</td>
+                            <td style="text-align: center; padding: 10px;">4</td>
+                            <td style="text-align: center; padding: 10px;">3</td>
+                            <td style="text-align: center; padding: 10px;">3</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+                            <td style="padding: 10px;">Reddit</td>
+                            <td style="text-align: center; padding: 10px; color: var(--primary); font-weight: bold;">14</td>
+                            <td style="text-align: center; padding: 10px; color: var(--muted);">—</td>
+                            <td style="text-align: center; padding: 10px; color: var(--muted);">—</td>
+                            <td style="text-align: center; padding: 10px;">4</td>
+                            <td style="text-align: center; padding: 10px;">4</td>
+                            <td style="text-align: center; padding: 10px;">3</td>
+                            <td style="text-align: center; padding: 10px;">3</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+                            <td style="padding: 10px;">Facebook</td>
+                            <td style="text-align: center; padding: 10px; color: var(--primary); font-weight: bold;">18</td>
+                            <td style="text-align: center; padding: 10px;">4</td>
+                            <td style="text-align: center; padding: 10px; color: var(--muted);">—</td>
+                            <td style="text-align: center; padding: 10px;">4</td>
+                            <td style="text-align: center; padding: 10px;">4</td>
+                            <td style="text-align: center; padding: 10px;">3</td>
+                            <td style="text-align: center; padding: 10px;">3</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+                            <td style="padding: 10px;">YouTube</td>
+                            <td style="text-align: center; padding: 10px; color: var(--primary); font-weight: bold;">14</td>
+                            <td style="text-align: center; padding: 10px; color: var(--muted);">—</td>
+                            <td style="text-align: center; padding: 10px; color: var(--muted);">—</td>
+                            <td style="text-align: center; padding: 10px;">4</td>
+                            <td style="text-align: center; padding: 10px;">4</td>
+                            <td style="text-align: center; padding: 10px;">3</td>
+                            <td style="text-align: center; padding: 10px;">3</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 10px;">LinkedIn</td>
+                            <td style="text-align: center; padding: 10px; color: var(--primary); font-weight: bold;">17</td>
+                            <td style="text-align: center; padding: 10px;">3</td>
+                            <td style="text-align: center; padding: 10px; color: var(--muted);">—</td>
+                            <td style="text-align: center; padding: 10px;">4</td>
+                            <td style="text-align: center; padding: 10px;">4</td>
+                            <td style="text-align: center; padding: 10px;">3</td>
+                            <td style="text-align: center; padding: 10px;">3</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="card">
+                <h2>✅ Success Criteria Checklist</h2>
+                <ul class="checklist">
+                    <li>Every agent returns full check structure</li>
+                    <li>Every signal type has 3-Point Intelligence breakdown</li>
+                    <li>Confidence levels calculated correctly (High ≥70%, Medium 40-69%, Low &lt;40%)</li>
+                    <li>Platform-specific module counts accurate</li>
+                    <li>Reddit/YouTube exclude hashtag/cashtag modules</li>
+                    <li>LinkedIn has 3 hashtag modules (not 4)</li>
+                    <li>Real-world scenarios feel authentic</li>
+                    <li>Data structure matches what UI expects</li>
+                    <li>All known banned signals are in database</li>
+                    <li>Free/Pro/Pro+ feature gates work correctly</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Required files for the Master Engine
+        const REQUIRED_FILES = {
+            core: [
+                { path: 'index.html', status: 'exists', priority: 'low' },
+                { path: 'results.html', status: 'exists', priority: 'low' },
+                { path: 'css/styles.css', status: 'exists', priority: 'low' }
+            ],
+            update: [
+                { path: 'js/demo-data.js', status: 'update', priority: 'high', reason: 'Rewrite with 3-Point Intelligence structure' },
+                { path: 'js/platforms.js', status: 'update', priority: 'high', reason: 'Update module counts per platform' },
+                { path: 'js/results.js', status: 'update', priority: 'high', reason: 'Add 3-Point Intelligence display' }
+            ],
+            create: [
+                { path: 'js/main.js', status: 'missing', priority: 'medium' },
+                { path: 'js/agents/api-agent.js', status: 'missing', priority: 'high' },
+                { path: 'js/agents/web-agent.js', status: 'missing', priority: 'high' },
+                { path: 'js/agents/historical-agent.js', status: 'missing', priority: 'high' },
+                { path: 'js/agents/detection-agent.js', status: 'missing', priority: 'high' },
+                { path: 'js/agents/predictive-agent.js', status: 'missing', priority: 'high' },
+                { path: 'js/utils/confidence.js', status: 'missing', priority: 'medium' },
+                { path: 'js/utils/scoring.js', status: 'missing', priority: 'medium' },
+                { path: 'js/utils/database.js', status: 'missing', priority: 'medium' },
+                { path: 'data/banned-hashtags.json', status: 'missing', priority: 'medium' },
+                { path: 'data/throttled-domains.json', status: 'missing', priority: 'medium' },
+                { path: 'data/automod-triggers.json', status: 'missing', priority: 'medium' }
+            ]
+        };
+        
+        // File input handler
+        const folderInput = document.getElementById('folderInput');
+        const dropZone = document.getElementById('dropZone');
+        
+        folderInput.addEventListener('change', (e) => {
+            handleFiles(e.target.files);
+        });
+        
+        // Drag and drop
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.style.borderColor = '#00d26a';
+        });
+        
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.style.borderColor = '#ff6b35';
+        });
+        
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.style.borderColor = '#ff6b35';
+            handleFiles(e.dataTransfer.files);
+        });
+        
+        function handleFiles(files) {
+            const fileList = Array.from(files);
+            const filePaths = fileList.map(f => f.webkitRelativePath || f.name);
+            
+            // Build file tree
+            const tree = buildFileTree(filePaths);
+            
+            // Check against required files
+            const analysis = analyzeProject(filePaths);
+            
+            // Display results
+            displayResults(tree, analysis, fileList.length);
+        }
+        
+        function buildFileTree(paths) {
+            const tree = {};
+            paths.forEach(path => {
+                const parts = path.split('/');
+                let current = tree;
+                parts.forEach((part, i) => {
+                    if (!current[part]) {
+                        current[part] = i === parts.length - 1 ? null : {};
+                    }
+                    if (current[part] !== null) {
+                        current = current[part];
+                    }
+                });
+            });
+            return tree;
+        }
+        
+        function analyzeProject(paths) {
+            const result = {
+                found: [],
+                missing: [],
+                needsUpdate: []
+            };
+            
+            const allRequired = [...REQUIRED_FILES.core, ...REQUIRED_FILES.update, ...REQUIRED_FILES.create];
+            
+            allRequired.forEach(req => {
+                const found = paths.some(p => p.includes(req.path));
+                if (found) {
+                    if (req.status === 'update') {
+                        result.needsUpdate.push(req);
+                    } else {
+                        result.found.push(req);
+                    }
+                } else {
+                    result.missing.push(req);
+                }
+            });
+            
+            return result;
+        }
+        
+        function displayResults(tree, analysis, totalCount) {
+            document.getElementById('defaultAnalysis').classList.remove('active');
+            document.getElementById('analysisOutput').classList.add('active');
+            
+            // Update stats
+            document.getElementById('totalFiles').textContent = totalCount;
+            document.getElementById('jsFiles').textContent = Object.keys(tree).filter(k => k.endsWith('.js')).length;
+            document.getElementById('missingFiles').textContent = analysis.missing.length;
+            document.getElementById('updateFiles').textContent = analysis.needsUpdate.length;
+            
+            // Build file tree display
+            const treeHtml = renderTree(tree, 0);
+            document.getElementById('fileTree').innerHTML = treeHtml;
+            
+            // Build status list
+            const statusHtml = [...analysis.found, ...analysis.needsUpdate, ...analysis.missing]
+                .map(f => `
+                    <li>
+                        ${f.path}
+                        <span class="status-badge ${f.status === 'missing' ? 'missing' : f.status === 'update' ? 'update' : 'exists'}">
+                            ${f.status === 'missing' ? 'MISSING' : f.status === 'update' ? 'UPDATE' : 'EXISTS'}
+                        </span>
+                    </li>
+                `).join('');
+            document.getElementById('statusList').innerHTML = statusHtml;
+        }
+        
+        function renderTree(tree, depth) {
+            let html = '';
+            const indent = '│   '.repeat(depth);
+            const entries = Object.entries(tree);
+            
+            entries.forEach(([name, children], i) => {
+                const isLast = i === entries.length - 1;
+                const prefix = isLast ? '└── ' : '├── ';
+                const isFolder = children !== null;
+                const ext = name.split('.').pop();
+                
+                const colorClass = isFolder ? 'folder' : `file ${ext}`;
+                html += `<div><span class="${colorClass}">${indent}${prefix}${name}</span></div>`;
+                
+                if (isFolder) {
+                    html += renderTree(children, depth + 1);
+                }
+            });
+            
+            return html;
+        }
+    </script>
+</body>
+</html>

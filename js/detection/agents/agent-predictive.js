@@ -1,769 +1,726 @@
 /* =============================================================================
-   AGENT-PREDICTIVE.JS - Factor 5: Predictive Intelligence (20%)
-   ShadowBanCheck.io - 5-Factor Detection Engine
+   AGENT-PREDICTIVE.JS - Predictive Intelligence Agent (Factor 5)
+   ShadowBanCheck.io
    
-   Version: 2.0.0
-   Updated: December 2025
+   Final synthesis and prediction generation.
+   Weight: 20% of final score
    
-   Final synthesis and predictive analysis:
-   - Synthesizes all other agent results
-   - Trending topics likely to be suppressed
-   - News/events correlation
-   - Platform policy pattern analysis
-   - Seasonal/timing factors
-   - Cross-platform intelligence
-   - Recovery predictions
-   - Actionable recommendations
+   Responsibilities:
+   - Synthesize results from all other agents
+   - Generate final probability assessment
+   - Create actionable recommendations
+   - Predict recovery timeline
+   - Assess future risk
+   
+   This agent runs LAST and has access to all other agent results.
+   
+   Last Updated: 2025-12-03
    ============================================================================= */
 
 (function() {
 'use strict';
 
 // =============================================================================
-// CONSTANTS
+// RECOVERY TIMELINES
 // =============================================================================
 
-// High-risk periods (increased platform scrutiny)
-const HIGH_RISK_PERIODS = [
-    { name: 'US Elections', months: [10, 11], riskMultiplier: 1.5 },
-    { name: 'Major Holidays', months: [12, 1], riskMultiplier: 1.2 },
-    { name: 'Black Friday/Cyber Monday', months: [11], days: [20, 30], riskMultiplier: 1.3 },
-    { name: 'Super Bowl', months: [2], days: [1, 15], riskMultiplier: 1.2 }
-];
-
-// Sensitive topics with increased scrutiny
-const SENSITIVE_TOPICS = [
-    { pattern: /election|vote|ballot|poll|voting/i, risk: 'high', category: 'political' },
-    { pattern: /covid|vaccine|pandemic|virus|mask mandate/i, risk: 'high', category: 'health' },
-    { pattern: /crypto|bitcoin|nft|token|coin|defi/i, risk: 'medium', category: 'financial' },
-    { pattern: /war|invasion|conflict|military|troops/i, risk: 'high', category: 'geopolitical' },
-    { pattern: /protest|riot|demonstration|march/i, risk: 'medium', category: 'civil' },
-    { pattern: /breaking|leaked|exposed|scandal/i, risk: 'medium', category: 'news' },
-    { pattern: /giveaway|free|winner|claim|prize/i, risk: 'medium', category: 'spam' },
-    { pattern: /conspiracy|hoax|fake news/i, risk: 'high', category: 'misinformation' }
-];
-
-// Platform-specific patterns
-const PLATFORM_PATTERNS = {
+const RECOVERY_TIMELINES = {
     twitter: {
-        sensitiveCategories: ['political', 'health', 'spam', 'misinformation'],
-        knownFilters: ['election misinformation', 'health misinformation', 'spam', 'coordinated behavior']
+        searchBan: { min: 24, max: 72, unit: 'hours' },
+        searchSuggestionBan: { min: 12, max: 48, unit: 'hours' },
+        ghostBan: { min: 48, max: 168, unit: 'hours' }, // 2-7 days
+        replyDeboosting: { min: 24, max: 72, unit: 'hours' },
+        hashtagBan: { min: 24, max: 48, unit: 'hours', action: 'remove_banned_tags' },
+        linkThrottling: { min: 0, max: 0, unit: 'immediate', action: 'use_different_links' }
     },
     reddit: {
-        sensitiveCategories: ['spam', 'promotional', 'brigading'],
-        knownFilters: ['brigading', 'spam', 'ban evasion', 'vote manipulation']
+        automodFilter: { min: 0, max: 24, unit: 'hours', action: 'contact_mods' },
+        shadowban: { min: 168, max: 720, unit: 'hours', action: 'appeal' }, // 7-30 days
+        lowKarma: { min: 168, max: 336, unit: 'hours', action: 'engage_positively' } // 7-14 days to build karma
     },
     instagram: {
-        sensitiveCategories: ['adult', 'spam', 'promotional'],
-        knownFilters: ['engagement bait', 'banned hashtags', 'adult content', 'automation']
-    },
-    tiktok: {
-        sensitiveCategories: ['political', 'adult', 'dangerous'],
-        knownFilters: ['dangerous acts', 'political content', 'adult content', 'copyrighted audio']
-    },
-    facebook: {
-        sensitiveCategories: ['political', 'health', 'spam'],
-        knownFilters: ['misinformation', 'clickbait', 'engagement bait', 'fake engagement']
-    },
-    youtube: {
-        sensitiveCategories: ['misinformation', 'adult', 'harmful'],
-        knownFilters: ['misleading content', 'community guidelines', 'spam', 'scams']
-    },
-    linkedin: {
-        sensitiveCategories: ['spam', 'promotional'],
-        knownFilters: ['engagement bait', 'spam', 'automation', 'irrelevant content']
+        hashtagBan: { min: 24, max: 336, unit: 'hours' }, // 1-14 days
+        actionBlock: { min: 24, max: 48, unit: 'hours' }
     }
 };
 
 // =============================================================================
-// PREDICTIVE AGENT CLASS
+// ISSUE PRIORITY WEIGHTS
 // =============================================================================
 
-class PredictiveAgent extends window.AgentBase {
+const ISSUE_WEIGHTS = {
+    // Critical - immediate action required
+    suspended: 100,
+    shadowbanned: 90,
+    searchBan: 80,
+    ghostBan: 80,
+    removed: 75,
+    
+    // High - significant impact
+    banned_hashtag: 60,
+    searchSuggestionBan: 55,
+    replyDeboosting: 50,
+    throttled_link: 45,
+    automod_filtered: 45,
+    
+    // Medium - moderate impact
+    link_shortener: 30,
+    spam_content: 35,
+    low_karma: 30,
+    new_account: 25,
+    
+    // Low - minor impact
+    not_verified: 10,
+    risky_emoji: 8,
+    style_issue: 5
+};
+
+// =============================================================================
+// PREDICTIVE AGENT
+// =============================================================================
+
+class PredictiveAgent {
     
     constructor() {
-        super('predictive', 5, 20); // id, factor 5, weight 20%
+        this.id = 'predictive';
+        this.name = 'Predictive Intelligence';
+        this.factor = 5;
+        this.weight = 20;
+        this.version = '2.0.0';
+        this.demoMode = true;
     }
     
-    // =========================================================================
-    // MAIN ANALYZE METHOD
-    // =========================================================================
-    
+    /**
+     * Main analysis method
+     * @param {object} input - Analysis input (includes otherAgentResults)
+     * @returns {Promise<object>} Analysis result
+     */
     async analyze(input) {
+        const platform = input.platform || 'twitter';
         const startTime = Date.now();
-        const findings = [];
-        const flags = [];
-        const warnings = [];
-        let rawScore = 0;
         
-        try {
-            const text = this.extractText(input);
-            const platform = input.platform || 'twitter';
+        // Get other agent results
+        const otherResults = input.otherAgentResults || this.gatherOtherResults();
+        
+        const checks = {
+            synthesis: null,
+            riskFactors: null,
+            predictions: null,
+            recommendations: null
+        };
+        
+        const findings = [];
+        let totalScore = 0;
+        
+        // =================================================================
+        // SYNTHESIZE ALL AGENT RESULTS
+        // =================================================================
+        
+        const synthesis = this.synthesizeAgentResults(otherResults);
+        checks.synthesis = synthesis;
+        
+        // =================================================================
+        // RISK FACTOR ANALYSIS
+        // =================================================================
+        
+        const riskFactors = this.analyzeRiskFactors(otherResults, input, platform);
+        checks.riskFactors = riskFactors;
+        
+        // Calculate base score from risk factors
+        for (const risk of riskFactors.factors) {
+            totalScore += risk.contribution;
             
-            // Get other agent results if available (for synthesis)
-            const otherAgentResults = input.agentResults || [];
-            
-            // Build synthesis inputs
-            const synthesis = this.buildSynthesisInputs(otherAgentResults);
-            
-            // === ANALYSIS 1: Temporal Risk ===
-            const temporalRisk = this.analyzeTemporalRisk();
-            if (temporalRisk.risk > 0) {
-                findings.push(this.createFinding(
-                    'warning',
-                    temporalRisk.message,
-                    temporalRisk.risk,
-                    { period: temporalRisk.period }
-                ));
-                rawScore += temporalRisk.risk * 0.3;
-                flags.push('temporal_risk');
-            }
-            
-            // === ANALYSIS 2: Topic Risk ===
-            const topicRisk = this.analyzeTopicRisk(text, platform);
-            if (topicRisk.risk > 0) {
-                findings.push(this.createFinding(
-                    topicRisk.risk >= 30 ? 'warning' : 'info',
-                    `Content touches on sensitive topic: ${topicRisk.category}`,
-                    topicRisk.risk,
-                    { category: topicRisk.category, matches: topicRisk.matches }
-                ));
-                rawScore += topicRisk.risk * 0.4;
-                flags.push(`sensitive_${topicRisk.category}`);
-            }
-            
-            // === ANALYSIS 3: Platform-Specific Predictions ===
-            const platformRisk = this.analyzePlatformRisk(text, platform);
-            if (platformRisk.risk > 0) {
-                findings.push(this.createFinding(
-                    'warning',
-                    platformRisk.message,
-                    platformRisk.risk,
-                    { platform, predictions: platformRisk.predictions }
-                ));
-                rawScore += platformRisk.risk * 0.3;
-            }
-            
-            // === ANALYSIS 4: Pattern-Based Predictions ===
-            const patternRisk = this.analyzePatternRisk(text, platform);
-            if (patternRisk.findings.length > 0) {
-                findings.push(...patternRisk.findings);
-                rawScore += patternRisk.totalRisk * 0.2;
-            }
-            
-            // === ANALYSIS 5: Known Issues Check ===
-            const knownIssues = this.checkKnownIssues(text, platform);
-            if (knownIssues.length > 0) {
-                for (const issue of knownIssues) {
-                    findings.push(this.createFinding(
-                        'warning',
-                        issue.message,
-                        issue.risk,
-                        { type: issue.type }
-                    ));
-                    warnings.push(issue.message);
-                }
-                rawScore += knownIssues.reduce((sum, i) => sum + i.risk, 0) * 0.2;
-            }
-            
-            // === SYNTHESIS: Combine All Factors ===
-            const finalScore = this.calculateFinalScore(rawScore, synthesis);
-            const probability = Math.min(100, Math.round(finalScore));
-            
-            // === BUILD RISK FACTORS ===
-            const riskFactors = this.buildRiskFactors(findings, synthesis, platform);
-            
-            // === BUILD PREDICTIONS ===
-            const predictions = this.buildPredictions(probability, riskFactors);
-            
-            // === BUILD RECOMMENDATIONS ===
-            const recommendations = this.buildRecommendations(riskFactors, findings, platform);
-            
-            // === Add Summary Finding ===
-            if (rawScore > 0) {
-                findings.push(this.createFinding(
-                    'info',
-                    `Predictive analysis: ${this.getRiskLevel(probability)} likelihood of visibility issues`,
-                    probability,
-                    { factorsAnalyzed: ['temporal', 'topic', 'platform', 'pattern', 'known_issues'] }
-                ));
-            }
-            
-            // Calculate confidence
-            const confidence = this.calculateConfidence(synthesis, platform);
-            
-            // Build checks object matching spec
-            const checks = {
-                synthesis: {
-                    rawTotal: finalScore,
-                    sourceAgreement: this.calculateSourceAgreement(synthesis),
-                    confidenceLevel: confidence >= 70 ? 'high' : confidence >= 40 ? 'medium' : 'low',
-                    confidenceScore: confidence,
-                    shadowbanProbability: probability,
-                    shadowbanStatus: this.getStatus(probability)
-                },
-                
-                temporalRisk: temporalRisk,
-                topicRisk: topicRisk,
-                platformRisk: platformRisk,
-                patternRisk: patternRisk
-            };
-            
-            return this.createResult({
-                status: 'complete',
-                rawScore: probability,
-                confidence: confidence,
-                findings: findings,
-                flags: flags,
-                warnings: warnings,
-                checks: checks,
-                
-                // Extended predictive data
-                synthesis: checks.synthesis,
-                riskFactors: riskFactors,
-                predictions: predictions,
-                recommendations: recommendations,
-                
-                processingTime: Date.now() - startTime,
-                message: this.useDemo ? 'Predictive analysis using demo patterns' : null
-            });
-            
-        } catch (error) {
-            this.log(`Error: ${error.message}`, 'error');
-            return this.createResult({
-                status: 'error',
-                rawScore: 0,
-                confidence: 0,
-                findings: [{
+            if (risk.severity === 'critical' || risk.severity === 'high') {
+                findings.push({
                     type: 'danger',
-                    severity: 'high',
-                    message: `Predictive analysis error: ${error.message}`,
-                    impact: 0
-                }],
-                processingTime: Date.now() - startTime,
-                message: `Error: ${error.message}`
+                    severity: risk.severity,
+                    message: risk.description,
+                    impact: risk.contribution
+                });
+            } else if (risk.severity === 'medium') {
+                findings.push({
+                    type: 'warning',
+                    severity: 'medium',
+                    message: risk.description,
+                    impact: risk.contribution
+                });
+            }
+        }
+        
+        // =================================================================
+        // GENERATE PREDICTIONS
+        // =================================================================
+        
+        const predictions = this.generatePredictions(synthesis, riskFactors, platform);
+        checks.predictions = predictions;
+        
+        // Add prediction findings
+        if (predictions.recoveryPossible) {
+            findings.push({
+                type: 'info',
+                severity: 'low',
+                message: `Estimated recovery: ${predictions.recoveryTimeline}`,
+                impact: 0
             });
         }
-    }
-    
-    // =========================================================================
-    // ANALYSIS METHODS
-    // =========================================================================
-    
-    analyzeTemporalRisk() {
-        const now = new Date();
-        const month = now.getMonth() + 1; // 1-12
-        const day = now.getDate();
         
-        for (const period of HIGH_RISK_PERIODS) {
-            const monthMatch = period.months && period.months.includes(month);
-            const dayMatch = !period.days || (period.days[0] <= day && day <= period.days[1]);
-            
-            if (monthMatch && dayMatch) {
-                return {
-                    risk: Math.round(20 * (period.riskMultiplier - 1) * 2),
-                    message: `Currently in ${period.name} period - increased platform scrutiny expected`,
-                    period: period.name,
-                    multiplier: period.riskMultiplier
-                };
-            }
+        if (predictions.futureRisk === 'high') {
+            findings.push({
+                type: 'warning',
+                severity: 'medium',
+                message: 'High risk of future restrictions if behavior continues',
+                impact: 10
+            });
+            totalScore += 10;
         }
         
-        return { risk: 0, message: null, period: null };
+        // =================================================================
+        // GENERATE RECOMMENDATIONS
+        // =================================================================
+        
+        const recommendations = this.generateRecommendations(synthesis, riskFactors, platform);
+        checks.recommendations = recommendations;
+        
+        // Add positive findings for good behavior
+        if (riskFactors.factors.length === 0) {
+            findings.push({
+                type: 'good',
+                severity: 'none',
+                message: 'No significant risk factors detected',
+                impact: 0
+            });
+        }
+        
+        // =================================================================
+        // CALCULATE FINAL SCORE
+        // =================================================================
+        
+        // Predictive score is influenced by:
+        // 1. Synthesized score from other agents (70%)
+        // 2. Risk factor analysis (20%)
+        // 3. Trend prediction (10%)
+        
+        const synthesizedScore = synthesis.weightedAverage;
+        const riskScore = Math.min(100, riskFactors.totalRisk);
+        const trendAdjustment = predictions.trendAdjustment || 0;
+        
+        const rawScore = Math.min(100, Math.round(
+            synthesizedScore * 0.7 +
+            riskScore * 0.2 +
+            trendAdjustment * 0.1
+        ));
+        
+        const confidence = this.calculateConfidence(synthesis, riskFactors);
+        
+        // Determine final verdict
+        const verdict = this.determineVerdict(rawScore, confidence, synthesis);
+        
+        return {
+            agent: this.name,
+            agentId: this.id,
+            factor: this.factor,
+            weight: this.weight,
+            status: 'complete',
+            
+            platform: platform,
+            processingTime: Date.now() - startTime,
+            
+            checks: checks,
+            findings: findings,
+            
+            rawScore: rawScore,
+            weightedScore: Math.round((rawScore * this.weight) / 100 * 100) / 100,
+            confidence: confidence,
+            
+            synthesis: {
+                agentScores: synthesis.agentScores,
+                weightedAverage: synthesis.weightedAverage,
+                agreement: synthesis.agreement,
+                issueCount: synthesis.issueCount
+            },
+            
+            riskFactors: riskFactors.factors.map(f => ({
+                factor: f.factor,
+                severity: f.severity,
+                contribution: f.contribution
+            })),
+            
+            predictions: {
+                verdict: verdict,
+                verdictDescription: this.getVerdictDescription(verdict),
+                probability: rawScore,
+                reachScore: 100 - rawScore,
+                recoveryTimeline: predictions.recoveryTimeline,
+                futureRisk: predictions.futureRisk,
+                confidence: confidence
+            },
+            
+            recommendations: recommendations,
+            
+            timestamp: new Date().toISOString()
+        };
     }
     
-    analyzeTopicRisk(text, platform) {
-        if (!text) return { risk: 0, category: null, matches: [] };
+    // =========================================================================
+    // SYNTHESIS
+    // =========================================================================
+    
+    gatherOtherResults() {
+        const results = [];
         
-        const matches = [];
-        let highestRisk = 0;
-        let riskCategory = null;
-        
-        for (const topic of SENSITIVE_TOPICS) {
-            if (topic.pattern.test(text)) {
-                const match = text.match(topic.pattern);
-                matches.push({
-                    category: topic.category,
-                    matched: match ? match[0] : null,
-                    risk: topic.risk
-                });
-                
-                const riskValue = topic.risk === 'high' ? 40 : topic.risk === 'medium' ? 20 : 10;
-                if (riskValue > highestRisk) {
-                    highestRisk = riskValue;
-                    riskCategory = topic.category;
+        if (window.AgentRegistry) {
+            const all = window.AgentRegistry.getAll();
+            for (const agent of Object.values(all)) {
+                if (agent.id !== this.id && agent._lastResult) {
+                    results.push(agent._lastResult);
                 }
             }
         }
         
-        return {
-            risk: highestRisk,
-            category: riskCategory,
-            matches
-        };
+        return results;
     }
     
-    analyzePlatformRisk(text, platform) {
-        const patterns = PLATFORM_PATTERNS[platform];
-        if (!patterns || !text) {
-            return { risk: 0, message: null, predictions: [] };
-        }
-        
-        const predictions = [];
-        let risk = 0;
-        
-        for (const filter of patterns.knownFilters) {
-            const filterPattern = new RegExp(filter.split(' ').join('|'), 'i');
-            if (filterPattern.test(text)) {
-                predictions.push({
-                    filter,
-                    likelihood: 'possible',
-                    action: 'Review and modify content'
-                });
-                risk += 15;
-            }
-        }
-        
-        if (predictions.length === 0) {
-            return { risk: 0, message: null, predictions: [] };
-        }
-        
-        return {
-            risk: Math.min(50, risk),
-            message: `Content may trigger ${platform} filters: ${predictions.map(p => p.filter).join(', ')}`,
-            predictions
-        };
-    }
-    
-    analyzePatternRisk(text, platform) {
-        const findings = [];
-        let totalRisk = 0;
-        
-        if (!text) return { findings: [], totalRisk: 0 };
-        
-        // Spam patterns
-        if (/(?:free|win|giveaway).*(?:click|link|dm)/i.test(text)) {
-            findings.push(this.createFinding(
-                'warning',
-                'Content matches common spam patterns',
-                30,
-                { pattern: 'promotional spam' }
-            ));
-            totalRisk += 30;
-        }
-        
-        // Engagement bait
-        if (/(?:like|share|comment|follow).*(?:if you|to win|for a chance)/i.test(text)) {
-            findings.push(this.createFinding(
-                'warning',
-                'Content appears to be engagement bait',
-                25,
-                { pattern: 'engagement bait' }
-            ));
-            totalRisk += 25;
-        }
-        
-        // Urgency tactics
-        if (/(?:act now|limited time|hurry|last chance|don't miss)/i.test(text)) {
-            findings.push(this.createFinding(
-                'info',
-                'Content uses urgency tactics common in spam',
-                15,
-                { pattern: 'urgency' }
-            ));
-            totalRisk += 15;
-        }
-        
-        // Excessive capitalization
-        const capsRatio = (text.match(/[A-Z]/g) || []).length / Math.max(1, text.length);
-        if (capsRatio > 0.5 && text.length > 20) {
-            findings.push(this.createFinding(
-                'info',
-                'Excessive capitalization may trigger spam filters',
-                10,
-                { capsRatio: (capsRatio * 100).toFixed(1) + '%' }
-            ));
-            totalRisk += 10;
-        }
-        
-        // Repeated punctuation
-        if (/[!?]{3,}/.test(text)) {
-            findings.push(this.createFinding(
-                'info',
-                'Excessive punctuation may reduce reach',
-                5,
-                { pattern: 'punctuation' }
-            ));
-            totalRisk += 5;
-        }
-        
-        return { findings, totalRisk };
-    }
-    
-    checkKnownIssues(text, platform) {
-        const issues = [];
-        
-        if (!text) return issues;
-        
-        // Platform-specific known issues
-        if (platform === 'twitter') {
-            if (/bit\.ly|tinyurl|t\.co.*t\.co/i.test(text)) {
-                issues.push({
-                    type: 'shortened_urls',
-                    message: 'Multiple URL shorteners may trigger spam detection',
-                    risk: 20
-                });
-            }
-            
-            if (/(follow|like|rt).*4.*(follow|like|rt)/i.test(text)) {
-                issues.push({
-                    type: 'follow_for_follow',
-                    message: 'Follow-for-follow patterns are heavily penalized',
-                    risk: 35
-                });
-            }
-        }
-        
-        if (platform === 'reddit') {
-            if (/(?:my|our|check out).*(?:channel|website|store|product)/i.test(text)) {
-                issues.push({
-                    type: 'self_promotion',
-                    message: 'Content may be flagged as self-promotion',
-                    risk: 25
-                });
-            }
-        }
-        
-        if (platform === 'instagram' || platform === 'tiktok') {
-            if (/link in bio|dm for|message for/i.test(text)) {
-                issues.push({
-                    type: 'redirect_pattern',
-                    message: 'Common redirect patterns may reduce reach',
-                    risk: 15
-                });
-            }
-        }
-        
-        if (platform === 'linkedin') {
-            if (/#[\w]+/g.test(text)) {
-                const hashtagCount = (text.match(/#[\w]+/g) || []).length;
-                if (hashtagCount > 3) {
-                    issues.push({
-                        type: 'excessive_hashtags',
-                        message: `LinkedIn penalizes posts with >3 hashtags (found ${hashtagCount})`,
-                        risk: 20
-                    });
-                }
-            }
-        }
-        
-        return issues;
-    }
-    
-    // =========================================================================
-    // SYNTHESIS METHODS
-    // =========================================================================
-    
-    buildSynthesisInputs(agentResults) {
+    synthesizeAgentResults(results) {
         const synthesis = {
-            agents: {},
-            totalWeightedScore: 0,
-            totalWeight: 0
+            agentScores: {},
+            weightedAverage: 0,
+            agreement: 'unknown',
+            issueCount: 0,
+            allFindings: []
         };
         
-        for (const result of agentResults) {
-            const id = result.agentId || `factor${result.factorNumber}`;
-            synthesis.agents[id] = {
-                score: result.rawScore || 0,
-                weight: result.weight || 20,
-                contribution: result.weightedScore || 0,
-                confidence: result.confidence || 0,
-                status: result.status || 'unknown'
+        if (!results || results.length === 0) {
+            return synthesis;
+        }
+        
+        let totalWeight = 0;
+        let weightedSum = 0;
+        const scores = [];
+        
+        for (const result of results) {
+            if (!result) continue;
+            
+            const id = result.agentId || result.id;
+            const score = result.rawScore || 0;
+            const weight = result.weight || 20;
+            
+            synthesis.agentScores[id] = {
+                score: score,
+                weight: weight,
+                status: result.status
             };
             
-            synthesis.totalWeightedScore += result.weightedScore || 0;
-            synthesis.totalWeight += result.weight || 0;
+            if (result.status === 'complete' || result.status === 'limited') {
+                weightedSum += score * weight;
+                totalWeight += weight;
+                scores.push(score);
+            }
+            
+            // Collect findings
+            if (result.findings) {
+                for (const finding of result.findings) {
+                    synthesis.allFindings.push({
+                        ...finding,
+                        source: id
+                    });
+                    if (finding.type === 'danger' || finding.type === 'warning') {
+                        synthesis.issueCount++;
+                    }
+                }
+            }
+        }
+        
+        // Calculate weighted average
+        synthesis.weightedAverage = totalWeight > 0 ? Math.round(weightedSum / totalWeight) : 0;
+        
+        // Calculate agreement level
+        if (scores.length >= 2) {
+            const max = Math.max(...scores);
+            const min = Math.min(...scores);
+            const range = max - min;
+            
+            if (range <= 15) {
+                synthesis.agreement = 'high';
+            } else if (range <= 30) {
+                synthesis.agreement = 'medium';
+            } else {
+                synthesis.agreement = 'low';
+            }
         }
         
         return synthesis;
     }
     
-    calculateFinalScore(predictiveScore, synthesis) {
-        // If we have other agent results, use weighted average
-        if (synthesis.totalWeight > 0) {
-            // Predictive agent contributes its own weighted score
-            const predictiveWeighted = (predictiveScore * this.weight) / 100;
-            return synthesis.totalWeightedScore + predictiveWeighted;
-        }
-        
-        // Otherwise just return the predictive score
-        return predictiveScore;
-    }
-    
-    calculateSourceAgreement(synthesis) {
-        const scores = Object.values(synthesis.agents).map(a => a.score);
-        if (scores.length < 2) {
-            return {
-                highConfidenceSources: 0,
-                mediumConfidenceSources: 0,
-                lowConfidenceSources: 0,
-                agreementLevel: 'insufficient_data'
-            };
-        }
-        
-        let high = 0, medium = 0, low = 0;
-        for (const agent of Object.values(synthesis.agents)) {
-            if (agent.score > 50) high++;
-            else if (agent.score > 25) medium++;
-            else low++;
-        }
-        
-        // Determine agreement level
-        const total = high + medium + low;
-        let agreementLevel = 'low';
-        if (high >= total * 0.6 || low >= total * 0.6) {
-            agreementLevel = 'high';
-        } else if (high >= total * 0.4 || low >= total * 0.4) {
-            agreementLevel = 'moderate';
-        }
-        
-        return {
-            highConfidenceSources: high,
-            mediumConfidenceSources: medium,
-            lowConfidenceSources: low,
-            agreementLevel
-        };
-    }
-    
-    calculateConfidence(synthesis, platform) {
-        let confidence = 50;
-        
-        // Boost for more agent data
-        const agentCount = Object.keys(synthesis.agents).length;
-        confidence += agentCount * 8;
-        
-        // Boost for known platform
-        if (PLATFORM_PATTERNS[platform]) {
-            confidence += 10;
-        }
-        
-        // Reduce for demo mode
-        if (this.useDemo) {
-            confidence -= 10;
-        }
-        
-        // Boost for high agreement
-        const agreement = this.calculateSourceAgreement(synthesis);
-        if (agreement.agreementLevel === 'high') {
-            confidence += 15;
-        } else if (agreement.agreementLevel === 'moderate') {
-            confidence += 5;
-        }
-        
-        return Math.min(95, Math.max(30, confidence));
-    }
-    
     // =========================================================================
-    // OUTPUT BUILDERS
+    // RISK ANALYSIS
     // =========================================================================
     
-    buildRiskFactors(findings, synthesis, platform) {
-        const riskFactors = [];
+    analyzeRiskFactors(otherResults, input, platform) {
+        const factors = [];
+        let totalRisk = 0;
         
-        // Extract risk factors from findings
-        for (const finding of findings) {
-            if (finding.impact > 10) {
-                riskFactors.push({
+        // Analyze each agent's findings for risk factors
+        for (const result of otherResults || []) {
+            if (!result?.findings) continue;
+            
+            for (const finding of result.findings) {
+                if (finding.type !== 'danger' && finding.type !== 'warning') continue;
+                
+                const weight = ISSUE_WEIGHTS[this.categorizeIssue(finding.message)] || 
+                              (finding.severity === 'critical' ? 40 : 
+                               finding.severity === 'high' ? 25 : 
+                               finding.severity === 'medium' ? 15 : 8);
+                
+                factors.push({
                     factor: finding.message,
-                    weight: finding.impact >= 30 ? 'high' : finding.impact >= 20 ? 'medium' : 'low',
-                    source: 'Predictive Agent',
-                    impact: finding.impact,
-                    fixable: true,
-                    action: this.getSuggestedAction(finding)
+                    severity: finding.severity,
+                    source: result.agentId,
+                    contribution: Math.min(weight, finding.impact || weight)
                 });
+                
+                totalRisk += Math.min(weight, finding.impact || weight);
             }
         }
         
-        // Add factors from other agents if available
-        for (const [agentId, agentData] of Object.entries(synthesis.agents)) {
-            if (agentData.score > 30) {
-                riskFactors.push({
-                    factor: `${agentId} score: ${agentData.score}%`,
-                    weight: agentData.score >= 50 ? 'high' : 'medium',
-                    source: agentId,
-                    impact: agentData.score,
-                    fixable: true
-                });
+        // Check content-specific risks using databases
+        if (input.text || input.content) {
+            const contentRisks = this.analyzeContentRisk(input.text || input.content, platform);
+            for (const risk of contentRisks) {
+                factors.push(risk);
+                totalRisk += risk.contribution;
             }
         }
         
-        // Sort by impact
-        riskFactors.sort((a, b) => b.impact - a.impact);
+        // Deduplicate and sort by contribution
+        const uniqueFactors = [];
+        const seen = new Set();
         
-        return riskFactors.slice(0, 5); // Top 5 risk factors
-    }
-    
-    buildPredictions(probability, riskFactors) {
-        const hasHighRisk = riskFactors.some(r => r.weight === 'high');
-        const hasFixableIssues = riskFactors.some(r => r.fixable);
+        for (const f of factors.sort((a, b) => b.contribution - a.contribution)) {
+            const key = f.factor.substring(0, 50);
+            if (!seen.has(key)) {
+                seen.add(key);
+                uniqueFactors.push(f);
+            }
+        }
         
         return {
-            shortTerm: {
-                timeframe: '24-72 hours',
-                prediction: probability > 50 
-                    ? 'Visibility likely to remain suppressed'
-                    : 'Visibility should remain normal',
-                confidence: hasHighRisk ? 75 : 60
-            },
-            mediumTerm: {
-                timeframe: '1-2 weeks',
-                prediction: hasFixableIssues 
-                    ? 'Recovery possible after addressing flagged issues'
-                    : probability > 50 
-                        ? 'May require platform review'
-                        : 'Continued normal visibility expected',
-                confidence: 65
-            },
-            longTerm: {
-                timeframe: '1+ months',
-                prediction: probability > 70
-                    ? 'Full recovery requires significant changes'
-                    : 'Full recovery achievable with minor adjustments',
-                confidence: 55
-            }
+            factors: uniqueFactors.slice(0, 10), // Top 10 factors
+            totalRisk: Math.min(100, totalRisk),
+            severity: totalRisk >= 60 ? 'high' : totalRisk >= 30 ? 'medium' : 'low'
         };
     }
     
-    buildRecommendations(riskFactors, findings, platform) {
-        const recommendations = [];
+    categorizeIssue(message) {
+        const lower = message.toLowerCase();
         
-        // Generate recommendations from risk factors
-        for (const risk of riskFactors) {
-            if (risk.fixable && risk.impact >= 15) {
-                recommendations.push({
-                    priority: risk.weight === 'high' ? 'high' : 'medium',
-                    action: risk.action || `Address: ${risk.factor}`,
-                    impact: `Could improve score by ${Math.round(risk.impact * 0.5)}+ points`,
-                    effort: risk.impact >= 30 ? 'medium' : 'low',
-                    timeToEffect: risk.weight === 'high' ? '24-48 hours' : '1-2 weeks'
+        if (lower.includes('suspend')) return 'suspended';
+        if (lower.includes('shadowban')) return 'shadowbanned';
+        if (lower.includes('search ban') || lower.includes('not appearing in search')) return 'searchBan';
+        if (lower.includes('ghost') || lower.includes('replies not visible')) return 'ghostBan';
+        if (lower.includes('removed') || lower.includes('deleted')) return 'removed';
+        if (lower.includes('banned hashtag') || lower.includes('banned tag')) return 'banned_hashtag';
+        if (lower.includes('suggestion ban')) return 'searchSuggestionBan';
+        if (lower.includes('deboost') || lower.includes('deboosting')) return 'replyDeboosting';
+        if (lower.includes('throttle') || lower.includes('throttled')) return 'throttled_link';
+        if (lower.includes('shortener')) return 'link_shortener';
+        if (lower.includes('automod') || lower.includes('auto-remove')) return 'automod_filtered';
+        if (lower.includes('karma')) return 'low_karma';
+        if (lower.includes('new') && lower.includes('account')) return 'new_account';
+        if (lower.includes('verified')) return 'not_verified';
+        if (lower.includes('emoji')) return 'risky_emoji';
+        if (lower.includes('caps') || lower.includes('style')) return 'style_issue';
+        
+        return 'unknown';
+    }
+    
+    analyzeContentRisk(text, platform) {
+        const risks = [];
+        
+        // Use FlaggedContent for spam patterns
+        if (window.FlaggedContent) {
+            const scan = window.FlaggedContent.scan(text, platform);
+            if (scan.score >= 30) {
+                risks.push({
+                    factor: 'High-risk content patterns detected',
+                    description: `Content analysis score: ${scan.score}`,
+                    severity: scan.score >= 50 ? 'high' : 'medium',
+                    source: 'predictive',
+                    contribution: Math.round(scan.score * 0.3)
                 });
             }
         }
         
-        // Add platform-specific recommendations
-        const platformRecs = this.getPlatformRecommendations(platform, findings);
-        recommendations.push(...platformRecs);
+        return risks;
+    }
+    
+    // =========================================================================
+    // PREDICTIONS
+    // =========================================================================
+    
+    generatePredictions(synthesis, riskFactors, platform) {
+        const predictions = {
+            recoveryPossible: true,
+            recoveryTimeline: null,
+            futureRisk: 'low',
+            trendAdjustment: 0
+        };
         
-        // Add general recommendation if no specific issues
-        if (recommendations.length === 0) {
+        // Determine recovery timeline based on issues
+        const timelines = RECOVERY_TIMELINES[platform] || RECOVERY_TIMELINES.twitter;
+        let maxRecovery = 0;
+        
+        for (const factor of riskFactors.factors) {
+            const category = this.categorizeIssue(factor.factor);
+            const timeline = timelines[category];
+            
+            if (timeline) {
+                maxRecovery = Math.max(maxRecovery, timeline.max);
+            }
+        }
+        
+        if (maxRecovery > 0) {
+            if (maxRecovery <= 24) {
+                predictions.recoveryTimeline = '24 hours or less';
+            } else if (maxRecovery <= 72) {
+                predictions.recoveryTimeline = '24-72 hours';
+            } else if (maxRecovery <= 168) {
+                predictions.recoveryTimeline = '1-7 days';
+            } else if (maxRecovery <= 336) {
+                predictions.recoveryTimeline = '1-2 weeks';
+            } else {
+                predictions.recoveryTimeline = '2-4 weeks';
+            }
+        } else {
+            predictions.recoveryTimeline = 'No recovery needed - account appears healthy';
+        }
+        
+        // Assess future risk
+        if (synthesis.issueCount >= 5 || riskFactors.totalRisk >= 60) {
+            predictions.futureRisk = 'high';
+            predictions.trendAdjustment = 15;
+        } else if (synthesis.issueCount >= 2 || riskFactors.totalRisk >= 30) {
+            predictions.futureRisk = 'medium';
+            predictions.trendAdjustment = 8;
+        } else {
+            predictions.futureRisk = 'low';
+            predictions.trendAdjustment = 0;
+        }
+        
+        // Check for unrecoverable situations
+        if (riskFactors.factors.some(f => 
+            f.factor.toLowerCase().includes('suspend') || 
+            f.severity === 'critical'
+        )) {
+            predictions.recoveryPossible = false;
+            predictions.recoveryTimeline = 'Account action required - contact platform support';
+        }
+        
+        return predictions;
+    }
+    
+    // =========================================================================
+    // RECOMMENDATIONS
+    // =========================================================================
+    
+    generateRecommendations(synthesis, riskFactors, platform) {
+        const recommendations = [];
+        const addedActions = new Set();
+        
+        // Generate recommendations based on risk factors
+        for (const factor of riskFactors.factors) {
+            const category = this.categorizeIssue(factor.factor);
+            const rec = this.getRecommendation(category, platform);
+            
+            if (rec && !addedActions.has(rec.action)) {
+                recommendations.push(rec);
+                addedActions.add(rec.action);
+            }
+        }
+        
+        // Add general recommendations based on score
+        if (synthesis.weightedAverage >= 50 && !addedActions.has('reduce_activity')) {
             recommendations.push({
-                priority: 'low',
-                action: 'Continue current posting patterns',
-                impact: 'Maintain healthy account status',
-                effort: 'none',
-                timeToEffect: 'ongoing'
+                priority: 'high',
+                action: 'Reduce posting activity temporarily',
+                reason: 'High restriction score detected',
+                effort: 'Easy',
+                impact: 'May help algorithm reset'
             });
         }
         
         // Sort by priority
-        const priorityOrder = { high: 0, medium: 1, low: 2 };
-        recommendations.sort((a, b) => priorityOrder[a.priority] - priorityOrder[b.priority]);
+        const priorityOrder = { critical: 0, high: 1, medium: 2, low: 3 };
+        recommendations.sort((a, b) => 
+            (priorityOrder[a.priority] || 4) - (priorityOrder[b.priority] || 4)
+        );
+        
+        // Add positive note if healthy
+        if (recommendations.length === 0) {
+            recommendations.push({
+                priority: 'info',
+                action: 'Keep up the good work!',
+                reason: 'No significant issues detected',
+                effort: 'None',
+                impact: 'Continue current practices'
+            });
+        }
         
         return recommendations.slice(0, 5); // Top 5 recommendations
     }
     
-    getSuggestedAction(finding) {
-        const actions = {
-            'engagement bait': 'Remove engagement bait language',
-            'spam': 'Remove spam-like patterns',
-            'urgency': 'Reduce urgency language',
-            'capitalization': 'Reduce excessive caps',
-            'self_promotion': 'Balance promotional with value content',
-            'hashtags': 'Review and remove problematic hashtags',
-            'sensitive': 'Consider rephrasing sensitive content'
+    getRecommendation(category, platform) {
+        const recommendations = {
+            banned_hashtag: {
+                priority: 'critical',
+                action: 'Remove banned hashtags from recent posts',
+                reason: 'Banned hashtags prevent content from appearing in feeds',
+                effort: 'Easy - edit posts',
+                impact: 'Immediate improvement expected'
+            },
+            link_shortener: {
+                priority: 'high',
+                action: 'Replace link shorteners with full URLs',
+                reason: 'Link shorteners are flagged as potential spam',
+                effort: 'Easy - edit links',
+                impact: 'Improves trust signals'
+            },
+            throttled_link: {
+                priority: 'medium',
+                action: 'Use alternative link destinations or link-in-bio',
+                reason: 'Certain domains face artificial delays',
+                effort: 'Medium',
+                impact: 'Avoids engagement penalty'
+            },
+            searchBan: {
+                priority: 'high',
+                action: 'Reduce activity and wait 24-72 hours',
+                reason: 'Algorithm may need time to reset',
+                effort: 'Easy - patience',
+                impact: 'Recovery typically occurs within days'
+            },
+            ghostBan: {
+                priority: 'critical',
+                action: 'Stop engaging in reply threads temporarily',
+                reason: 'Continued engagement may extend restriction',
+                effort: 'Easy - wait',
+                impact: 'Essential for recovery'
+            },
+            spam_content: {
+                priority: 'high',
+                action: 'Review and remove promotional language',
+                reason: 'Spam patterns trigger automatic filtering',
+                effort: 'Medium - rewrite content',
+                impact: 'Required for normal distribution'
+            },
+            low_karma: {
+                priority: 'medium',
+                action: 'Build karma through quality comments',
+                reason: 'Low karma triggers AutoMod in many subreddits',
+                effort: 'Medium - requires time',
+                impact: 'Unlocks more subreddits'
+            },
+            new_account: {
+                priority: 'low',
+                action: 'Wait for account to age and build reputation',
+                reason: 'New accounts face automatic restrictions',
+                effort: 'Easy - patience',
+                impact: 'Natural improvement over time'
+            },
+            automod_filtered: {
+                priority: 'high',
+                action: 'Contact subreddit moderators for approval',
+                reason: 'Post may be awaiting manual review',
+                effort: 'Easy - send modmail',
+                impact: 'May restore visibility immediately'
+            }
         };
         
-        for (const [key, action] of Object.entries(actions)) {
-            if (finding.message.toLowerCase().includes(key)) {
-                return action;
-            }
-        }
-        
-        return 'Review and modify flagged content';
+        return recommendations[category];
     }
     
-    getPlatformRecommendations(platform, findings) {
-        const recs = [];
+    // =========================================================================
+    // VERDICT
+    // =========================================================================
+    
+    determineVerdict(score, confidence, synthesis) {
+        // Factor in confidence for borderline cases
+        const adjustedScore = confidence >= 70 ? score : 
+                             confidence >= 50 ? score * 0.9 : 
+                             score * 0.8;
         
-        if (platform === 'twitter') {
-            if (findings.some(f => f.message.includes('throttled'))) {
-                recs.push({
-                    priority: 'medium',
-                    action: 'Replace throttled domain links with direct URLs',
-                    impact: 'Avoid 2.5s throttle delay',
-                    effort: 'low',
-                    timeToEffect: 'immediate'
-                });
-            }
-        }
-        
-        if (platform === 'linkedin') {
-            recs.push({
-                priority: 'low',
-                action: 'Limit hashtags to 3 per post',
-                impact: 'Avoid LinkedIn spam detection',
-                effort: 'low',
-                timeToEffect: 'immediate'
-            });
-        }
-        
-        if (platform === 'reddit') {
-            if (findings.some(f => f.message.includes('self-promotion'))) {
-                recs.push({
-                    priority: 'high',
-                    action: 'Follow 10% self-promotion rule',
-                    impact: 'Avoid spam filter',
-                    effort: 'medium',
-                    timeToEffect: '1-2 weeks'
-                });
-            }
-        }
-        
-        return recs;
+        if (adjustedScore <= 15) return 'CLEAR';
+        if (adjustedScore <= 30) return 'LIKELY CLEAR';
+        if (adjustedScore <= 50) return 'UNCERTAIN';
+        if (adjustedScore <= 70) return 'LIKELY RESTRICTED';
+        return 'RESTRICTED';
+    }
+    
+    getVerdictDescription(verdict) {
+        const descriptions = {
+            'CLEAR': 'No issues detected - content appears healthy and fully visible',
+            'LIKELY CLEAR': 'Minor indicators present but content likely showing normally',
+            'UNCERTAIN': 'Mixed signals detected - some visibility issues may be present',
+            'LIKELY RESTRICTED': 'Multiple restriction indicators found - reduced visibility expected',
+            'RESTRICTED': 'Strong evidence of visibility restrictions - immediate action recommended'
+        };
+        return descriptions[verdict] || 'Analysis complete';
     }
     
     // =========================================================================
     // HELPERS
     // =========================================================================
     
-    getRiskLevel(score) {
-        if (score >= 70) return 'high';
-        if (score >= 50) return 'moderate';
-        if (score >= 30) return 'low';
-        return 'minimal';
+    calculateConfidence(synthesis, riskFactors) {
+        let base = 50;
+        
+        // More data = higher confidence
+        const agentCount = Object.keys(synthesis.agentScores).length;
+        base += agentCount * 10;
+        
+        // Agreement increases confidence
+        if (synthesis.agreement === 'high') base += 15;
+        else if (synthesis.agreement === 'medium') base += 8;
+        
+        // Clear risk factors increase confidence
+        if (riskFactors.factors.length > 0) base += 5;
+        
+        return Math.min(95, base);
     }
     
-    getStatus(probability) {
-        if (probability >= 70) return 'likely_restricted';
-        if (probability >= 50) return 'possibly_restricted';
-        if (probability >= 30) return 'uncertain';
-        return 'likely_clear';
+    setDemoMode(enabled) {
+        this.demoMode = !!enabled;
+    }
+    
+    getStatus() {
+        return {
+            id: this.id,
+            name: this.name,
+            factor: this.factor,
+            weight: this.weight,
+            version: this.version,
+            demoMode: this.demoMode
+        };
     }
 }
 
 // =============================================================================
-// REGISTER AGENT
+// REGISTRATION
 // =============================================================================
 
 const predictiveAgent = new PredictiveAgent();
 
-if (window.AgentRegistry) {
+if (window.registerAgent) {
+    window.registerAgent(predictiveAgent);
+} else if (window.AgentRegistry) {
     window.AgentRegistry.register(predictiveAgent);
+} else {
+    window.AgentQueue = window.AgentQueue || [];
+    window.AgentQueue.push(predictiveAgent);
 }
 
-window.PredictiveAgent = PredictiveAgent;
 window.predictiveAgent = predictiveAgent;
+window.PredictiveAgent = PredictiveAgent;
 
-console.log('✅ PredictiveAgent v2.0.0 loaded - Factor 5 (20%)');
+console.log('✅ Predictive Agent loaded (Factor 5, Weight 20%)');
 
 })();

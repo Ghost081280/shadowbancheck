@@ -1,707 +1,274 @@
 /* =============================================================================
-   FLAGGED-EMOJIS.JS - Emoji Risk Database
+   FLAGGED-EMOJIS.JS - Emoji Database
    ShadowBanCheck.io
    
-   Database of emojis that may trigger platform content filters or affect
-   post visibility. Some emojis have been co-opted for inappropriate content
-   or are associated with spam/scam patterns.
+   Analysis of emoji usage patterns that may indicate spam or promotional content.
    
-   Structure: { emoji, name, status, platforms, category, risk, context, notes }
-   
-   Status Levels:
-   - banned: Emoji triggers content removal
-   - restricted: Emoji may reduce reach
-   - monitored: Emoji is being watched, context-dependent
-   - contextual: Safe alone, risky in combinations
-   - safe: No known issues
-   
-   Last Updated: 2025-01
+   Last Updated: 2025-12-03
    ============================================================================= */
 
 (function() {
 'use strict';
 
-// ============================================================================
-// MAIN DATABASE
-// ============================================================================
-window.FlaggedEmojis = {
+// =============================================================================
+// RISKY EMOJIS (Often associated with spam/scams)
+// =============================================================================
+
+const RISKY_EMOJIS = [
+    // Money/finance emojis (crypto spam)
+    { emoji: '💰', category: 'money', severity: 'medium', context: 'financial_spam', notes: 'Common in crypto scams' },
+    { emoji: '💵', category: 'money', severity: 'medium', context: 'financial_spam' },
+    { emoji: '💲', category: 'money', severity: 'medium', context: 'financial_spam' },
+    { emoji: '🤑', category: 'money', severity: 'medium', context: 'financial_spam' },
+    { emoji: '💎', category: 'money', severity: 'medium', context: 'crypto', notes: 'Diamond hands/crypto' },
     
-    // Version for cache busting and tracking
-    version: '1.0.0',
-    lastUpdated: '2025-01-01',
+    // Urgency emojis (promotional spam)
+    { emoji: '🚀', category: 'urgency', severity: 'low', context: 'promotional', notes: 'To the moon - crypto' },
+    { emoji: '🔥', category: 'urgency', severity: 'low', context: 'promotional', notes: 'Hype indicator' },
+    { emoji: '⚡', category: 'urgency', severity: 'low', context: 'promotional' },
+    { emoji: '💥', category: 'urgency', severity: 'low', context: 'promotional' },
+    { emoji: '⏰', category: 'urgency', severity: 'low', context: 'promotional', notes: 'Limited time' },
+    { emoji: '⏳', category: 'urgency', severity: 'low', context: 'promotional' },
     
-    // =========================================================================
-    // EMOJI DATABASE
-    // =========================================================================
-    emojis: [
-        // =====================================================================
-        // VIOLENCE/WEAPONS - May trigger filters
-        // =====================================================================
-        { 
-            emoji: '🔫', 
-            name: 'pistol',
-            status: 'monitored', 
-            platforms: ['all'], 
-            category: 'weapon',
-            risk: 'medium',
-            context: 'Context-dependent',
-            notes: 'Apple changed to water gun, but still flagged on some platforms'
-        },
-        { 
-            emoji: '💣', 
-            name: 'bomb',
-            status: 'restricted', 
-            platforms: ['all'], 
-            category: 'weapon',
-            risk: 'medium',
-            context: 'Even in playful context, may trigger review',
-            notes: null
-        },
-        { 
-            emoji: '🔪', 
-            name: 'kitchen knife',
-            status: 'monitored', 
-            platforms: ['all'], 
-            category: 'weapon',
-            risk: 'low',
-            context: 'Usually fine for cooking content',
-            notes: null
-        },
-        { 
-            emoji: '⚔️', 
-            name: 'crossed swords',
-            status: 'monitored', 
-            platforms: ['all'], 
-            category: 'weapon',
-            risk: 'low',
-            context: 'Gaming/fantasy context usually safe',
-            notes: null
-        },
-        { 
-            emoji: '🗡️', 
-            name: 'dagger',
-            status: 'monitored', 
-            platforms: ['all'], 
-            category: 'weapon',
-            risk: 'low',
-            context: null,
-            notes: null
-        },
-        { 
-            emoji: '💀', 
-            name: 'skull',
-            status: 'monitored', 
-            platforms: ['tiktok'], 
-            category: 'death',
-            risk: 'low',
-            context: 'Usually fine, but death-related content flagged',
-            notes: 'TikTok more sensitive'
-        },
-        { 
-            emoji: '☠️', 
-            name: 'skull and crossbones',
-            status: 'monitored', 
-            platforms: ['all'], 
-            category: 'death',
-            risk: 'low',
-            context: null,
-            notes: null
-        },
-        
-        // =====================================================================
-        // SUGGESTIVE/ADULT - Often co-opted for inappropriate content
-        // =====================================================================
-        { 
-            emoji: '🍆', 
-            name: 'eggplant',
-            status: 'restricted', 
-            platforms: ['instagram', 'tiktok'], 
-            category: 'suggestive',
-            risk: 'high',
-            context: 'Sexual connotation in Western culture',
-            notes: '#eggplant banned on Instagram'
-        },
-        { 
-            emoji: '🍑', 
-            name: 'peach',
-            status: 'restricted', 
-            platforms: ['instagram', 'tiktok'], 
-            category: 'suggestive',
-            risk: 'high',
-            context: 'Sexual connotation',
-            notes: 'Often filtered in bios'
-        },
-        { 
-            emoji: '💦', 
-            name: 'sweat droplets',
-            status: 'restricted', 
-            platforms: ['instagram', 'tiktok'], 
-            category: 'suggestive',
-            risk: 'medium',
-            context: 'Sexual connotation when combined with other emojis',
-            notes: null
-        },
-        { 
-            emoji: '🍌', 
-            name: 'banana',
-            status: 'monitored', 
-            platforms: ['instagram', 'tiktok'], 
-            category: 'suggestive',
-            risk: 'medium',
-            context: 'Can be flagged in suggestive context',
-            notes: null
-        },
-        { 
-            emoji: '🌶️', 
-            name: 'hot pepper',
-            status: 'monitored', 
-            platforms: ['instagram', 'tiktok'], 
-            category: 'suggestive',
-            risk: 'low',
-            context: 'Spicy content context',
-            notes: null
-        },
-        { 
-            emoji: '👅', 
-            name: 'tongue',
-            status: 'monitored', 
-            platforms: ['instagram', 'tiktok'], 
-            category: 'suggestive',
-            risk: 'medium',
-            context: 'Can be suggestive',
-            notes: null
-        },
-        { 
-            emoji: '🥵', 
-            name: 'hot face',
-            status: 'monitored', 
-            platforms: ['tiktok'], 
-            category: 'suggestive',
-            risk: 'low',
-            context: null,
-            notes: null
-        },
-        { 
-            emoji: '😏', 
-            name: 'smirking face',
-            status: 'monitored', 
-            platforms: ['tiktok'], 
-            category: 'suggestive',
-            risk: 'low',
-            context: 'Suggestive implication',
-            notes: null
-        },
-        { 
-            emoji: '🔥', 
-            name: 'fire',
-            status: 'safe', 
-            platforms: ['all'], 
-            category: 'suggestive',
-            risk: 'low',
-            context: 'Generally safe but overused',
-            notes: 'Spam signal when excessive'
-        },
-        
-        // =====================================================================
-        // DRUGS/SUBSTANCES
-        // =====================================================================
-        { 
-            emoji: '💊', 
-            name: 'pill',
-            status: 'restricted', 
-            platforms: ['all'], 
-            category: 'drugs',
-            risk: 'high',
-            context: 'Drug-related content often flagged',
-            notes: null
-        },
-        { 
-            emoji: '💉', 
-            name: 'syringe',
-            status: 'restricted', 
-            platforms: ['all'], 
-            category: 'drugs',
-            risk: 'high',
-            context: 'Drug or medical context',
-            notes: 'Vaccine discussions may be affected'
-        },
-        { 
-            emoji: '🍄', 
-            name: 'mushroom',
-            status: 'monitored', 
-            platforms: ['all'], 
-            category: 'drugs',
-            risk: 'medium',
-            context: 'Can imply psychedelics',
-            notes: null
-        },
-        { 
-            emoji: '🌿', 
-            name: 'herb',
-            status: 'monitored', 
-            platforms: ['instagram', 'tiktok'], 
-            category: 'drugs',
-            risk: 'medium',
-            context: 'Often used for cannabis',
-            notes: null
-        },
-        { 
-            emoji: '🍃', 
-            name: 'leaf fluttering',
-            status: 'monitored', 
-            platforms: ['instagram', 'tiktok'], 
-            category: 'drugs',
-            risk: 'low',
-            context: 'Cannabis association',
-            notes: null
-        },
-        { 
-            emoji: '🚬', 
-            name: 'cigarette',
-            status: 'restricted', 
-            platforms: ['tiktok'], 
-            category: 'drugs',
-            risk: 'medium',
-            context: 'Tobacco/smoking content restricted',
-            notes: 'TikTok strict on tobacco'
-        },
-        { 
-            emoji: '🍺', 
-            name: 'beer mug',
-            status: 'monitored', 
-            platforms: ['tiktok'], 
-            category: 'alcohol',
-            risk: 'low',
-            context: 'Alcohol content age-gated',
-            notes: null
-        },
-        { 
-            emoji: '🍷', 
-            name: 'wine glass',
-            status: 'monitored', 
-            platforms: ['tiktok'], 
-            category: 'alcohol',
-            risk: 'low',
-            context: 'Alcohol content age-gated',
-            notes: null
-        },
-        { 
-            emoji: '🥃', 
-            name: 'tumbler glass',
-            status: 'monitored', 
-            platforms: ['tiktok'], 
-            category: 'alcohol',
-            risk: 'low',
-            context: null,
-            notes: null
-        },
-        
-        // =====================================================================
-        // MONEY/FINANCIAL - Spam indicators
-        // =====================================================================
-        { 
-            emoji: '💰', 
-            name: 'money bag',
-            status: 'monitored', 
-            platforms: ['all'], 
-            category: 'money',
-            risk: 'medium',
-            context: 'Spam signal when excessive',
-            notes: 'Common in scam content'
-        },
-        { 
-            emoji: '💵', 
-            name: 'dollar banknote',
-            status: 'monitored', 
-            platforms: ['all'], 
-            category: 'money',
-            risk: 'medium',
-            context: 'Spam signal when excessive',
-            notes: null
-        },
-        { 
-            emoji: '💸', 
-            name: 'money with wings',
-            status: 'monitored', 
-            platforms: ['all'], 
-            category: 'money',
-            risk: 'medium',
-            context: 'Spam signal',
-            notes: null
-        },
-        { 
-            emoji: '🤑', 
-            name: 'money-mouth face',
-            status: 'monitored', 
-            platforms: ['all'], 
-            category: 'money',
-            risk: 'medium',
-            context: 'Get rich quick spam',
-            notes: null
-        },
-        { 
-            emoji: '📈', 
-            name: 'chart increasing',
-            status: 'monitored', 
-            platforms: ['twitter'], 
-            category: 'money',
-            risk: 'low',
-            context: 'Crypto/stock spam when combined with money emojis',
-            notes: null
-        },
-        { 
-            emoji: '🚀', 
-            name: 'rocket',
-            status: 'monitored', 
-            platforms: ['twitter'], 
-            category: 'money',
-            risk: 'low',
-            context: 'To the moon - crypto hype',
-            notes: 'Safe in space/tech context'
-        },
-        { 
-            emoji: '🌙', 
-            name: 'crescent moon',
-            status: 'safe', 
-            platforms: ['all'], 
-            category: 'money',
-            risk: 'low',
-            context: 'Moon/crypto context may be flagged',
-            notes: null
-        },
-        { 
-            emoji: '💎', 
-            name: 'gem stone',
-            status: 'monitored', 
-            platforms: ['twitter'], 
-            category: 'money',
-            risk: 'low',
-            context: 'Diamond hands - crypto culture',
-            notes: null
-        },
-        
-        // =====================================================================
-        // RISKY COMBINATIONS
-        // These are safe alone but risky when combined
-        // =====================================================================
-    ],
+    // Attention grabbers
+    { emoji: '‼️', category: 'attention', severity: 'medium', context: 'spam' },
+    { emoji: '❗', category: 'attention', severity: 'low', context: 'emphasis' },
+    { emoji: '❓', category: 'attention', severity: 'low', context: 'engagement_bait' },
+    { emoji: '⚠️', category: 'attention', severity: 'medium', context: 'clickbait' },
+    { emoji: '🔴', category: 'attention', severity: 'low', context: 'live/urgent' },
     
-    // =========================================================================
-    // RISKY EMOJI COMBINATIONS
-    // =========================================================================
-    combinations: [
-        {
-            emojis: ['🍆', '💦'],
-            status: 'banned',
-            platforms: ['instagram', 'tiktok'],
-            risk: 'high',
-            reason: 'Sexual implication'
-        },
-        {
-            emojis: ['🍑', '💦'],
-            status: 'banned',
-            platforms: ['instagram', 'tiktok'],
-            risk: 'high',
-            reason: 'Sexual implication'
-        },
-        {
-            emojis: ['🍆', '🍑'],
-            status: 'restricted',
-            platforms: ['instagram', 'tiktok'],
-            risk: 'high',
-            reason: 'Sexual implication'
-        },
-        {
-            emojis: ['💰', '💰', '💰'],
-            status: 'monitored',
-            platforms: ['all'],
-            risk: 'medium',
-            reason: 'Spam/scam indicator'
-        },
-        {
-            emojis: ['🚀', '📈', '💰'],
-            status: 'monitored',
-            platforms: ['twitter'],
-            risk: 'medium',
-            reason: 'Crypto pump pattern'
-        },
-        {
-            emojis: ['🔥', '🔥', '🔥'],
-            status: 'monitored',
-            platforms: ['all'],
-            risk: 'low',
-            reason: 'Spam signal when excessive'
-        },
-        {
-            emojis: ['💊', '💊', '💊'],
-            status: 'restricted',
-            platforms: ['all'],
-            risk: 'high',
-            reason: 'Drug-related spam'
-        },
-        {
-            emojis: ['👅', '💦'],
-            status: 'restricted',
-            platforms: ['instagram', 'tiktok'],
-            risk: 'high',
-            reason: 'Sexual implication'
-        },
-    ],
+    // Gift/giveaway (scam indicators)
+    { emoji: '🎁', category: 'giveaway', severity: 'medium', context: 'scam', notes: 'Common in fake giveaways' },
+    { emoji: '🎉', category: 'giveaway', severity: 'low', context: 'promotional' },
+    { emoji: '🎊', category: 'giveaway', severity: 'low', context: 'promotional' },
+    { emoji: '🏆', category: 'giveaway', severity: 'low', context: 'promotional' },
     
-    // =========================================================================
-    // RISK WEIGHTS FOR SCORING
-    // =========================================================================
-    riskWeights: {
-        high: 25,
-        medium: 10,
-        low: 3,
-        combination: 15,
-        excessive: 10
+    // Pointing/direction (click bait)
+    { emoji: '👇', category: 'direction', severity: 'low', context: 'engagement_bait' },
+    { emoji: '👆', category: 'direction', severity: 'low', context: 'engagement_bait' },
+    { emoji: '👉', category: 'direction', severity: 'low', context: 'promotional' },
+    { emoji: '➡️', category: 'direction', severity: 'low', context: 'promotional' },
+    { emoji: '⬇️', category: 'direction', severity: 'low', context: 'engagement_bait' }
+];
+
+// =============================================================================
+// RISKY COMBINATIONS (Multiple emojis together)
+// =============================================================================
+
+const RISKY_COMBINATIONS = [
+    // Crypto scam patterns
+    { 
+        emojis: ['💰', '🚀'], 
+        category: 'crypto_spam', 
+        severity: 'high',
+        notes: 'Classic crypto pump signal'
+    },
+    { 
+        emojis: ['💎', '🙌'], 
+        category: 'crypto', 
+        severity: 'medium',
+        notes: 'Diamond hands'
+    },
+    { 
+        emojis: ['🚀', '🌙'], 
+        category: 'crypto', 
+        severity: 'medium',
+        notes: 'To the moon'
+    },
+    { 
+        emojis: ['💰', '💵', '💲'], 
+        category: 'money_spam', 
+        severity: 'high',
+        notes: 'Multiple money emojis'
     },
     
-    // =========================================================================
-    // THRESHOLDS
-    // =========================================================================
-    thresholds: {
-        // Max same emoji before spam signal
-        sameEmojiLimit: 5,
-        // Max total emojis before spam signal
-        totalEmojiLimit: {
-            twitter: 10,
-            instagram: 15,
-            tiktok: 10,
-            reddit: 5,
-            facebook: 15
-        }
+    // Urgency spam
+    { 
+        emojis: ['🔥', '🔥', '🔥'], 
+        category: 'spam', 
+        severity: 'medium',
+        notes: 'Repeated fire emojis'
+    },
+    { 
+        emojis: ['⚠️', '‼️'], 
+        category: 'clickbait', 
+        severity: 'high',
+        notes: 'Warning/attention combo'
     },
     
-    // =========================================================================
-    // UTILITY FUNCTIONS
-    // =========================================================================
+    // Giveaway scam
+    { 
+        emojis: ['🎁', '🎉'], 
+        category: 'giveaway_spam', 
+        severity: 'medium',
+        notes: 'Common in fake giveaways'
+    }
+];
+
+// =============================================================================
+// EMOJI EXTRACTION PATTERN
+// =============================================================================
+
+const EMOJI_PATTERN = /[\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]|[\u{1F600}-\u{1F64F}]|[\u{1F680}-\u{1F6FF}]|[\u{2300}-\u{23FF}]|[\u{2B50}]|[\u{203C}\u{2049}]|[\u{25AA}-\u{25AB}]|[\u{25B6}]|[\u{25C0}]|[\u{25FB}-\u{25FE}]|[\u{2614}-\u{2615}]|[\u{2648}-\u{2653}]|[\u{267F}]|[\u{2693}]|[\u{26A1}]|[\u{26AA}-\u{26AB}]|[\u{26BD}-\u{26BE}]|[\u{26C4}-\u{26C5}]|[\u{26CE}]|[\u{26D4}]|[\u{26EA}]|[\u{26F2}-\u{26F3}]|[\u{26F5}]|[\u{26FA}]|[\u{26FD}]|[\u{2702}]|[\u{2705}]|[\u{2708}-\u{270D}]|[\u{270F}]|[\u{2712}]|[\u{2714}]|[\u{2716}]|[\u{271D}]|[\u{2721}]|[\u{2728}]|[\u{2733}-\u{2734}]|[\u{2744}]|[\u{2747}]|[\u{274C}]|[\u{274E}]|[\u{2753}-\u{2755}]|[\u{2757}]|[\u{2763}-\u{2764}]|[\u{2795}-\u{2797}]|[\u{27A1}]|[\u{27B0}]|[\u{27BF}]|[\u{2934}-\u{2935}]|[\u{2B05}-\u{2B07}]|[\u{2B1B}-\u{2B1C}]|[\u{2B55}]|[\u{3030}]|[\u{303D}]|[\u{3297}]|[\u{3299}]/gu;
+
+// =============================================================================
+// FLAGGED EMOJIS API
+// =============================================================================
+
+const FlaggedEmojis = {
     
     /**
-     * Check a single emoji
-     * @param {string} emoji - Emoji to check
+     * Extract emojis from text and check them
+     * @param {string} text - Text to analyze
      * @param {string} platform - Platform ID
-     * @returns {object} Check result
-     */
-    checkEmoji: function(emoji, platform = 'twitter') {
-        if (!emoji) return { status: 'safe', found: false };
-        
-        // Search database
-        for (const entry of this.emojis) {
-            if (entry.emoji === emoji) {
-                const appliesToPlatform = entry.platforms.includes('all') || 
-                                          entry.platforms.includes(platform);
-                if (appliesToPlatform) {
-                    return {
-                        ...entry,
-                        found: true
-                    };
-                }
-            }
-        }
-        
-        return { 
-            emoji: emoji,
-            status: 'safe', 
-            found: false,
-            risk: 'low',
-            notes: 'Not in flagged database'
-        };
-    },
-    
-    /**
-     * Check for risky emoji combinations in text
-     * @param {string} text - Text containing emojis
-     * @param {string} platform - Platform ID
-     * @returns {array} Found risky combinations
-     */
-    checkCombinations: function(text, platform = 'twitter') {
-        if (!text) return [];
-        
-        const foundCombinations = [];
-        
-        for (const combo of this.combinations) {
-            const appliesToPlatform = combo.platforms.includes('all') || 
-                                      combo.platforms.includes(platform);
-            if (!appliesToPlatform) continue;
-            
-            // Check if all emojis in combination are present
-            let allPresent = true;
-            for (const emoji of combo.emojis) {
-                if (!text.includes(emoji)) {
-                    allPresent = false;
-                    break;
-                }
-            }
-            
-            if (allPresent) {
-                foundCombinations.push({
-                    ...combo,
-                    found: true
-                });
-            }
-        }
-        
-        return foundCombinations;
-    },
-    
-    /**
-     * Extract and check all emojis from text
-     * @param {string} text - Text to scan
-     * @param {string} platform - Platform ID
-     * @returns {object} Full analysis
+     * @returns {object} Results
      */
     extractAndCheck: function(text, platform = 'twitter') {
-        if (!text) return { emojis: [], results: null };
-        
-        // Extract all emojis using comprehensive regex
-        const emojiRegex = /[\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]|[\u{1F600}-\u{1F64F}]|[\u{1F680}-\u{1F6FF}]|[\u{1F1E0}-\u{1F1FF}]/gu;
-        const emojis = text.match(emojiRegex) || [];
-        
-        // Count occurrences
-        const emojiCounts = {};
-        for (const emoji of emojis) {
-            emojiCounts[emoji] = (emojiCounts[emoji] || 0) + 1;
+        if (!text) {
+            return {
+                emojis: [],
+                risky: [],
+                combinations: [],
+                safe: [],
+                summary: { total: 0, riskScore: 0 }
+            };
         }
         
-        // Check each unique emoji
-        const flagged = [];
-        const safe = [];
-        const uniqueEmojis = [...new Set(emojis)];
+        // Extract all emojis
+        const emojis = text.match(EMOJI_PATTERN) || [];
         
-        for (const emoji of uniqueEmojis) {
-            const check = this.checkEmoji(emoji, platform);
-            check.count = emojiCounts[emoji];
-            
-            if (check.status !== 'safe') {
-                flagged.push(check);
+        const results = {
+            emojis: emojis,
+            risky: [],
+            combinations: [],
+            safe: [],
+            summary: {
+                total: emojis.length,
+                unique: [...new Set(emojis)].length,
+                riskScore: 0,
+                density: text.length > 0 ? (emojis.length / text.length).toFixed(3) : 0
+            }
+        };
+        
+        // Check each emoji
+        const emojiSet = new Set(emojis);
+        for (const emoji of emojiSet) {
+            const risky = RISKY_EMOJIS.find(r => r.emoji === emoji);
+            if (risky) {
+                const count = emojis.filter(e => e === emoji).length;
+                results.risky.push({
+                    emoji,
+                    count,
+                    ...risky
+                });
+                results.summary.riskScore += this.getSeverityScore(risky.severity) * Math.min(count, 3);
             } else {
-                safe.push(check);
+                results.safe.push(emoji);
             }
         }
         
         // Check combinations
-        const combinations = this.checkCombinations(text, platform);
-        
-        // Check for excessive emojis
-        const totalLimit = this.thresholds.totalEmojiLimit[platform] || 10;
-        const excessive = emojis.length > totalLimit;
-        
-        // Check for repeated same emoji
-        const repeatedEmoji = Object.entries(emojiCounts)
-            .filter(([_, count]) => count >= this.thresholds.sameEmojiLimit)
-            .map(([emoji, count]) => ({ emoji, count }));
-        
-        const results = {
-            total: emojis.length,
-            unique: uniqueEmojis.length,
-            flagged,
-            safe,
-            combinations,
-            excessive,
-            repeatedEmoji,
-            summary: {
-                flaggedCount: flagged.length,
-                safeCount: safe.length,
-                combinationsCount: combinations.length,
-                isExcessive: excessive,
-                hasRepeated: repeatedEmoji.length > 0,
-                riskScore: this._calculateRiskScore({
-                    flagged,
-                    combinations,
-                    excessive,
-                    repeatedEmoji
-                })
+        for (const combo of RISKY_COMBINATIONS) {
+            if (combo.emojis.every(e => emojiSet.has(e))) {
+                results.combinations.push({
+                    ...combo,
+                    found: combo.emojis
+                });
+                results.summary.riskScore += this.getSeverityScore(combo.severity);
             }
-        };
+        }
         
-        return {
-            emojis,
-            uniqueEmojis,
-            emojiCounts,
-            results
-        };
+        // Check for excessive emoji usage
+        if (emojis.length >= 10) {
+            results.summary.riskScore += 10;
+            results.combinations.push({
+                category: 'excessive_emojis',
+                severity: 'medium',
+                notes: `${emojis.length} emojis in text`
+            });
+        } else if (emojis.length >= 5) {
+            results.summary.riskScore += 5;
+        }
+        
+        // Check for repeated emojis
+        for (const emoji of emojiSet) {
+            const count = emojis.filter(e => e === emoji).length;
+            if (count >= 4) {
+                results.summary.riskScore += 8;
+                if (!results.combinations.find(c => c.category === 'emoji_spam')) {
+                    results.combinations.push({
+                        category: 'emoji_spam',
+                        severity: 'medium',
+                        notes: `"${emoji}" repeated ${count} times`
+                    });
+                }
+            }
+        }
+        
+        return results;
     },
     
     /**
-     * Get all emojis by category
-     * @param {string} category - Category name
-     * @param {string} platform - Platform ID (optional)
-     * @returns {array} Matching emojis
+     * Check specific emojis
      */
-    getByCategory: function(category, platform = null) {
-        return this.emojis.filter(entry => {
-            const matchesCategory = entry.category === category;
-            const matchesPlatform = !platform || 
-                                    entry.platforms.includes('all') || 
-                                    entry.platforms.includes(platform);
-            return matchesCategory && matchesPlatform;
-        });
+    checkBulk: function(emojis, platform = 'twitter') {
+        return this.extractAndCheck(emojis.join(''), platform);
     },
     
     /**
-     * Get database statistics
-     * @returns {object} Stats
+     * Check if emoji is risky
+     */
+    isRisky: function(emoji) {
+        return RISKY_EMOJIS.some(r => r.emoji === emoji);
+    },
+    
+    /**
+     * Get risk info for emoji
+     */
+    getRiskInfo: function(emoji) {
+        return RISKY_EMOJIS.find(r => r.emoji === emoji);
+    },
+    
+    /**
+     * Get severity score
+     */
+    getSeverityScore: function(severity) {
+        switch (severity) {
+            case 'high': return 15;
+            case 'medium': return 8;
+            case 'low': return 3;
+            default: return 5;
+        }
+    },
+    
+    /**
+     * Get all risky emojis
+     */
+    getRiskyEmojis: function() {
+        return RISKY_EMOJIS.map(r => r.emoji);
+    },
+    
+    /**
+     * Get stats
      */
     getStats: function() {
-        const stats = {
-            total: this.emojis.length,
-            combinations: this.combinations.length,
-            byStatus: {},
-            byCategory: {},
-            byRisk: {},
-            version: this.version,
-            lastUpdated: this.lastUpdated
+        return {
+            riskyEmojis: RISKY_EMOJIS.length,
+            riskyCombinations: RISKY_COMBINATIONS.length,
+            categories: [...new Set(RISKY_EMOJIS.map(e => e.category))]
         };
-        
-        for (const entry of this.emojis) {
-            stats.byStatus[entry.status] = (stats.byStatus[entry.status] || 0) + 1;
-            stats.byCategory[entry.category] = (stats.byCategory[entry.category] || 0) + 1;
-            stats.byRisk[entry.risk] = (stats.byRisk[entry.risk] || 0) + 1;
-        }
-        
-        return stats;
-    },
-    
-    // =========================================================================
-    // PRIVATE HELPERS
-    // =========================================================================
-    
-    _calculateRiskScore: function(data) {
-        let score = 0;
-        
-        // Add points for flagged emojis
-        for (const entry of data.flagged) {
-            score += this.riskWeights[entry.risk] || 5;
-        }
-        
-        // Add points for risky combinations
-        score += data.combinations.length * this.riskWeights.combination;
-        
-        // Add points for excessive emojis
-        if (data.excessive) {
-            score += this.riskWeights.excessive;
-        }
-        
-        // Add points for repeated emojis
-        score += data.repeatedEmoji.length * 5;
-        
-        // Normalize to 0-100
-        return Math.min(100, score);
     }
 };
 
-// ============================================================================
-// BACKWARDS COMPATIBILITY
-// ============================================================================
-window.flaggedEmojis = window.FlaggedEmojis;
+// =============================================================================
+// EXPORT
+// =============================================================================
 
-// ============================================================================
-// INITIALIZATION
-// ============================================================================
+window.FlaggedEmojis = FlaggedEmojis;
+window.RISKY_EMOJIS = RISKY_EMOJIS;
+window.RISKY_COMBINATIONS = RISKY_COMBINATIONS;
+
 console.log('✅ FlaggedEmojis database loaded');
-console.log('   📊 Stats:', window.FlaggedEmojis.getStats());
+console.log('   Stats:', FlaggedEmojis.getStats());
 
 })();

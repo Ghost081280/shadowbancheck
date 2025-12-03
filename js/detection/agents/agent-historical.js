@@ -1,27 +1,33 @@
 /* =============================================================================
-   AGENT-HISTORICAL.JS - Factor 3: Historical Data Analysis
+   AGENT-HISTORICAL.JS - Factor 3: Historical Data Analysis (15%)
    ShadowBanCheck.io - 5-Factor Detection Engine
    
-   Weight: 15%
+   Version: 2.0.0
+   Updated: December 2025
    
    Analyzes historical patterns and stored data:
    - Previous check results for this account/content
-   - Trend analysis over time
+   - Trend analysis over time (improving/worsening/stable)
+   - Engagement baseline comparison
    - Pattern recognition from past moderation actions
-   - User report history
-   - Stored scores and predictions
+   - Signal history tracking
+   - Recovery history
    - Past scores for specific items (3-Point Intelligence)
    
-   Version: 2.0.0 - Added 3-Point Intelligence methods
+   Note: Full features require Pro subscription
    ============================================================================= */
 
 (function() {
 'use strict';
 
+// =============================================================================
+// HISTORICAL AGENT CLASS
+// =============================================================================
+
 class HistoricalAgent extends window.AgentBase {
     
     constructor() {
-        super('historical', 3, 15); // Factor 3, 15% weight
+        super('historical', 3, 15); // id, factor 3, weight 15%
         
         // In-memory store for demo (would be database in production)
         this.historyStore = new Map();
@@ -30,7 +36,14 @@ class HistoricalAgent extends window.AgentBase {
         // Separate store for item-specific scores (hashtags, links, etc.)
         this.itemScoreStore = new Map();
         this.maxItemScores = 500;
+        
+        // Pro feature flag
+        this.isPro = false;
     }
+    
+    // =========================================================================
+    // MAIN ANALYZE METHOD
+    // =========================================================================
     
     async analyze(input) {
         const startTime = Date.now();
@@ -42,32 +55,85 @@ class HistoricalAgent extends window.AgentBase {
             const key = this.getHistoryKey(input);
             const history = this.getHistory(key);
             
+            // Build checks object matching spec structure
+            const checks = {
+                hasHistory: history.length > 0,
+                previousScans: history.length,
+                firstScan: history.length > 0 ? history[0].timestamp : null,
+                
+                trend: null,
+                engagementBaseline: null,
+                anomalies: [],
+                signalHistory: {},
+                recoveryHistory: null
+            };
+            
+            // === No History Case ===
             if (history.length === 0) {
-                // No historical data
-                findings.push(this.createFinding(
-                    'no_history',
-                    'No previous checks found for this item',
-                    0,
-                    { note: 'First time analysis' }
-                ));
+                // Check if entity exists in public database (other users' searches)
+                const publicHistory = this.getPublicHistory(key);
+                
+                if (publicHistory) {
+                    checks.publicHistory = {
+                        timesSearched: publicHistory.searchCount,
+                        lastSearched: publicHistory.lastSearched,
+                        averageScore: publicHistory.averageScore
+                    };
+                    
+                    findings.push(this.createFinding(
+                        'info',
+                        `Entity found in public database (searched ${publicHistory.searchCount} times)`,
+                        0,
+                        { averageScore: publicHistory.averageScore }
+                    ));
+                    
+                    // Use public history to influence score
+                    if (publicHistory.averageScore > 50) {
+                        rawScore += 10;
+                        findings.push(this.createFinding(
+                            'warning',
+                            `Public history shows average score of ${publicHistory.averageScore}%`,
+                            15,
+                            {}
+                        ));
+                    }
+                } else {
+                    findings.push(this.createFinding(
+                        'info',
+                        'No previous checks found - first time analysis',
+                        0,
+                        { note: 'Historical tracking will begin after this scan' }
+                    ));
+                }
                 
                 return this.createResult({
-                    rawScore: 0,
-                    confidence: 30, // Low confidence without history
+                    status: history.length === 0 && !publicHistory ? 'limited' : 'complete',
+                    rawScore: rawScore,
+                    confidence: 30,
                     findings,
+                    checks,
                     processingTime: Date.now() - startTime,
-                    message: 'No historical data available'
+                    message: 'No personal history available'
                 });
             }
             
-            // Analyze historical data
+            // === Full Historical Analysis (Pro) ===
             const analysis = this.analyzeHistory(history);
             
-            // Check for worsening trend
+            // Update checks with analysis results
+            checks.trend = {
+                direction: analysis.trend,
+                averageScore: analysis.averageScore,
+                currentScore: history[history.length - 1]?.score || 0,
+                delta: analysis.delta,
+                thirtyDayTrend: analysis.thirtyDayChange
+            };
+            
+            // === ANALYSIS: Trend Direction ===
             if (analysis.trend === 'worsening') {
                 findings.push(this.createFinding(
-                    'worsening_trend',
-                    'Shadowban probability has been increasing over time',
+                    'danger',
+                    `Score worsened ${Math.abs(analysis.thirtyDayChange || 0)}% in 30 days`,
                     30,
                     { trend: analysis.trendData }
                 ));
@@ -75,17 +141,24 @@ class HistoricalAgent extends window.AgentBase {
                 flags.push('worsening');
             } else if (analysis.trend === 'improving') {
                 findings.push(this.createFinding(
-                    'improving_trend',
+                    'good',
                     'Shadowban probability has been decreasing',
                     -10,
                     { trend: analysis.trendData }
                 ));
+            } else {
+                findings.push(this.createFinding(
+                    'info',
+                    'Score has been stable',
+                    0,
+                    {}
+                ));
             }
             
-            // Check for repeated flags
+            // === ANALYSIS: Repeated Flags ===
             if (analysis.repeatedFlags.length > 0) {
                 findings.push(this.createFinding(
-                    'repeated_flags',
+                    'warning',
                     `Recurring issues detected: ${analysis.repeatedFlags.join(', ')}`,
                     25,
                     { flags: analysis.repeatedFlags }
@@ -94,11 +167,11 @@ class HistoricalAgent extends window.AgentBase {
                 flags.push('recurring_issues');
             }
             
-            // Check for past high-severity findings
+            // === ANALYSIS: Past High Severity ===
             if (analysis.hadHighSeverity) {
                 findings.push(this.createFinding(
-                    'past_severity',
-                    'Previous checks found high-severity issues',
+                    'warning',
+                    `Previous checks found ${analysis.highSeverityCount} high-severity issue(s)`,
                     20,
                     { count: analysis.highSeverityCount }
                 ));
@@ -106,10 +179,57 @@ class HistoricalAgent extends window.AgentBase {
                 flags.push('past_issues');
             }
             
-            // Add average score context
+            // === ANALYSIS: Anomalies ===
+            if (analysis.anomalies.length > 0) {
+                checks.anomalies = analysis.anomalies;
+                
+                for (const anomaly of analysis.anomalies.slice(0, 3)) {
+                    findings.push(this.createFinding(
+                        anomaly.severity === 'high' ? 'danger' : 'warning',
+                        `${anomaly.type}: ${anomaly.metric} changed ${anomaly.magnitude}`,
+                        anomaly.severity === 'high' ? 25 : 15,
+                        { date: anomaly.date, cause: anomaly.possibleCause }
+                    ));
+                    rawScore += anomaly.severity === 'high' ? 10 : 5;
+                }
+            }
+            
+            // === ANALYSIS: Engagement Baseline (Pro) ===
+            if (this.isPro && analysis.engagementBaseline) {
+                checks.engagementBaseline = analysis.engagementBaseline;
+                
+                if (analysis.engagementBaseline.significantDrop) {
+                    findings.push(this.createFinding(
+                        'warning',
+                        `Engagement ${Math.abs(analysis.engagementBaseline.deviation)}% below baseline`,
+                        15,
+                        analysis.engagementBaseline
+                    ));
+                    rawScore += 10;
+                    flags.push('engagement_drop');
+                }
+            }
+            
+            // === ANALYSIS: Signal History ===
+            if (analysis.signalHistory) {
+                checks.signalHistory = analysis.signalHistory;
+                
+                for (const [signalType, signalData] of Object.entries(analysis.signalHistory)) {
+                    if (signalData.previousFlags > 0 && signalData.trend === 'recurring') {
+                        findings.push(this.createFinding(
+                            'info',
+                            `Recurring ${signalType} issues (${signalData.previousFlags} previous flags)`,
+                            10,
+                            signalData
+                        ));
+                    }
+                }
+            }
+            
+            // === Context: Average Score ===
             findings.push(this.createFinding(
-                'historical_average',
-                `Average probability from ${history.length} previous checks: ${analysis.averageScore.toFixed(1)}%`,
+                'info',
+                `Historical average: ${analysis.averageScore.toFixed(1)}% from ${history.length} checks`,
                 0,
                 { averageScore: analysis.averageScore, checkCount: history.length }
             ));
@@ -125,10 +245,12 @@ class HistoricalAgent extends window.AgentBase {
             const confidence = Math.min(90, 40 + (history.length * 5));
             
             return this.createResult({
+                status: 'complete',
                 rawScore: Math.min(100, rawScore),
-                confidence,
+                confidence: confidence,
                 findings,
                 flags,
+                checks,
                 processingTime: Date.now() - startTime,
                 message: `Analysis based on ${history.length} previous checks`
             });
@@ -136,8 +258,16 @@ class HistoricalAgent extends window.AgentBase {
         } catch (error) {
             this.log(`Error: ${error.message}`, 'error');
             return this.createResult({
+                status: 'error',
                 rawScore: 0,
                 confidence: 0,
+                findings: [{
+                    type: 'danger',
+                    severity: 'high',
+                    message: `Historical analysis error: ${error.message}`,
+                    impact: 0
+                }],
+                processingTime: Date.now() - startTime,
                 message: `Error: ${error.message}`
             });
         }
@@ -145,16 +275,15 @@ class HistoricalAgent extends window.AgentBase {
     
     // =========================================================================
     // 3-POINT INTELLIGENCE METHODS
-    // Called by DetectionAgent for historical item scores
+    // Called by Detection Agent for historical item scores
     // =========================================================================
     
     /**
      * Get past scores for specific items (Point 3: Historical)
-     * Used by DetectionAgent for 3-Point Intelligence
-     * @param {array} items - Items to look up (hashtags, links, mentions, etc.)
-     * @param {string} type - Type of items ('hashtags', 'links', 'content', 'mentions', 'emojis')
+     * @param {array} items - Items to look up (hashtags, links, etc.)
+     * @param {string} type - Type of items
      * @param {string} platformId - Platform context
-     * @returns {object} { available, scores, trends, averageScore, trendDirection }
+     * @returns {object} Historical score data
      */
     async getPastScores(items, type, platformId) {
         if (!items || items.length === 0) {
@@ -184,7 +313,6 @@ class HistoricalAgent extends window.AgentBase {
                 if (itemHistory.length > 0) {
                     results.itemsWithHistory++;
                     
-                    // Get most recent score
                     const latestScore = itemHistory[itemHistory.length - 1];
                     results.scores.push({
                         item,
@@ -197,17 +325,15 @@ class HistoricalAgent extends window.AgentBase {
                     totalScore += latestScore.score;
                     scoreCount++;
                     
-                    // Track for overall trend
                     if (itemHistory.length >= 2) {
                         recentScores.push(itemHistory[itemHistory.length - 1].score);
                         olderScores.push(itemHistory[0].score);
                     }
                     
-                    // Add trend info
                     results.trends.push({
                         item,
                         direction: this.calculateItemTrend(itemHistory),
-                        history: itemHistory.slice(-5) // Last 5 scores
+                        history: itemHistory.slice(-5)
                     });
                 } else {
                     results.itemsWithoutHistory++;
@@ -221,10 +347,9 @@ class HistoricalAgent extends window.AgentBase {
                 }
             }
             
-            // Calculate average score
             results.averageScore = scoreCount > 0 ? totalScore / scoreCount : 0;
             
-            // Calculate overall trend direction
+            // Calculate overall trend
             if (recentScores.length >= 2 && olderScores.length >= 2) {
                 const recentAvg = recentScores.reduce((a, b) => a + b, 0) / recentScores.length;
                 const olderAvg = olderScores.reduce((a, b) => a + b, 0) / olderScores.length;
@@ -236,7 +361,6 @@ class HistoricalAgent extends window.AgentBase {
                 }
             }
             
-            // Determine if we have useful historical data
             results.available = results.itemsWithHistory > 0;
             
         } catch (error) {
@@ -250,11 +374,6 @@ class HistoricalAgent extends window.AgentBase {
     
     /**
      * Store a score for a specific item
-     * Called after detection to build historical data
-     * @param {string} item - The item (hashtag, link, etc.)
-     * @param {string} type - Type of item
-     * @param {string} platformId - Platform
-     * @param {number} score - Score to store
      */
     storeItemScore(item, type, platformId, score) {
         const itemKey = this.getItemKey(item, type, platformId);
@@ -266,23 +385,19 @@ class HistoricalAgent extends window.AgentBase {
             platform: platformId
         });
         
-        // Keep only recent history
         if (history.length > 20) {
             history = history.slice(-20);
         }
         
         this.itemScoreStore.set(itemKey, history);
         
-        // Cleanup if store is too large
         if (this.itemScoreStore.size > this.maxItemScores) {
             this.cleanupItemStore();
         }
     }
     
     /**
-     * Store multiple item scores at once
-     * @param {array} items - Array of {item, type, score} objects
-     * @param {string} platformId - Platform
+     * Store multiple item scores
      */
     storeItemScores(items, platformId) {
         for (const { item, type, score } of items) {
@@ -290,36 +405,24 @@ class HistoricalAgent extends window.AgentBase {
         }
     }
     
-    /**
-     * Get trend for a specific item
-     */
-    getItemTrend(item, type, platformId) {
-        const itemKey = this.getItemKey(item, type, platformId);
-        const history = this.getItemHistory(itemKey);
-        
-        if (history.length < 2) {
-            return { trend: 'unknown', dataPoints: history.length };
+    // =========================================================================
+    // HISTORY MANAGEMENT
+    // =========================================================================
+    
+    getHistoryKey(input) {
+        if (input.type === 'account') {
+            return `account:${input.platform}:${input.username}`;
+        } else if (input.type === 'post') {
+            return `post:${input.platform}:${input.postId}`;
+        } else if (input.type === 'text') {
+            return `text:${input.platform}:${this.hashText(input.text)}`;
         }
-        
-        return {
-            trend: this.calculateItemTrend(history),
-            dataPoints: history.length,
-            firstScore: history[0].score,
-            lastScore: history[history.length - 1].score,
-            firstDate: history[0].timestamp,
-            lastDate: history[history.length - 1].timestamp
-        };
+        return `unknown:${Date.now()}`;
     }
     
-    // =========================================================================
-    // HELPER METHODS FOR 3-POINT INTELLIGENCE
-    // =========================================================================
-    
     getItemKey(item, type, platformId) {
-        // Normalize the item
         let normalizedItem = String(item).toLowerCase().trim();
         
-        // Remove prefixes
         if (type === 'hashtags') {
             normalizedItem = normalizedItem.replace(/^#/, '');
         } else if (type === 'mentions') {
@@ -329,60 +432,9 @@ class HistoricalAgent extends window.AgentBase {
         return `item:${type}:${platformId}:${normalizedItem}`;
     }
     
-    getItemHistory(itemKey) {
-        return this.itemScoreStore.get(itemKey) || [];
-    }
-    
-    calculateItemTrend(history) {
-        if (history.length < 2) return 'unknown';
-        
-        const scores = history.map(h => h.score);
-        const recentAvg = scores.slice(-3).reduce((a, b) => a + b, 0) / Math.min(3, scores.length);
-        const olderAvg = scores.slice(0, -3).length > 0 
-            ? scores.slice(0, -3).reduce((a, b) => a + b, 0) / scores.slice(0, -3).length
-            : recentAvg;
-        
-        if (recentAvg > olderAvg + 10) return 'worsening';
-        if (recentAvg < olderAvg - 10) return 'improving';
-        return 'stable';
-    }
-    
-    cleanupItemStore() {
-        // Remove oldest entries
-        const entries = Array.from(this.itemScoreStore.entries());
-        entries.sort((a, b) => {
-            const aLatest = a[1][a[1].length - 1]?.timestamp || '';
-            const bLatest = b[1][b[1].length - 1]?.timestamp || '';
-            return aLatest.localeCompare(bLatest);
-        });
-        
-        // Remove oldest 20%
-        const removeCount = Math.floor(entries.length * 0.2);
-        for (let i = 0; i < removeCount; i++) {
-            this.itemScoreStore.delete(entries[i][0]);
-        }
-    }
-    
-    // =========================================================================
-    // ORIGINAL HISTORY MANAGEMENT
-    // =========================================================================
-    
-    getHistoryKey(input) {
-        if (input.type === 'account') {
-            return `account:${input.platform}:${input.username}`;
-        } else if (input.type === 'post') {
-            return `post:${input.platform}:${input.postId}`;
-        } else if (input.type === 'text') {
-            // Hash the text for text-based keys
-            return `text:${input.platform}:${this.hashText(input.text)}`;
-        }
-        return `unknown:${Date.now()}`;
-    }
-    
     hashText(text) {
-        // Simple hash for demo purposes
         let hash = 0;
-        for (let i = 0; i < text.length; i++) {
+        for (let i = 0; i < Math.min(text.length, 100); i++) {
             const char = text.charCodeAt(i);
             hash = ((hash << 5) - hash) + char;
             hash = hash & hash;
@@ -394,7 +446,28 @@ class HistoricalAgent extends window.AgentBase {
         return this.historyStore.get(key) || [];
     }
     
-    addToHistory(key, result) {
+    getItemHistory(itemKey) {
+        return this.itemScoreStore.get(itemKey) || [];
+    }
+    
+    getPublicHistory(key) {
+        // In production, would query shared database
+        // Demo: Return simulated public history for some keys
+        if (this.useDemo && Math.random() > 0.6) {
+            return {
+                searchCount: Math.floor(Math.random() * 50) + 1,
+                lastSearched: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString(),
+                averageScore: Math.floor(Math.random() * 60) + 10
+            };
+        }
+        return null;
+    }
+    
+    /**
+     * Store a check result in history
+     */
+    storeResult(input, result) {
+        const key = this.getHistoryKey(input);
         let history = this.historyStore.get(key) || [];
         
         history.push({
@@ -402,10 +475,10 @@ class HistoricalAgent extends window.AgentBase {
             score: result.rawScore || result.probability || 0,
             confidence: result.confidence || 0,
             flags: result.flags || [],
-            findings: result.findings || []
+            findings: result.findings || [],
+            signalScores: result.signalSummary?.scores || {}
         });
         
-        // Keep only recent history
         if (history.length > this.maxHistoryItems) {
             history = history.slice(-this.maxHistoryItems);
         }
@@ -431,9 +504,14 @@ class HistoricalAgent extends window.AgentBase {
                 trend: 'unknown',
                 trendData: null,
                 averageScore: 0,
+                delta: 0,
+                thirtyDayChange: null,
                 repeatedFlags: [],
                 hadHighSeverity: false,
-                highSeverityCount: 0
+                highSeverityCount: 0,
+                anomalies: [],
+                engagementBaseline: null,
+                signalHistory: {}
             };
         }
         
@@ -441,20 +519,33 @@ class HistoricalAgent extends window.AgentBase {
         const scores = history.map(h => h.score);
         const averageScore = scores.reduce((a, b) => a + b, 0) / scores.length;
         
-        // Analyze trend (compare recent vs older)
+        // Analyze trend
         let trend = 'stable';
         let trendData = null;
+        let delta = 0;
+        let thirtyDayChange = null;
         
         if (history.length >= 3) {
             const recentAvg = scores.slice(-3).reduce((a, b) => a + b, 0) / 3;
             const olderAvg = scores.slice(0, -3).reduce((a, b) => a + b, 0) / Math.max(1, scores.length - 3);
             
-            if (recentAvg > olderAvg + 10) {
+            delta = recentAvg - olderAvg;
+            
+            if (delta > 10) {
                 trend = 'worsening';
-                trendData = { recent: recentAvg, older: olderAvg, change: recentAvg - olderAvg };
-            } else if (recentAvg < olderAvg - 10) {
+                trendData = { recent: recentAvg, older: olderAvg, change: delta };
+            } else if (delta < -10) {
                 trend = 'improving';
-                trendData = { recent: recentAvg, older: olderAvg, change: recentAvg - olderAvg };
+                trendData = { recent: recentAvg, older: olderAvg, change: delta };
+            }
+            
+            // Calculate 30-day change if we have enough data
+            const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+            const recentHistory = history.filter(h => new Date(h.timestamp) > thirtyDaysAgo);
+            if (recentHistory.length >= 2) {
+                const firstScore = recentHistory[0].score;
+                const lastScore = recentHistory[recentHistory.length - 1].score;
+                thirtyDayChange = Math.round(((lastScore - firstScore) / Math.max(1, firstScore)) * 100);
             }
         }
         
@@ -478,14 +569,92 @@ class HistoricalAgent extends window.AgentBase {
             }
         }
         
+        // Detect anomalies (sudden changes)
+        const anomalies = [];
+        for (let i = 1; i < history.length; i++) {
+            const change = history[i].score - history[i - 1].score;
+            if (Math.abs(change) >= 25) {
+                anomalies.push({
+                    date: history[i].timestamp,
+                    type: change > 0 ? 'sudden_increase' : 'sudden_drop',
+                    metric: 'score',
+                    severity: Math.abs(change) >= 40 ? 'high' : 'medium',
+                    magnitude: `${change > 0 ? '+' : ''}${change}%`,
+                    possibleCause: 'Score change detected'
+                });
+            }
+        }
+        
+        // Build signal history
+        const signalHistory = {};
+        for (const item of history) {
+            if (item.signalScores) {
+                for (const [signal, score] of Object.entries(item.signalScores)) {
+                    if (!signalHistory[signal]) {
+                        signalHistory[signal] = {
+                            previousFlags: 0,
+                            scores: [],
+                            trend: 'stable'
+                        };
+                    }
+                    signalHistory[signal].scores.push(score);
+                    if (score > 30) {
+                        signalHistory[signal].previousFlags++;
+                    }
+                }
+            }
+        }
+        
+        // Determine signal trends
+        for (const [signal, data] of Object.entries(signalHistory)) {
+            if (data.scores.length >= 2) {
+                const recent = data.scores.slice(-2).reduce((a, b) => a + b, 0) / 2;
+                const older = data.scores.slice(0, -2).reduce((a, b) => a + b, 0) / Math.max(1, data.scores.length - 2);
+                data.trend = recent > older + 10 ? 'worsening' : recent < older - 10 ? 'improving' : data.previousFlags >= 2 ? 'recurring' : 'stable';
+            }
+        }
+        
         return {
             trend,
             trendData,
             averageScore,
+            delta,
+            thirtyDayChange,
             repeatedFlags,
             hadHighSeverity: highSeverityCount > 0,
-            highSeverityCount
+            highSeverityCount,
+            anomalies,
+            engagementBaseline: null, // Would be populated with real engagement data
+            signalHistory
         };
+    }
+    
+    calculateItemTrend(history) {
+        if (history.length < 2) return 'unknown';
+        
+        const scores = history.map(h => h.score);
+        const recentAvg = scores.slice(-3).reduce((a, b) => a + b, 0) / Math.min(3, scores.length);
+        const olderAvg = scores.slice(0, -3).length > 0 
+            ? scores.slice(0, -3).reduce((a, b) => a + b, 0) / scores.slice(0, -3).length
+            : recentAvg;
+        
+        if (recentAvg > olderAvg + 10) return 'worsening';
+        if (recentAvg < olderAvg - 10) return 'improving';
+        return 'stable';
+    }
+    
+    cleanupItemStore() {
+        const entries = Array.from(this.itemScoreStore.entries());
+        entries.sort((a, b) => {
+            const aLatest = a[1][a[1].length - 1]?.timestamp || '';
+            const bLatest = b[1][b[1].length - 1]?.timestamp || '';
+            return aLatest.localeCompare(bLatest);
+        });
+        
+        const removeCount = Math.floor(entries.length * 0.2);
+        for (let i = 0; i < removeCount; i++) {
+            this.itemScoreStore.delete(entries[i][0]);
+        }
     }
     
     // =========================================================================
@@ -493,18 +662,7 @@ class HistoricalAgent extends window.AgentBase {
     // =========================================================================
     
     /**
-     * Store a check result in history
-     * @param {object} input - Original input
-     * @param {object} result - Check result to store
-     */
-    storeResult(input, result) {
-        const key = this.getHistoryKey(input);
-        this.addToHistory(key, result);
-    }
-    
-    /**
      * Get statistics about stored history
-     * @returns {object} History statistics
      */
     getStats() {
         let totalItems = 0;
@@ -519,12 +677,13 @@ class HistoricalAgent extends window.AgentBase {
             itemScores: {
                 uniqueItems: this.itemScoreStore.size,
                 maxItems: this.maxItemScores
-            }
+            },
+            isPro: this.isPro
         };
     }
     
     /**
-     * Export all stored data (for debugging/backup)
+     * Export all stored data
      */
     exportData() {
         return {
@@ -535,7 +694,7 @@ class HistoricalAgent extends window.AgentBase {
     }
     
     /**
-     * Import stored data (for restore)
+     * Import stored data
      */
     importData(data) {
         if (data.history) {
@@ -545,15 +704,28 @@ class HistoricalAgent extends window.AgentBase {
             this.itemScoreStore = new Map(Object.entries(data.itemScores));
         }
     }
+    
+    /**
+     * Set Pro status
+     */
+    setProStatus(isPro) {
+        this.isPro = !!isPro;
+    }
 }
 
-// Register agent
+// =============================================================================
+// REGISTER AGENT
+// =============================================================================
+
 const historicalAgent = new HistoricalAgent();
+
 if (window.AgentRegistry) {
     window.AgentRegistry.register(historicalAgent);
 }
 
-window.HistoricalAgent = historicalAgent;
-console.log('✅ HistoricalAgent (Factor 3) loaded - 3-Point Intelligence methods enabled');
+window.HistoricalAgent = HistoricalAgent;
+window.historicalAgent = historicalAgent;
+
+console.log('✅ HistoricalAgent v2.0.0 loaded - Factor 3 (15%)');
 
 })();

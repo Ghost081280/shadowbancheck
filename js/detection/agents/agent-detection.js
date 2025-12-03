@@ -454,43 +454,48 @@ class DetectionAgent {
         if (window.FlaggedLinks) {
             const bulkCheck = window.FlaggedLinks.checkBulk(uniqueUrls, platform);
             
-            for (const result of bulkCheck.results) {
-                if (result.status === 'banned') {
-                    flagged.blocked.push({
-                        url: result.url,
-                        reason: result.issues.join(', '),
-                        category: result.category
-                    });
-                } else if (result.status === 'restricted') {
-                    if (result.category === 'shortener') {
-                        flagged.shorteners.push({
-                            url: result.url,
-                            reason: 'Link shortener may reduce reach'
-                        });
-                    } else if (result.category === 'platform-specific') {
-                        flagged.throttled.push({
-                            url: result.url,
-                            domain: window.FlaggedLinks.extractDomain(result.url),
-                            reason: result.issues.join(', ')
-                        });
-                    } else {
-                        flagged.suspicious.push({
-                            url: result.url,
-                            reason: result.issues.join(', ')
-                        });
-                    }
-                } else if (result.status === 'monitored') {
-                    flagged.suspicious.push({
-                        url: result.url,
-                        reason: result.issues.join(', ')
-                    });
-                } else {
-                    safe.push(result.url);
-                }
+            // FlaggedLinks returns: { throttled, blocked, shorteners, suspicious, safe, summary }
+            // Map results to our format
+            for (const item of bulkCheck.blocked || []) {
+                flagged.blocked.push({
+                    url: item.url,
+                    reason: item.reason || item.category || 'Blocked domain',
+                    category: item.category
+                });
             }
             
-            // Calculate score
-            realtimeScore = Math.min(100,
+            for (const item of bulkCheck.throttled || []) {
+                flagged.throttled.push({
+                    url: item.url,
+                    domain: item.domain,
+                    delay: item.delay,
+                    reason: item.source ? `Source: ${item.source}` : 'Throttled domain'
+                });
+            }
+            
+            for (const item of bulkCheck.shorteners || []) {
+                flagged.shorteners.push({
+                    url: item.url,
+                    domain: item.domain,
+                    reason: item.notes || 'Link shortener may reduce reach',
+                    risk: item.risk
+                });
+            }
+            
+            for (const item of bulkCheck.suspicious || []) {
+                flagged.suspicious.push({
+                    url: item.url,
+                    reason: item.notes || item.category || 'Suspicious pattern'
+                });
+            }
+            
+            // Add safe URLs
+            for (const item of bulkCheck.safe || []) {
+                safe.push(typeof item === 'string' ? item : item.url);
+            }
+            
+            // Calculate score from the summary or count
+            realtimeScore = bulkCheck.summary?.riskScore || Math.min(100,
                 (flagged.blocked.length * 40) +
                 (flagged.throttled.length * 25) +
                 (flagged.shorteners.length * 10) +
@@ -503,6 +508,9 @@ class DetectionAgent {
             }
             if (flagged.throttled.length > 0) {
                 realtimeSources.push(`${flagged.throttled.length} throttled domain(s) detected`);
+            }
+            if (flagged.blocked.length > 0) {
+                realtimeSources.push(`${flagged.blocked.length} blocked domain(s) detected`);
             }
         } else {
             safe.push(...uniqueUrls);
@@ -642,49 +650,58 @@ class DetectionAgent {
         // === REAL-TIME CHECK (55%) ===
         let realtimeScore = 0;
         let realtimeSources = [];
-        const flagged = { suspended: [], shadowbanned: [], bots: [] };
+        const flagged = { suspended: [], shadowbanned: [], bots: [], spam: [] };
         const safe = [];
         
         // Use FlaggedMentions database if available
         if (window.FlaggedMentions) {
             const checkResult = window.FlaggedMentions.checkBulk(mentions, platform);
             
-            for (const item of checkResult.flagged) {
-                if (item.status === 'suspended') {
-                    flagged.suspended.push({
-                        username: item.username,
-                        reason: item.reason
-                    });
-                } else if (item.status === 'shadowbanned') {
-                    flagged.shadowbanned.push({
-                        username: item.username,
-                        reason: item.reason
-                    });
-                } else if (item.status === 'bot') {
-                    flagged.bots.push({
-                        username: item.username,
-                        reason: item.reason
-                    });
-                }
+            // FlaggedMentions returns: { bots, spam, suspicious, safe, summary }
+            for (const item of checkResult.bots || []) {
+                flagged.bots.push({
+                    username: item.mention,
+                    type: item.type,
+                    reason: item.reason || item.notes || 'Bot pattern detected'
+                });
             }
             
-            for (const item of checkResult.safe) {
-                safe.push(item.username);
+            for (const item of checkResult.spam || []) {
+                flagged.spam.push({
+                    username: item.mention,
+                    type: item.type,
+                    reason: item.reason || 'Spam pattern detected'
+                });
             }
             
-            // Check for excessive mentions
-            if (checkResult.excessive) {
-                realtimeScore += 20;
-                realtimeSources.push(checkResult.excessiveMessage);
+            for (const item of checkResult.suspicious || []) {
+                flagged.bots.push({
+                    username: item.mention,
+                    type: 'suspicious',
+                    reason: item.reason || 'Suspicious pattern'
+                });
             }
             
-            realtimeScore = Math.min(100, realtimeScore +
+            // Add safe mentions
+            for (const item of checkResult.safe || []) {
+                safe.push(typeof item === 'string' ? item : item.mention);
+            }
+            
+            // Calculate score from summary or counts
+            realtimeScore = checkResult.summary?.riskScore || Math.min(100,
+                (flagged.bots.length * 20) +
+                (flagged.spam.length * 15) +
                 (flagged.suspended.length * 15) +
-                (flagged.shadowbanned.length * 20) +
-                (flagged.bots.length * 10)
+                (flagged.shadowbanned.length * 20)
             );
             
             realtimeSources.push(`Mention check: ${mentions.length} mentions analyzed`);
+            if (flagged.bots.length > 0) {
+                realtimeSources.push(`${flagged.bots.length} bot/suspicious pattern(s) detected`);
+            }
+            if (flagged.spam.length > 0) {
+                realtimeSources.push(`${flagged.spam.length} spam pattern(s) detected`);
+            }
         } else {
             safe.push(...mentions);
             realtimeSources.push('FlaggedMentions database not loaded');
@@ -739,51 +756,55 @@ class DetectionAgent {
         if (window.FlaggedEmojis) {
             const emojiResult = window.FlaggedEmojis.extractAndCheck(text, platform);
             
-            if (emojiResult.results) {
-                // Process flagged emojis
-                for (const item of emojiResult.results.flagged || []) {
-                    flagged.risky.push({
-                        emoji: item.emoji,
-                        name: item.name,
-                        reason: item.context || item.notes,
-                        risk: item.risk
-                    });
-                }
-                
-                // Process risky combinations
-                for (const combo of emojiResult.results.combinations || []) {
-                    flagged.combinations.push({
-                        emojis: combo.emojis,
-                        reason: combo.reason,
-                        risk: combo.risk
-                    });
-                }
-                
-                // Safe emojis
-                for (const item of emojiResult.results.safe || []) {
-                    safe.push(item.emoji);
-                }
-                
-                // Get risk score from result
-                realtimeScore = emojiResult.results.summary?.riskScore || 0;
-                
-                // Cap emoji impact at 10 (they rarely cause shadowbans alone)
-                realtimeScore = Math.min(10, realtimeScore);
-                
-                if (emojiResult.results.excessive) {
-                    realtimeSources.push(`Excessive emojis: ${emojiResult.emojis.length} emojis detected`);
-                }
-                if (emojiResult.results.combinations.length > 0) {
-                    realtimeSources.push(`${emojiResult.results.combinations.length} risky combination(s) found`);
-                }
-                if (emojiResult.emojis.length > 0) {
-                    realtimeSources.push(`${emojiResult.emojis.length} emojis in content`);
-                } else {
-                    realtimeSources.push('No emojis in content');
-                }
+            // FlaggedEmojis returns: { emojis, risky, combinations, safe, summary }
+            // Process flagged emojis
+            for (const item of emojiResult.risky || []) {
+                flagged.risky.push({
+                    emoji: item.emoji,
+                    category: item.category,
+                    reason: item.context || item.notes || 'Risky emoji',
+                    count: item.count
+                });
+            }
+            
+            // Process risky combinations
+            for (const combo of emojiResult.combinations || []) {
+                flagged.combinations.push({
+                    emojis: combo.emojis || combo.found,
+                    category: combo.category,
+                    reason: combo.notes || combo.category,
+                    severity: combo.severity
+                });
+            }
+            
+            // Safe emojis
+            for (const item of emojiResult.safe || []) {
+                safe.push(item);
+            }
+            
+            // Get risk score from summary
+            realtimeScore = emojiResult.summary?.riskScore || 0;
+            
+            // Cap emoji impact at 15 (they rarely cause shadowbans alone)
+            realtimeScore = Math.min(15, realtimeScore);
+            
+            const totalEmojis = emojiResult.emojis?.length || 0;
+            if (totalEmojis >= 10) {
+                realtimeSources.push(`Excessive emojis: ${totalEmojis} emojis detected`);
+            }
+            if (flagged.combinations.length > 0) {
+                realtimeSources.push(`${flagged.combinations.length} risky combination(s) found`);
+            }
+            if (flagged.risky.length > 0) {
+                realtimeSources.push(`${flagged.risky.length} risky emoji(s) detected`);
+            }
+            if (totalEmojis > 0) {
+                realtimeSources.push(`${totalEmojis} emojis in content`);
+            } else {
+                realtimeSources.push('No emojis in content');
             }
         } else {
-            realtimeSources.push('No emojis in content');
+            realtimeSources.push('FlaggedEmojis database not loaded');
         }
         
         const predictiveScore = 0; // Emojis rarely have predictive signals
@@ -1103,9 +1124,14 @@ class DetectionAgent {
 // Create singleton instance
 const detectionAgent = new DetectionAgent();
 
-// Register with AgentRegistry if available
-if (window.AgentRegistry) {
+// Register with deferred pattern
+if (window.registerAgent) {
+    window.registerAgent(detectionAgent);
+} else if (window.AgentRegistry) {
     window.AgentRegistry.register(detectionAgent);
+} else {
+    window.AgentQueue = window.AgentQueue || [];
+    window.AgentQueue.push(detectionAgent);
 }
 
 // Export
@@ -1115,7 +1141,7 @@ window.detectionAgent = detectionAgent;
 // =============================================================================
 // INITIALIZATION
 // =============================================================================
-console.log('✅ DetectionAgent v2.0 loaded - Uses real database files');
+console.log('✅ Detection Agent loaded (Factor 4, Weight 25%)');
 console.log('   Databases:', detectionAgent.getStatus().databasesLoaded);
 
 })();

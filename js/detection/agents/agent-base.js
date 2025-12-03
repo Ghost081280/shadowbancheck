@@ -124,6 +124,7 @@ const AgentRegistry = {
     
     /**
      * Run all registered agents
+     * Runs Factors 1-4 first, then passes their results to Factor 5 (Predictive)
      * @param {object} input - Analysis input
      * @returns {Promise<array>} Results from all agents
      */
@@ -134,7 +135,12 @@ const AgentRegistry = {
         // Sort by factor number for consistent ordering
         agents.sort((a, b) => (a.factor || 0) - (b.factor || 0));
         
-        for (const agent of agents) {
+        // Separate predictive agent (Factor 5) from others
+        const regularAgents = agents.filter(a => a.factor !== 5 && a.id !== 'predictive');
+        const predictiveAgent = agents.find(a => a.factor === 5 || a.id === 'predictive');
+        
+        // Run Factors 1-4 first
+        for (const agent of regularAgents) {
             try {
                 if (typeof agent.analyze === 'function') {
                     const result = await agent.analyze(input);
@@ -146,6 +152,26 @@ const AgentRegistry = {
             } catch (error) {
                 console.error(`[AgentRegistry] Error running ${agent.id}:`, error);
                 results.push(this._createErrorResult(agent, error));
+            }
+        }
+        
+        // Run Predictive Agent (Factor 5) with other agents' results
+        if (predictiveAgent) {
+            try {
+                if (typeof predictiveAgent.analyze === 'function') {
+                    // Pass other agents' results to predictive agent
+                    const predictiveInput = {
+                        ...input,
+                        otherAgentResults: results
+                    };
+                    const result = await predictiveAgent.analyze(predictiveInput);
+                    results.push(result);
+                } else {
+                    results.push(this._createPlaceholderResult(predictiveAgent));
+                }
+            } catch (error) {
+                console.error(`[AgentRegistry] Error running predictive:`, error);
+                results.push(this._createErrorResult(predictiveAgent, error));
             }
         }
         

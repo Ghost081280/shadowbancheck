@@ -134,14 +134,14 @@ class PredictiveAgent {
                 findings.push({
                     type: 'danger',
                     severity: risk.severity,
-                    message: risk.description,
+                    message: risk.factor || 'High severity issue detected',
                     impact: risk.contribution
                 });
             } else if (risk.severity === 'medium') {
                 findings.push({
                     type: 'warning',
                     severity: 'medium',
-                    message: risk.description,
+                    message: risk.factor || 'Medium severity issue detected',
                     impact: risk.contribution
                 });
             }

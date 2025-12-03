@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>5-Factor Engine Integration Test</title>
+    <style>
+        body { font-family: monospace; background: #1a1a2e; color: #eee; padding: 20px; }
+        .section { background: #16213e; padding: 15px; margin: 10px 0; border-radius: 8px; }
+        .section h2 { color: #00d9ff; margin-top: 0; }
+        .pass { color: #00ff88; }
+        .fail { color: #ff4444; }
+        .warn { color: #ffaa00; }
+        .info { color: #888; }
+        pre { background: #0f0f23; padding: 10px; overflow-x: auto; border-radius: 4px; }
+        button { background: #00d9ff; color: #000; border: none; padding: 10px 20px; 
+                 cursor: pointer; border-radius: 4px; margin: 5px; font-weight: bold; }
+        button:hover { background: #00b8d4; }
+        #output { white-space: pre-wrap; }
+    </style>
+</head>
+<body>
+    <h1>🔬 5-Factor Engine Integration Test</h1>
+    
+    <div class="section">
+        <h2>Controls</h2>
+        <button onclick="runAllTests()">Run All Tests</button>
+        <button onclick="testDatabases()">Test Databases</button>
+        <button onclick="testRegistry()">Test Registry</button>
+        <button onclick="testDetection()">Test Detection Agent</button>
+        <button onclick="testEngine()">Test Engine</button>
+        <button onclick="clearOutput()">Clear</button>
+    </div>
+    
+    <div class="section">
+        <h2>Output</h2>
+        <div id="output"></div>
+    </div>
+
+    <!-- ============================================================
+         MOCK DATABASES (for testing without real files)
+         ============================================================ -->
+    <script>
+    // Mock FlaggedHashtags
+    window.FlaggedHashtags = {
+        checkBulk: function(tags, platform) {
+            const results = { banned: [], restricted: [], monitored: [], safe: [], summary: {} };
+            const bannedTags = ['followback', 'f4f', 'xxx', 'nsfw'];
+            const restrictedTags = ['crypto', 'nft', 'giveaway'];
+            const monitoredTags = ['ad', 'sponsored'];
+            
+            for (const tag of tags) {
+                const clean = tag.replace(/^[#$]/, '').toLowerCase();
+                if (bannedTags.includes(clean)) {
+                    results.banned.push({ tag: clean, category: 'spam', notes: 'Banned hashtag' });
+                } else if (restrictedTags.includes(clean)) {
+                    results.restricted.push({ tag: clean, category: 'sensitive', notes: 'May reduce reach' });
+                } else if (monitoredTags.includes(clean)) {
+                    results.monitored.push({ tag: clean, category: 'commercial', notes: 'Being watched' });
+                } else {
+                    results.safe.push(clean);
+                }
+            }
+            
+            results.summary.riskScore = results.banned.length * 30 + results.restricted.length * 15;
+            return results;
+        }
+    };
+    
+    // Mock FlaggedLinks
+    window.FlaggedLinks = {
+        checkBulk: function(urls, platform) {
+            const results = { throttled: [], blocked: [], shorteners: [], suspicious: [], safe: [], summary: {} };
+            
+            for (const url of urls) {
+                const lower = url.toLowerCase();
+                
+                // Check shorteners
+                if (lower.includes('bit.ly') || lower.includes('t.co') || lower.includes('tinyurl')) {
+                    results.shorteners.push({ url, type: 'shortener', notes: 'Link shortener detected' });
+                }
+                // Check throttled (The Markup data)
+                else if (lower.includes('facebook.com') || lower.includes('instagram.com')) {
+                    results.throttled.push({ url, domain: new URL(url).hostname, delay: '2.5s+', source: 'The Markup' });
+                }
+                // Check blocked
+                else if (lower.includes('spam') || lower.includes('malware')) {
+                    results.blocked.push({ url, reason: 'Known spam domain' });
+                }
+                else {
+                    results.safe.push(url);
+                }
+            }
+            
+            results.summary.riskScore = results.blocked.length * 40 + results.throttled.length * 25 + results.shorteners.length * 10;
+            return results;
+        }
+    };
+    
+    // Mock FlaggedContent
+    window.FlaggedContent = {
+        scan: function(text, platform) {
+            const results = { score: 0, flags: [], patterns: [] };
+            const lower = text.toLowerCase();
+            
+            // Check for spam patterns
+            if (lower.includes('buy now') || lower.includes('click here')) {
+                results.flags.push({ term: 'promotional', severity: 'medium', category: 'spam' });
+                results.score += 15;
+            }
+            if (lower.includes('free money') || lower.includes('guaranteed')) {
+                results.flags.push({ term: 'scam_indicator', severity: 'high', category: 'spam' });
+                results.score += 25;
+            }
+            
+            // Check caps ratio
+            const caps = (text.match(/[A-Z]/g) || []).length;
+            const total = text.replace(/[^a-zA-Z]/g, '').length;
+            if (total > 20 && caps / total > 0.5) {
+                results.flags.push({ term: 'excessive_caps', severity: 'low', category: 'style' });
+                results.score += 10;
+            }
+            
+            return results;
+        }
+    };
+    
+    // Mock FlaggedMentions
+    window.FlaggedMentions = {
+        checkBulk: function(mentions, platform) {
+            const results = { bots: [], spam: [], safe: [], summary: {} };
+            
+            for (const mention of mentions) {
+                const clean = mention.replace('@', '').toLowerCase();
+                if (clean.includes('bot') || clean.match(/\d{5,}/)) {
+                    results.bots.push({ mention: clean, reason: 'Bot pattern detected' });
+                } else if (clean.includes('spam') || clean.includes('promo')) {
+                    results.spam.push({ mention: clean, reason: 'Spam account pattern' });
+                } else {
+                    results.safe.push(clean);
+                }
+            }
+            
+            results.summary.riskScore = results.bots.length * 20 + results.spam.length * 15;
+            return results;
+        }
+    };
+    
+    // Mock FlaggedEmojis
+    window.FlaggedEmojis = {
+        extractAndCheck: function(text, platform) {
+            const results = { risky: [], combinations: [], safe: [], summary: {} };
+            
+            // Simple emoji detection
+            const emojiRegex = /[\u{1F300}-\u{1F9FF}]/gu;
+            const emojis = text.match(emojiRegex) || [];
+            
+            const riskyEmojis = ['🔥', '💰', '🚀', '💎'];
+            
+            for (const emoji of emojis) {
+                if (riskyEmojis.includes(emoji)) {
+                    results.risky.push({ emoji, context: 'promotional', notes: 'Often used in spam' });
+                } else {
+                    results.safe.push(emoji);
+                }
+            }
+            
+            results.summary.riskScore = results.risky.length * 5;
+            return results;
+        }
+    };
+    
+    console.log('✅ Mock databases loaded');
+    </script>
+
+    <!-- Load agent-base.js -->
+    <script>
+    /* Agent Base - inline for testing */
+    (function() {
+    'use strict';
+
+    const FACTOR_CONFIG = {
+        1: { name: 'Platform API Analysis', weight: 20, agentId: 'api' },
+        2: { name: 'Web/Search Analysis', weight: 20, agentId: 'web' },
+        3: { name: 'Historical Data', weight: 15, agentId: 'historical' },
+        4: { name: 'Real-Time Detection', weight: 25, agentId: 'detection' },
+        5: { name: 'Predictive Intelligence', weight: 20, agentId: 'predictive' }
+    };
+
+    const THREE_POINT_WEIGHTS = { predictive: 15, realtime: 55, historical: 30 };
+    const CONFIDENCE_LEVELS = {
+        high: { min: 70, label: 'High Confidence', bonus: 15 },
+        medium: { min: 40, label: 'Medium Confidence', bonus: 5 },
+        low: { min: 0, label: 'Low Confidence', bonus: 0 }
+    };
+    const SEVERITY_THRESHOLDS = { critical: 75, high: 50, medium: 25, low: 1 };
+
+    const AgentRegistry = {
+        _agents: {},
+        _initialized: false,
+        
+        register: function(agent) {
+            if (!agent || !agent.id) return false;
+            this._agents[agent.id] = agent;
+            console.log(`[AgentRegistry] Registered: ${agent.id} (Factor ${agent.factor})`);
+            return true;
+        },
+        
+        get: function(id) { return this._agents[id] || null; },
+        
+        getByFactor: function(factor) {
+            for (const agent of Object.values(this._agents)) {
+                if (agent.factor === factor) return agent;
+            }
+            return null;
+        },
+        
+        getAll: function() { return { ...this._agents }; },
+        getIds: function() { return Object.keys(this._agents); },
+        has: function(id) { return !!this._agents[id]; },
+        
+        runAll: async function(input) {
+            const results = [];
+            const agents = Object.values(this._agents).sort((a, b) => (a.factor || 0) - (b.factor || 0));
+            
+            for (const agent of agents) {
+                try {
+                    if (typeof agent.analyze === 'function') {
+                        results.push(await agent.analyze(input));
+                    }
+                } catch (error) {
+                    console.error(`[AgentRegistry] Error running ${agent.id}:`, error);
+                    results.push({ agent: agent.id, error: true, message: error.message });
+                }
+            }
+            return results;
+        },
+        
+        getStatus: function() {
+            const agents = Object.values(this._agents);
+            return {
+                initialized: this._initialized,
+                agentCount: agents.length,
+                agents: agents.map(a => ({ id: a.id, name: a.name, factor: a.factor })),
+                factorsCovered: [...new Set(agents.map(a => a.factor).filter(f => f))].sort()
+            };
+        },
+        
+        clear: function() { this._agents = {}; }
+    };
+
+    class AgentBase {
+        constructor(config = {}) {
+            this.id = config.id || 'unknown';
+            this.name = config.name || 'Unknown Agent';
+            this.factor = config.factor || 0;
+            this.weight = config.weight || FACTOR_CONFIG[config.factor]?.weight || 20;
+            this.version = config.version || '1.0.0';
+            this.demoMode = true;
+        }
+        
+        async analyze(input) {
+            return this.createResult({ status: 'not_implemented', rawScore: 0, findings: [] });
+        }
+        
+        createResult(data) {
+            const rawScore = data.rawScore || 0;
+            return {
+                agent: this.name,
+                agentId: this.id,
+                factor: this.factor,
+                weight: this.weight,
+                status: data.status || 'complete',
+                checks: data.checks || {},
+                findings: data.findings || [],
+                rawScore: rawScore,
+                weightedScore: Math.round((rawScore * this.weight) / 100 * 100) / 100,
+                confidence: data.confidence || 50,
+                timestamp: new Date().toISOString(),
+                ...data.extra
+            };
+        }
+        
+        calculate3PointScore(predictive, realtime, historical) {
+            const pContrib = (predictive * THREE_POINT_WEIGHTS.predictive) / 100;
+            const rContrib = (realtime * THREE_POINT_WEIGHTS.realtime) / 100;
+            const hContrib = (historical * THREE_POINT_WEIGHTS.historical) / 100;
+            return {
+                predictive: { weight: 15, score: predictive, contribution: pContrib },
+                realtime: { weight: 55, score: realtime, contribution: rContrib },
+                historical: { weight: 30, score: historical, contribution: hContrib },
+                combinedScore: Math.round((pContrib + rContrib + hContrib) * 100) / 100
+            };
+        }
+    }
+
+    function processQueuedAgents() {
+        if (window.AgentQueue && Array.isArray(window.AgentQueue)) {
+            console.log(`[AgentRegistry] Processing ${window.AgentQueue.length} queued agent(s)`);
+            for (const agent of window.AgentQueue) { AgentRegistry.register(agent); }
+            window.AgentQueue = [];
+        }
+    }
+
+    function registerAgent(agent) {
+        if (window.AgentRegistry) {
+            window.AgentRegistry.register(agent);
+        } else {
+            window.AgentQueue = window.AgentQueue || [];
+            window.AgentQueue.push(agent);
+        }
+    }
+
+    window.FACTOR_CONFIG = FACTOR_CONFIG;
+    window.THREE_POINT_WEIGHTS = THREE_POINT_WEIGHTS;
+    window.AgentBase = AgentBase;
+    window.AgentRegistry = AgentRegistry;
+    window.registerAgent = registerAgent;
+
+    processQueuedAgents();
+    AgentRegistry._initialized = true;
+    console.log('✅ AgentBase + AgentRegistry loaded');
+    })();
+    </script>
+
+    <!-- Load Detection Agent (simplified for testing) -->
+    <script>
+    (function() {
+    'use strict';
+
+    const PLATFORM_MODULES = {
+        twitter: { hashtags: 4, cashtags: 3, links: 4, content: 4, mentions: 3, emojis: 3 },
+        instagram: { hashtags: 4, cashtags: 0, links: 4, content: 4, mentions: 3, emojis: 3 },
+        reddit: { hashtags: 0, cashtags: 0, links: 4, content: 4, mentions: 3, emojis: 3 }
+    };
+
+    class DetectionAgent extends AgentBase {
+        constructor() {
+            super({
+                id: 'detection',
+                name: 'Real-Time Detection',
+                factor: 4,
+                weight: 25,
+                version: '2.0.0'
+            });
+        }
+
+        async analyze(input) {
+            const platform = input.platform || 'twitter';
+            const text = input.text || input.content || '';
+            
+            // Initialize signals
+            const signals = {};
+            let totalScore = 0;
+            let signalCount = 0;
+            const findings = [];
+
+            // Extract content elements
+            const hashtags = this.extractHashtags(text);
+            const cashtags = this.extractCashtags(text);
+            const urls = input.urls || this.extractUrls(text);
+            const mentions = this.extractMentions(text);
+
+            // Check hashtags
+            if (hashtags.length > 0 && window.FlaggedHashtags) {
+                const result = window.FlaggedHashtags.checkBulk(hashtags, platform);
+                signals.hashtags = {
+                    count: hashtags.length,
+                    flagged: { banned: result.banned, restricted: result.restricted, monitored: result.monitored, safe: result.safe },
+                    score: result.summary?.riskScore || 0
+                };
+                totalScore += signals.hashtags.score;
+                signalCount++;
+                
+                if (result.banned?.length > 0) {
+                    findings.push({ type: 'danger', severity: 'high', message: `${result.banned.length} banned hashtag(s) found`, impact: 30 });
+                }
+            }
+
+            // Check cashtags
+            if (cashtags.length > 0 && window.FlaggedHashtags) {
+                const result = window.FlaggedHashtags.checkBulk(cashtags, platform);
+                signals.cashtags = {
+                    count: cashtags.length,
+                    flagged: { banned: result.banned, restricted: result.restricted, safe: result.safe },
+                    score: result.summary?.riskScore || 0
+                };
+                totalScore += signals.cashtags.score;
+                signalCount++;
+            }
+
+            // Check links
+            if (urls.length > 0 && window.FlaggedLinks) {
+                const result = window.FlaggedLinks.checkBulk(urls, platform);
+                signals.links = {
+                    count: urls.length,
+                    flagged: { throttled: result.throttled, blocked: result.blocked, shorteners: result.shorteners, safe: result.safe },
+                    score: result.summary?.riskScore || 0
+                };
+                totalScore += signals.links.score;
+                signalCount++;
+                
+                if (result.shorteners?.length > 0) {
+                    findings.push({ type: 'warning', severity: 'medium', message: `${result.shorteners.length} link shortener(s) detected`, impact: 10 });
+                }
+                if (result.throttled?.length > 0) {
+                    findings.push({ type: 'warning', severity: 'medium', message: `${result.throttled.length} throttled domain(s)`, impact: 20 });
+                }
+            }
+
+            // Check content
+            if (text && window.FlaggedContent) {
+                const result = window.FlaggedContent.scan(text, platform);
+                signals.content = {
+                    length: text.length,
+                    flagged: { flags: result.flags },
+                    score: result.score || 0
+                };
+                totalScore += signals.content.score;
+                signalCount++;
+                
+                if (result.flags?.length > 0) {
+                    findings.push({ type: 'warning', severity: 'medium', message: `${result.flags.length} content pattern(s) flagged`, impact: 15 });
+                }
+            }
+
+            // Check mentions
+            if (mentions.length > 0 && window.FlaggedMentions) {
+                const result = window.FlaggedMentions.checkBulk(mentions, platform);
+                signals.mentions = {
+                    count: mentions.length,
+                    flagged: { bots: result.bots, spam: result.spam, safe: result.safe },
+                    score: result.summary?.riskScore || 0
+                };
+                totalScore += signals.mentions.score;
+                signalCount++;
+            }
+
+            // Check emojis
+            if (text && window.FlaggedEmojis) {
+                const result = window.FlaggedEmojis.extractAndCheck(text, platform);
+                signals.emojis = {
+                    flagged: { risky: result.risky, safe: result.safe },
+                    score: result.summary?.riskScore || 0
+                };
+                totalScore += signals.emojis.score;
+                signalCount++;
+            }
+
+            // Calculate final score (cap at 100)
+            const rawScore = Math.min(100, signalCount > 0 ? Math.round(totalScore / signalCount * 1.5) : 0);
+            
+            // Calculate 3-Point Intelligence
+            const threePoint = this.calculate3PointScore(
+                rawScore * 0.8,  // Predictive (slightly lower)
+                rawScore,        // Real-time (current)
+                rawScore * 0.9   // Historical (slightly lower)
+            );
+
+            // Module count
+            const modules = PLATFORM_MODULES[platform] || PLATFORM_MODULES.twitter;
+            const modulesActive = Object.values(modules).reduce((a, b) => a + b, 0);
+
+            return this.createResult({
+                status: 'complete',
+                rawScore: rawScore,
+                confidence: Math.min(95, 50 + signalCount * 8),
+                findings: findings,
+                extra: {
+                    platform: platform,
+                    modulesActive: modulesActive,
+                    signals: signals,
+                    signalSummary: {
+                        totalSignals: signalCount,
+                        totalScore: totalScore,
+                        averageScore: signalCount > 0 ? Math.round(totalScore / signalCount) : 0
+                    },
+                    threePointIntelligence: threePoint
+                }
+            });
+        }
+
+        extractHashtags(text) {
+            return (text.match(/#\w+/g) || []).map(t => t.substring(1));
+        }
+        
+        extractCashtags(text) {
+            return (text.match(/\$[A-Z]{1,5}/g) || []).map(t => t.substring(1));
+        }
+        
+        extractUrls(text) {
+            return text.match(/https?:\/\/[^\s]+/g) || [];
+        }
+        
+        extractMentions(text) {
+            return (text.match(/@\w+/g) || []).map(t => t.substring(1));
+        }
+    }
+
+    // Register
+    const agent = new DetectionAgent();
+    window.detectionAgent = agent;
+    window.registerAgent(agent);
+    console.log('✅ Detection Agent loaded and registered');
+    })();
+    </script>
+
+    <!-- Test Functions -->
+    <script>
+    const output = document.getElementById('output');
+    
+    function log(msg, type = '') {
+        const span = document.createElement('span');
+        span.className = type;
+        span.textContent = msg + '\n';
+        output.appendChild(span);
+    }
+    
+    function logJson(obj) {
+        const pre = document.createElement('pre');
+        pre.textContent = JSON.stringify(obj, null, 2);
+        output.appendChild(pre);
+    }
+    
+    function clearOutput() {
+        output.innerHTML = '';
+    }
+    
+    function testDatabases() {
+        log('═══════════════════════════════════════', 'info');
+        log('Testing Mock Databases...', 'info');
+        log('═══════════════════════════════════════', 'info');
+        
+        // Test hashtags
+        log('\n📌 FlaggedHashtags.checkBulk(["followback", "tech", "crypto"])');
+        const hashResult = window.FlaggedHashtags.checkBulk(['followback', 'tech', 'crypto'], 'twitter');
+        logJson(hashResult);
+        log(hashResult.banned.length > 0 ? '✓ Banned tags detected' : '✗ No banned tags', hashResult.banned.length > 0 ? 'pass' : 'fail');
+        
+        // Test links
+        log('\n🔗 FlaggedLinks.checkBulk(["https://bit.ly/abc", "https://facebook.com/page"])');
+        const linkResult = window.FlaggedLinks.checkBulk(['https://bit.ly/abc', 'https://facebook.com/page'], 'twitter');
+        logJson(linkResult);
+        log(linkResult.shorteners.length > 0 ? '✓ Shorteners detected' : '✗ No shorteners', linkResult.shorteners.length > 0 ? 'pass' : 'fail');
+        
+        // Test content
+        log('\n📝 FlaggedContent.scan("BUY NOW! Free money guaranteed!")');
+        const contentResult = window.FlaggedContent.scan('BUY NOW! Free money guaranteed!', 'twitter');
+        logJson(contentResult);
+        log(contentResult.score > 0 ? '✓ Spam patterns detected' : '✗ No patterns', contentResult.score > 0 ? 'pass' : 'fail');
+    }
+    
+    function testRegistry() {
+        log('═══════════════════════════════════════', 'info');
+        log('Testing AgentRegistry...', 'info');
+        log('═══════════════════════════════════════', 'info');
+        
+        const status = window.AgentRegistry.getStatus();
+        log('\n📊 Registry Status:');
+        logJson(status);
+        
+        log(status.agentCount > 0 ? '✓ Agents registered' : '✗ No agents', status.agentCount > 0 ? 'pass' : 'fail');
+        log(status.factorsCovered.includes(4) ? '✓ Factor 4 (Detection) covered' : '✗ Factor 4 missing', status.factorsCovered.includes(4) ? 'pass' : 'warn');
+    }
+    
+    async function testDetection() {
+        log('═══════════════════════════════════════', 'info');
+        log('Testing Detection Agent...', 'info');
+        log('═══════════════════════════════════════', 'info');
+        
+        const testInput = {
+            platform: 'twitter',
+            text: 'Check out my #crypto #followback post! 🚀🔥 Buy now at https://bit.ly/deal @spambot123',
+            urls: ['https://bit.ly/deal', 'https://facebook.com/mypage']
+        };
+        
+        log('\n📥 Test Input:');
+        logJson(testInput);
+        
+        log('\n⏳ Running detection agent...');
+        const result = await window.detectionAgent.analyze(testInput);
+        
+        log('\n📤 Detection Result:');
+        logJson(result);
+        
+        log('\n📈 Score Breakdown:');
+        log(`   Raw Score: ${result.rawScore}`, result.rawScore > 0 ? 'warn' : 'pass');
+        log(`   Weighted Score: ${result.weightedScore}`, 'info');
+        log(`   Confidence: ${result.confidence}%`, 'info');
+        log(`   Modules Active: ${result.modulesActive}`, 'info');
+        
+        log('\n🔍 Signals Summary:');
+        for (const [signal, data] of Object.entries(result.signals || {})) {
+            log(`   ${signal}: score ${data.score}`, data.score > 0 ? 'warn' : 'pass');
+        }
+        
+        log('\n📋 Findings:');
+        for (const finding of result.findings || []) {
+            log(`   [${finding.type}] ${finding.message}`, finding.type === 'danger' ? 'fail' : 'warn');
+        }
+    }
+    
+    async function testEngine() {
+        log('═══════════════════════════════════════', 'info');
+        log('Testing AgentRegistry.runAll()...', 'info');
+        log('═══════════════════════════════════════', 'info');
+        
+        const testInput = {
+            platform: 'twitter',
+            text: 'Normal tweet with #tech and a link https://example.com',
+            urls: ['https://example.com']
+        };
+        
+        log('\n📥 Input (lower risk):');
+        logJson(testInput);
+        
+        const results = await window.AgentRegistry.runAll(testInput);
+        
+        log('\n📤 All Agent Results:');
+        for (const r of results) {
+            log(`\n   Agent: ${r.agent} (Factor ${r.factor})`);
+            log(`   Score: ${r.rawScore} → Weighted: ${r.weightedScore}`);
+            log(`   Status: ${r.status}`, r.status === 'complete' ? 'pass' : 'warn');
+        }
+    }
+    
+    async function runAllTests() {
+        clearOutput();
+        log('🚀 Running All Integration Tests\n', 'info');
+        log('Time: ' + new Date().toISOString() + '\n', 'info');
+        
+        testDatabases();
+        testRegistry();
+        await testDetection();
+        await testEngine();
+        
+        log('\n═══════════════════════════════════════', 'info');
+        log('✅ All tests complete!', 'pass');
+        log('═══════════════════════════════════════', 'info');
+    }
+    
+    // Auto-run on load
+    window.onload = () => {
+        log('🔧 Integration test page ready', 'info');
+        log('Click "Run All Tests" to start\n', 'info');
+    };
+    </script>
+</body>
+</html>

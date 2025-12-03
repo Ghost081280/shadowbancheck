@@ -3,647 +3,421 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>5-Factor Engine Integration Test</title>
+    <title>5-Factor Engine Test</title>
     <style>
-        body { font-family: monospace; background: #1a1a2e; color: #eee; padding: 20px; }
-        .section { background: #16213e; padding: 15px; margin: 10px 0; border-radius: 8px; }
-        .section h2 { color: #00d9ff; margin-top: 0; }
-        .pass { color: #00ff88; }
-        .fail { color: #ff4444; }
-        .warn { color: #ffaa00; }
-        .info { color: #888; }
-        pre { background: #0f0f23; padding: 10px; overflow-x: auto; border-radius: 4px; }
-        button { background: #00d9ff; color: #000; border: none; padding: 10px 20px; 
-                 cursor: pointer; border-radius: 4px; margin: 5px; font-weight: bold; }
-        button:hover { background: #00b8d4; }
-        #output { white-space: pre-wrap; }
+        * { box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a0f;
+            color: #e0e0e0;
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .container { max-width: 1200px; margin: 0 auto; }
+        h1 { color: #00d4ff; margin-bottom: 5px; }
+        h2 { color: #ff6b35; margin-top: 30px; border-bottom: 1px solid #333; padding-bottom: 10px; }
+        h3 { color: #9d4edd; margin-top: 20px; }
+        
+        .status-bar {
+            background: #1a1a2e;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #00d4ff;
+        }
+        .status-bar.success { border-left-color: #00ff88; }
+        .status-bar.error { border-left-color: #ff4757; }
+        
+        .test-input {
+            background: #1a1a2e;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .test-input label { display: block; margin-bottom: 5px; color: #888; }
+        .test-input input, .test-input select, .test-input textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #333;
+            border-radius: 4px;
+            background: #0a0a0f;
+            color: #e0e0e0;
+            margin-bottom: 15px;
+            font-family: inherit;
+        }
+        .test-input textarea { min-height: 80px; resize: vertical; }
+        
+        button {
+            background: linear-gradient(135deg, #00d4ff, #9d4edd);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        button:hover { opacity: 0.9; }
+        button.secondary { background: #333; }
+        
+        .results {
+            background: #1a1a2e;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        
+        .agent-result {
+            background: #0a0a0f;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-left: 4px solid #666;
+        }
+        .agent-result.good { border-left-color: #00ff88; }
+        .agent-result.warning { border-left-color: #ffa502; }
+        .agent-result.danger { border-left-color: #ff4757; }
+        
+        .agent-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .agent-name { font-weight: 600; color: #00d4ff; }
+        .agent-score { font-size: 24px; font-weight: bold; }
+        .score-good { color: #00ff88; }
+        .score-warning { color: #ffa502; }
+        .score-danger { color: #ff4757; }
+        
+        .findings { margin-top: 10px; }
+        .finding {
+            padding: 8px 12px;
+            margin: 5px 0;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .finding.good { background: rgba(0, 255, 136, 0.1); color: #00ff88; }
+        .finding.warning { background: rgba(255, 165, 2, 0.1); color: #ffa502; }
+        .finding.danger { background: rgba(255, 71, 87, 0.1); color: #ff4757; }
+        .finding.info { background: rgba(0, 212, 255, 0.1); color: #00d4ff; }
+        
+        .verdict-box {
+            background: linear-gradient(135deg, #1a1a2e, #2a1a3e);
+            border-radius: 12px;
+            padding: 25px;
+            text-align: center;
+            margin: 20px 0;
+        }
+        .verdict-score { font-size: 64px; font-weight: bold; margin-bottom: 10px; }
+        .verdict-label { font-size: 24px; font-weight: 600; margin-bottom: 5px; }
+        .verdict-desc { color: #888; }
+        
+        .recommendations {
+            background: #0a0a0f;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+        .recommendation {
+            padding: 10px;
+            margin: 8px 0;
+            border-radius: 4px;
+            background: #1a1a2e;
+        }
+        .recommendation .priority {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-right: 10px;
+        }
+        .priority.critical { background: #ff4757; color: white; }
+        .priority.high { background: #ffa502; color: black; }
+        .priority.medium { background: #00d4ff; color: black; }
+        .priority.low { background: #666; color: white; }
+        .priority.info { background: #00ff88; color: black; }
+        
+        .presets { margin-bottom: 15px; }
+        .preset-btn { background: #333; padding: 8px 15px; font-size: 14px; }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #888;
+        }
+        .loading .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid #333;
+            border-top-color: #00d4ff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        
+        .db-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .db-stat {
+            background: #0a0a0f;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .db-stat .count { font-size: 28px; font-weight: bold; color: #00d4ff; }
+        .db-stat .label { color: #888; font-size: 13px; }
     </style>
 </head>
 <body>
-    <h1>🔬 5-Factor Engine Integration Test</h1>
-    
-    <div class="section">
-        <h2>Controls</h2>
-        <button onclick="runAllTests()">Run All Tests</button>
-        <button onclick="testDatabases()">Test Databases</button>
-        <button onclick="testRegistry()">Test Registry</button>
-        <button onclick="testDetection()">Test Detection Agent</button>
-        <button onclick="testEngine()">Test Engine</button>
-        <button onclick="clearOutput()">Clear</button>
+    <div class="container">
+        <h1>🔍 5-Factor Shadowban Detection Engine</h1>
+        <p style="color: #888; margin-top: 0;">Complete integration test with all 5 agents and databases</p>
+        
+        <div id="loadStatus" class="status-bar">Loading components...</div>
+        <div id="dbStats" class="db-stats" style="display: none;"></div>
+        
+        <h2>Test Input</h2>
+        
+        <div class="presets">
+            <button class="preset-btn" onclick="loadPreset('spam')">🚫 Heavy Spam</button>
+            <button class="preset-btn" onclick="loadPreset('shadowban')">👻 Shadowbanned</button>
+            <button class="preset-btn" onclick="loadPreset('reddit')">🤖 Reddit New</button>
+            <button class="preset-btn" onclick="loadPreset('clean')">✅ Clean</button>
+        </div>
+        
+        <div class="test-input">
+            <label>Platform</label>
+            <select id="platform">
+                <option value="twitter">Twitter / X</option>
+                <option value="reddit">Reddit</option>
+                <option value="instagram">Instagram</option>
+                <option value="tiktok">TikTok</option>
+            </select>
+            
+            <label>Username</label>
+            <input type="text" id="username" placeholder="@username">
+            
+            <label>Post ID (optional)</label>
+            <input type="text" id="postId" placeholder="Tweet ID or Post ID">
+            
+            <label>Content to Analyze</label>
+            <textarea id="content" placeholder="Paste tweet/post content here..."></textarea>
+            
+            <label>URLs (one per line)</label>
+            <textarea id="urls" placeholder="https://example.com" style="min-height: 60px;"></textarea>
+            
+            <button onclick="runAnalysis()">🔍 Run Full Analysis</button>
+            <button class="secondary" onclick="clearResults()">Clear</button>
+        </div>
+        
+        <div id="resultsContainer" style="display: none;">
+            <h2>Analysis Results</h2>
+            <div id="results"></div>
+        </div>
     </div>
     
-    <div class="section">
-        <h2>Output</h2>
-        <div id="output"></div>
-    </div>
-
-    <!-- ============================================================
-         MOCK DATABASES (for testing without real files)
-         ============================================================ -->
+    <!-- LOAD ORDER MATTERS -->
+    <!-- Databases first -->
+    <script src="flagged-hashtags.js"></script>
+    <script src="flagged-links.js"></script>
+    <script src="flagged-content.js"></script>
+    <script src="flagged-mentions.js"></script>
+    <script src="flagged-emojis.js"></script>
+    
+    <!-- Platforms -->
+    <script src="twitter.js"></script>
+    <script src="reddit.js"></script>
+    
+    <!-- Agent System -->
+    <script src="agent-base.js"></script>
+    <script src="agent-platform-api.js"></script>
+    <script src="agent-web-analysis.js"></script>
+    <script src="agent-historical.js"></script>
+    <script src="agent-detection.js"></script>
+    <script src="agent-predictive.js"></script>
+    
     <script>
-    // Mock FlaggedHashtags
-    window.FlaggedHashtags = {
-        checkBulk: function(tags, platform) {
-            const results = { banned: [], restricted: [], monitored: [], safe: [], summary: {} };
-            const bannedTags = ['followback', 'f4f', 'xxx', 'nsfw'];
-            const restrictedTags = ['crypto', 'nft', 'giveaway'];
-            const monitoredTags = ['ad', 'sponsored'];
-            
-            for (const tag of tags) {
-                const clean = tag.replace(/^[#$]/, '').toLowerCase();
-                if (bannedTags.includes(clean)) {
-                    results.banned.push({ tag: clean, category: 'spam', notes: 'Banned hashtag' });
-                } else if (restrictedTags.includes(clean)) {
-                    results.restricted.push({ tag: clean, category: 'sensitive', notes: 'May reduce reach' });
-                } else if (monitoredTags.includes(clean)) {
-                    results.monitored.push({ tag: clean, category: 'commercial', notes: 'Being watched' });
-                } else {
-                    results.safe.push(clean);
-                }
+        const PRESETS = {
+            spam: {
+                platform: 'twitter',
+                username: 'spamuser123',
+                postId: '1234567890111',
+                content: 'Follow me! #followback #f4f #teamfollowback! BUY NOW! 💰🚀🔥 Limited time! @botuser12345',
+                urls: 'https://bit.ly/spam\nhttps://facebook.com/page'
+            },
+            shadowban: {
+                platform: 'twitter',
+                username: 'shadowbanned_user',
+                postId: '9876543210222',
+                content: 'Check out my article! https://substack.com/mypost #tech',
+                urls: 'https://substack.com/mypost'
+            },
+            reddit: {
+                platform: 'reddit',
+                username: 'newuser_promo',
+                postId: 'abc333',
+                content: 'Just made this project, check it out at https://bit.ly/myproject! u/spambot123',
+                urls: 'https://bit.ly/myproject'
+            },
+            clean: {
+                platform: 'twitter',
+                username: 'healthy_account',
+                postId: '5555555550000',
+                content: 'Just shared my thoughts on tech trends. What do you think? #tech',
+                urls: ''
             }
-            
-            results.summary.riskScore = results.banned.length * 30 + results.restricted.length * 15;
-            return results;
+        };
+        
+        function loadPreset(name) {
+            const p = PRESETS[name];
+            if (!p) return;
+            document.getElementById('platform').value = p.platform;
+            document.getElementById('username').value = p.username;
+            document.getElementById('postId').value = p.postId;
+            document.getElementById('content').value = p.content;
+            document.getElementById('urls').value = p.urls;
         }
-    };
-    
-    // Mock FlaggedLinks
-    window.FlaggedLinks = {
-        checkBulk: function(urls, platform) {
-            const results = { throttled: [], blocked: [], shorteners: [], suspicious: [], safe: [], summary: {} };
+        
+        function checkLoadStatus() {
+            const status = document.getElementById('loadStatus');
+            const dbStatsEl = document.getElementById('dbStats');
             
-            for (const url of urls) {
-                const lower = url.toLowerCase();
+            const components = {
+                'Hashtags DB': !!window.FlaggedHashtags,
+                'Links DB': !!window.FlaggedLinks,
+                'Content DB': !!window.FlaggedContent,
+                'Mentions DB': !!window.FlaggedMentions,
+                'Emojis DB': !!window.FlaggedEmojis,
+                'Twitter': !!window.twitterPlatform,
+                'Reddit': !!window.redditPlatform,
+                'Registry': !!window.AgentRegistry
+            };
+            
+            const loaded = Object.values(components).filter(Boolean).length;
+            const total = Object.keys(components).length;
+            
+            if (loaded === total) {
+                status.className = 'status-bar success';
+                const agentStatus = window.AgentRegistry?.getStatus();
+                status.innerHTML = `✅ All ${total} components loaded! ${agentStatus?.agentCount || 0} agents ready.`;
                 
-                // Check shorteners
-                if (lower.includes('bit.ly') || lower.includes('t.co') || lower.includes('tinyurl')) {
-                    results.shorteners.push({ url, type: 'shortener', notes: 'Link shortener detected' });
-                }
-                // Check throttled (The Markup data)
-                else if (lower.includes('facebook.com') || lower.includes('instagram.com')) {
-                    results.throttled.push({ url, domain: new URL(url).hostname, delay: '2.5s+', source: 'The Markup' });
-                }
-                // Check blocked
-                else if (lower.includes('spam') || lower.includes('malware')) {
-                    results.blocked.push({ url, reason: 'Known spam domain' });
-                }
-                else {
-                    results.safe.push(url);
-                }
+                dbStatsEl.style.display = 'grid';
+                dbStatsEl.innerHTML = `
+                    <div class="db-stat"><div class="count">${window.FlaggedHashtags?.getStats()?.twitter?.banned || 0}</div><div class="label">Banned Tags</div></div>
+                    <div class="db-stat"><div class="count">${window.FlaggedLinks?.getStats()?.shorteners || 0}</div><div class="label">Shorteners</div></div>
+                    <div class="db-stat"><div class="count">${window.FlaggedContent?.getStats()?.bannedTerms || 0}</div><div class="label">Banned Terms</div></div>
+                    <div class="db-stat"><div class="count">${window.FlaggedMentions?.getStats()?.botPatterns || 0}</div><div class="label">Bot Patterns</div></div>
+                    <div class="db-stat"><div class="count">${window.FlaggedEmojis?.getStats()?.riskyEmojis || 0}</div><div class="label">Risky Emojis</div></div>
+                `;
+            } else {
+                status.className = 'status-bar error';
+                const missing = Object.entries(components).filter(([_, l]) => !l).map(([n]) => n);
+                status.innerHTML = `⚠️ ${loaded}/${total} loaded. Missing: ${missing.join(', ')}`;
             }
-            
-            results.summary.riskScore = results.blocked.length * 40 + results.throttled.length * 25 + results.shorteners.length * 10;
-            return results;
         }
-    };
-    
-    // Mock FlaggedContent
-    window.FlaggedContent = {
-        scan: function(text, platform) {
-            const results = { score: 0, flags: [], patterns: [] };
-            const lower = text.toLowerCase();
+        
+        async function runAnalysis() {
+            const container = document.getElementById('resultsContainer');
+            const resultsEl = document.getElementById('results');
             
-            // Check for spam patterns
-            if (lower.includes('buy now') || lower.includes('click here')) {
-                results.flags.push({ term: 'promotional', severity: 'medium', category: 'spam' });
-                results.score += 15;
-            }
-            if (lower.includes('free money') || lower.includes('guaranteed')) {
-                results.flags.push({ term: 'scam_indicator', severity: 'high', category: 'spam' });
-                results.score += 25;
-            }
+            container.style.display = 'block';
+            resultsEl.innerHTML = '<div class="loading"><div class="spinner"></div>Running all 5 agents...</div>';
             
-            // Check caps ratio
-            const caps = (text.match(/[A-Z]/g) || []).length;
-            const total = text.replace(/[^a-zA-Z]/g, '').length;
-            if (total > 20 && caps / total > 0.5) {
-                results.flags.push({ term: 'excessive_caps', severity: 'low', category: 'style' });
-                results.score += 10;
-            }
+            const input = {
+                platform: document.getElementById('platform').value,
+                username: document.getElementById('username').value,
+                postId: document.getElementById('postId').value,
+                text: document.getElementById('content').value,
+                content: document.getElementById('content').value,
+                urls: document.getElementById('urls').value.split('\n').filter(u => u.trim())
+            };
             
-            return results;
+            try {
+                const results = await window.AgentRegistry.runAll(input);
+                renderResults(results);
+            } catch (error) {
+                resultsEl.innerHTML = `<div class="agent-result danger"><div class="agent-name">❌ Error</div><div class="finding danger">${error.message}</div></div>`;
+            }
         }
-    };
-    
-    // Mock FlaggedMentions
-    window.FlaggedMentions = {
-        checkBulk: function(mentions, platform) {
-            const results = { bots: [], spam: [], safe: [], summary: {} };
+        
+        function renderResults(results) {
+            const resultsEl = document.getElementById('results');
+            let html = '';
             
-            for (const mention of mentions) {
-                const clean = mention.replace('@', '').toLowerCase();
-                if (clean.includes('bot') || clean.match(/\d{5,}/)) {
-                    results.bots.push({ mention: clean, reason: 'Bot pattern detected' });
-                } else if (clean.includes('spam') || clean.includes('promo')) {
-                    results.spam.push({ mention: clean, reason: 'Spam account pattern' });
-                } else {
-                    results.safe.push(clean);
-                }
+            const predictive = results.find(r => r.agentId === 'predictive');
+            
+            if (predictive?.predictions) {
+                const score = predictive.predictions.probability;
+                const cls = score <= 20 ? 'score-good' : score <= 50 ? 'score-warning' : 'score-danger';
+                html += `
+                    <div class="verdict-box">
+                        <div class="verdict-score ${cls}">${score}%</div>
+                        <div class="verdict-label">${predictive.predictions.verdict}</div>
+                        <div class="verdict-desc">${predictive.predictions.verdictDescription}</div>
+                        <div style="margin-top:15px;color:#888;">
+                            Reach: ${predictive.predictions.reachScore}% | Confidence: ${predictive.predictions.confidence}%<br>
+                            Recovery: ${predictive.predictions.recoveryTimeline}
+                        </div>
+                    </div>`;
             }
             
-            results.summary.riskScore = results.bots.length * 20 + results.spam.length * 15;
-            return results;
-        }
-    };
-    
-    // Mock FlaggedEmojis
-    window.FlaggedEmojis = {
-        extractAndCheck: function(text, platform) {
-            const results = { risky: [], combinations: [], safe: [], summary: {} };
+            html += '<h3>Agent Breakdown</h3>';
             
-            // Simple emoji detection
-            const emojiRegex = /[\u{1F300}-\u{1F9FF}]/gu;
-            const emojis = text.match(emojiRegex) || [];
-            
-            const riskyEmojis = ['🔥', '💰', '🚀', '💎'];
-            
-            for (const emoji of emojis) {
-                if (riskyEmojis.includes(emoji)) {
-                    results.risky.push({ emoji, context: 'promotional', notes: 'Often used in spam' });
-                } else {
-                    results.safe.push(emoji);
-                }
-            }
-            
-            results.summary.riskScore = results.risky.length * 5;
-            return results;
-        }
-    };
-    
-    console.log('✅ Mock databases loaded');
-    </script>
-
-    <!-- Load agent-base.js -->
-    <script>
-    /* Agent Base - inline for testing */
-    (function() {
-    'use strict';
-
-    const FACTOR_CONFIG = {
-        1: { name: 'Platform API Analysis', weight: 20, agentId: 'api' },
-        2: { name: 'Web/Search Analysis', weight: 20, agentId: 'web' },
-        3: { name: 'Historical Data', weight: 15, agentId: 'historical' },
-        4: { name: 'Real-Time Detection', weight: 25, agentId: 'detection' },
-        5: { name: 'Predictive Intelligence', weight: 20, agentId: 'predictive' }
-    };
-
-    const THREE_POINT_WEIGHTS = { predictive: 15, realtime: 55, historical: 30 };
-    const CONFIDENCE_LEVELS = {
-        high: { min: 70, label: 'High Confidence', bonus: 15 },
-        medium: { min: 40, label: 'Medium Confidence', bonus: 5 },
-        low: { min: 0, label: 'Low Confidence', bonus: 0 }
-    };
-    const SEVERITY_THRESHOLDS = { critical: 75, high: 50, medium: 25, low: 1 };
-
-    const AgentRegistry = {
-        _agents: {},
-        _initialized: false,
-        
-        register: function(agent) {
-            if (!agent || !agent.id) return false;
-            this._agents[agent.id] = agent;
-            console.log(`[AgentRegistry] Registered: ${agent.id} (Factor ${agent.factor})`);
-            return true;
-        },
-        
-        get: function(id) { return this._agents[id] || null; },
-        
-        getByFactor: function(factor) {
-            for (const agent of Object.values(this._agents)) {
-                if (agent.factor === factor) return agent;
-            }
-            return null;
-        },
-        
-        getAll: function() { return { ...this._agents }; },
-        getIds: function() { return Object.keys(this._agents); },
-        has: function(id) { return !!this._agents[id]; },
-        
-        runAll: async function(input) {
-            const results = [];
-            const agents = Object.values(this._agents).sort((a, b) => (a.factor || 0) - (b.factor || 0));
-            
-            for (const agent of agents) {
-                try {
-                    if (typeof agent.analyze === 'function') {
-                        results.push(await agent.analyze(input));
+            for (const r of results.sort((a, b) => (a.factor || 0) - (b.factor || 0))) {
+                const score = r.rawScore || 0;
+                const cls = score <= 20 ? 'good' : score <= 50 ? 'warning' : 'danger';
+                const scoreCls = score <= 20 ? 'score-good' : score <= 50 ? 'score-warning' : 'score-danger';
+                
+                html += `<div class="agent-result ${cls}">
+                    <div class="agent-header">
+                        <span class="agent-name">Factor ${r.factor}: ${r.agent}</span>
+                        <span class="agent-score ${scoreCls}">${score}</span>
+                    </div>
+                    <div style="color:#888;font-size:14px;margin-bottom:10px;">
+                        Weighted: ${r.weightedScore} (${r.weight}%) | Confidence: ${r.confidence}% | ${r.status}
+                    </div>`;
+                
+                if (r.findings?.length) {
+                    html += '<div class="findings">';
+                    for (const f of r.findings) {
+                        const fc = f.type || 'info';
+                        const icon = fc === 'danger' ? '❌' : fc === 'warning' ? '⚠️' : fc === 'good' ? '✅' : 'ℹ️';
+                        html += `<div class="finding ${fc}">${icon} ${f.message || ''}</div>`;
                     }
-                } catch (error) {
-                    console.error(`[AgentRegistry] Error running ${agent.id}:`, error);
-                    results.push({ agent: agent.id, error: true, message: error.message });
+                    html += '</div>';
                 }
+                html += '</div>';
             }
-            return results;
-        },
-        
-        getStatus: function() {
-            const agents = Object.values(this._agents);
-            return {
-                initialized: this._initialized,
-                agentCount: agents.length,
-                agents: agents.map(a => ({ id: a.id, name: a.name, factor: a.factor })),
-                factorsCovered: [...new Set(agents.map(a => a.factor).filter(f => f))].sort()
-            };
-        },
-        
-        clear: function() { this._agents = {}; }
-    };
-
-    class AgentBase {
-        constructor(config = {}) {
-            this.id = config.id || 'unknown';
-            this.name = config.name || 'Unknown Agent';
-            this.factor = config.factor || 0;
-            this.weight = config.weight || FACTOR_CONFIG[config.factor]?.weight || 20;
-            this.version = config.version || '1.0.0';
-            this.demoMode = true;
-        }
-        
-        async analyze(input) {
-            return this.createResult({ status: 'not_implemented', rawScore: 0, findings: [] });
-        }
-        
-        createResult(data) {
-            const rawScore = data.rawScore || 0;
-            return {
-                agent: this.name,
-                agentId: this.id,
-                factor: this.factor,
-                weight: this.weight,
-                status: data.status || 'complete',
-                checks: data.checks || {},
-                findings: data.findings || [],
-                rawScore: rawScore,
-                weightedScore: Math.round((rawScore * this.weight) / 100 * 100) / 100,
-                confidence: data.confidence || 50,
-                timestamp: new Date().toISOString(),
-                ...data.extra
-            };
-        }
-        
-        calculate3PointScore(predictive, realtime, historical) {
-            const pContrib = (predictive * THREE_POINT_WEIGHTS.predictive) / 100;
-            const rContrib = (realtime * THREE_POINT_WEIGHTS.realtime) / 100;
-            const hContrib = (historical * THREE_POINT_WEIGHTS.historical) / 100;
-            return {
-                predictive: { weight: 15, score: predictive, contribution: pContrib },
-                realtime: { weight: 55, score: realtime, contribution: rContrib },
-                historical: { weight: 30, score: historical, contribution: hContrib },
-                combinedScore: Math.round((pContrib + rContrib + hContrib) * 100) / 100
-            };
-        }
-    }
-
-    function processQueuedAgents() {
-        if (window.AgentQueue && Array.isArray(window.AgentQueue)) {
-            console.log(`[AgentRegistry] Processing ${window.AgentQueue.length} queued agent(s)`);
-            for (const agent of window.AgentQueue) { AgentRegistry.register(agent); }
-            window.AgentQueue = [];
-        }
-    }
-
-    function registerAgent(agent) {
-        if (window.AgentRegistry) {
-            window.AgentRegistry.register(agent);
-        } else {
-            window.AgentQueue = window.AgentQueue || [];
-            window.AgentQueue.push(agent);
-        }
-    }
-
-    window.FACTOR_CONFIG = FACTOR_CONFIG;
-    window.THREE_POINT_WEIGHTS = THREE_POINT_WEIGHTS;
-    window.AgentBase = AgentBase;
-    window.AgentRegistry = AgentRegistry;
-    window.registerAgent = registerAgent;
-
-    processQueuedAgents();
-    AgentRegistry._initialized = true;
-    console.log('✅ AgentBase + AgentRegistry loaded');
-    })();
-    </script>
-
-    <!-- Load Detection Agent (simplified for testing) -->
-    <script>
-    (function() {
-    'use strict';
-
-    const PLATFORM_MODULES = {
-        twitter: { hashtags: 4, cashtags: 3, links: 4, content: 4, mentions: 3, emojis: 3 },
-        instagram: { hashtags: 4, cashtags: 0, links: 4, content: 4, mentions: 3, emojis: 3 },
-        reddit: { hashtags: 0, cashtags: 0, links: 4, content: 4, mentions: 3, emojis: 3 }
-    };
-
-    class DetectionAgent extends AgentBase {
-        constructor() {
-            super({
-                id: 'detection',
-                name: 'Real-Time Detection',
-                factor: 4,
-                weight: 25,
-                version: '2.0.0'
-            });
-        }
-
-        async analyze(input) {
-            const platform = input.platform || 'twitter';
-            const text = input.text || input.content || '';
             
-            // Initialize signals
-            const signals = {};
-            let totalScore = 0;
-            let signalCount = 0;
-            const findings = [];
-
-            // Extract content elements
-            const hashtags = this.extractHashtags(text);
-            const cashtags = this.extractCashtags(text);
-            const urls = input.urls || this.extractUrls(text);
-            const mentions = this.extractMentions(text);
-
-            // Check hashtags
-            if (hashtags.length > 0 && window.FlaggedHashtags) {
-                const result = window.FlaggedHashtags.checkBulk(hashtags, platform);
-                signals.hashtags = {
-                    count: hashtags.length,
-                    flagged: { banned: result.banned, restricted: result.restricted, monitored: result.monitored, safe: result.safe },
-                    score: result.summary?.riskScore || 0
-                };
-                totalScore += signals.hashtags.score;
-                signalCount++;
-                
-                if (result.banned?.length > 0) {
-                    findings.push({ type: 'danger', severity: 'high', message: `${result.banned.length} banned hashtag(s) found`, impact: 30 });
+            if (predictive?.recommendations?.length) {
+                html += '<h3>Recommendations</h3><div class="recommendations">';
+                for (const rec of predictive.recommendations) {
+                    html += `<div class="recommendation">
+                        <span class="priority ${rec.priority}">${rec.priority.toUpperCase()}</span>
+                        <strong>${rec.action}</strong>
+                        <div style="color:#888;font-size:14px;margin-top:5px;">${rec.reason}</div>
+                    </div>`;
                 }
+                html += '</div>';
             }
-
-            // Check cashtags
-            if (cashtags.length > 0 && window.FlaggedHashtags) {
-                const result = window.FlaggedHashtags.checkBulk(cashtags, platform);
-                signals.cashtags = {
-                    count: cashtags.length,
-                    flagged: { banned: result.banned, restricted: result.restricted, safe: result.safe },
-                    score: result.summary?.riskScore || 0
-                };
-                totalScore += signals.cashtags.score;
-                signalCount++;
-            }
-
-            // Check links
-            if (urls.length > 0 && window.FlaggedLinks) {
-                const result = window.FlaggedLinks.checkBulk(urls, platform);
-                signals.links = {
-                    count: urls.length,
-                    flagged: { throttled: result.throttled, blocked: result.blocked, shorteners: result.shorteners, safe: result.safe },
-                    score: result.summary?.riskScore || 0
-                };
-                totalScore += signals.links.score;
-                signalCount++;
-                
-                if (result.shorteners?.length > 0) {
-                    findings.push({ type: 'warning', severity: 'medium', message: `${result.shorteners.length} link shortener(s) detected`, impact: 10 });
-                }
-                if (result.throttled?.length > 0) {
-                    findings.push({ type: 'warning', severity: 'medium', message: `${result.throttled.length} throttled domain(s)`, impact: 20 });
-                }
-            }
-
-            // Check content
-            if (text && window.FlaggedContent) {
-                const result = window.FlaggedContent.scan(text, platform);
-                signals.content = {
-                    length: text.length,
-                    flagged: { flags: result.flags },
-                    score: result.score || 0
-                };
-                totalScore += signals.content.score;
-                signalCount++;
-                
-                if (result.flags?.length > 0) {
-                    findings.push({ type: 'warning', severity: 'medium', message: `${result.flags.length} content pattern(s) flagged`, impact: 15 });
-                }
-            }
-
-            // Check mentions
-            if (mentions.length > 0 && window.FlaggedMentions) {
-                const result = window.FlaggedMentions.checkBulk(mentions, platform);
-                signals.mentions = {
-                    count: mentions.length,
-                    flagged: { bots: result.bots, spam: result.spam, safe: result.safe },
-                    score: result.summary?.riskScore || 0
-                };
-                totalScore += signals.mentions.score;
-                signalCount++;
-            }
-
-            // Check emojis
-            if (text && window.FlaggedEmojis) {
-                const result = window.FlaggedEmojis.extractAndCheck(text, platform);
-                signals.emojis = {
-                    flagged: { risky: result.risky, safe: result.safe },
-                    score: result.summary?.riskScore || 0
-                };
-                totalScore += signals.emojis.score;
-                signalCount++;
-            }
-
-            // Calculate final score (cap at 100)
-            const rawScore = Math.min(100, signalCount > 0 ? Math.round(totalScore / signalCount * 1.5) : 0);
             
-            // Calculate 3-Point Intelligence
-            const threePoint = this.calculate3PointScore(
-                rawScore * 0.8,  // Predictive (slightly lower)
-                rawScore,        // Real-time (current)
-                rawScore * 0.9   // Historical (slightly lower)
-            );
-
-            // Module count
-            const modules = PLATFORM_MODULES[platform] || PLATFORM_MODULES.twitter;
-            const modulesActive = Object.values(modules).reduce((a, b) => a + b, 0);
-
-            return this.createResult({
-                status: 'complete',
-                rawScore: rawScore,
-                confidence: Math.min(95, 50 + signalCount * 8),
-                findings: findings,
-                extra: {
-                    platform: platform,
-                    modulesActive: modulesActive,
-                    signals: signals,
-                    signalSummary: {
-                        totalSignals: signalCount,
-                        totalScore: totalScore,
-                        averageScore: signalCount > 0 ? Math.round(totalScore / signalCount) : 0
-                    },
-                    threePointIntelligence: threePoint
-                }
-            });
-        }
-
-        extractHashtags(text) {
-            return (text.match(/#\w+/g) || []).map(t => t.substring(1));
+            resultsEl.innerHTML = html;
         }
         
-        extractCashtags(text) {
-            return (text.match(/\$[A-Z]{1,5}/g) || []).map(t => t.substring(1));
+        function clearResults() {
+            document.getElementById('resultsContainer').style.display = 'none';
         }
         
-        extractUrls(text) {
-            return text.match(/https?:\/\/[^\s]+/g) || [];
-        }
-        
-        extractMentions(text) {
-            return (text.match(/@\w+/g) || []).map(t => t.substring(1));
-        }
-    }
-
-    // Register
-    const agent = new DetectionAgent();
-    window.detectionAgent = agent;
-    window.registerAgent(agent);
-    console.log('✅ Detection Agent loaded and registered');
-    })();
-    </script>
-
-    <!-- Test Functions -->
-    <script>
-    const output = document.getElementById('output');
-    
-    function log(msg, type = '') {
-        const span = document.createElement('span');
-        span.className = type;
-        span.textContent = msg + '\n';
-        output.appendChild(span);
-    }
-    
-    function logJson(obj) {
-        const pre = document.createElement('pre');
-        pre.textContent = JSON.stringify(obj, null, 2);
-        output.appendChild(pre);
-    }
-    
-    function clearOutput() {
-        output.innerHTML = '';
-    }
-    
-    function testDatabases() {
-        log('═══════════════════════════════════════', 'info');
-        log('Testing Mock Databases...', 'info');
-        log('═══════════════════════════════════════', 'info');
-        
-        // Test hashtags
-        log('\n📌 FlaggedHashtags.checkBulk(["followback", "tech", "crypto"])');
-        const hashResult = window.FlaggedHashtags.checkBulk(['followback', 'tech', 'crypto'], 'twitter');
-        logJson(hashResult);
-        log(hashResult.banned.length > 0 ? '✓ Banned tags detected' : '✗ No banned tags', hashResult.banned.length > 0 ? 'pass' : 'fail');
-        
-        // Test links
-        log('\n🔗 FlaggedLinks.checkBulk(["https://bit.ly/abc", "https://facebook.com/page"])');
-        const linkResult = window.FlaggedLinks.checkBulk(['https://bit.ly/abc', 'https://facebook.com/page'], 'twitter');
-        logJson(linkResult);
-        log(linkResult.shorteners.length > 0 ? '✓ Shorteners detected' : '✗ No shorteners', linkResult.shorteners.length > 0 ? 'pass' : 'fail');
-        
-        // Test content
-        log('\n📝 FlaggedContent.scan("BUY NOW! Free money guaranteed!")');
-        const contentResult = window.FlaggedContent.scan('BUY NOW! Free money guaranteed!', 'twitter');
-        logJson(contentResult);
-        log(contentResult.score > 0 ? '✓ Spam patterns detected' : '✗ No patterns', contentResult.score > 0 ? 'pass' : 'fail');
-    }
-    
-    function testRegistry() {
-        log('═══════════════════════════════════════', 'info');
-        log('Testing AgentRegistry...', 'info');
-        log('═══════════════════════════════════════', 'info');
-        
-        const status = window.AgentRegistry.getStatus();
-        log('\n📊 Registry Status:');
-        logJson(status);
-        
-        log(status.agentCount > 0 ? '✓ Agents registered' : '✗ No agents', status.agentCount > 0 ? 'pass' : 'fail');
-        log(status.factorsCovered.includes(4) ? '✓ Factor 4 (Detection) covered' : '✗ Factor 4 missing', status.factorsCovered.includes(4) ? 'pass' : 'warn');
-    }
-    
-    async function testDetection() {
-        log('═══════════════════════════════════════', 'info');
-        log('Testing Detection Agent...', 'info');
-        log('═══════════════════════════════════════', 'info');
-        
-        const testInput = {
-            platform: 'twitter',
-            text: 'Check out my #crypto #followback post! 🚀🔥 Buy now at https://bit.ly/deal @spambot123',
-            urls: ['https://bit.ly/deal', 'https://facebook.com/mypage']
-        };
-        
-        log('\n📥 Test Input:');
-        logJson(testInput);
-        
-        log('\n⏳ Running detection agent...');
-        const result = await window.detectionAgent.analyze(testInput);
-        
-        log('\n📤 Detection Result:');
-        logJson(result);
-        
-        log('\n📈 Score Breakdown:');
-        log(`   Raw Score: ${result.rawScore}`, result.rawScore > 0 ? 'warn' : 'pass');
-        log(`   Weighted Score: ${result.weightedScore}`, 'info');
-        log(`   Confidence: ${result.confidence}%`, 'info');
-        log(`   Modules Active: ${result.modulesActive}`, 'info');
-        
-        log('\n🔍 Signals Summary:');
-        for (const [signal, data] of Object.entries(result.signals || {})) {
-            log(`   ${signal}: score ${data.score}`, data.score > 0 ? 'warn' : 'pass');
-        }
-        
-        log('\n📋 Findings:');
-        for (const finding of result.findings || []) {
-            log(`   [${finding.type}] ${finding.message}`, finding.type === 'danger' ? 'fail' : 'warn');
-        }
-    }
-    
-    async function testEngine() {
-        log('═══════════════════════════════════════', 'info');
-        log('Testing AgentRegistry.runAll()...', 'info');
-        log('═══════════════════════════════════════', 'info');
-        
-        const testInput = {
-            platform: 'twitter',
-            text: 'Normal tweet with #tech and a link https://example.com',
-            urls: ['https://example.com']
-        };
-        
-        log('\n📥 Input (lower risk):');
-        logJson(testInput);
-        
-        const results = await window.AgentRegistry.runAll(testInput);
-        
-        log('\n📤 All Agent Results:');
-        for (const r of results) {
-            log(`\n   Agent: ${r.agent} (Factor ${r.factor})`);
-            log(`   Score: ${r.rawScore} → Weighted: ${r.weightedScore}`);
-            log(`   Status: ${r.status}`, r.status === 'complete' ? 'pass' : 'warn');
-        }
-    }
-    
-    async function runAllTests() {
-        clearOutput();
-        log('🚀 Running All Integration Tests\n', 'info');
-        log('Time: ' + new Date().toISOString() + '\n', 'info');
-        
-        testDatabases();
-        testRegistry();
-        await testDetection();
-        await testEngine();
-        
-        log('\n═══════════════════════════════════════', 'info');
-        log('✅ All tests complete!', 'pass');
-        log('═══════════════════════════════════════', 'info');
-    }
-    
-    // Auto-run on load
-    window.onload = () => {
-        log('🔧 Integration test page ready', 'info');
-        log('Click "Run All Tests" to start\n', 'info');
-    };
+        setTimeout(checkLoadStatus, 500);
     </script>
 </body>
 </html>

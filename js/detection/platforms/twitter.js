@@ -1,463 +1,714 @@
 /* =============================================================================
-   TWITTER.JS - Twitter/X Platform Implementation
+   TWITTER.JS - Twitter/X Platform Handler
    ShadowBanCheck.io
    
-   Handles Twitter and X.com URLs - normalizes ALL variations to x.com
+   Comprehensive Twitter/X data collection and analysis.
    
-   Supported URL formats:
-   - twitter.com/user/status/123
-   - x.com/user/status/123
-   - www.twitter.com/user/status/123
-   - www.x.com/user/status/123
-   - mobile.twitter.com/user/status/123
-   - m.twitter.com/user/status/123
+   From Master Engine Spec:
+   - Platform modules: 21 total (hashtags:4, cashtags:3, links:4, content:4, mentions:3, emojis:3)
+   - Supports all 6 signal types
+   - Shadowban checks: searchBan, searchSuggestionBan, ghostBan, replyDeboosting, suggestBan
    
-   All normalize to: x.com/user/status/123
+   API Endpoints Supported:
+   - GET /2/users/by/username/:username
+   - GET /2/users/:id
+   - GET /2/tweets/:id
+   - GET /2/tweets/search/recent
+   
+   Last Updated: 2025-12-03
    ============================================================================= */
 
 (function() {
 'use strict';
 
-// ============================================================================
+// =============================================================================
+// TWITTER URL PATTERNS
+// =============================================================================
+
+const TWITTER_URL_PATTERNS = {
+    // Tweet URLs
+    tweet: [
+        /(?:twitter\.com|x\.com)\/(?:#!\/)?(\w+)\/status(?:es)?\/(\d+)/i,
+        /(?:twitter\.com|x\.com)\/(\w+)\/status\/(\d+)/i,
+        /(?:twitter\.com|x\.com)\/i\/web\/status\/(\d+)/i
+    ],
+    
+    // Profile URLs
+    profile: [
+        /(?:twitter\.com|x\.com)\/(?:#!\/)?@?(\w+)\/?$/i,
+        /(?:twitter\.com|x\.com)\/intent\/user\?screen_name=(\w+)/i
+    ],
+    
+    // Search URLs
+    search: [
+        /(?:twitter\.com|x\.com)\/search\?q=([^&]+)/i,
+        /(?:twitter\.com|x\.com)\/hashtag\/(\w+)/i
+    ]
+};
+
+// =============================================================================
+// CONTENT EXTRACTION PATTERNS
+// =============================================================================
+
+const EXTRACTION_PATTERNS = {
+    hashtags: /#(\w+)/g,
+    cashtags: /\$([A-Z]{1,5})\b/g,
+    mentions: /@(\w+)/g,
+    urls: /https?:\/\/[^\s<>"{}|\\^`\[\]]+/gi,
+    emojis: /[\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]|[\u{1F600}-\u{1F64F}]|[\u{1F680}-\u{1F6FF}]/gu
+};
+
+// =============================================================================
 // TWITTER PLATFORM CLASS
-// ============================================================================
-class TwitterPlatform extends window.PlatformBase {
+// =============================================================================
+
+class TwitterPlatform {
     
     constructor() {
-        super('twitter');
+        this.id = 'twitter';
+        this.name = 'Twitter/X';
+        this.version = '2.0.0';
+        this.demoMode = true;
         
-        // Reserved/special paths that are not usernames
-        this.reservedPaths = [
-            'home', 'explore', 'search', 'notifications', 'messages',
-            'settings', 'i', 'intent', 'hashtag', 'share', 'status',
-            'compose', 'lists', 'bookmarks', 'moments', 'topics',
-            'communities', 'tos', 'privacy', 'help', 'about',
-            'login', 'logout', 'signup', 'account', 'oauth'
-        ];
+        // Module configuration from master spec
+        this.modules = {
+            hashtags: 4,
+            cashtags: 3,
+            links: 4,
+            content: 4,
+            mentions: 3,
+            emojis: 3
+        };
+        this.totalModules = 21;
         
-        // Verification types
-        this.verificationTypes = {
-            none: 'No verification',
-            blue: 'Twitter Blue subscriber',
-            gold: 'Business/Organization',
-            gray: 'Government/Multilateral',
-            legacy: 'Legacy verified (pre-2023)'
+        // API configuration
+        this.apiVersion = 'v2';
+        this.rateLimits = {
+            userLookup: 900,
+            tweetLookup: 900,
+            searchRecent: 450,
+            window: 15 * 60 * 1000 // 15 minutes in ms
         };
     }
     
     // =========================================================================
-    // URL NORMALIZATION - Core Feature
+    // URL PARSING
     // =========================================================================
     
     /**
-     * Normalize Twitter/X URL to canonical x.com format
-     * @param {string} url - Any Twitter/X URL variant
-     * @returns {string} Normalized URL (x.com/...)
-     */
-    normalizeTwitterUrl(url) {
-        if (!url || typeof url !== 'string') return '';
-        
-        let normalized = url.trim();
-        
-        // Remove protocol
-        normalized = normalized.replace(/^https?:\/\//, '');
-        
-        // Normalize all Twitter/X domains to x.com
-        // Handle: www., mobile., m. prefixes
-        // Handle: twitter.com, x.com domains
-        normalized = normalized
-            .replace(/^(www\.|mobile\.|m\.)?twitter\.com/i, 'x.com')
-            .replace(/^(www\.|mobile\.|m\.)?x\.com/i, 'x.com');
-        
-        // Remove trailing slash
-        normalized = normalized.replace(/\/$/, '');
-        
-        return normalized;
-    }
-    
-    /**
-     * Get full normalized URL with https
-     * @param {string} url - URL to normalize
-     * @returns {string} Full normalized URL
-     */
-    getCanonicalUrl(url) {
-        const normalized = this.normalizeTwitterUrl(url);
-        return normalized ? 'https://' + normalized : '';
-    }
-    
-    /**
-     * Check if URL is a Twitter/X URL
-     * @param {string} url - URL to check
-     * @returns {boolean}
-     */
-    isTwitterUrl(url) {
-        if (!url) return false;
-        const lowerUrl = url.toLowerCase();
-        return lowerUrl.includes('twitter.com') || lowerUrl.includes('x.com');
-    }
-    
-    // =========================================================================
-    // EXTRACTION METHODS
-    // =========================================================================
-    
-    /**
-     * Extract username from Twitter/X URL
-     * @param {string} url - URL to parse
-     * @returns {string|null} Username without @ or null
-     */
-    extractUsername(url) {
-        if (!url) return null;
-        
-        const normalized = this.normalizeTwitterUrl(url);
-        
-        // Match x.com/username (not a reserved path)
-        const match = normalized.match(/^x\.com\/([^\/\?#]+)/i);
-        
-        if (match && match[1]) {
-            const username = match[1].toLowerCase();
-            
-            // Check if it's a reserved path
-            if (this.reservedPaths.includes(username)) {
-                return null;
-            }
-            
-            return username;
-        }
-        
-        return null;
-    }
-    
-    /**
-     * Extract tweet ID from Twitter/X URL
-     * @param {string} url - URL to parse
-     * @returns {string|null} Tweet ID or null
-     */
-    extractTweetId(url) {
-        if (!url) return null;
-        
-        const normalized = this.normalizeTwitterUrl(url);
-        
-        // Match x.com/username/status/TWEET_ID
-        const match = normalized.match(/x\.com\/[^\/]+\/status\/(\d+)/i);
-        
-        return match ? match[1] : null;
-    }
-    
-    /**
-     * Extract hashtag from Twitter/X URL
-     * @param {string} url - URL to parse
-     * @returns {string|null} Hashtag without # or null
-     */
-    extractHashtag(url) {
-        if (!url) return null;
-        
-        const normalized = this.normalizeTwitterUrl(url);
-        
-        // Match x.com/hashtag/TAG
-        const match = normalized.match(/x\.com\/hashtag\/([^\/\?#]+)/i);
-        
-        return match ? match[1] : null;
-    }
-    
-    /**
-     * Determine URL type
-     * @param {string} url - URL to analyze
-     * @returns {object} URL type info
+     * Detect URL type and extract identifiers
+     * @param {string} url - Twitter URL
+     * @returns {object} URL info with type, username, tweetId
      */
     getUrlType(url) {
-        if (!url) return { type: 'invalid', valid: false };
-        
-        if (!this.isTwitterUrl(url)) {
-            return { type: 'invalid', valid: false, error: 'Not a Twitter/X URL' };
+        if (!url) {
+            return { valid: false, error: 'No URL provided' };
         }
         
-        const normalized = this.normalizeTwitterUrl(url);
+        const cleanUrl = url.trim();
         
         // Check for tweet URL
-        const tweetId = this.extractTweetId(url);
-        if (tweetId) {
-            const username = this.extractUsername(url);
-            return {
-                type: 'tweet',
-                valid: true,
-                tweetId: tweetId,
-                username: username,
-                normalizedUrl: 'https://' + normalized
-            };
-        }
-        
-        // Check for hashtag URL
-        const hashtag = this.extractHashtag(url);
-        if (hashtag) {
-            return {
-                type: 'hashtag',
-                valid: true,
-                hashtag: hashtag,
-                normalizedUrl: 'https://' + normalized
-            };
+        for (const pattern of TWITTER_URL_PATTERNS.tweet) {
+            const match = cleanUrl.match(pattern);
+            if (match) {
+                // Pattern with username and tweet ID
+                if (match[2]) {
+                    return {
+                        valid: true,
+                        type: 'tweet',
+                        username: match[1],
+                        tweetId: match[2],
+                        normalizedUrl: `https://twitter.com/${match[1]}/status/${match[2]}`
+                    };
+                }
+                // Pattern with just tweet ID (web status)
+                if (match[1] && /^\d+$/.test(match[1])) {
+                    return {
+                        valid: true,
+                        type: 'tweet',
+                        tweetId: match[1],
+                        normalizedUrl: `https://twitter.com/i/status/${match[1]}`
+                    };
+                }
+            }
         }
         
         // Check for profile URL
-        const username = this.extractUsername(url);
-        if (username) {
+        for (const pattern of TWITTER_URL_PATTERNS.profile) {
+            const match = cleanUrl.match(pattern);
+            if (match && match[1]) {
+                const username = match[1].replace(/^@/, '');
+                // Skip reserved words
+                if (!['home', 'explore', 'notifications', 'messages', 'settings', 'i', 'search'].includes(username.toLowerCase())) {
+                    return {
+                        valid: true,
+                        type: 'profile',
+                        username: username,
+                        normalizedUrl: `https://twitter.com/${username}`
+                    };
+                }
+            }
+        }
+        
+        // Check for search/hashtag URL
+        for (const pattern of TWITTER_URL_PATTERNS.search) {
+            const match = cleanUrl.match(pattern);
+            if (match && match[1]) {
+                return {
+                    valid: true,
+                    type: 'search',
+                    query: decodeURIComponent(match[1]),
+                    normalizedUrl: cleanUrl
+                };
+            }
+        }
+        
+        return { valid: false, error: 'URL format not recognized as Twitter/X URL' };
+    }
+    
+    /**
+     * Get canonical URL
+     * @param {string} url - Input URL
+     * @returns {string} Canonical Twitter URL
+     */
+    getCanonicalUrl(url) {
+        const info = this.getUrlType(url);
+        return info.normalizedUrl || url;
+    }
+    
+    // =========================================================================
+    // CONTENT EXTRACTION
+    // =========================================================================
+    
+    /**
+     * Extract all content elements from text
+     * @param {string} text - Tweet text
+     * @returns {object} Extracted elements
+     */
+    extractContent(text) {
+        if (!text) {
             return {
-                type: 'profile',
-                valid: true,
-                username: username,
-                normalizedUrl: 'https://' + normalized
+                hashtags: [],
+                cashtags: [],
+                mentions: [],
+                urls: [],
+                emojis: [],
+                text: '',
+                length: 0
             };
         }
         
-        return { type: 'other', valid: true, normalizedUrl: 'https://' + normalized };
-    }
-    
-    // =========================================================================
-    // VALIDATION
-    // =========================================================================
-    
-    /**
-     * Validate Twitter username
-     * @param {string} username - Username to validate
-     * @returns {object} Validation result
-     */
-    validateUsername(username) {
-        if (!username || typeof username !== 'string') {
-            return { valid: false, error: 'Username is required' };
-        }
-        
-        // Remove @ prefix if present
-        let clean = username.replace(/^@/, '').trim();
-        
-        if (clean.length === 0) {
-            return { valid: false, error: 'Username cannot be empty' };
-        }
-        
-        if (clean.length > 15) {
-            return { valid: false, error: 'Twitter usernames are max 15 characters' };
-        }
-        
-        if (clean.length < 4) {
-            return { valid: false, error: 'Twitter usernames are min 4 characters' };
-        }
-        
-        // Twitter allows: letters, numbers, underscores only
-        if (!/^[A-Za-z0-9_]+$/.test(clean)) {
-            return { valid: false, error: 'Only letters, numbers, and underscores allowed' };
-        }
-        
-        // Cannot be only numbers
-        if (/^\d+$/.test(clean)) {
-            return { valid: false, error: 'Username cannot be only numbers' };
-        }
-        
-        return { valid: true, username: clean };
-    }
-    
-    /**
-     * Validate Twitter URL
-     * @param {string} url - URL to validate
-     * @returns {object} Validation result
-     */
-    validateUrl(url) {
-        if (!url || typeof url !== 'string') {
-            return { valid: false, error: 'URL is required' };
-        }
-        
-        if (!this.isTwitterUrl(url)) {
-            return { 
-                valid: false, 
-                error: 'Not a Twitter/X URL. Must contain twitter.com or x.com'
-            };
-        }
-        
-        const urlType = this.getUrlType(url);
         return {
-            valid: urlType.valid,
-            ...urlType
+            hashtags: this.extractHashtags(text),
+            cashtags: this.extractCashtags(text),
+            mentions: this.extractMentions(text),
+            urls: this.extractUrls(text),
+            emojis: this.extractEmojis(text),
+            text: text,
+            length: text.length,
+            capsRatio: this.calculateCapsRatio(text),
+            wordCount: text.split(/\s+/).filter(w => w.length > 0).length
         };
     }
     
-    // =========================================================================
-    // API METHODS (Demo data for now, ready for real API)
-    // =========================================================================
-    
-    /**
-     * Get account data
-     * @param {string} username - Username to check
-     * @returns {Promise<object>} Account data
-     */
-    async getAccountData(username) {
-        const validation = this.validateUsername(username);
-        if (!validation.valid) {
-            return { error: validation.error };
-        }
-        
-        // TODO: Replace with real API call
-        // For now, return demo data
-        return this._getDemoAccountData(validation.username);
+    extractHashtags(text) {
+        const matches = text.match(EXTRACTION_PATTERNS.hashtags) || [];
+        return matches.map(h => h.substring(1).toLowerCase());
     }
+    
+    extractCashtags(text) {
+        const matches = text.match(EXTRACTION_PATTERNS.cashtags) || [];
+        return matches.map(c => c.substring(1).toUpperCase());
+    }
+    
+    extractMentions(text) {
+        const matches = text.match(EXTRACTION_PATTERNS.mentions) || [];
+        return matches.map(m => m.substring(1).toLowerCase());
+    }
+    
+    extractUrls(text) {
+        return text.match(EXTRACTION_PATTERNS.urls) || [];
+    }
+    
+    extractEmojis(text) {
+        return text.match(EXTRACTION_PATTERNS.emojis) || [];
+    }
+    
+    calculateCapsRatio(text) {
+        const letters = text.replace(/[^a-zA-Z]/g, '');
+        if (letters.length === 0) return 0;
+        const caps = (text.match(/[A-Z]/g) || []).length;
+        return Math.round((caps / letters.length) * 100) / 100;
+    }
+    
+    // =========================================================================
+    // TWEET DATA
+    // =========================================================================
     
     /**
      * Get tweet data
-     * @param {string} tweetId - Tweet ID to check
+     * @param {string} tweetId - Tweet ID
      * @returns {Promise<object>} Tweet data
      */
     async getTweetData(tweetId) {
         if (!tweetId) {
-            return { error: 'Tweet ID is required' };
+            return { exists: false, error: 'No tweet ID provided' };
         }
         
-        // TODO: Replace with real API call
-        // For now, return demo data
-        return this._getDemoTweetData(tweetId);
+        // In demo mode, return simulated data
+        if (this.demoMode) {
+            return this.getDemoTweetData(tweetId);
+        }
+        
+        // TODO: Real API call
+        // return await this.fetchTweetFromApi(tweetId);
+        
+        return this.getDemoTweetData(tweetId);
     }
     
     /**
-     * Check shadowban status
-     * @param {string} username - Username to check
-     * @returns {Promise<object>} Shadowban check result
+     * Demo tweet data generator
      */
-    async checkShadowban(username) {
-        const validation = this.validateUsername(username);
-        if (!validation.valid) {
-            return { error: validation.error };
-        }
+    getDemoTweetData(tweetId) {
+        // Simulate different scenarios based on tweet ID patterns
+        const scenario = this.detectDemoScenario(tweetId);
         
-        // TODO: Replace with real API call
-        // For now, return demo data from demo-data.js if available
-        if (window.DemoData && window.DemoData.getResult) {
-            const demoResult = window.DemoData.getResult('twitter', 'accountCheck');
-            return {
-                ...demoResult,
-                username: validation.username
-            };
-        }
-        
-        return this._getDemoShadowbanResult(validation.username);
-    }
-    
-    /**
-     * Full power check (tweet + account)
-     * @param {string} url - Tweet URL
-     * @returns {Promise<object>} Full analysis result
-     */
-    async powerCheck(url) {
-        const validation = this.validateUrl(url);
-        if (!validation.valid) {
-            return { error: validation.error };
-        }
-        
-        // TODO: Replace with real API call
-        // For now, return demo data from demo-data.js if available
-        if (window.DemoData && window.DemoData.getResult) {
-            const demoResult = window.DemoData.getResult('twitter', 'powerCheck');
-            return {
-                ...demoResult,
-                inputUrl: url,
-                normalizedUrl: validation.normalizedUrl,
-                tweetId: validation.tweetId,
-                username: validation.username
-            };
-        }
-        
-        return {
-            demo: true,
-            inputUrl: url,
-            normalizedUrl: validation.normalizedUrl,
-            type: validation.type,
-            tweetId: validation.tweetId,
-            username: validation.username,
-            message: 'Demo data - connect to real API for live results'
-        };
-    }
-    
-    // =========================================================================
-    // DEMO DATA HELPERS (Override parent)
-    // =========================================================================
-    
-    _getDemoAccountData(username) {
-        return {
+        const baseData = {
+            id: tweetId,
+            exists: true,
             demo: true,
             platform: 'twitter',
-            username: username,
-            displayName: `@${username}`,
-            exists: true,
-            suspended: false,
-            protected: false,
-            verified: false,
-            verifiedType: 'none',
-            accountLabels: [],
-            accountAge: 730, // ~2 years
-            followerCount: Math.floor(Math.random() * 10000),
-            followingCount: Math.floor(Math.random() * 1000),
-            tweetCount: Math.floor(Math.random() * 5000),
-            listedCount: Math.floor(Math.random() * 50),
-            profileImageExists: true,
-            bannerImageExists: true,
-            bioText: 'Demo bio text for testing',
-            bioUrls: [],
-            pinnedTweetId: null,
-            message: 'Demo data - connect to real API for live results'
-        };
-    }
-    
-    _getDemoTweetData(tweetId) {
-        return {
-            demo: true,
-            platform: 'twitter',
-            tweetId: tweetId,
-            exists: true,
+            
+            // Visibility flags
             tombstoned: false,
             ageRestricted: false,
-            isRetweet: false,
-            isQuoteRetweet: false,
-            isReply: false,
-            isThread: false,
-            visibility: 'visible',
-            replyCount: Math.floor(Math.random() * 100),
-            retweetCount: Math.floor(Math.random() * 500),
-            likeCount: Math.floor(Math.random() * 2000),
-            quoteCount: Math.floor(Math.random() * 50),
-            viewCount: Math.floor(Math.random() * 50000),
-            message: 'Demo data - connect to real API for live results'
+            
+            // Content (will be overridden with actual content if analyzing real text)
+            content: {
+                text: scenario.text || 'Demo tweet content for testing purposes. #tech #innovation',
+                hashtags: scenario.hashtags || ['tech', 'innovation'],
+                cashtags: scenario.cashtags || [],
+                mentions: scenario.mentions || [],
+                urls: scenario.urls || [],
+                emojis: scenario.emojis || [],
+                length: scenario.text?.length || 65
+            },
+            
+            // Public metrics
+            metrics: {
+                likes: scenario.likes || 45,
+                retweets: scenario.retweets || 12,
+                replies: scenario.replies || 8,
+                quotes: scenario.quotes || 3,
+                impressions: null, // Owner-only
+                profileClicks: null,
+                urlClicks: null
+            },
+            
+            // Content flags
+            contentFlags: {
+                possiblySensitive: scenario.sensitive || false,
+                withheld: null
+            },
+            
+            // Metadata
+            createdAt: scenario.createdAt || new Date(Date.now() - 3600000).toISOString(),
+            authorId: scenario.authorId || '12345678',
+            conversationId: scenario.conversationId || tweetId,
+            replySettings: scenario.replySettings || 'everyone',
+            
+            // Visibility assessment
+            visibility: {
+                directLink: true,
+                onProfile: !scenario.tombstoned,
+                inSearch: !scenario.searchHidden,
+                inHashtagFeeds: !scenario.hashtagHidden,
+                inCashtagFeeds: true,
+                inRecommendations: !scenario.deranked,
+                inReplies: true
+            }
+        };
+        
+        return baseData;
+    }
+    
+    // =========================================================================
+    // ACCOUNT DATA
+    // =========================================================================
+    
+    /**
+     * Get account data
+     * @param {string} username - Twitter username
+     * @returns {Promise<object>} Account data
+     */
+    async getAccountData(username) {
+        if (!username) {
+            return { exists: false, error: 'No username provided' };
+        }
+        
+        const cleanUsername = username.replace(/^@/, '').toLowerCase();
+        
+        if (this.demoMode) {
+            return this.getDemoAccountData(cleanUsername);
+        }
+        
+        // TODO: Real API call
+        return this.getDemoAccountData(cleanUsername);
+    }
+    
+    /**
+     * Demo account data generator
+     */
+    getDemoAccountData(username) {
+        const scenario = this.detectDemoAccountScenario(username);
+        
+        return {
+            username: username,
+            displayName: scenario.displayName || `@${username}`,
+            exists: true,
+            demo: true,
+            platform: 'twitter',
+            
+            // Account status
+            suspended: scenario.suspended || false,
+            protected: scenario.protected || false,
+            verifiedType: scenario.verifiedType || 'none', // 'blue', 'business', 'government', 'none'
+            
+            // Account age
+            createdAt: scenario.createdAt || '2020-01-15T00:00:00Z',
+            accountAge: scenario.accountAge || this.calculateAccountAge('2020-01-15'),
+            
+            // Labels
+            accountLabels: scenario.labels || [],
+            
+            // Public metrics
+            followers: scenario.followers || 1250,
+            following: scenario.following || 890,
+            tweets: scenario.tweets || 3420,
+            listed: scenario.listed || 15,
+            
+            // Engagement ratios
+            engagementRatio: scenario.engagementRatio || 0.035,
+            followerRatio: scenario.followers && scenario.following 
+                ? (scenario.followers / scenario.following).toFixed(2) 
+                : '1.40',
+            
+            // Owner-only metrics (null unless OAuth)
+            ownedMetrics: {
+                available: false,
+                impressions: null,
+                profileClicks: null,
+                urlClicks: null
+            },
+            
+            // Shadowban checks (these would come from external tests)
+            searchBan: scenario.searchBan || false,
+            searchSuggestionBan: scenario.searchSuggestionBan || false,
+            ghostBan: scenario.ghostBan || false,
+            replyDeboosting: scenario.replyDeboosting || false,
+            suggestBan: scenario.suggestBan || false,
+            
+            // Rate limit status (simulated)
+            rateLimitStatus: {
+                remaining: 145,
+                reset: Math.floor(Date.now() / 1000) + 900,
+                limit: 150
+            }
         };
     }
     
-    _getDemoShadowbanResult(username) {
+    calculateAccountAge(createdAt) {
+        const created = new Date(createdAt);
+        const now = new Date();
+        return Math.floor((now - created) / (1000 * 60 * 60 * 24));
+    }
+    
+    // =========================================================================
+    // SHADOWBAN CHECKS
+    // =========================================================================
+    
+    /**
+     * Run shadowban tests for an account
+     * @param {string} username - Twitter username
+     * @returns {Promise<object>} Shadowban check results
+     */
+    async checkShadowban(username) {
+        const cleanUsername = username.replace(/^@/, '');
+        
+        if (this.demoMode) {
+            return this.getDemoShadowbanResults(cleanUsername);
+        }
+        
+        // TODO: Implement real shadowban checks
+        // These would involve:
+        // 1. Search API queries to check visibility
+        // 2. Incognito/logged-out comparison tests
+        // 3. Reply visibility tests
+        
+        return this.getDemoShadowbanResults(cleanUsername);
+    }
+    
+    getDemoShadowbanResults(username) {
+        const scenario = this.detectDemoAccountScenario(username);
+        
         return {
-            demo: true,
-            platform: 'twitter',
             username: username,
-            probability: Math.floor(Math.random() * 40) + 10, // 10-50%
+            timestamp: new Date().toISOString(),
+            demo: true,
+            
             checks: {
-                searchBan: false,
-                ghostBan: false,
-                replyDeboosting: Math.random() > 0.7,
-                suggestBan: Math.random() > 0.8,
-                sensitiveMediaFlag: false
+                searchBan: {
+                    status: scenario.searchBan || false,
+                    description: 'Account not appearing in search results',
+                    severity: scenario.searchBan ? 'high' : 'none'
+                },
+                searchSuggestionBan: {
+                    status: scenario.searchSuggestionBan || false,
+                    description: 'Account not appearing in search suggestions',
+                    severity: scenario.searchSuggestionBan ? 'medium' : 'none'
+                },
+                ghostBan: {
+                    status: scenario.ghostBan || false,
+                    description: 'Replies not visible to others',
+                    severity: scenario.ghostBan ? 'high' : 'none'
+                },
+                replyDeboosting: {
+                    status: scenario.replyDeboosting || false,
+                    description: 'Replies hidden under "Show more replies"',
+                    severity: scenario.replyDeboosting ? 'medium' : 'none'
+                },
+                suggestBan: {
+                    status: scenario.suggestBan || false,
+                    description: 'Account not suggested to others',
+                    severity: scenario.suggestBan ? 'low' : 'none'
+                }
             },
-            verifiedType: 'none',
-            accountAge: 730,
-            message: 'Demo data - connect to real API for live results'
+            
+            summary: {
+                anyBanDetected: scenario.searchBan || scenario.searchSuggestionBan || 
+                               scenario.ghostBan || scenario.replyDeboosting || scenario.suggestBan,
+                banCount: [scenario.searchBan, scenario.searchSuggestionBan, 
+                          scenario.ghostBan, scenario.replyDeboosting, scenario.suggestBan]
+                          .filter(Boolean).length,
+                overallSeverity: scenario.searchBan || scenario.ghostBan ? 'high' :
+                                scenario.searchSuggestionBan || scenario.replyDeboosting ? 'medium' :
+                                scenario.suggestBan ? 'low' : 'none'
+            }
         };
+    }
+    
+    // =========================================================================
+    // DEMO SCENARIO DETECTION
+    // =========================================================================
+    
+    /**
+     * Detect demo scenario based on tweet ID patterns
+     */
+    detectDemoScenario(tweetId) {
+        const id = String(tweetId);
+        
+        // Scenario patterns (last digits)
+        if (id.endsWith('111')) {
+            // Banned hashtag scenario
+            return {
+                text: 'Follow me! #followback #f4f #teamfollowback for instant follows!',
+                hashtags: ['followback', 'f4f', 'teamfollowback'],
+                searchHidden: true,
+                likes: 2,
+                retweets: 0
+            };
+        }
+        
+        if (id.endsWith('222')) {
+            // Link throttling scenario
+            return {
+                text: 'Check out my new article! https://bit.ly/mypost https://substack.com/article',
+                urls: ['https://bit.ly/mypost', 'https://substack.com/article'],
+                hashtags: ['tech'],
+                deranked: true,
+                likes: 15,
+                retweets: 2
+            };
+        }
+        
+        if (id.endsWith('333')) {
+            // Spam content scenario
+            return {
+                text: 'BUY NOW!!! FREE MONEY 💰💰💰 CLICK HERE guaranteed profits!!!',
+                emojis: ['💰', '💰', '💰'],
+                sensitive: true,
+                searchHidden: true,
+                hashtagHidden: true,
+                likes: 0,
+                retweets: 0
+            };
+        }
+        
+        if (id.endsWith('444')) {
+            // Crypto spam scenario
+            return {
+                text: 'Get $BTC $ETH $DOGE now! 🚀🔥 Don\'t miss out! #crypto #nft #giveaway',
+                cashtags: ['BTC', 'ETH', 'DOGE'],
+                hashtags: ['crypto', 'nft', 'giveaway'],
+                emojis: ['🚀', '🔥'],
+                deranked: true,
+                likes: 5,
+                retweets: 1
+            };
+        }
+        
+        if (id.endsWith('000')) {
+            // Clean/healthy scenario
+            return {
+                text: 'Just shared my thoughts on the latest tech trends. What do you think?',
+                hashtags: ['tech'],
+                mentions: [],
+                likes: 89,
+                retweets: 23,
+                replies: 15
+            };
+        }
+        
+        // Default scenario
+        return {
+            text: 'Demo tweet for testing. #test',
+            hashtags: ['test']
+        };
+    }
+    
+    /**
+     * Detect demo scenario based on username patterns
+     */
+    detectDemoAccountScenario(username) {
+        const lower = username.toLowerCase();
+        
+        if (lower.includes('banned') || lower.includes('suspended')) {
+            return {
+                suspended: true,
+                followers: 0,
+                following: 0
+            };
+        }
+        
+        if (lower.includes('shadowban') || lower.includes('shadow')) {
+            return {
+                searchBan: true,
+                searchSuggestionBan: true,
+                followers: 500,
+                displayName: 'Shadowbanned User'
+            };
+        }
+        
+        if (lower.includes('ghost')) {
+            return {
+                ghostBan: true,
+                replyDeboosting: true,
+                followers: 200
+            };
+        }
+        
+        if (lower.includes('spam') || lower.includes('bot')) {
+            return {
+                searchSuggestionBan: true,
+                suggestBan: true,
+                followers: 50,
+                following: 5000,
+                engagementRatio: 0.001
+            };
+        }
+        
+        if (lower.includes('verified') || lower.includes('official')) {
+            return {
+                verifiedType: 'blue',
+                followers: 50000,
+                following: 500,
+                displayName: 'Verified User ✓'
+            };
+        }
+        
+        if (lower.includes('clean') || lower.includes('healthy')) {
+            return {
+                followers: 2500,
+                following: 800,
+                engagementRatio: 0.045,
+                displayName: 'Healthy Account'
+            };
+        }
+        
+        // Default
+        return {};
+    }
+    
+    // =========================================================================
+    // PLATFORM INFO
+    // =========================================================================
+    
+    /**
+     * Get platform configuration
+     */
+    getConfig() {
+        return {
+            id: this.id,
+            name: this.name,
+            version: this.version,
+            modules: this.modules,
+            totalModules: this.totalModules,
+            apiVersion: this.apiVersion,
+            rateLimits: this.rateLimits,
+            demoMode: this.demoMode,
+            
+            signalSupport: {
+                hashtags: true,
+                cashtags: true,
+                links: true,
+                content: true,
+                mentions: true,
+                emojis: true
+            },
+            
+            shadowbanTypes: [
+                'searchBan',
+                'searchSuggestionBan', 
+                'ghostBan',
+                'replyDeboosting',
+                'suggestBan'
+            ]
+        };
+    }
+    
+    /**
+     * Set demo mode
+     */
+    setDemoMode(enabled) {
+        this.demoMode = !!enabled;
     }
 }
 
-// ============================================================================
-// REGISTER PLATFORM
-// ============================================================================
+// =============================================================================
+// FACTORY REGISTRATION
+// =============================================================================
+
+// Create singleton instance
+const twitterPlatform = new TwitterPlatform();
+
+// Register with PlatformFactory if available
 if (window.PlatformFactory) {
-    window.PlatformFactory.register('twitter', TwitterPlatform);
+    window.PlatformFactory.register('twitter', twitterPlatform);
+    window.PlatformFactory.register('x', twitterPlatform); // Alias
 }
 
-// ============================================================================
-// EXPORTS
-// ============================================================================
+// Export
 window.TwitterPlatform = TwitterPlatform;
+window.twitterPlatform = twitterPlatform;
 
-// ============================================================================
+// =============================================================================
 // INITIALIZATION
-// ============================================================================
-console.log('✅ TwitterPlatform loaded');
+// =============================================================================
+
+console.log('✅ Twitter Platform loaded');
+console.log('   Modules:', twitterPlatform.totalModules, '- Hashtags:', twitterPlatform.modules.hashtags,
+            'Cashtags:', twitterPlatform.modules.cashtags, 'Links:', twitterPlatform.modules.links,
+            'Content:', twitterPlatform.modules.content, 'Mentions:', twitterPlatform.modules.mentions,
+            'Emojis:', twitterPlatform.modules.emojis);
 
 })();

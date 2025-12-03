@@ -63,13 +63,6 @@
         button:hover { opacity: 0.9; }
         button.secondary { background: #333; }
         
-        .results {
-            background: #1a1a2e;
-            padding: 20px;
-            border-radius: 8px;
-            margin-top: 20px;
-        }
-        
         .agent-result {
             background: #0a0a0f;
             border-radius: 8px;
@@ -225,25 +218,32 @@
         </div>
     </div>
     
-    <!-- LOAD ORDER MATTERS -->
-    <!-- Databases first -->
-    <script src="flagged-hashtags.js"></script>
-    <script src="flagged-links.js"></script>
-    <script src="flagged-content.js"></script>
-    <script src="flagged-mentions.js"></script>
-    <script src="flagged-emojis.js"></script>
+    <!-- ============================================ -->
+    <!-- LOAD ORDER MATTERS! -->
+    <!-- This file lives in: js/detection/ -->
+    <!-- ============================================ -->
     
-    <!-- Platforms -->
-    <script src="twitter.js"></script>
-    <script src="reddit.js"></script>
+    <!-- Databases (from databases/ subfolder) -->
+    <script src="databases/flagged-hashtags.js"></script>
+    <script src="databases/flagged-links.js"></script>
+    <script src="databases/flagged-content.js"></script>
+    <script src="databases/flagged-mentions.js"></script>
+    <script src="databases/flagged-emojis.js"></script>
     
-    <!-- Agent System -->
-    <script src="agent-base.js"></script>
-    <script src="agent-platform-api.js"></script>
-    <script src="agent-web-analysis.js"></script>
-    <script src="agent-historical.js"></script>
-    <script src="agent-detection.js"></script>
-    <script src="agent-predictive.js"></script>
+    <!-- Platforms (from platforms/ subfolder) -->
+    <script src="platforms/twitter.js"></script>
+    <script src="platforms/reddit.js"></script>
+    
+    <!-- Agent System (from agents/ subfolder) -->
+    <script src="agents/agent-base.js"></script>
+    <script src="agents/agent-platform-api.js"></script>
+    <script src="agents/agent-web-analysis.js"></script>
+    <script src="agents/agent-historical.js"></script>
+    <script src="agents/agent-detection.js"></script>
+    <script src="agents/agent-predictive.js"></script>
+    
+    <!-- Main engine (same folder as this HTML) -->
+    <script src="5-factor-engine.js"></script>
     
     <script>
         const PRESETS = {

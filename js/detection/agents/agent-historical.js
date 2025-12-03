@@ -1,731 +1,567 @@
 /* =============================================================================
-   AGENT-HISTORICAL.JS - Factor 3: Historical Data Analysis (15%)
-   ShadowBanCheck.io - 5-Factor Detection Engine
+   AGENT-HISTORICAL.JS - Historical Data Agent (Factor 3)
+   ShadowBanCheck.io
    
-   Version: 2.0.0
-   Updated: December 2025
+   Tracks patterns and trends over time.
+   Weight: 15% of final score
    
-   Analyzes historical patterns and stored data:
-   - Previous check results for this account/content
-   - Trend analysis over time (improving/worsening/stable)
-   - Engagement baseline comparison
-   - Pattern recognition from past moderation actions
-   - Signal history tracking
-   - Recovery history
-   - Past scores for specific items (3-Point Intelligence)
+   Responsibilities:
+   - Previous scan history for this entity
+   - Trend analysis (improving/declining)
+   - Pattern recognition across scans
+   - Community database correlation
    
-   Note: Full features require Pro subscription
+   Data Sources:
+   - Our database (previous scans)
+   - Past scores for this entity
+   - Trend data (getting better/worse)
+   - Community knowledge base
+   
+   Last Updated: 2025-12-03
    ============================================================================= */
 
 (function() {
 'use strict';
 
 // =============================================================================
-// HISTORICAL AGENT CLASS
+// SIMULATED HISTORY STORAGE (In production, this would be a real database)
 // =============================================================================
 
-class HistoricalAgent extends window.AgentBase {
+const HistoryStore = {
+    _data: {},
     
-    constructor() {
-        super('historical', 3, 15); // id, factor 3, weight 15%
-        
-        // In-memory store for demo (would be database in production)
-        this.historyStore = new Map();
-        this.maxHistoryItems = 100;
-        
-        // Separate store for item-specific scores (hashtags, links, etc.)
-        this.itemScoreStore = new Map();
-        this.maxItemScores = 500;
-        
-        // Pro feature flag
-        this.isPro = false;
-    }
+    getHistory: function(entityId, platform) {
+        const key = `${platform}:${entityId}`;
+        return this._data[key] || null;
+    },
     
-    // =========================================================================
-    // MAIN ANALYZE METHOD
-    // =========================================================================
-    
-    async analyze(input) {
-        const startTime = Date.now();
-        const findings = [];
-        const flags = [];
-        let rawScore = 0;
-        
-        try {
-            const key = this.getHistoryKey(input);
-            const history = this.getHistory(key);
-            
-            // Build checks object matching spec structure
-            const checks = {
-                hasHistory: history.length > 0,
-                previousScans: history.length,
-                firstScan: history.length > 0 ? history[0].timestamp : null,
-                
-                trend: null,
-                engagementBaseline: null,
-                anomalies: [],
-                signalHistory: {},
-                recoveryHistory: null
+    addScan: function(entityId, platform, scanResult) {
+        const key = `${platform}:${entityId}`;
+        if (!this._data[key]) {
+            this._data[key] = {
+                entityId: entityId,
+                platform: platform,
+                scans: [],
+                firstSeen: new Date().toISOString()
             };
-            
-            // === No History Case ===
-            if (history.length === 0) {
-                // Check if entity exists in public database (other users' searches)
-                const publicHistory = this.getPublicHistory(key);
-                
-                if (publicHistory) {
-                    checks.publicHistory = {
-                        timesSearched: publicHistory.searchCount,
-                        lastSearched: publicHistory.lastSearched,
-                        averageScore: publicHistory.averageScore
-                    };
-                    
-                    findings.push(this.createFinding(
-                        'info',
-                        `Entity found in public database (searched ${publicHistory.searchCount} times)`,
-                        0,
-                        { averageScore: publicHistory.averageScore }
-                    ));
-                    
-                    // Use public history to influence score
-                    if (publicHistory.averageScore > 50) {
-                        rawScore += 10;
-                        findings.push(this.createFinding(
-                            'warning',
-                            `Public history shows average score of ${publicHistory.averageScore}%`,
-                            15,
-                            {}
-                        ));
-                    }
-                } else {
-                    findings.push(this.createFinding(
-                        'info',
-                        'No previous checks found - first time analysis',
-                        0,
-                        { note: 'Historical tracking will begin after this scan' }
-                    ));
-                }
-                
-                return this.createResult({
-                    status: history.length === 0 && !publicHistory ? 'limited' : 'complete',
-                    rawScore: rawScore,
-                    confidence: 30,
-                    findings,
-                    checks,
-                    processingTime: Date.now() - startTime,
-                    message: 'No personal history available'
-                });
-            }
-            
-            // === Full Historical Analysis (Pro) ===
-            const analysis = this.analyzeHistory(history);
-            
-            // Update checks with analysis results
-            checks.trend = {
-                direction: analysis.trend,
-                averageScore: analysis.averageScore,
-                currentScore: history[history.length - 1]?.score || 0,
-                delta: analysis.delta,
-                thirtyDayTrend: analysis.thirtyDayChange
-            };
-            
-            // === ANALYSIS: Trend Direction ===
-            if (analysis.trend === 'worsening') {
-                findings.push(this.createFinding(
-                    'danger',
-                    `Score worsened ${Math.abs(analysis.thirtyDayChange || 0)}% in 30 days`,
-                    30,
-                    { trend: analysis.trendData }
-                ));
-                rawScore += 20;
-                flags.push('worsening');
-            } else if (analysis.trend === 'improving') {
-                findings.push(this.createFinding(
-                    'good',
-                    'Shadowban probability has been decreasing',
-                    -10,
-                    { trend: analysis.trendData }
-                ));
-            } else {
-                findings.push(this.createFinding(
-                    'info',
-                    'Score has been stable',
-                    0,
-                    {}
-                ));
-            }
-            
-            // === ANALYSIS: Repeated Flags ===
-            if (analysis.repeatedFlags.length > 0) {
-                findings.push(this.createFinding(
-                    'warning',
-                    `Recurring issues detected: ${analysis.repeatedFlags.join(', ')}`,
-                    25,
-                    { flags: analysis.repeatedFlags }
-                ));
-                rawScore += 15;
-                flags.push('recurring_issues');
-            }
-            
-            // === ANALYSIS: Past High Severity ===
-            if (analysis.hadHighSeverity) {
-                findings.push(this.createFinding(
-                    'warning',
-                    `Previous checks found ${analysis.highSeverityCount} high-severity issue(s)`,
-                    20,
-                    { count: analysis.highSeverityCount }
-                ));
-                rawScore += 10;
-                flags.push('past_issues');
-            }
-            
-            // === ANALYSIS: Anomalies ===
-            if (analysis.anomalies.length > 0) {
-                checks.anomalies = analysis.anomalies;
-                
-                for (const anomaly of analysis.anomalies.slice(0, 3)) {
-                    findings.push(this.createFinding(
-                        anomaly.severity === 'high' ? 'danger' : 'warning',
-                        `${anomaly.type}: ${anomaly.metric} changed ${anomaly.magnitude}`,
-                        anomaly.severity === 'high' ? 25 : 15,
-                        { date: anomaly.date, cause: anomaly.possibleCause }
-                    ));
-                    rawScore += anomaly.severity === 'high' ? 10 : 5;
-                }
-            }
-            
-            // === ANALYSIS: Engagement Baseline (Pro) ===
-            if (this.isPro && analysis.engagementBaseline) {
-                checks.engagementBaseline = analysis.engagementBaseline;
-                
-                if (analysis.engagementBaseline.significantDrop) {
-                    findings.push(this.createFinding(
-                        'warning',
-                        `Engagement ${Math.abs(analysis.engagementBaseline.deviation)}% below baseline`,
-                        15,
-                        analysis.engagementBaseline
-                    ));
-                    rawScore += 10;
-                    flags.push('engagement_drop');
-                }
-            }
-            
-            // === ANALYSIS: Signal History ===
-            if (analysis.signalHistory) {
-                checks.signalHistory = analysis.signalHistory;
-                
-                for (const [signalType, signalData] of Object.entries(analysis.signalHistory)) {
-                    if (signalData.previousFlags > 0 && signalData.trend === 'recurring') {
-                        findings.push(this.createFinding(
-                            'info',
-                            `Recurring ${signalType} issues (${signalData.previousFlags} previous flags)`,
-                            10,
-                            signalData
-                        ));
-                    }
-                }
-            }
-            
-            // === Context: Average Score ===
-            findings.push(this.createFinding(
-                'info',
-                `Historical average: ${analysis.averageScore.toFixed(1)}% from ${history.length} checks`,
-                0,
-                { averageScore: analysis.averageScore, checkCount: history.length }
-            ));
-            
-            // Use historical average to influence current score
-            if (analysis.averageScore > 50) {
-                rawScore += 15;
-            } else if (analysis.averageScore > 30) {
-                rawScore += 5;
-            }
-            
-            // Higher confidence with more history
-            const confidence = Math.min(90, 40 + (history.length * 5));
-            
-            return this.createResult({
-                status: 'complete',
-                rawScore: Math.min(100, rawScore),
-                confidence: confidence,
-                findings,
-                flags,
-                checks,
-                processingTime: Date.now() - startTime,
-                message: `Analysis based on ${history.length} previous checks`
-            });
-            
-        } catch (error) {
-            this.log(`Error: ${error.message}`, 'error');
-            return this.createResult({
-                status: 'error',
-                rawScore: 0,
-                confidence: 0,
-                findings: [{
-                    type: 'danger',
-                    severity: 'high',
-                    message: `Historical analysis error: ${error.message}`,
-                    impact: 0
-                }],
-                processingTime: Date.now() - startTime,
-                message: `Error: ${error.message}`
-            });
-        }
-    }
-    
-    // =========================================================================
-    // 3-POINT INTELLIGENCE METHODS
-    // Called by Detection Agent for historical item scores
-    // =========================================================================
-    
-    /**
-     * Get past scores for specific items (Point 3: Historical)
-     * @param {array} items - Items to look up (hashtags, links, etc.)
-     * @param {string} type - Type of items
-     * @param {string} platformId - Platform context
-     * @returns {object} Historical score data
-     */
-    async getPastScores(items, type, platformId) {
-        if (!items || items.length === 0) {
-            return { available: false, scores: [], averageScore: 0 };
         }
         
-        const results = {
-            available: true,
-            scores: [],
-            trends: [],
-            averageScore: 0,
-            trendDirection: 'stable',
-            itemsWithHistory: 0,
-            itemsWithoutHistory: 0
-        };
-        
-        try {
-            let totalScore = 0;
-            let scoreCount = 0;
-            let recentScores = [];
-            let olderScores = [];
-            
-            for (const item of items) {
-                const itemKey = this.getItemKey(item, type, platformId);
-                const itemHistory = this.getItemHistory(itemKey);
-                
-                if (itemHistory.length > 0) {
-                    results.itemsWithHistory++;
-                    
-                    const latestScore = itemHistory[itemHistory.length - 1];
-                    results.scores.push({
-                        item,
-                        currentScore: latestScore.score,
-                        checkCount: itemHistory.length,
-                        lastChecked: latestScore.timestamp,
-                        trend: this.calculateItemTrend(itemHistory)
-                    });
-                    
-                    totalScore += latestScore.score;
-                    scoreCount++;
-                    
-                    if (itemHistory.length >= 2) {
-                        recentScores.push(itemHistory[itemHistory.length - 1].score);
-                        olderScores.push(itemHistory[0].score);
-                    }
-                    
-                    results.trends.push({
-                        item,
-                        direction: this.calculateItemTrend(itemHistory),
-                        history: itemHistory.slice(-5)
-                    });
-                } else {
-                    results.itemsWithoutHistory++;
-                    results.scores.push({
-                        item,
-                        currentScore: null,
-                        checkCount: 0,
-                        lastChecked: null,
-                        trend: 'unknown'
-                    });
-                }
-            }
-            
-            results.averageScore = scoreCount > 0 ? totalScore / scoreCount : 0;
-            
-            // Calculate overall trend
-            if (recentScores.length >= 2 && olderScores.length >= 2) {
-                const recentAvg = recentScores.reduce((a, b) => a + b, 0) / recentScores.length;
-                const olderAvg = olderScores.reduce((a, b) => a + b, 0) / olderScores.length;
-                
-                if (recentAvg > olderAvg + 10) {
-                    results.trendDirection = 'worsening';
-                } else if (recentAvg < olderAvg - 10) {
-                    results.trendDirection = 'improving';
-                }
-            }
-            
-            results.available = results.itemsWithHistory > 0;
-            
-        } catch (error) {
-            this.log(`getPastScores error: ${error.message}`, 'warn');
-            results.available = false;
-            results.error = error.message;
-        }
-        
-        return results;
-    }
-    
-    /**
-     * Store a score for a specific item
-     */
-    storeItemScore(item, type, platformId, score) {
-        const itemKey = this.getItemKey(item, type, platformId);
-        let history = this.itemScoreStore.get(itemKey) || [];
-        
-        history.push({
-            score,
+        this._data[key].scans.push({
             timestamp: new Date().toISOString(),
-            platform: platformId
+            score: scanResult.score,
+            issues: scanResult.issues || [],
+            verdict: scanResult.verdict
         });
         
-        if (history.length > 20) {
-            history = history.slice(-20);
+        // Keep only last 10 scans
+        if (this._data[key].scans.length > 10) {
+            this._data[key].scans = this._data[key].scans.slice(-10);
         }
         
-        this.itemScoreStore.set(itemKey, history);
-        
-        if (this.itemScoreStore.size > this.maxItemScores) {
-            this.cleanupItemStore();
+        return this._data[key];
+    },
+    
+    clear: function() {
+        this._data = {};
+    }
+};
+
+// =============================================================================
+// KNOWN PROBLEMATIC ENTITIES (Community database simulation)
+// =============================================================================
+
+const COMMUNITY_DATABASE = {
+    twitter: {
+        knownSpammers: ['spambot', 'followbot', 'gainbot'],
+        knownThrottled: ['substack_user', 'newsletter_promo'],
+        reportedIssues: {
+            'followback': { reports: 150, severity: 'high', pattern: 'engagement_spam' },
+            'f4f': { reports: 200, severity: 'high', pattern: 'engagement_spam' }
         }
+    },
+    reddit: {
+        knownSpammers: ['spam_account', 'promo_bot'],
+        frequentAutomod: ['new_account_spam', 'link_spammer'],
+        reportedIssues: {
+            'self_promotion': { reports: 300, severity: 'medium', pattern: 'promotional' }
+        }
+    }
+};
+
+// =============================================================================
+// HISTORICAL AGENT
+// =============================================================================
+
+class HistoricalAgent {
+    
+    constructor() {
+        this.id = 'historical';
+        this.name = 'Historical Data';
+        this.factor = 3;
+        this.weight = 15;
+        this.version = '2.0.0';
+        this.demoMode = true;
     }
     
     /**
-     * Store multiple item scores
+     * Main analysis method
+     * @param {object} input - Analysis input
+     * @returns {Promise<object>} Analysis result
      */
-    storeItemScores(items, platformId) {
-        for (const { item, type, score } of items) {
-            this.storeItemScore(item, type, platformId, score);
+    async analyze(input) {
+        const platform = input.platform || 'twitter';
+        const startTime = Date.now();
+        
+        const entityId = input.username || input.postId || 'unknown';
+        
+        const checks = {
+            previousScans: null,
+            trend: null,
+            communityReports: null,
+            patternMatch: null
+        };
+        
+        const findings = [];
+        let totalScore = 0;
+        let dataPoints = 0;
+        
+        // =================================================================
+        // PREVIOUS SCAN HISTORY
+        // =================================================================
+        
+        const history = this.getEntityHistory(entityId, platform, input);
+        checks.previousScans = history;
+        
+        if (history && history.scans && history.scans.length > 0) {
+            dataPoints++;
+            
+            const avgScore = history.scans.reduce((sum, s) => sum + s.score, 0) / history.scans.length;
+            const lastScore = history.scans[history.scans.length - 1].score;
+            
+            if (avgScore >= 50) {
+                findings.push({
+                    type: 'warning',
+                    severity: 'medium',
+                    message: `Historical average score is ${Math.round(avgScore)} (${history.scans.length} previous scans)`,
+                    impact: 15
+                });
+                totalScore += 15;
+            } else if (avgScore >= 30) {
+                findings.push({
+                    type: 'info',
+                    severity: 'low',
+                    message: `Historical average score is ${Math.round(avgScore)}`,
+                    impact: 8
+                });
+                totalScore += 8;
+            }
+            
+            // Check for repeated issues
+            const allIssues = history.scans.flatMap(s => s.issues || []);
+            const issueCounts = {};
+            for (const issue of allIssues) {
+                issueCounts[issue] = (issueCounts[issue] || 0) + 1;
+            }
+            
+            const repeatedIssues = Object.entries(issueCounts)
+                .filter(([_, count]) => count >= 2)
+                .map(([issue, count]) => ({ issue, count }));
+            
+            if (repeatedIssues.length > 0) {
+                findings.push({
+                    type: 'warning',
+                    severity: 'medium',
+                    message: `Recurring issues detected: ${repeatedIssues.map(r => r.issue).join(', ')}`,
+                    impact: 20
+                });
+                totalScore += 20;
+            }
+        } else {
+            findings.push({
+                type: 'info',
+                severity: 'none',
+                message: 'No previous scan history for this entity',
+                impact: 0
+            });
         }
+        
+        // =================================================================
+        // TREND ANALYSIS
+        // =================================================================
+        
+        const trend = this.analyzeTrend(history);
+        checks.trend = trend;
+        
+        if (trend.direction) {
+            dataPoints++;
+            
+            if (trend.direction === 'worsening') {
+                findings.push({
+                    type: 'danger',
+                    severity: 'high',
+                    message: `Score trend is worsening (${trend.change > 0 ? '+' : ''}${trend.change} points over ${trend.period})`,
+                    impact: 25
+                });
+                totalScore += 25;
+            } else if (trend.direction === 'improving') {
+                findings.push({
+                    type: 'good',
+                    severity: 'none',
+                    message: `Score trend is improving (${trend.change} points over ${trend.period})`,
+                    impact: -10
+                });
+                totalScore = Math.max(0, totalScore - 10);
+            } else if (trend.direction === 'stable') {
+                findings.push({
+                    type: 'info',
+                    severity: 'none',
+                    message: 'Score has been stable',
+                    impact: 0
+                });
+            }
+        }
+        
+        // =================================================================
+        // COMMUNITY DATABASE CHECK
+        // =================================================================
+        
+        const communityData = this.checkCommunityDatabase(entityId, platform, input);
+        checks.communityReports = communityData;
+        
+        if (communityData.found) {
+            dataPoints++;
+            
+            if (communityData.knownSpammer) {
+                findings.push({
+                    type: 'danger',
+                    severity: 'critical',
+                    message: 'Entity matches known spammer pattern in community database',
+                    impact: 40
+                });
+                totalScore += 40;
+            }
+            
+            if (communityData.reports && communityData.reports.length > 0) {
+                findings.push({
+                    type: 'warning',
+                    severity: 'medium',
+                    message: `Community reports: ${communityData.reports.map(r => r.pattern).join(', ')}`,
+                    impact: 15
+                });
+                totalScore += 15;
+            }
+        }
+        
+        // =================================================================
+        // PATTERN MATCHING (Content-based historical patterns)
+        // =================================================================
+        
+        if (input.text || input.content) {
+            const patternMatch = this.matchHistoricalPatterns(input.text || input.content, platform);
+            checks.patternMatch = patternMatch;
+            
+            if (patternMatch.matches.length > 0) {
+                dataPoints++;
+                
+                for (const match of patternMatch.matches) {
+                    findings.push({
+                        type: match.severity === 'high' ? 'warning' : 'info',
+                        severity: match.severity,
+                        message: `Content matches historical ${match.pattern} pattern`,
+                        impact: match.severity === 'high' ? 15 : 8
+                    });
+                    totalScore += match.severity === 'high' ? 15 : 8;
+                }
+            }
+        }
+        
+        // =================================================================
+        // CALCULATE FINAL SCORE
+        // =================================================================
+        
+        const rawScore = Math.min(100, Math.max(0, totalScore));
+        const confidence = this.calculateConfidence(dataPoints, history);
+        
+        return {
+            agent: this.name,
+            agentId: this.id,
+            factor: this.factor,
+            weight: this.weight,
+            status: dataPoints > 0 ? 'complete' : 'limited',
+            
+            platform: platform,
+            processingTime: Date.now() - startTime,
+            
+            checks: checks,
+            findings: findings,
+            
+            rawScore: rawScore,
+            weightedScore: Math.round((rawScore * this.weight) / 100 * 100) / 100,
+            confidence: confidence,
+            
+            summary: {
+                hasHistory: history && history.scans && history.scans.length > 0,
+                scanCount: history?.scans?.length || 0,
+                trend: trend.direction || 'unknown',
+                communityFlags: communityData.found,
+                dataPoints: dataPoints
+            },
+            
+            timestamp: new Date().toISOString()
+        };
     }
     
     // =========================================================================
-    // HISTORY MANAGEMENT
+    // HISTORY OPERATIONS
     // =========================================================================
     
-    getHistoryKey(input) {
-        if (input.type === 'account') {
-            return `account:${input.platform}:${input.username}`;
-        } else if (input.type === 'post') {
-            return `post:${input.platform}:${input.postId}`;
-        } else if (input.type === 'text') {
-            return `text:${input.platform}:${this.hashText(input.text)}`;
-        }
-        return `unknown:${Date.now()}`;
-    }
-    
-    getItemKey(item, type, platformId) {
-        let normalizedItem = String(item).toLowerCase().trim();
+    getEntityHistory(entityId, platform, input) {
+        // Check real store first
+        let history = HistoryStore.getHistory(entityId, platform);
         
-        if (type === 'hashtags') {
-            normalizedItem = normalizedItem.replace(/^#/, '');
-        } else if (type === 'mentions') {
-            normalizedItem = normalizedItem.replace(/^@/, '');
+        if (history) {
+            return history;
         }
         
-        return `item:${type}:${platformId}:${normalizedItem}`;
-    }
-    
-    hashText(text) {
-        let hash = 0;
-        for (let i = 0; i < Math.min(text.length, 100); i++) {
-            const char = text.charCodeAt(i);
-            hash = ((hash << 5) - hash) + char;
-            hash = hash & hash;
+        // In demo mode, simulate history based on patterns
+        if (this.demoMode) {
+            return this.simulateHistory(entityId, platform, input);
         }
-        return hash.toString(16);
-    }
-    
-    getHistory(key) {
-        return this.historyStore.get(key) || [];
-    }
-    
-    getItemHistory(itemKey) {
-        return this.itemScoreStore.get(itemKey) || [];
-    }
-    
-    getPublicHistory(key) {
-        // In production, would query shared database
-        // Demo: Return simulated public history for some keys
-        if (this.useDemo && Math.random() > 0.6) {
-            return {
-                searchCount: Math.floor(Math.random() * 50) + 1,
-                lastSearched: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString(),
-                averageScore: Math.floor(Math.random() * 60) + 10
-            };
-        }
+        
         return null;
     }
     
-    /**
-     * Store a check result in history
-     */
-    storeResult(input, result) {
-        const key = this.getHistoryKey(input);
-        let history = this.historyStore.get(key) || [];
+    simulateHistory(entityId, platform, input) {
+        const lower = entityId.toLowerCase();
         
-        history.push({
-            timestamp: new Date().toISOString(),
-            score: result.rawScore || result.probability || 0,
-            confidence: result.confidence || 0,
-            flags: result.flags || [],
-            findings: result.findings || [],
-            signalScores: result.signalSummary?.scores || {}
-        });
-        
-        if (history.length > this.maxHistoryItems) {
-            history = history.slice(-this.maxHistoryItems);
-        }
-        
-        this.historyStore.set(key, history);
-    }
-    
-    clearHistory(key) {
-        if (key) {
-            this.historyStore.delete(key);
-        } else {
-            this.historyStore.clear();
-        }
-    }
-    
-    // =========================================================================
-    // ANALYSIS METHODS
-    // =========================================================================
-    
-    analyzeHistory(history) {
-        if (history.length === 0) {
+        // Simulate different history scenarios
+        if (lower.includes('repeat') || lower.includes('chronic')) {
             return {
-                trend: 'unknown',
-                trendData: null,
-                averageScore: 0,
-                delta: 0,
-                thirtyDayChange: null,
-                repeatedFlags: [],
-                hadHighSeverity: false,
-                highSeverityCount: 0,
-                anomalies: [],
-                engagementBaseline: null,
-                signalHistory: {}
+                entityId: entityId,
+                platform: platform,
+                scans: [
+                    { timestamp: '2025-11-01', score: 45, issues: ['banned_hashtag'], verdict: 'LIKELY RESTRICTED' },
+                    { timestamp: '2025-11-15', score: 52, issues: ['banned_hashtag', 'link_shortener'], verdict: 'LIKELY RESTRICTED' },
+                    { timestamp: '2025-12-01', score: 48, issues: ['banned_hashtag'], verdict: 'LIKELY RESTRICTED' }
+                ],
+                firstSeen: '2025-11-01T00:00:00Z'
             };
         }
         
-        // Calculate average score
-        const scores = history.map(h => h.score);
-        const averageScore = scores.reduce((a, b) => a + b, 0) / scores.length;
-        
-        // Analyze trend
-        let trend = 'stable';
-        let trendData = null;
-        let delta = 0;
-        let thirtyDayChange = null;
-        
-        if (history.length >= 3) {
-            const recentAvg = scores.slice(-3).reduce((a, b) => a + b, 0) / 3;
-            const olderAvg = scores.slice(0, -3).reduce((a, b) => a + b, 0) / Math.max(1, scores.length - 3);
-            
-            delta = recentAvg - olderAvg;
-            
-            if (delta > 10) {
-                trend = 'worsening';
-                trendData = { recent: recentAvg, older: olderAvg, change: delta };
-            } else if (delta < -10) {
-                trend = 'improving';
-                trendData = { recent: recentAvg, older: olderAvg, change: delta };
-            }
-            
-            // Calculate 30-day change if we have enough data
-            const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
-            const recentHistory = history.filter(h => new Date(h.timestamp) > thirtyDaysAgo);
-            if (recentHistory.length >= 2) {
-                const firstScore = recentHistory[0].score;
-                const lastScore = recentHistory[recentHistory.length - 1].score;
-                thirtyDayChange = Math.round(((lastScore - firstScore) / Math.max(1, firstScore)) * 100);
-            }
+        if (lower.includes('improving') || lower.includes('better')) {
+            return {
+                entityId: entityId,
+                platform: platform,
+                scans: [
+                    { timestamp: '2025-11-01', score: 65, issues: ['multiple_issues'], verdict: 'RESTRICTED' },
+                    { timestamp: '2025-11-15', score: 45, issues: ['some_issues'], verdict: 'LIKELY RESTRICTED' },
+                    { timestamp: '2025-12-01', score: 25, issues: [], verdict: 'LIKELY CLEAR' }
+                ],
+                firstSeen: '2025-11-01T00:00:00Z'
+            };
         }
         
-        // Find repeated flags
-        const flagCounts = {};
-        for (const item of history) {
-            for (const flag of (item.flags || [])) {
-                flagCounts[flag] = (flagCounts[flag] || 0) + 1;
-            }
+        if (lower.includes('worsening') || lower.includes('decline')) {
+            return {
+                entityId: entityId,
+                platform: platform,
+                scans: [
+                    { timestamp: '2025-11-01', score: 15, issues: [], verdict: 'CLEAR' },
+                    { timestamp: '2025-11-15', score: 35, issues: ['new_issue'], verdict: 'UNCERTAIN' },
+                    { timestamp: '2025-12-01', score: 55, issues: ['multiple_issues'], verdict: 'LIKELY RESTRICTED' }
+                ],
+                firstSeen: '2025-11-01T00:00:00Z'
+            };
         }
         
-        const repeatedFlags = Object.entries(flagCounts)
-            .filter(([_, count]) => count >= 2)
-            .map(([flag]) => flag);
-        
-        // Check for high severity
-        let highSeverityCount = 0;
-        for (const item of history) {
-            if (item.score >= 60) {
-                highSeverityCount++;
-            }
+        // No history
+        return null;
+    }
+    
+    // =========================================================================
+    // TREND ANALYSIS
+    // =========================================================================
+    
+    analyzeTrend(history) {
+        if (!history || !history.scans || history.scans.length < 2) {
+            return {
+                direction: null,
+                change: 0,
+                period: null
+            };
         }
         
-        // Detect anomalies (sudden changes)
-        const anomalies = [];
-        for (let i = 1; i < history.length; i++) {
-            const change = history[i].score - history[i - 1].score;
-            if (Math.abs(change) >= 25) {
-                anomalies.push({
-                    date: history[i].timestamp,
-                    type: change > 0 ? 'sudden_increase' : 'sudden_drop',
-                    metric: 'score',
-                    severity: Math.abs(change) >= 40 ? 'high' : 'medium',
-                    magnitude: `${change > 0 ? '+' : ''}${change}%`,
-                    possibleCause: 'Score change detected'
-                });
-            }
+        const scans = history.scans;
+        const firstScore = scans[0].score;
+        const lastScore = scans[scans.length - 1].score;
+        const change = lastScore - firstScore;
+        
+        // Calculate period
+        const firstDate = new Date(scans[0].timestamp);
+        const lastDate = new Date(scans[scans.length - 1].timestamp);
+        const daysDiff = Math.round((lastDate - firstDate) / (1000 * 60 * 60 * 24));
+        const period = daysDiff > 30 ? `${Math.round(daysDiff / 30)} months` : `${daysDiff} days`;
+        
+        let direction;
+        if (change > 10) {
+            direction = 'worsening';
+        } else if (change < -10) {
+            direction = 'improving';
+        } else {
+            direction = 'stable';
         }
         
-        // Build signal history
-        const signalHistory = {};
-        for (const item of history) {
-            if (item.signalScores) {
-                for (const [signal, score] of Object.entries(item.signalScores)) {
-                    if (!signalHistory[signal]) {
-                        signalHistory[signal] = {
-                            previousFlags: 0,
-                            scores: [],
-                            trend: 'stable'
-                        };
-                    }
-                    signalHistory[signal].scores.push(score);
-                    if (score > 30) {
-                        signalHistory[signal].previousFlags++;
-                    }
+        return {
+            direction: direction,
+            change: change,
+            period: period,
+            dataPoints: scans.length
+        };
+    }
+    
+    // =========================================================================
+    // COMMUNITY DATABASE
+    // =========================================================================
+    
+    checkCommunityDatabase(entityId, platform, input) {
+        const db = COMMUNITY_DATABASE[platform];
+        if (!db) {
+            return { found: false };
+        }
+        
+        const lower = entityId.toLowerCase();
+        const result = {
+            found: false,
+            knownSpammer: false,
+            reports: []
+        };
+        
+        // Check known spammers
+        if (db.knownSpammers?.some(s => lower.includes(s))) {
+            result.found = true;
+            result.knownSpammer = true;
+        }
+        
+        // Check content for reported patterns
+        const content = (input.text || input.content || '').toLowerCase();
+        if (db.reportedIssues) {
+            for (const [pattern, data] of Object.entries(db.reportedIssues)) {
+                if (content.includes(pattern) || lower.includes(pattern)) {
+                    result.found = true;
+                    result.reports.push({
+                        pattern: data.pattern,
+                        severity: data.severity,
+                        reportCount: data.reports
+                    });
                 }
             }
         }
         
-        // Determine signal trends
-        for (const [signal, data] of Object.entries(signalHistory)) {
-            if (data.scores.length >= 2) {
-                const recent = data.scores.slice(-2).reduce((a, b) => a + b, 0) / 2;
-                const older = data.scores.slice(0, -2).reduce((a, b) => a + b, 0) / Math.max(1, data.scores.length - 2);
-                data.trend = recent > older + 10 ? 'worsening' : recent < older - 10 ? 'improving' : data.previousFlags >= 2 ? 'recurring' : 'stable';
+        return result;
+    }
+    
+    // =========================================================================
+    // PATTERN MATCHING
+    // =========================================================================
+    
+    matchHistoricalPatterns(text, platform) {
+        const patterns = {
+            engagement_spam: {
+                regex: /follow.*back|f4f|l4l|like.*for.*like/i,
+                severity: 'high'
+            },
+            promotional: {
+                regex: /buy.*now|click.*here|limited.*time/i,
+                severity: 'medium'
+            },
+            crypto_spam: {
+                regex: /free.*crypto|airdrop|guaranteed.*profit/i,
+                severity: 'high'
+            },
+            excessive_hashtags: {
+                test: (t) => (t.match(/#\w+/g) || []).length > 10,
+                severity: 'medium'
+            }
+        };
+        
+        const matches = [];
+        
+        for (const [name, pattern] of Object.entries(patterns)) {
+            let matched = false;
+            
+            if (pattern.regex && pattern.regex.test(text)) {
+                matched = true;
+            } else if (pattern.test && pattern.test(text)) {
+                matched = true;
+            }
+            
+            if (matched) {
+                matches.push({
+                    pattern: name,
+                    severity: pattern.severity
+                });
             }
         }
         
-        return {
-            trend,
-            trendData,
-            averageScore,
-            delta,
-            thirtyDayChange,
-            repeatedFlags,
-            hadHighSeverity: highSeverityCount > 0,
-            highSeverityCount,
-            anomalies,
-            engagementBaseline: null, // Would be populated with real engagement data
-            signalHistory
-        };
-    }
-    
-    calculateItemTrend(history) {
-        if (history.length < 2) return 'unknown';
-        
-        const scores = history.map(h => h.score);
-        const recentAvg = scores.slice(-3).reduce((a, b) => a + b, 0) / Math.min(3, scores.length);
-        const olderAvg = scores.slice(0, -3).length > 0 
-            ? scores.slice(0, -3).reduce((a, b) => a + b, 0) / scores.slice(0, -3).length
-            : recentAvg;
-        
-        if (recentAvg > olderAvg + 10) return 'worsening';
-        if (recentAvg < olderAvg - 10) return 'improving';
-        return 'stable';
-    }
-    
-    cleanupItemStore() {
-        const entries = Array.from(this.itemScoreStore.entries());
-        entries.sort((a, b) => {
-            const aLatest = a[1][a[1].length - 1]?.timestamp || '';
-            const bLatest = b[1][b[1].length - 1]?.timestamp || '';
-            return aLatest.localeCompare(bLatest);
-        });
-        
-        const removeCount = Math.floor(entries.length * 0.2);
-        for (let i = 0; i < removeCount; i++) {
-            this.itemScoreStore.delete(entries[i][0]);
-        }
+        return { matches };
     }
     
     // =========================================================================
-    // PUBLIC API
+    // HELPERS
     // =========================================================================
     
-    /**
-     * Get statistics about stored history
-     */
-    getStats() {
-        let totalItems = 0;
-        for (const history of this.historyStore.values()) {
-            totalItems += history.length;
+    calculateConfidence(dataPoints, history) {
+        let base = 30; // Lower base - historical data is supplementary
+        
+        if (history && history.scans) {
+            base += history.scans.length * 8;
         }
         
+        base += dataPoints * 10;
+        
+        return Math.min(85, base);
+    }
+    
+    // Store a new scan result
+    recordScan(entityId, platform, scanResult) {
+        return HistoryStore.addScan(entityId, platform, scanResult);
+    }
+    
+    setDemoMode(enabled) {
+        this.demoMode = !!enabled;
+    }
+    
+    getStatus() {
         return {
-            uniqueKeys: this.historyStore.size,
-            totalItems,
-            maxPerKey: this.maxHistoryItems,
-            itemScores: {
-                uniqueItems: this.itemScoreStore.size,
-                maxItems: this.maxItemScores
-            },
-            isPro: this.isPro
+            id: this.id,
+            name: this.name,
+            factor: this.factor,
+            weight: this.weight,
+            version: this.version,
+            demoMode: this.demoMode
         };
-    }
-    
-    /**
-     * Export all stored data
-     */
-    exportData() {
-        return {
-            history: Object.fromEntries(this.historyStore),
-            itemScores: Object.fromEntries(this.itemScoreStore),
-            exportedAt: new Date().toISOString()
-        };
-    }
-    
-    /**
-     * Import stored data
-     */
-    importData(data) {
-        if (data.history) {
-            this.historyStore = new Map(Object.entries(data.history));
-        }
-        if (data.itemScores) {
-            this.itemScoreStore = new Map(Object.entries(data.itemScores));
-        }
-    }
-    
-    /**
-     * Set Pro status
-     */
-    setProStatus(isPro) {
-        this.isPro = !!isPro;
     }
 }
 
 // =============================================================================
-// REGISTER AGENT
+// REGISTRATION
 // =============================================================================
 
 const historicalAgent = new HistoricalAgent();
 
-if (window.AgentRegistry) {
+if (window.registerAgent) {
+    window.registerAgent(historicalAgent);
+} else if (window.AgentRegistry) {
     window.AgentRegistry.register(historicalAgent);
+} else {
+    window.AgentQueue = window.AgentQueue || [];
+    window.AgentQueue.push(historicalAgent);
 }
 
-window.HistoricalAgent = HistoricalAgent;
 window.historicalAgent = historicalAgent;
+window.HistoricalAgent = HistoricalAgent;
+window.HistoryStore = HistoryStore;
 
-console.log('✅ HistoricalAgent v2.0.0 loaded - Factor 3 (15%)');
+console.log('✅ Historical Agent loaded (Factor 3, Weight 15%)');
 
 })();

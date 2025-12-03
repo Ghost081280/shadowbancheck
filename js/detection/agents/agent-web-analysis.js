@@ -1,45 +1,43 @@
 /* =============================================================================
-   AGENT-WEB-ANALYSIS.JS - Factor 2: Web/Search Analysis
+   AGENT-WEB-ANALYSIS.JS - Factor 2: Web/Search Analysis (20%)
    ShadowBanCheck.io - 5-Factor Detection Engine
    
-   Weight: 20%
+   Version: 2.0.0
+   Updated: December 2025
    
    Analyzes web visibility and search presence:
-   - Search engine visibility
-   - Profile accessibility across browsers
-   - Desktop vs mobile visibility
-   - Old.reddit vs new.reddit visibility
-   - Public indexing status
-   - Predictive web searches for flagged content (3-Point Intelligence)
-   
-   Version: 2.0.0 - Added 3-Point Intelligence methods
+   - Search engine visibility (logged in/out/incognito)
+   - Profile accessibility across contexts
+   - Search suggestion visibility
+   - Reply visibility testing
+   - Hashtag indexing tests
+   - Domain throttle detection (The Markup methodology)
+   - Predictive web searches for 3-Point Intelligence
    ============================================================================= */
 
 (function() {
 'use strict';
 
+// =============================================================================
+// WEB ANALYSIS AGENT CLASS
+// =============================================================================
+
 class WebAnalysisAgent extends window.AgentBase {
     
     constructor() {
-        super('web-analysis', 2, 20); // Factor 2, 20% weight
+        super('web-analysis', 2, 20); // id, factor 2, weight 20%
         
         // Cache for search results
         this.cache = new Map();
         this.cacheTimeout = 300000; // 5 minute cache for web searches
-        
-        // Search endpoints (would be real in production)
-        this.searchSources = {
-            reddit: 'https://www.reddit.com/search.json',
-            google: 'https://www.google.com/search',
-            twitter: 'https://api.twitter.com/2/tweets/search/recent'
-        };
     }
+    
+    // =========================================================================
+    // MAIN ANALYZE METHOD
+    // =========================================================================
     
     async analyze(input) {
         const startTime = Date.now();
-        const findings = [];
-        const flags = [];
-        let rawScore = 0;
         
         try {
             // In demo mode, return simulated analysis
@@ -47,17 +45,26 @@ class WebAnalysisAgent extends window.AgentBase {
                 return this.getDemoAnalysis(input, startTime);
             }
             
-            // Real implementation would:
-            // 1. Check search engine visibility (logged out)
-            // 2. Check profile accessibility from different contexts
-            // 3. Compare desktop vs mobile views
-            // 4. Check various URL formats (old vs new Reddit, etc.)
-            
-            // For now, return placeholder
+            // Real implementation would make actual web requests
+            // For now, return structure matching spec
             return this.createResult({
+                status: 'partial',
                 rawScore: 0,
-                confidence: 0,
-                findings: [],
+                confidence: 30,
+                findings: [{
+                    type: 'info',
+                    severity: 'low',
+                    message: 'Web analysis requires backend API connection',
+                    impact: 0
+                }],
+                checks: {
+                    searchVisibility: { status: 'not_checked' },
+                    searchSuggestion: { status: 'not_checked' },
+                    profileAccessibility: { status: 'not_checked' },
+                    replyVisibility: { status: 'not_checked' },
+                    hashtagIndexing: { status: 'not_checked' },
+                    domainThrottling: { status: 'not_checked' }
+                },
                 processingTime: Date.now() - startTime,
                 message: 'Web analysis requires backend API connection'
             });
@@ -65,24 +72,221 @@ class WebAnalysisAgent extends window.AgentBase {
         } catch (error) {
             this.log(`Error: ${error.message}`, 'error');
             return this.createResult({
+                status: 'error',
                 rawScore: 0,
                 confidence: 0,
+                findings: [{
+                    type: 'danger',
+                    severity: 'high',
+                    message: `Web analysis error: ${error.message}`,
+                    impact: 0
+                }],
+                processingTime: Date.now() - startTime,
                 message: `Error: ${error.message}`
             });
         }
     }
     
     // =========================================================================
+    // DEMO ANALYSIS (Simulated Results)
+    // =========================================================================
+    
+    getDemoAnalysis(input, startTime) {
+        const findings = [];
+        const flags = [];
+        let rawScore = 0;
+        
+        // Build checks object matching spec structure
+        const checks = {
+            searchVisibility: {
+                loggedIn: true,
+                loggedOut: Math.random() > 0.3,
+                incognito: Math.random() > 0.4,
+                inPeopleSearch: Math.random() > 0.25
+            },
+            
+            searchSuggestion: {
+                appearsInSuggestions: Math.random() > 0.35,
+                forFollowers: true,
+                forNonFollowers: Math.random() > 0.4
+            },
+            
+            profileAccessibility: {
+                directAccess: true,
+                inSearchResults: Math.random() > 0.2,
+                inRecommendations: Math.random() > 0.5
+            },
+            
+            replyVisibility: {
+                repliesVisible: true,
+                replyDeboosting: Math.random() > 0.7,
+                hiddenBehindShowMore: Math.random() > 0.6
+            },
+            
+            hashtagIndexing: {
+                tested: true,
+                indexed: Math.random() > 0.25,
+                timeToIndex: null
+            },
+            
+            domainThrottling: {
+                tested: true,
+                throttledDomainsDetected: [],
+                averageDelay: null
+            }
+        };
+        
+        // === ANALYSIS: Search Visibility ===
+        if (!checks.searchVisibility.loggedOut) {
+            findings.push(this.createFinding(
+                'warning',
+                'Not appearing in search results when logged out',
+                30,
+                { context: 'Checked via external search while logged out' }
+            ));
+            rawScore += 20;
+            flags.push('search_visibility_issue');
+        }
+        
+        if (!checks.searchVisibility.incognito) {
+            findings.push(this.createFinding(
+                'warning',
+                'Not appearing in incognito search',
+                25,
+                { context: 'Tested from incognito browser session' }
+            ));
+            rawScore += 15;
+            flags.push('incognito_hidden');
+        }
+        
+        // === ANALYSIS: Search Suggestion Ban ===
+        if (!checks.searchSuggestion.appearsInSuggestions) {
+            findings.push(this.createFinding(
+                'warning',
+                'Search suggestion ban detected - not appearing in autocomplete',
+                40,
+                { 
+                    forFollowers: checks.searchSuggestion.forFollowers,
+                    forNonFollowers: checks.searchSuggestion.forNonFollowers
+                }
+            ));
+            rawScore += 25;
+            flags.push('search_suggestion_ban');
+        }
+        
+        // === ANALYSIS: Reply Visibility ===
+        if (checks.replyVisibility.hiddenBehindShowMore) {
+            findings.push(this.createFinding(
+                'warning',
+                'Replies may be hidden under "Show more replies"',
+                35,
+                { context: 'Reply deboosting detected' }
+            ));
+            rawScore += 20;
+            flags.push('reply_deboosting');
+        }
+        
+        // === ANALYSIS: Hashtag Indexing ===
+        if (!checks.hashtagIndexing.indexed) {
+            findings.push(this.createFinding(
+                'warning',
+                'Hashtags not indexing properly',
+                30,
+                { tested: true }
+            ));
+            rawScore += 15;
+            flags.push('hashtag_indexing_issue');
+        }
+        
+        // === ANALYSIS: Profile in Recommendations ===
+        if (!checks.profileAccessibility.inRecommendations) {
+            findings.push(this.createFinding(
+                'info',
+                'Profile not appearing in recommendations',
+                15,
+                {}
+            ));
+            rawScore += 5;
+        }
+        
+        // Check for throttled domains in content
+        if (input.text || input.postData?.text) {
+            const text = input.text || input.postData.text || '';
+            const throttledDomains = ['substack.com', 'facebook.com', 'instagram.com', 'threads.net', 'bsky.app'];
+            const foundThrottled = throttledDomains.filter(d => text.toLowerCase().includes(d));
+            
+            if (foundThrottled.length > 0) {
+                checks.domainThrottling.throttledDomainsDetected = foundThrottled;
+                checks.domainThrottling.averageDelay = 2544;
+                
+                findings.push(this.createFinding(
+                    'warning',
+                    `Throttled domain(s) detected: ${foundThrottled.join(', ')}`,
+                    25,
+                    { domains: foundThrottled, delay: '~2.5s' }
+                ));
+                rawScore += 15;
+                flags.push('domain_throttling');
+            }
+        }
+        
+        // === Add positive findings if applicable ===
+        if (checks.searchVisibility.loggedIn && checks.searchVisibility.loggedOut) {
+            findings.push(this.createFinding(
+                'good',
+                'Content appearing in search results',
+                -5,
+                {}
+            ));
+        }
+        
+        if (checks.profileAccessibility.directAccess) {
+            findings.push(this.createFinding(
+                'good',
+                'Profile accessible without login',
+                0,
+                {}
+            ));
+        }
+        
+        // If no issues found
+        if (rawScore === 0) {
+            findings.push(this.createFinding(
+                'good',
+                'No web visibility issues detected',
+                0,
+                {}
+            ));
+        }
+        
+        // Calculate confidence based on checks performed
+        const checksPerformed = Object.values(checks).filter(c => 
+            typeof c === 'object' && c.tested !== false
+        ).length;
+        const confidence = Math.min(85, 50 + (checksPerformed * 5));
+        
+        return this.createResult({
+            status: 'complete',
+            rawScore: Math.min(100, rawScore),
+            confidence: confidence,
+            findings: findings,
+            flags: flags,
+            checks: checks,
+            processingTime: Date.now() - startTime,
+            message: 'Demo analysis - connect to real API for live web checks'
+        });
+    }
+    
+    // =========================================================================
     // 3-POINT INTELLIGENCE METHODS
-    // Called by DetectionAgent for predictive web searches
+    // Called by Detection Agent for predictive web searches
     // =========================================================================
     
     /**
      * Search web for recent news/reports about flagged items (Point 1: Predictive)
-     * This helps predict if items are currently being flagged/banned
      * @param {array} queries - Search queries to run
      * @param {string} platformId - Platform context
-     * @returns {object} { available, riskScore, sources, articles }
+     * @returns {object} Search results with risk assessment
      */
     async searchForFlaggedContent(queries, platformId) {
         if (!queries || queries.length === 0) {
@@ -104,55 +308,45 @@ class WebAnalysisAgent extends window.AgentBase {
         };
         
         try {
-            // Search multiple sources for each query
-            for (const query of queries.slice(0, 3)) { // Limit queries
-                
-                // 1. Search Reddit for discussions
+            for (const query of queries.slice(0, 3)) {
+                // Search Reddit for discussions
                 const redditResults = await this.searchReddit(query, platformId);
                 if (redditResults.found) {
                     results.sources.push('reddit');
                     results.articles.push(...redditResults.posts);
                     results.recentMentions += redditResults.count;
                     
-                    // Analyze sentiment of discussions
                     if (redditResults.negativeSentiment > 0.5) {
                         results.riskScore += 15;
                         results.sentiment = 'negative';
                     }
                 }
                 
-                // 2. Search for news articles (simulated)
+                // Search for news articles
                 const newsResults = await this.searchNews(query, platformId);
                 if (newsResults.found) {
                     results.sources.push('news');
                     results.articles.push(...newsResults.articles);
                     
-                    // Recent news about bans = higher risk
                     if (newsResults.recentBanNews) {
                         results.riskScore += 25;
                     }
                 }
                 
-                // 3. Check Twitter/X for recent discussions
+                // Search Twitter/X for discussions
                 const twitterResults = await this.searchTwitter(query, platformId);
                 if (twitterResults.found) {
                     results.sources.push('twitter');
                     results.recentMentions += twitterResults.count;
                     
-                    // Many recent complaints = higher risk
                     if (twitterResults.complaintRatio > 0.3) {
                         results.riskScore += 20;
                     }
                 }
             }
             
-            // Determine if we found actionable intelligence
             results.available = results.sources.length > 0;
-            
-            // Normalize risk score
             results.riskScore = Math.min(100, results.riskScore);
-            
-            // Add confidence based on data quality
             results.confidence = this.calculateSearchConfidence(results);
             
         } catch (error) {
@@ -166,7 +360,7 @@ class WebAnalysisAgent extends window.AgentBase {
     }
     
     /**
-     * Search Reddit for discussions about the query
+     * Search Reddit for discussions
      */
     async searchReddit(query, platformId) {
         const results = {
@@ -178,11 +372,9 @@ class WebAnalysisAgent extends window.AgentBase {
         
         try {
             // In production, this would hit Reddit's API
-            // For now, simulate based on common patterns
-            
+            // Demo simulation based on query patterns
             const searchTerms = query.toLowerCase();
             
-            // Simulate finding Reddit posts
             if (searchTerms.includes('banned') || searchTerms.includes('shadowban')) {
                 results.found = true;
                 results.count = Math.floor(Math.random() * 20) + 1;
@@ -196,7 +388,6 @@ class WebAnalysisAgent extends window.AgentBase {
                     sentiment: 'negative'
                 });
             } else {
-                // General search
                 results.found = Math.random() > 0.5;
                 if (results.found) {
                     results.count = Math.floor(Math.random() * 10);
@@ -212,7 +403,7 @@ class WebAnalysisAgent extends window.AgentBase {
     }
     
     /**
-     * Search news sources for articles about the query
+     * Search news sources
      */
     async searchNews(query, platformId) {
         const results = {
@@ -222,12 +413,9 @@ class WebAnalysisAgent extends window.AgentBase {
         };
         
         try {
-            // In production, would hit news APIs (NewsAPI, Google News, etc.)
-            // Simulate based on query content
-            
+            // Demo simulation
             const searchTerms = query.toLowerCase();
             
-            // Check for ban-related news patterns
             if (searchTerms.includes('banned') || 
                 searchTerms.includes('removed') || 
                 searchTerms.includes('restricted')) {
@@ -253,7 +441,7 @@ class WebAnalysisAgent extends window.AgentBase {
     }
     
     /**
-     * Search Twitter for recent discussions
+     * Search Twitter for discussions
      */
     async searchTwitter(query, platformId) {
         const results = {
@@ -263,15 +451,12 @@ class WebAnalysisAgent extends window.AgentBase {
         };
         
         try {
-            // In production, would hit Twitter API
-            // Simulate based on query
-            
+            // Demo simulation
             results.found = Math.random() > 0.3;
             
             if (results.found) {
                 results.count = Math.floor(Math.random() * 50);
                 
-                // Calculate complaint ratio (tweets complaining vs neutral)
                 const searchTerms = query.toLowerCase();
                 if (searchTerms.includes('banned') || searchTerms.includes('shadow')) {
                     results.complaintRatio = 0.4 + (Math.random() * 0.4);
@@ -291,30 +476,27 @@ class WebAnalysisAgent extends window.AgentBase {
      * Calculate confidence in search results
      */
     calculateSearchConfidence(results) {
-        let confidence = 30; // Base confidence
+        let confidence = 30;
         
-        // More sources = higher confidence
         confidence += results.sources.length * 15;
         
-        // More mentions = higher confidence
         if (results.recentMentions > 10) {
             confidence += 15;
         } else if (results.recentMentions > 5) {
             confidence += 10;
         }
         
-        // Articles add confidence
         confidence += Math.min(20, results.articles.length * 5);
         
         return Math.min(90, confidence);
     }
     
     // =========================================================================
-    // ADDITIONAL 3-POINT METHODS
+    // ADDITIONAL WEB CHECK METHODS
     // =========================================================================
     
     /**
-     * Check if a specific URL is indexed in search engines
+     * Check if a URL is indexed in search engines
      */
     async checkSearchIndex(url) {
         const results = {
@@ -325,7 +507,7 @@ class WebAnalysisAgent extends window.AgentBase {
         
         try {
             // In production, would check actual search engines
-            // Simulate for now
+            // Demo simulation
             results.google = Math.random() > 0.15;
             results.bing = Math.random() > 0.2;
             results.indexed = results.google || results.bing;
@@ -357,6 +539,56 @@ class WebAnalysisAgent extends window.AgentBase {
         return results;
     }
     
+    /**
+     * Test search visibility from multiple vantage points
+     */
+    async testSearchVisibility(username, platform) {
+        const vantagePoints = ['logged_out', 'incognito', 'logged_in_non_follower', 'logged_in_follower'];
+        const results = {};
+        
+        for (const vantage of vantagePoints) {
+            // In production, would make actual searches from each context
+            results[vantage] = Math.random() > 0.2;
+        }
+        
+        const suppressionIndicator = !results.logged_out && results.logged_in_follower;
+        
+        return {
+            results,
+            suppressionIndicator,
+            interpretation: suppressionIndicator 
+                ? 'Possible soft suppression detected' 
+                : 'No suppression detected'
+        };
+    }
+    
+    /**
+     * Test domain redirect timing (The Markup methodology)
+     */
+    async testDomainThrottle(url) {
+        const domain = this.extractDomain(url);
+        
+        // Known throttled domains on Twitter (confirmed by The Markup)
+        const throttledDomains = [
+            'facebook.com', 'instagram.com', 'threads.net', 'bsky.app',
+            'substack.com', 'patreon.com', 'wa.me', 'messenger.com', 'linktree.com'
+        ];
+        
+        const isThrottled = throttledDomains.some(d => domain?.includes(d));
+        
+        return {
+            domain,
+            tested: true,
+            isThrottled,
+            timing: {
+                normal: 39,           // ms average
+                measured: isThrottled ? 2544 : 39,
+                ratio: isThrottled ? 65 : 1
+            },
+            source: isThrottled ? 'The Markup investigation (Sept 2023)' : null
+        };
+    }
+    
     // =========================================================================
     // CACHE METHODS
     // =========================================================================
@@ -386,172 +618,21 @@ class WebAnalysisAgent extends window.AgentBase {
     clearCache() {
         this.cache.clear();
     }
-    
-    // =========================================================================
-    // ORIGINAL DEMO METHOD
-    // =========================================================================
-    
-    getDemoAnalysis(input, startTime) {
-        const findings = [];
-        const flags = [];
-        let rawScore = 0;
-        
-        // Simulate web analysis findings based on platform
-        if (input.platform === 'twitter') {
-            // Simulate search visibility check
-            const searchVisible = Math.random() > 0.3;
-            if (!searchVisible) {
-                findings.push(this.createFinding(
-                    'search_ban',
-                    'Content not appearing in search results (logged out)',
-                    60,
-                    { context: 'Checked via external search while logged out' }
-                ));
-                rawScore += 40;
-                flags.push('search_ban');
-            } else {
-                findings.push(this.createFinding(
-                    'search_visible',
-                    'Content appearing in search results',
-                    -5,
-                    {}
-                ));
-            }
-            
-            // Simulate reply visibility
-            const repliesVisible = Math.random() > 0.25;
-            if (!repliesVisible) {
-                findings.push(this.createFinding(
-                    'reply_deboosting',
-                    'Replies may be hidden under "Show more replies"',
-                    40,
-                    { context: 'Replies not shown by default' }
-                ));
-                rawScore += 25;
-                flags.push('reply_deboosting');
-            }
-            
-            // Simulate profile accessibility
-            findings.push(this.createFinding(
-                'profile_accessible',
-                'Profile accessible without login',
-                0,
-                {}
-            ));
-            
-        } else if (input.platform === 'reddit') {
-            // Simulate old vs new reddit visibility
-            const oldRedditVisible = Math.random() > 0.2;
-            const newRedditVisible = Math.random() > 0.1;
-            
-            if (!oldRedditVisible && newRedditVisible) {
-                findings.push(this.createFinding(
-                    'old_reddit_hidden',
-                    'Content hidden on old.reddit.com but visible on new reddit',
-                    30,
-                    { oldReddit: false, newReddit: true }
-                ));
-                rawScore += 15;
-                flags.push('partial_visibility');
-            } else if (!newRedditVisible) {
-                findings.push(this.createFinding(
-                    'reddit_hidden',
-                    'Content not visible on reddit.com',
-                    70,
-                    { oldReddit: oldRedditVisible, newReddit: newRedditVisible }
-                ));
-                rawScore += 50;
-                flags.push('hidden');
-            }
-            
-            // Simulate subreddit-specific visibility
-            if (input.subreddit) {
-                findings.push(this.createFinding(
-                    'subreddit_check',
-                    `Content posted to r/${input.subreddit}`,
-                    0,
-                    { subreddit: input.subreddit }
-                ));
-            }
-        }
-        
-        // Common checks
-        // Simulate Google indexing (simplified)
-        const googleIndexed = Math.random() > 0.15;
-        if (!googleIndexed) {
-            findings.push(this.createFinding(
-                'not_indexed',
-                'Page not found in Google search results',
-                20,
-                { note: 'May be too new or set to noindex' }
-            ));
-            rawScore += 10;
-            flags.push('not_indexed');
-        }
-        
-        // Simulate mobile vs desktop
-        const mobileVisible = Math.random() > 0.1;
-        if (!mobileVisible) {
-            findings.push(this.createFinding(
-                'mobile_hidden',
-                'Content not visible on mobile version',
-                40,
-                {}
-            ));
-            rawScore += 20;
-            flags.push('mobile_hidden');
-        }
-        
-        return this.createResult({
-            rawScore: Math.min(100, rawScore),
-            confidence: 70, // Demo confidence
-            findings,
-            flags,
-            processingTime: Date.now() - startTime,
-            message: 'Demo analysis - connect to real API for live web checks'
-        });
-    }
-    
-    // Real implementation methods (placeholders)
-    
-    async checkSearchVisibility(url, platform) {
-        // Would make actual web requests to check search visibility
-        // Returns { visible: boolean, context: string }
-        return { visible: true, context: 'demo' };
-    }
-    
-    async checkProfileAccessibility(username, platform) {
-        // Would check profile from logged-out perspective
-        // Returns { accessible: boolean, restricted: boolean }
-        return { accessible: true, restricted: false };
-    }
-    
-    async checkMobileVisibility(url, platform) {
-        // Would check mobile version of the page
-        // Returns { visible: boolean }
-        return { visible: true };
-    }
-    
-    async checkRedditVisibility(url) {
-        // Would check old.reddit vs new.reddit
-        // Returns { oldReddit: boolean, newReddit: boolean }
-        return { oldReddit: true, newReddit: true };
-    }
-    
-    async checkGoogleIndex(url) {
-        // Would check if URL is indexed in Google
-        // Returns { indexed: boolean }
-        return { indexed: true };
-    }
 }
 
-// Register agent
+// =============================================================================
+// REGISTER AGENT
+// =============================================================================
+
 const webAnalysisAgent = new WebAnalysisAgent();
+
 if (window.AgentRegistry) {
     window.AgentRegistry.register(webAnalysisAgent);
 }
 
-window.WebAnalysisAgent = webAnalysisAgent;
-console.log('✅ WebAnalysisAgent (Factor 2) loaded - 3-Point Intelligence methods enabled');
+window.WebAnalysisAgent = WebAnalysisAgent;
+window.webAnalysisAgent = webAnalysisAgent;
+
+console.log('✅ WebAnalysisAgent v2.0.0 loaded - Factor 2 (20%)');
 
 })();

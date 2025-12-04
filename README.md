@@ -215,26 +215,143 @@ The Detection Agent coordinates specialized modules across 9 signal types (6 liv
 | Platform | Total Modules | Notes |
 |----------|---------------|-------|
 | Twitter/X | 21 | All 6 live signal types |
+| Reddit | 11 | No hashtags/cashtags |
 | Instagram | 18 | No cashtags |
-| TikTok | 21 | All 6 live signal types |
-| Reddit | 14 | No hashtags/cashtags |
-| Facebook | 18 | No cashtags |
-| YouTube | 14 | No hashtags/cashtags |
-| LinkedIn | 17 | Limited hashtags (max 3 rule) |
+| TikTok | 18 | All 6 signal types |
+| Facebook | 15 | No cashtags |
+| YouTube | 8 | No hashtags/cashtags |
+| LinkedIn | 15 | Limited hashtags (max 3 rule) |
 
 ---
 
 ## Supported Platforms
 
-| Platform | Status | Detection Capabilities |
-|----------|--------|------------------------|
-| **Twitter/X** | ✅ Live | Search ban, suggestion ban, ghost ban, reply deboosting, hashtag restrictions, link throttling |
-| **Reddit** | ✅ Live | Shadowban, AutoMod filtering, karma restrictions, subreddit bans |
-| **Instagram** | 🔜 Coming Soon | Hashtag shadowban, explore ban, action blocks |
-| **TikTok** | 🔜 Coming Soon | FYP suppression, shadowban, hashtag restrictions |
-| **Facebook** | 🔜 Coming Soon | Reach suppression, content restrictions |
-| **YouTube** | 🔜 Coming Soon | Search suppression, recommendation exclusion |
-| **LinkedIn** | 🔜 Coming Soon | Content visibility, hashtag penalties |
+<details open>
+<summary><strong>𝕏 Twitter/X Analysis</strong> — ✅ Operational (21 modules)</summary>
+
+| Detection Capability | Description |
+|---------------------|-------------|
+| Search suggestion ban | Detect if account is hidden from search suggestions |
+| Reply deboosting | Analyze if replies are being suppressed |
+| Ghost ban verification | Check if tweets are invisible to others |
+| Search ban identification | Verify if account appears in search results |
+| Quality Filter Detection (QFD) | Check QFD status affecting visibility |
+| Verification status | Analyze blue/business/government badge status |
+| Account trust signals | Evaluate platform trust score indicators |
+| Follower/following ratio | Flag suspicious ratios that trigger filters |
+| Sensitive media flags | Detect content marked as sensitive |
+| Profile accessibility | Verify profile is publicly accessible |
+
+</details>
+
+<details>
+<summary><strong>🤖 Reddit Analysis</strong> — ✅ Operational (11 modules)</summary>
+
+| Detection Capability | Description |
+|---------------------|-------------|
+| Shadowban verification | Check if account is site-wide shadowbanned |
+| Profile visibility | Analyze if profile is publicly accessible |
+| Subreddit-specific bans | Detect bans from individual subreddits |
+| Karma threshold restrictions | Identify low-karma posting limitations |
+| Account age restrictions | Detect new account posting limitations |
+| Spam filter triggers | Analyze content triggering spam filters |
+| AutoModerator removal | Detect AutoMod-removed content |
+| Comment visibility | Verify if comments are visible to others |
+| Cross-posting restrictions | Check for cross-post limitations |
+
+> 💡 Reddit does not use hashtags. Analysis focuses on account visibility, subreddit bans, and content patterns.
+
+</details>
+
+<details>
+<summary><strong>📸 Instagram Analysis</strong> — 🔜 Coming Soon (18 modules)</summary>
+
+| Detection Capability | Description |
+|---------------------|-------------|
+| Explore page eligibility | Analyze if content can appear on Explore |
+| Hashtag search visibility | Check if posts appear under hashtags |
+| Story visibility verification | Verify story reach and visibility |
+| Reels recommendation status | Check Reels algorithm eligibility |
+| Account reach restrictions | Detect shadow restrictions on reach |
+| Profile discoverability | Analyze if profile appears in suggestions |
+
+> 💡 Instagram maintains aggressive hashtag restrictions. Our database tracks 1,800+ flagged tags.
+
+</details>
+
+<details>
+<summary><strong>🎵 TikTok Analysis</strong> — 🔜 Coming Soon (18 modules)</summary>
+
+| Detection Capability | Description |
+|---------------------|-------------|
+| For You Page eligibility | Analyze if content can appear on FYP |
+| Search visibility verification | Check if account appears in search |
+| Comment visibility detection | Verify if comments are visible |
+| Duet/Stitch restrictions | Check for collaboration limitations |
+| Account trust score | Evaluate platform trust indicators |
+
+> 💡 TikTok shadow bans are notoriously difficult to detect. Our agents use multiple verification methods.
+
+</details>
+
+<details>
+<summary><strong>📘 Facebook Analysis</strong> — 🔜 Coming Soon (15 modules)</summary>
+
+| Detection Capability | Description |
+|---------------------|-------------|
+| Reduced distribution status | Detect algorithmic reach reduction |
+| Fact-check overlay detection | Identify fact-check labels on content |
+| Group posting restrictions | Check for group posting limitations |
+| Marketplace restrictions | Detect marketplace access limitations |
+| Comment visibility | Verify comment visibility status |
+
+> 💡 Facebook uses "reduced distribution" rather than explicit shadowbans.
+
+</details>
+
+<details>
+<summary><strong>▶️ YouTube Analysis</strong> — 🔜 Coming Soon (8 modules)</summary>
+
+| Detection Capability | Description |
+|---------------------|-------------|
+| Search visibility analysis | Check if videos appear in search |
+| Recommendation status | Analyze algorithm recommendation eligibility |
+| Demonetization indicators | Detect monetization restrictions |
+| Age restriction flags | Identify age-gated content |
+| Limited state detection | Check for "limited state" restrictions |
+
+> 💡 YouTube uses "limited state" for shadow restrictions on videos.
+
+</details>
+
+<details>
+<summary><strong>💼 LinkedIn Analysis</strong> — 🔜 Coming Soon (15 modules)</summary>
+
+| Detection Capability | Description |
+|---------------------|-------------|
+| Feed visibility analysis | Check if posts appear in connections' feeds |
+| Search presence verification | Verify profile appears in search results |
+| Connection request restrictions | Detect connection request limitations |
+| Content reach limitations | Analyze post reach restrictions |
+| Profile view restrictions | Check for profile visibility issues |
+
+> 💡 LinkedIn heavily restricts spam-like behavior and promotional content.
+
+</details>
+
+---
+
+### Platform Module Summary
+
+| Platform | Status | Modules | Signal Types |
+|----------|--------|---------|--------------|
+| **Twitter/X** | ✅ Live | 21 | All 6 live |
+| **Reddit** | ✅ Live | 11 | 4 (no hashtags/cashtags) |
+| **Instagram** | 🔜 Soon | 18 | 5 (no cashtags) |
+| **TikTok** | 🔜 Soon | 18 | All 6 |
+| **Facebook** | 🔜 Soon | 15 | 5 (no cashtags) |
+| **YouTube** | 🔜 Soon | 8 | 4 (no hashtags/cashtags) |
+| **LinkedIn** | 🔜 Soon | 15 | 5 (limited hashtags) |
 
 ---
 

@@ -160,6 +160,56 @@ The Detection Agent coordinates specialized modules across 9 signal types (6 liv
 | **🎬 Videos** | TBD | 🔜 Phase 2 | Frame extraction, content scanning, copyrighted material |
 | **🔊 Audio** | TBD | 🔜 Phase 3 | Speech-to-text scanning, audio fingerprinting |
 
+<details>
+<summary><strong>📋 View All 21 Module Details</strong></summary>
+
+#### #️⃣ Hashtag Modules (4)
+| Module | Description |
+|--------|-------------|
+| `hashtag-banned` | Checks against database of permanently banned hashtags per platform |
+| `hashtag-restricted` | Detects limited-reach hashtags that reduce visibility |
+| `hashtag-spam` | Identifies spam-associated tags (#followback, #f4f, etc.) |
+| `hashtag-indexing` | Real-time verification if hashtag is being indexed in search |
+
+#### 💲 Cashtag Modules (3)
+| Module | Description |
+|--------|-------------|
+| `cashtag-pump-dump` | Detects patterns associated with pump & dump schemes |
+| `cashtag-scam` | Checks against known scam/fraud ticker database |
+| `cashtag-coordinated` | Identifies coordinated cashtag spam campaigns |
+
+#### 🔗 Link Modules (4)
+| Module | Description |
+|--------|-------------|
+| `link-throttled` | Detects domains throttled by platforms (The Markup research) |
+| `link-blocked` | Checks against known blocked/banned domain database |
+| `link-shortener` | Identifies URL shorteners that trigger spam filters |
+| `link-suspicious` | Pattern detection for affiliate links, redirects, cloaked URLs |
+
+#### 📝 Content Modules (4)
+| Module | Description |
+|--------|-------------|
+| `content-banned` | Scans for permanently banned terms and phrases |
+| `content-restricted` | Detects restricted content patterns that limit reach |
+| `content-spam` | Identifies spam patterns (excessive caps, repetition, urgency) |
+| `content-style` | Analyzes style issues (ALL CAPS, excessive punctuation/emojis) |
+
+#### @ Mention Modules (3)
+| Module | Description |
+|--------|-------------|
+| `mention-suspended` | Detects mentions of suspended/banned accounts |
+| `mention-bot` | Identifies bot account mention patterns |
+| `mention-spam` | Pattern matching for spam account mentions |
+
+#### 😀 Emoji Modules (3)
+| Module | Description |
+|--------|-------------|
+| `emoji-risky` | Database of emojis associated with restricted content |
+| `emoji-combination` | Detects risky emoji combinations (🚀💰🔥 = crypto spam) |
+| `emoji-excessive` | Flags excessive emoji usage that triggers spam filters |
+
+</details>
+
 **Platform-Specific Module Counts:**
 
 | Platform | Total Modules | Notes |

@@ -557,7 +557,7 @@ If you're conducting research on content moderation, algorithmic suppression, or
 - Test scenarios in `/js/detection/tests/demo-data.js`
 - Architecture documentation (this README)
 
-**Contact:** [hello@shadowbancheck.io](mailto:hello@shadowbancheck.io) with subject "Research Inquiry"
+**Contact:** [andrew@ghost081280.com](mailto:andrew@ghost081280.com) with subject "Research Inquiry"
 
 ---
 
@@ -683,7 +683,7 @@ https://shadowbancheck.io
 ## Contact
 
 - 🌐 **Website:** [shadowbancheck.io](https://shadowbancheck.io)
-- 📧 **Email:** [hello@shadowbancheck.io](mailto:hello@shadowbancheck.io)
+- 📧 **Email:** [andrew@ghost081280.com](mailto:andrew@ghost081280.com)
 - 🐦 **Twitter/X:** [@Ghost081280](https://x.com/Ghost081280)
 - 💼 **LinkedIn:** [Andrew Couch](https://linkedin.com/in/andrewcouch)
 - 🐙 **GitHub:** [Ghost081280](https://github.com/Ghost081280)

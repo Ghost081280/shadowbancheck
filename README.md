@@ -464,8 +464,7 @@ shadowbancheck/
 │   ├── platforms.js                # Platform definitions
 │   ├── shared-components.js        # Shared UI components
 │   ├── shadow-ai.js                # Shadow AI chatbot
-│   ├── detection-api.js            # Detection API client
-│   ├── hashtag-api.js              # Hashtag API client
+│   ├── detection-api.js            # Detection API client (all signals)
 │   ├── pro-dashboard.js            # Pro dashboard logic
 │   ├── agency-dashboard.js         # Agency dashboard logic
 │   ├── research-dashboard.js       # Research dashboard logic

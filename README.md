@@ -242,6 +242,8 @@ The Detection Agent coordinates specialized modules across 9 signal types (6 liv
 | Sensitive media flags | Detect content marked as sensitive |
 | Profile accessibility | Verify profile is publicly accessible |
 
+> 💡 Twitter/X uses multiple layers of visibility filtering. Our 21 modules test from multiple vantage points (logged-in, logged-out, incognito) for accurate detection.
+
 </details>
 
 <details>

@@ -132,7 +132,7 @@ Each analysis deploys 5 specialized agents that work in parallel. Think of them 
 │     → Pro users: personal historical tracking                    │
 │                                                                  │
 │  🎯 DETECTION AGENT (25%)                                        │
-│     Coordinates 21 modules across 6 signal types                 │
+│     Coordinates 21 modules across 9 signal types (6 live)         │
 │     → Full 3-Point Intelligence scoring per signal               │
 │                                                                  │
 │  🧠 PREDICTIVE AI AGENT (20%)                                    │
@@ -144,26 +144,29 @@ Each analysis deploys 5 specialized agents that work in parallel. Think of them 
 
 ---
 
-### 21 Detection Modules (6 Signal Types)
+### 21 Detection Modules (9 Signal Types)
 
-The Detection Agent coordinates specialized modules across 6 live signal types:
+The Detection Agent coordinates specialized modules across 9 signal types (6 live, 3 coming soon):
 
-| Signal Type | Modules | What We Detect |
-|-------------|---------|----------------|
-| **#️⃣ Hashtags** | 4 | Banned, restricted, low-reach, and spam-associated hashtags |
-| **💲 Cashtags** | 3 | Financial tickers and crypto symbols that trigger spam filters |
-| **🔗 Links** | 4 | Domain reputation, URL shorteners, affiliate patterns, blocked domains |
-| **📝 Content** | 4 | Flagged words, spam patterns, sensitive content markers |
-| **@ Mentions** | 3 | Suspended accounts, shadowbanned users, problematic patterns |
-| **😀 Emojis** | 3 | Emojis associated with restricted content or spam campaigns |
+| Signal Type | Modules | Status | What We Detect |
+|-------------|---------|--------|----------------|
+| **#️⃣ Hashtags** | 4 | ✅ Live | Banned, restricted, low-reach, and spam-associated hashtags |
+| **💲 Cashtags** | 3 | ✅ Live | Financial tickers and crypto symbols that trigger spam filters |
+| **🔗 Links** | 4 | ✅ Live | Domain reputation, URL shorteners, affiliate patterns, blocked domains |
+| **📝 Content** | 4 | ✅ Live | Flagged words, spam patterns, sensitive content markers |
+| **@ Mentions** | 3 | ✅ Live | Suspended accounts, shadowbanned users, problematic patterns |
+| **😀 Emojis** | 3 | ✅ Live | Emojis associated with restricted content or spam campaigns |
+| **🖼️ Images** | TBD | 🔜 Phase 2 | Visual content analysis, banned imagery, watermarks |
+| **🎬 Videos** | TBD | 🔜 Phase 2 | Frame extraction, content scanning, copyrighted material |
+| **🔊 Audio** | TBD | 🔜 Phase 3 | Speech-to-text scanning, audio fingerprinting |
 
 **Platform-Specific Module Counts:**
 
 | Platform | Total Modules | Notes |
 |----------|---------------|-------|
-| Twitter/X | 21 | All 6 signal types |
+| Twitter/X | 21 | All 6 live signal types |
 | Instagram | 18 | No cashtags |
-| TikTok | 21 | All 6 signal types |
+| TikTok | 21 | All 6 live signal types |
 | Reddit | 14 | No hashtags/cashtags |
 | Facebook | 18 | No cashtags |
 | YouTube | 14 | No hashtags/cashtags |
@@ -379,7 +382,7 @@ We welcome contributions from developers, researchers, and domain experts.
 - [x] 3-Point Intelligence Model
 - [x] Twitter/X platform handler
 - [x] Reddit platform handler
-- [x] 5 signal databases
+- [x] 6 signal databases (Hashtags, Cashtags, Links, Content, Mentions, Emojis)
 - [x] Browser and Node.js test suites
 
 ### Phase 2: Expansion 🔄
@@ -390,11 +393,11 @@ We welcome contributions from developers, researchers, and domain experts.
 - [ ] LinkedIn platform handler
 - [ ] Real API integration (currently demo mode)
 - [ ] Historical tracking database
+- [ ] 🖼️ Image signal analysis
+- [ ] 🎬 Video signal analysis
 
 ### Phase 3: Intelligence
-- [ ] Image analysis (visual content scanning)
-- [ ] Video analysis (frame extraction)
-- [ ] Audio analysis (speech-to-text)
+- [ ] 🔊 Audio signal analysis (speech-to-text)
 - [ ] Public API launch
 - [ ] Regional server expansion
 

@@ -4,13 +4,19 @@
 
 [![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Open Source](https://img.shields.io/badge/Open%20Source-Verification%20Ready-blue.svg)](#research--verification)
-[![Status](https://img.shields.io/badge/Status-Active%20Development-orange.svg)](#roadmap)
+[![Status](https://img.shields.io/badge/Status-In%20Development-orange.svg)](#roadmap)
 
 **The most comprehensive, research-backed shadow ban detection engine on the internet.**
 
 We don't guess. We correlate multiple independent intelligence sources to calculate the *probability* your content is being suppressed—the same methodology used by professional intelligence analysts.
 
-🔗 **Live at:** [shadowbancheck.io](https://shadowbancheck.io)
+⚠️ **Status:** In Active Development
+
+🔧 **Development Site:** [ghost081280.github.io/shadowbancheck](https://ghost081280.github.io/shadowbancheck/index.html)
+
+🧪 **Engine Tests:** [5-Factor Engine Test Page](https://ghost081280.github.io/shadowbancheck/js/detection/tests/test-integration.html)
+
+🔗 **Will be live at:** [shadowbancheck.io](https://shadowbancheck.io) *(coming soon)*
 
 ---
 

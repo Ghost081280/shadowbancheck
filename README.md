@@ -280,49 +280,97 @@ open test-integration.html
 
 ```
 shadowbancheck/
+│
 ├── index.html                      # Main landing page
 ├── checker.html                    # Account checker
 ├── hashtag-checker.html            # Hashtag checker
 ├── results.html                    # Results display
+├── login.html                      # User authentication
+├── pro.html                        # Pro dashboard
+├── agency.html                     # Agency dashboard
+├── research.html                   # Research dashboard
+├── admin.html                      # Admin dashboard
+├── README.md
+├── LICENSE.txt
 │
 ├── css/
 │   ├── main.css                    # Shared styles
 │   ├── index.css                   # Homepage styles
-│   └── ...
+│   ├── checker.css                 # Checker page styles
+│   ├── hashtag-checker.css         # Hashtag checker styles
+│   ├── results.css                 # Results page styles
+│   ├── login.css                   # Login page styles
+│   ├── dashboard-shared.css        # Shared dashboard styles
+│   └── shadow-ai.css               # Shadow AI chatbot styles
 │
 ├── js/
-│   ├── detection/                  # 🔥 The Detection Engine
-│   │   ├── agents/                 # 5 Detection Agents
-│   │   │   ├── agent-base.js       # Agent registry & orchestration
-│   │   │   ├── agent-platform-api.js    # Factor 1: Platform API
-│   │   │   ├── agent-web-analysis.js    # Factor 2: Web Analysis
-│   │   │   ├── agent-historical.js      # Factor 3: Historical
-│   │   │   ├── agent-detection.js       # Factor 4: Detection (25%)
-│   │   │   └── agent-predictive.js      # Factor 5: Predictive AI
+│   ├── detection/                  # 🔥 THE DETECTION ENGINE
 │   │   │
-│   │   ├── databases/              # Signal Databases
-│   │   │   ├── flagged-hashtags.js # Banned/restricted hashtags
-│   │   │   ├── flagged-links.js    # Throttled domains, shorteners
-│   │   │   ├── flagged-content.js  # Banned terms, spam patterns
-│   │   │   ├── flagged-mentions.js # Bot patterns, spam accounts
-│   │   │   └── flagged-emojis.js   # Risky emoji combinations
+│   │   ├── 5-factor-engine.js      # Main orchestrator
+│   │   │
+│   │   ├── agents/                 # 5 Detection Agents
+│   │   │   ├── agent-base.js            # Agent registry & orchestration
+│   │   │   ├── agent-platform-api.js    # Factor 1: Platform API (20%)
+│   │   │   ├── agent-web-analysis.js    # Factor 2: Web Analysis (20%)
+│   │   │   ├── agent-historical.js      # Factor 3: Historical (15%)
+│   │   │   ├── agent-detection.js       # Factor 4: Detection (25%)
+│   │   │   └── agent-predictive.js      # Factor 5: Predictive AI (20%)
+│   │   │
+│   │   ├── databases/              # Signal Databases (9 types)
+│   │   │   ├── flagged-hashtags.js      # Banned/restricted hashtags + cashtags (combined for now)
+│   │   │   ├── flagged-links.js         # Throttled domains, shorteners
+│   │   │   ├── flagged-content.js       # Banned terms, spam patterns
+│   │   │   ├── flagged-mentions.js      # Bot patterns, spam accounts
+│   │   │   ├── flagged-emojis.js        # Risky emoji combinations
+│   │   │   ├── flagged-images.js        # 🔜 Image analysis rules
+│   │   │   ├── flagged-videos.js        # 🔜 Video analysis rules
+│   │   │   └── flagged-audio.js         # 🔜 Audio analysis rules
 │   │   │
 │   │   ├── platforms/              # Platform Handlers
-│   │   │   ├── twitter.js          # Twitter/X API integration
-│   │   │   └── reddit.js           # Reddit API integration
+│   │   │   ├── platform-base.js         # Base platform class
+│   │   │   ├── twitter.js               # Twitter/X integration
+│   │   │   └── reddit.js                # Reddit integration
 │   │   │
-│   │   ├── tests/                  # Test Suite
-│   │   │   ├── test-integration.html    # Browser test page
-│   │   │   ├── test-all-agents.js       # Node.js test suite
-│   │   │   └── demo-data.js             # Demo scenarios
-│   │   │
-│   │   └── 5-factor-engine.js      # Main orchestrator
+│   │   └── tests/                  # Test Suite
+│   │       ├── test-integration.html    # Browser test page
+│   │       ├── test-all-agents.js       # Node.js test suite
+│   │       └── demo-data.js             # Demo scenarios
 │   │
-│   ├── platforms.js                # Platform definitions
 │   ├── main.js                     # Core functionality
-│   └── ...
+│   ├── index.js                    # Homepage logic
+│   ├── checker.js                  # Account checker logic
+│   ├── hashtag-checker.js          # Hashtag checker logic
+│   ├── results.js                  # Results display logic
+│   ├── login.js                    # Authentication logic
+│   ├── platforms.js                # Platform definitions
+│   ├── shared-components.js        # Shared UI components
+│   ├── shadow-ai.js                # Shadow AI chatbot
+│   ├── detection-api.js            # Detection API client
+│   ├── hashtag-api.js              # Hashtag API client
+│   ├── pro-dashboard.js            # Pro dashboard logic
+│   ├── agency-dashboard.js         # Agency dashboard logic
+│   ├── research-dashboard.js       # Research dashboard logic
+│   ├── admin-dashboard.js          # Admin dashboard logic
+│   ├── resolution-center.js        # Issue resolution logic
+│   └── stripe-billing.js           # Stripe payment integration
 │
-└── README.md                       # You are here
+├── server/                         # Backend (Railway deployment)
+│   ├── detection-engine.js         # Server-side detection
+│   ├── package.json
+│   └── railway.json                # Railway config
+│
+├── shared/                         # Reusable HTML components
+│   ├── header.html
+│   ├── footer.html
+│   ├── mobile-nav.html
+│   ├── back-to-top.html
+│   ├── cookie-popup.html
+│   └── toast.html
+│
+└── legal/                          # Legal pages
+    ├── terms.html
+    ├── privacy-policy.html
+    └── cookie-policy.html
 ```
 
 ---
@@ -432,7 +480,7 @@ We welcome contributions from developers, researchers, and domain experts.
 - [x] 3-Point Intelligence Model
 - [x] Twitter/X platform handler
 - [x] Reddit platform handler
-- [x] 6 signal databases (Hashtags, Cashtags, Links, Content, Mentions, Emojis)
+- [x] 8 signal databases (6 live + 3 placeholder for Images, Videos, Audio)
 - [x] Browser and Node.js test suites
 
 ### Phase 2: Expansion 🔄
@@ -443,6 +491,7 @@ We welcome contributions from developers, researchers, and domain experts.
 - [ ] LinkedIn platform handler
 - [ ] Real API integration (currently demo mode)
 - [ ] Historical tracking database
+- [ ] Separate flagged-cashtags.js from hashtags
 - [ ] 🖼️ Image signal analysis
 - [ ] 🎬 Video signal analysis
 

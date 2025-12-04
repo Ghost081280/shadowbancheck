@@ -598,7 +598,7 @@ We welcome contributions from developers, researchers, and domain experts.
 - [x] 3-Point Intelligence Model
 - [x] Twitter/X platform handler
 - [x] Reddit platform handler
-- [x] 8 signal databases (6 live + 3 placeholder for Images, Videos, Audio)
+- [x] 9 signal types across 8 database files (hashtags & cashtags combined for now)
 - [x] Browser and Node.js test suites
 
 ### Phase 2: Expansion 🔄
